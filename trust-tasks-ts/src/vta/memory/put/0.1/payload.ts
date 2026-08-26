@@ -3,6 +3,9 @@
  * Source: specs/vta/memory/put/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTAMemoryPutPayload {
   /**
    * The VTA context the memory item is scoped to (the isolation boundary).
@@ -16,13 +19,10 @@ export interface VTAMemoryPutPayload {
    * Opaque memory text (a fact, summary, or preference).
    */
   value: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.1#response.
@@ -32,14 +32,11 @@ export interface VTAMemoryPutResponsePayload {
    * The stored item's key.
    */
   key: string;
-  ext?: Ext1;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/memory/put/0.1" as const;

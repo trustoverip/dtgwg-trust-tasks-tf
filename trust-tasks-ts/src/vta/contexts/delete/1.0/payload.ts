@@ -3,6 +3,9 @@
  * Source: specs/vta/contexts/delete/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTAContextsDeletePayload {
   /**
    * Context to delete.
@@ -15,12 +18,6 @@ export interface VTAContextsDeletePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.
  */
 export interface VTAContextsDeleteResponsePayload {
@@ -31,6 +28,9 @@ export interface VTAContextsDeleteResponsePayload {
   deleted: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/delete/1.0" as const;

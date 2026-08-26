@@ -3,14 +3,8 @@
  * Source: specs/vtc/join-requests/submit/0.2/payload.schema.json
  */
 
-/**
- * What the policy decided.
- *
- * `allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.
- *
- * The four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.
- */
-export type VerdictEffect = "allow" | "deny" | "refer" | "requestMore";
+import type { Ext, Verdict, VerdictEffect, VerdictWith } from "../../../../_shared/components.js";
+
 
 export interface VTCJoinRequestsSubmitPayload {
   /**
@@ -27,68 +21,22 @@ export interface VTCJoinRequestsSubmitPayload {
   extensions?: {};
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCJoinRequestsSubmitResponsePayload {
   /**
    * Id of the created join request (a UUID).
    */
   requestId: string;
+  /**
+   * What the community decided about this submission.
+   *
+   * `0.1` returned `status: "pending"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.
+   */
   verdict: Verdict;
   ext?: Ext;
 }
-/**
- * What the community decided about this submission.
- *
- * `0.1` returned `status: "pending"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.
- */
-export interface Verdict {
-  effect: VerdictEffect;
-  with: VerdictWith;
-}
-/**
- * The effect-dependent detail of a verdict.
- *
- * Every member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.
- */
-export interface VerdictWith {
-  /**
-   * The granted local role. `allow` only.
-   */
-  role?: string;
-  /**
-   * Conditions attached to the grant. `allow` only.
-   */
-  obligations?: {};
-  /**
-   * Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only.
-   */
-  bundleRef?: {};
-  /**
-   * Stable refusal code, safe to branch on. `deny` only.
-   */
-  code?: string;
-  /**
-   * Elaboration in prose, when the decider gave one. `deny` and `refer`.
-   */
-  reason?: string | null;
-  /**
-   * Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.
-   */
-  queue?: string;
-  /**
-   * What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.
-   */
-  needs?: string[];
-  /**
-   * A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.
-   */
-  presentationDefinition?: {};
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Verdict, VerdictEffect, VerdictWith };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/submit/0.2" as const;

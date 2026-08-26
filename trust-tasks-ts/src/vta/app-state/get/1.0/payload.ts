@@ -3,18 +3,8 @@
  * Source: specs/vta/app-state/get/1.0/payload.schema.json
  */
 
-/**
- * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
- */
-export type Namespace = string;
-/**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
- * The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
- */
-export type Version = number;
+import type { AppStateRecord, Ext, Key, Namespace, Version } from "../../../../_shared/components.js";
+
 
 /**
  * Read one application-state record by its `(contextId, namespace, key)` address. Returns the record with its value and its version; the version is what a subsequent conditional write supplies as `expectedVersion`.
@@ -30,65 +20,27 @@ export interface VTAApplicationStateGetPayload {
    * Defaults to false. When true, a tombstone at this address is returned as a record with `deleted: true` instead of being reported as absent. Lets a consumer distinguish "deleted, and here is the version that deleted it" from "never existed, or deleted so long ago the tombstone was reaped" — a distinction a repair path needs and a normal read does not.
    */
   includeDeleted?: boolean;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/app-state/get. Type https://trusttasks.org/spec/vta/app-state/get/1.0#response. An absent record is not a success: it is reported as a trust-task-error carrying vta/app-state/get:notFound.
  */
 export interface VTAApplicationStateGetResponsePayload {
+  /**
+   * The record at the requested address, with its `value` populated (unless it is a tombstone returned under `includeDeleted`).
+   */
   record: AppStateRecord;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * The record at the requested address, with its `value` populated (unless it is a tombstone returned under `includeDeleted`).
- */
-export interface AppStateRecord {
-  /**
-   * The VTA context the record is scoped to; the isolation boundary.
-   */
-  contextId: string;
-  namespace: Namespace;
-  key: Key;
-  version: Version;
-  /**
-   * The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.
-   */
-  value?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * Size of the stored value in bytes, measured as the maintainer measures it for the per-record cap (see `vta/app-state/put`). Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
-   */
-  valueBytes?: number;
-  /**
-   * True when this is a tombstone: the record was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/app-state/list`.
-   */
-  deleted: boolean;
-  /**
-   * When the record was first created at this address. MAY be absent on a tombstone whose body has been discarded.
-   */
-  createdAt?: string;
-  /**
-   * When the write that produced this `version` was applied. For a tombstone, when the delete was applied.
-   */
-  updatedAt: string;
-  /**
-   * When the record was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.
-   */
-  deletedAt?: string;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AppStateRecord, Ext, Key, Namespace, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/get/1.0" as const;

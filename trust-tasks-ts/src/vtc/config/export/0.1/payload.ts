@@ -3,95 +3,25 @@
  * Source: specs/vtc/config/export/0.1/payload.schema.json
  */
 
+import type { CommunityProfileSnapshot, ConfigExportDocument, Ext, PersonhoodGovernance } from "../../../../_shared/components.js";
+
+
 /**
  * Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.
  */
 export interface VTCConfigExportPayload {
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VTCConfigExportResponsePayload {
+  /**
+   * The portable configuration document, ready to feed back to vtc/config/import.
+   */
   document: ConfigExportDocument;
   ext?: Ext;
 }
-/**
- * The portable configuration document, ready to feed back to vtc/config/import.
- */
-export interface ConfigExportDocument {
-  /**
-   * Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.
-   */
-  schemaVersion: number;
-  /**
-   * When the export was taken. Provenance for the operator; a consumer does not act on it.
-   */
-  exportedAt: string;
-  communityProfile?: CommunityProfileSnapshot;
-  /**
-   * Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.
-   */
-  configOverrides: {
-    [k: string]: unknown | undefined;
-  };
-  ext?: Ext;
-}
-/**
- * The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.
- */
-export interface CommunityProfileSnapshot {
-  /**
-   * DID of the community this document was taken from. Immutable, set at install.
-   */
-  communityDid: string;
-  name: string;
-  description?: string;
-  logoUrl?: string | null;
-  publicUrl?: string | null;
-  contactEmail?: string | null;
-  /**
-   * BCP 47 language tag.
-   */
-  language: string;
-  /**
-   * The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
-   */
-  relationshipIdentifierDefault?: "attributed" | "pairwise";
-  personhood?: PersonhoodGovernance;
-  /**
-   * Opaque community-defined extension bag.
-   */
-  extensions?: {};
-  /**
-   * When the community was created. Provenance only — an import never writes it.
-   */
-  createdAt?: string;
-}
-/**
- * The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.
- */
-export interface PersonhoodGovernance {
-  /**
-   * Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
-   */
-  realHuman?: boolean;
-  /**
-   * Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
-   */
-  singleMembership?: boolean;
-  /**
-   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
-   */
-  acceptedIdvps?: string[];
-  /**
-   * Where the governance framework these assertions refer to can be read.
-   */
-  governanceFrameworkUrl?: string | null;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CommunityProfileSnapshot, ConfigExportDocument, Ext, PersonhoodGovernance };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/config/export/0.1" as const;

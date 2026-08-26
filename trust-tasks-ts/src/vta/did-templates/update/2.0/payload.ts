@@ -3,10 +3,8 @@
  * Source: specs/vta/did-templates/update/2.0/payload.schema.json
  */
 
-/**
- * Resolved scope of the stored template.
- */
-export type Scope = Builtin | Global | Context;
+import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplate, DidTemplateRecord, Ext, Global_VtaV0_1 as Global, Scope_VtaV0_1 as Scope } from "../../../../_shared/components.js";
+
 
 /**
  * Replace an existing DID template on a VTA. Omit `contextId` to replace in the global scope (super-admin gated); set it to replace a template scoped to that context (gated on the context's admin, or a super-admin). The `name` is the resource id within the selected scope and MUST equal `template.name`; the VTA replaces the stored body, preserving createdAt/createdBy and advancing updatedAt. The success response is the persisted DidTemplateRecord.
@@ -20,101 +18,18 @@ export interface VTADIDTemplateUpdatePayload {
    * Resource id — the template's name within the selected scope. MUST equal `template.name` or the VTA rejects with the framework's `malformedRequest`.
    */
   name: string;
+  /**
+   * Full replacement template document. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`.
+   */
   template: DidTemplate;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
-/**
- * Full replacement template document. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`.
- */
-export interface DidTemplate {
-  /**
-   * Template schema version. Currently always 1.
-   */
-  schemaVersion: 1;
-  /**
-   * Template id within its scope. Lowercase alphanumeric and hyphen only.
-   */
-  name: string;
-  /**
-   * Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.
-   */
-  kind: string;
-  /**
-   * Human-readable description of what the template provisions.
-   */
-  description?: string | null;
-  /**
-   * DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"] for a did:key.
-   */
-  methods?: string[];
-  /**
-   * Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).
-   */
-  requiredVars?: string[];
-  /**
-   * Variables with default values, keyed by variable name.
-   */
-  optionalVars?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).
-   */
-  defaults?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
-   */
-  document: {};
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
- * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
- */
-export interface DidTemplateRecord {
-  schemaVersion: 1;
-  name: string;
-  kind: string;
-  description?: string | null;
-  methods?: string[];
-  requiredVars?: string[];
-  optionalVars?: {
-    [k: string]: unknown | undefined;
-  };
-  defaults?: {
-    [k: string]: unknown | undefined;
-  };
-  document: {};
-  scope: Scope;
-  /**
-   * UTC unix-epoch seconds the template was first stored.
-   */
-  createdAt: number;
-  /**
-   * UTC unix-epoch seconds of the last write.
-   */
-  updatedAt: number;
-  /**
-   * DID of the admin who last wrote the template.
-   */
-  createdBy: string;
-}
-export interface Builtin {
-  type: "builtin";
-}
-export interface Global {
-  type: "global";
-}
-export interface Context {
-  type: "context";
-  contextId: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Builtin, Context, DidTemplate, DidTemplateRecord, Ext, Global, Scope };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/update/2.0" as const;

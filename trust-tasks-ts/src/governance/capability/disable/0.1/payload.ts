@@ -3,6 +3,9 @@
  * Source: specs/governance/capability/disable/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * A community operator disables a previously enabled capability. Disable is not delete: the capability's registry records are retained for audit, but its handlers stop executing, it disappears from discovery, and its lifecycle hooks stop firing.
  */
@@ -17,12 +20,6 @@ export interface GovernanceCapabilityDisablePayload {
   reason?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface GovernanceCapabilityDisableResponsePayload {
   capability: string;
   /**
@@ -35,6 +32,9 @@ export interface GovernanceCapabilityDisableResponsePayload {
   message?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/governance/capability/disable/0.1" as const;

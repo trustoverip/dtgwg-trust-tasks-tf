@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/dids/create/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * How the path under the host is chosen. Absent means `autoAssign`.
  */
@@ -101,12 +104,6 @@ export interface VTAWebVHDIDsCreatePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.0#response.
  */
 export interface VTAWebVHDIDsCreateResponsePayload {
@@ -139,6 +136,9 @@ export interface VTAWebVHDIDsCreateResponsePayload {
   logEntry?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/create/1.0" as const;

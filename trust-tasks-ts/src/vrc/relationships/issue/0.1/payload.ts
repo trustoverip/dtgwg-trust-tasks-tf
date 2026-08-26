@@ -3,14 +3,8 @@
  * Source: specs/vrc/relationships/issue/0.1/payload.schema.json
  */
 
-/**
- * Digest over the RFC 8785 canonicalization of the credential, so the delivery can be tied to later references to it without re-hashing. A producer SHOULD set it; the receipt's own digest is what makes the round trip checkable, so a producer that omits it can still verify the delivery against the credential it holds.
- */
-export type DigestMultibase = string;
-/**
- * Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.
- */
-export type DigestMultibase1 = string;
+import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
+
 
 /**
  * Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange. Performed once in each direction; the response is a delivery receipt naming what was stored, and does not echo the credential back.
@@ -20,14 +14,11 @@ export interface VRCRelationshipsIssuePayload {
    * A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing party's relationship DID and its credential subject MUST name the receiving party's relationship DID — the values the accepted proposal exchanged.
    */
   vrc: {};
+  /**
+   * Digest over the RFC 8785 canonicalization of the credential, so the delivery can be tied to later references to it without re-hashing. A producer SHOULD set it; the receipt's own digest is what makes the round trip checkable, so a producer that omits it can still verify the delivery against the credential it holds.
+   */
   vrcDigestMultibase?: DigestMultibase;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.
@@ -35,9 +26,15 @@ export interface Ext {
  * The receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.
  */
 export interface VRCRelationshipsIssueResponsePayload {
-  vrcDigestMultibase: DigestMultibase1;
+  /**
+   * Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.
+   */
+  vrcDigestMultibase: DigestMultibase;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vrc/relationships/issue/0.1" as const;

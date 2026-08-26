@@ -3,6 +3,9 @@
  * Source: specs/witness/session/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 /**
  * Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral — a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.
  */
@@ -15,12 +18,6 @@ export interface WitnessSessionPayload {
    */
   parties: [string, string];
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.
@@ -36,6 +33,9 @@ export interface WitnessSessionResponsePayload {
   domain: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/witness/session/0.1" as const;

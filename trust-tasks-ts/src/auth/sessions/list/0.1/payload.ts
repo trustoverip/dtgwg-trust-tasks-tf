@@ -3,17 +3,14 @@
  * Source: specs/auth/sessions/list/0.1/payload.schema.json
  */
 
+import type { Ext, Session } from "../../../../_shared/components.js";
+
+
 /**
  * Enumerate every active session the auth service holds for the producer's subject. Companion to auth/whoami (single-session introspection) for users managing multi-device sign-ins.
  */
 export interface AuthSessionsList {
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/sessions/list/0.1#response.
@@ -25,44 +22,9 @@ export interface AuthSessionsListResponsePayload {
   sessions: Session[];
   ext?: Ext;
 }
-/**
- * A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
- */
-export interface Session {
-  /**
-   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
-   */
-  id: string;
-  /**
-   * The authenticated party's VID (typically a DID URL).
-   */
-  subject: string;
-  /**
-   * ISO-8601 timestamp when the session was created.
-   */
-  issuedAt: string;
-  /**
-   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
-   */
-  expiresAt: string;
-  /**
-   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
-   *
-   * @minItems 1
-   */
-  amr?: [string, ...string[]];
-  /**
-   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
-   */
-  acr?: string;
-  ext?: Ext1;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Session };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/sessions/list/0.1" as const;

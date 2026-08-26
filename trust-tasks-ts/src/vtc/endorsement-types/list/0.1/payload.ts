@@ -3,38 +3,22 @@
  * Source: specs/vtc/endorsement-types/list/0.1/payload.schema.json
  */
 
+import type { EndorsementType, Ext } from "../../../../_shared/components.js";
+
+
 export interface VTCEndorsementTypesListPayload {
   cursor?: string;
   limit?: number;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VTCEndorsementTypesListResponsePayload {
   items: EndorsementType[];
   nextCursor?: string | null;
   ext?: Ext;
 }
-export interface EndorsementType {
-  /**
-   * The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
-   */
-  typeUri: string;
-  description?: string;
-  /**
-   * Optional JSON Schema the endorsement's claims must satisfy (opaque here).
-   */
-  claimSchema?: {};
-  createdAt?: string;
-  /**
-   * The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.
-   */
-  createdByDid?: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { EndorsementType, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1" as const;

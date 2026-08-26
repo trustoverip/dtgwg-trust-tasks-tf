@@ -3,14 +3,11 @@
  * Source: specs/vtc/invitations/list/0.1/payload.schema.json
  */
 
+import type { Ext, InvitationSummary } from "../../../../_shared/components.js";
+
+
 export interface VTCInvitationsListPayload {
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VTCInvitationsListResponsePayload {
   /**
@@ -19,39 +16,9 @@ export interface VTCInvitationsListResponsePayload {
   invitations: InvitationSummary[];
   ext?: Ext;
 }
-/**
- * Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.
- */
-export interface InvitationSummary {
-  /**
-   * VIC identifier; the revoke target.
-   */
-  id: string;
-  /**
-   * DID the invitation admits.
-   */
-  subjectDid: string;
-  /**
-   * Role granted on redemption, when the invitation names one.
-   */
-  role?: string;
-  /**
-   * DID of the operator who issued it.
-   */
-  issuedBy: string;
-  /**
-   * When it was issued.
-   */
-  issuedAt: string;
-  /**
-   * Expiry, when the invitation is time-bounded.
-   */
-  validUntil?: string;
-  /**
-   * When it was revoked; absent while live.
-   */
-  revokedAt?: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, InvitationSummary };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/invitations/list/0.1" as const;

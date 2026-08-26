@@ -3,6 +3,9 @@
  * Source: specs/consent/revoke/1.0/payload.schema.json
  */
 
+import type { ConsentSubject, Ext, Kind } from "../../../_shared/components.js";
+
+
 /**
  * An operator revokes a standing consent grant.
  */
@@ -14,33 +17,6 @@ export interface ConsentRevokePayload {
   reason?: string;
   ext?: Ext;
 }
-/**
- * The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.
- */
-export interface ConsentSubject {
-  /**
-   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
-   */
-  platform: string;
-  /**
-   * The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
-   */
-  conversationRef: string;
-  /**
-   * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
-   */
-  kind: "dm" | "group" | "channel";
-  /**
-   * VID (DID) of the AI agent the conversation would reach.
-   */
-  agent: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface ConsentRevokeResponsePayload {
   /**
    * `revoked` = the grant was deleted. `notFound` = no grant existed for the subject.
@@ -48,6 +24,9 @@ export interface ConsentRevokeResponsePayload {
   status: "revoked" | "notFound";
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ConsentSubject, Ext, Kind };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/revoke/1.0" as const;

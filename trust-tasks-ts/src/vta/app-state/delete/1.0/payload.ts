@@ -3,22 +3,8 @@
  * Source: specs/vta/app-state/delete/1.0/payload.schema.json
  */
 
-/**
- * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
- */
-export type Namespace = string;
-/**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
- * Optional precondition, on the same terms as vta/app-state/put. A positive value requires the live record to be at exactly that version — so a delete cannot discard an edit the caller never saw. Zero is meaningless here (a create-only precondition on a delete can never be satisfiable and never useful) and MUST be refused.
- */
-export type ExpectedVersion = number;
-/**
- * The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the address held nothing and no tombstone was written.
- */
-export type Version = number;
+import type { ExpectedVersion, Ext, Key, Namespace, Version } from "../../../../_shared/components.js";
+
 
 /**
  * Delete one application-state record, leaving a versioned tombstone so that consumers syncing incrementally learn of the deletion rather than resurrecting the record on their next rebuild. The tombstone is reaped after the maintainer's retention window.
@@ -30,14 +16,14 @@ export interface VTAApplicationStateDeletePayload {
   contextId: string;
   namespace: Namespace;
   key: Key;
+  /**
+   * Optional precondition, on the same terms as vta/app-state/put. A positive value requires the live record to be at exactly that version — so a delete cannot discard an edit the caller never saw. Zero is meaningless here (a create-only precondition on a delete can never be satisfiable and never useful) and MUST be refused.
+   */
   expectedVersion?: ExpectedVersion;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/app-state/delete. Type https://trusttasks.org/spec/vta/app-state/delete/1.0#response. Deleting an address that holds nothing is a success, not an error — that is what makes the task converge under replay.
@@ -53,19 +39,22 @@ export interface VTAApplicationStateDeleteResponsePayload {
    * True when a live record was removed by this request. False when the address already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way.
    */
   existed: boolean;
+  /**
+   * The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the address held nothing and no tombstone was written.
+   */
   version?: Version;
   /**
    * When the deletion was recorded. Absent on the same terms as `version`.
    */
   deletedAt?: string;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ExpectedVersion, Ext, Key, Namespace, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/delete/1.0" as const;

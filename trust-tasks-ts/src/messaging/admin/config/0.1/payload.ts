@@ -3,14 +3,14 @@
  * Source: specs/messaging/admin/config/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface MessagingGetConfigurationPayload {
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.
@@ -26,14 +26,14 @@ export interface MessagingGetConfigurationResponsePayload {
   config: {
     [k: string]: unknown | undefined;
   };
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/config/0.1" as const;

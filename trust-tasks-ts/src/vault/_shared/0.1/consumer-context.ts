@@ -9,3 +9,9 @@
 export interface ConsumerContextStepUpProofSharedDefinitionsUsedByVaultTasksThatHitThePolicyEngine {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { ConsumerContext, StepUpProof_VaultV0_1 as StepUpProof } from "../../../_shared/components.js";

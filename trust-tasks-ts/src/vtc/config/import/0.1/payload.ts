@@ -3,95 +3,22 @@
  * Source: specs/vtc/config/import/0.1/payload.schema.json
  */
 
+import type { CommunityProfileSnapshot, ConfigExportDocument, ConfigFieldChange, Ext, PersonhoodGovernance, RejectedKey } from "../../../../_shared/components.js";
+
+
 /**
  * Apply a portable configuration document to this community, or preview what applying it would change. Defaults to a preview.
  */
 export interface VTCConfigImportPayload {
+  /**
+   * The document returned by `vtc/config/export`.
+   */
   document: ConfigExportDocument;
   /**
    * `false` (default) previews: the diff is computed and returned, nothing is written. `true` applies it. The preview and the apply return the same shape, so an operator UX can render one and then re-submit.
    */
   confirm?: boolean;
   ext?: Ext;
-}
-/**
- * The document returned by `vtc/config/export`.
- */
-export interface ConfigExportDocument {
-  /**
-   * Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.
-   */
-  schemaVersion: number;
-  /**
-   * When the export was taken. Provenance for the operator; a consumer does not act on it.
-   */
-  exportedAt: string;
-  communityProfile?: CommunityProfileSnapshot;
-  /**
-   * Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.
-   */
-  configOverrides: {
-    [k: string]: unknown | undefined;
-  };
-  ext?: Ext;
-}
-/**
- * The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.
- */
-export interface CommunityProfileSnapshot {
-  /**
-   * DID of the community this document was taken from. Immutable, set at install.
-   */
-  communityDid: string;
-  name: string;
-  description?: string;
-  logoUrl?: string | null;
-  publicUrl?: string | null;
-  contactEmail?: string | null;
-  /**
-   * BCP 47 language tag.
-   */
-  language: string;
-  /**
-   * The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
-   */
-  relationshipIdentifierDefault?: "attributed" | "pairwise";
-  personhood?: PersonhoodGovernance;
-  /**
-   * Opaque community-defined extension bag.
-   */
-  extensions?: {};
-  /**
-   * When the community was created. Provenance only — an import never writes it.
-   */
-  createdAt?: string;
-}
-/**
- * The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.
- */
-export interface PersonhoodGovernance {
-  /**
-   * Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.
-   */
-  realHuman?: boolean;
-  /**
-   * Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says "exactly one membership in that VTC" — so a single community can satisfy it without any network above it.
-   */
-  singleMembership?: boolean;
-  /**
-   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits. An empty list means no list has been published, not that everything is accepted.
-   */
-  acceptedIdvps?: string[];
-  /**
-   * Where the governance framework these assertions refer to can be read.
-   */
-  governanceFrameworkUrl?: string | null;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VTCConfigImportResponsePayload {
   /**
@@ -116,39 +43,9 @@ export interface VTCConfigImportResponsePayload {
   rejected: RejectedKey[];
   ext?: Ext;
 }
-/**
- * One field an import would change, or did.
- *
- * `oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means "leave the live value alone" rather than "clear it"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.
- */
-export interface ConfigFieldChange {
-  /**
-   * The profile member or configuration key, e.g. `name` or `log.level`.
-   */
-  key: string;
-  /**
-   * Value in force before the import. Absent when the field is unset.
-   */
-  oldValue?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * Value the imported document carries. Absent when the document omits the field.
-   */
-  newValue?: {
-    [k: string]: unknown | undefined;
-  };
-}
-/**
- * A key a patch declined to apply, with the reason.
- */
-export interface RejectedKey {
-  key: string;
-  /**
-   * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
-   */
-  reason: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CommunityProfileSnapshot, ConfigExportDocument, ConfigFieldChange, Ext, PersonhoodGovernance, RejectedKey };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/config/import/0.1" as const;

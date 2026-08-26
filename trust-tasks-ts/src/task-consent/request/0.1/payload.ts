@@ -3,10 +3,8 @@
  * Source: specs/task-consent/request/0.1/payload.schema.json
  */
 
-/**
- * The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.
- */
-export type DigestMultibase = string;
+import type { DigestMultibase, Effect_TaskConsentV0_1 as Effect, Exposure, Ext, StatePin } from "../../../_shared/components.js";
+
 
 /**
  * The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.
@@ -20,6 +18,9 @@ export interface TaskConsentRequestPayload {
    * Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.
    */
   taskType: string;
+  /**
+   * The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.
+   */
   payloadDigest: DigestMultibase;
   /**
    * Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.
@@ -74,73 +75,6 @@ export interface TaskConsentRequestPayload {
   ext?: Ext;
 }
 /**
- * The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
- */
-export interface Exposure {
-  /**
-   * Sensitivity of data the task returns to its caller.
-   */
-  discloses: "none" | "metadata" | "secret";
-  /**
-   * Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.
-   */
-  actsAsSubject: boolean;
-}
-/**
- * One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.
- */
-export interface Effect {
-  /**
-   * Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.
-   */
-  kind: string;
-  /**
-   * REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.
-   */
-  summary: string;
-  /**
-   * OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).
-   */
-  path?: string;
-  /**
-   * OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.
-   */
-  before?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.
-   */
-  after?: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * OPTIONAL kind-specific structured extras (e.g. `{ "commitments": 2 }` for `preRotationRefresh`).
-   */
-  detail?: {
-    [k: string]: unknown | undefined;
-  };
-}
-/**
- * The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.
- */
-export interface StatePin {
-  /**
-   * Identifier of the pinned resource (usually the subject DID).
-   */
-  resource: string;
-  /**
-   * Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.
-   */
-  version: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.
  */
 export interface TaskConsentRequestResponsePayload {
@@ -154,6 +88,9 @@ export interface TaskConsentRequestResponsePayload {
   reason?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Effect, Exposure, Ext, StatePin };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/request/0.1" as const;

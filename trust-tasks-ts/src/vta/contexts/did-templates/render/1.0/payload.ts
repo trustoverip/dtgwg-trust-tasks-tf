@@ -3,6 +3,9 @@
  * Source: specs/vta/contexts/did-templates/render/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Render a context-scoped DID template to a DID document on a VTA. Gated on context access. The VTA fills `{TOKEN}` placeholders with caller-supplied variables plus ambient values it injects server-side. The success response is the rendered DID document.
  */
@@ -21,13 +24,10 @@ export interface VTAContextDIDTemplateRenderPayload {
   vars?: {
     [k: string]: unknown | undefined;
   };
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The rendered DID document with all placeholders filled.
@@ -37,14 +37,14 @@ export interface VTAContextDIDTemplateRenderResponsePayload {
    * The rendered DID document.
    */
   document: {};
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0" as const;

@@ -3,6 +3,9 @@
  * Source: specs/config/show/0.1/payload.schema.json
  */
 
+import type { ConfigField, Ext } from "../../../_shared/components.js";
+
+
 export interface ConfigShowPayload {
   /**
    * Return only these keys. Omitted = return every registered key.
@@ -12,12 +15,6 @@ export interface ConfigShowPayload {
   keys?: [string, ...string[]];
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface ConfigShowResponsePayload {
   /**
    * The effective value of each requested (or every) configuration key.
@@ -25,29 +22,9 @@ export interface ConfigShowResponsePayload {
   fields: ConfigField[];
   ext?: Ext;
 }
-/**
- * One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.
- */
-export interface ConfigField {
-  /**
-   * The configuration key, e.g. `server.port` or `log.level`.
-   */
-  key: string;
-  /**
-   * The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.
-   */
-  value: {
-    [k: string]: unknown | undefined;
-  };
-  /**
-   * Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.
-   */
-  source: string;
-  /**
-   * True when a change to this key takes effect only after a restart, rather than on the next read.
-   */
-  requiresRestart: boolean;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ConfigField, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/config/show/0.1" as const;

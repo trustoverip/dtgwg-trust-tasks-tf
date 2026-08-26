@@ -3,14 +3,13 @@
  * Source: specs/provision/integration/0.3/payload.schema.json
  */
 
+import type { DigestMultibase, Ext } from "../../../_shared/components.js";
+
+
 /**
  * What the holder is asking the maintainer to do. Tagged on `type`; see `TemplateBootstrapAsk` and `AdminRotationAsk`.
  */
 export type BootstrapAsk = TemplateBootstrapAsk | AdminRotationAsk;
-/**
- * Digest over the armored ciphertext, for holders that pin the bundle out-of-band. Taken over the armored bytes exactly as carried in `bundle`, not over a canonicalization: the armor is the artifact, and re-armoring the same ciphertext does not have to reproduce the same bytes.
- */
-export type DigestMultibase = string;
 
 /**
  * Relayer presents a VP-signed bootstrap request from an integration holder; the maintainer mints the integration's DIDs and admin credential from a registered DID template and ships the material back HPKE-sealed to the holder's ephemeral did:key. Two ask variants are supported: TemplateBootstrap (mint integration DID + optional admin DID) and AdminRotation (mint only the long-term admin DID).
@@ -33,6 +32,9 @@ export interface ProvisionIntegrationPayload {
    * When `true`, the maintainer provisions the target context inline if it does not already exist. Requires super-admin role on the maintainer; context-admin callers MUST receive `provision/integration:forbidden` against a missing context. Idempotent when the context already exists.
    */
   createContext?: boolean;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
 /**
@@ -172,12 +174,6 @@ export interface DataIntegrityProof {
   [k: string]: unknown | undefined;
 }
 /**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.
  */
 export interface ProvisionIntegrationResponsePayload {
@@ -185,9 +181,12 @@ export interface ProvisionIntegrationResponsePayload {
    * OpenPGP-style ASCII-armored ciphertext of `SealedPayloadV1`. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`. Recipient is the X25519 derivation of `request.holder`'s Ed25519 pubkey.
    */
   bundle: string;
+  /**
+   * Digest over the armored ciphertext, for holders that pin the bundle out-of-band. Taken over the armored bytes exactly as carried in `bundle`, not over a canonicalization: the armor is the artifact, and re-armoring the same ciphertext does not have to reproduce the same bytes.
+   */
   digestMultibase?: DigestMultibase;
   summary: ProvisionSummary;
-  ext?: Ext1;
+  ext?: Ext;
 }
 /**
  * Non-secret audit metadata. MUST NOT include any private key material; the bundle is the only secret-bearing field.
@@ -242,12 +241,9 @@ export interface ProvisionSummary {
    */
   contextCreated?: boolean;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.3" as const;

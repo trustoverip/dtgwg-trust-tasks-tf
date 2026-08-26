@@ -3,19 +3,19 @@
  * Source: specs/consent/decision/1.0/payload.schema.json
  */
 
+import type { ConsentSubject, Effect_ConsentV0_1 as Effect, Ext, Kind, Scope_ConsentV0_1 as Scope } from "../../../_shared/components.js";
+
+
 /**
  * An approver allows or denies an AI agent's access to a messaging conversation.
  */
 export interface ConsentDecisionPayload {
   subject: ConsentSubject;
-  /**
-   * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
-   */
-  effect: "allow" | "deny";
+  effect: Effect;
   /**
    * Granted scope. REQUIRED when `effect` is `allow`.
    */
-  scope?: "receive" | "converse";
+  scope?: Scope;
   /**
    * Echoes the consent/request challenge this decision answers. Omit only for an operator-initiated pre-authorization.
    */
@@ -25,33 +25,6 @@ export interface ConsentDecisionPayload {
    */
   expiresAt?: string;
   ext?: Ext;
-}
-/**
- * The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.
- */
-export interface ConsentSubject {
-  /**
-   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
-   */
-  platform: string;
-  /**
-   * The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
-   */
-  conversationRef: string;
-  /**
-   * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
-   */
-  kind: "dm" | "group" | "channel";
-  /**
-   * VID (DID) of the AI agent the conversation would reach.
-   */
-  agent: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Acknowledgement that the decision was recorded (or rejected).
@@ -71,6 +44,9 @@ export interface ConsentDecisionResponsePayload {
   reason?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ConsentSubject, Effect, Ext, Kind, Scope };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/decision/1.0" as const;

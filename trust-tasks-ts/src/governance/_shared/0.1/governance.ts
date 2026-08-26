@@ -9,3 +9,9 @@
 export interface GovernanceSharedDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { CapabilityManifest } from "../../../_shared/components.js";

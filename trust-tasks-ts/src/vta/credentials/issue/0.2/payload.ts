@@ -3,16 +3,15 @@
  * Source: specs/vta/credentials/issue/0.2/payload.schema.json
  */
 
+import type { CredentialId, Ext, IssuedCredentialBase } from "../../../../_shared/components.js";
+
+
 /**
  * The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
  *
  * Composed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.
  */
 export type VTACredentialsIssueResponsePayload = IssuedCredentialBase;
-/**
- * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
- */
-export type CredentialId = string;
 
 export interface VTACredentialsIssuePayload {
   /**
@@ -35,34 +34,14 @@ export interface VTACredentialsIssuePayload {
    * Optional human-readable rationale, recorded for audit.
    */
   purpose?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
- * The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.
- *
- * A closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.
- */
-export interface IssuedCredentialBase {
-  credentialId: CredentialId;
-  /**
-   * The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
-   */
-  credential: {};
-  /**
-   * When the credential was minted.
-   */
-  issuedAt?: string;
-  /**
-   * When the credential's validUntil falls due.
-   */
-  expiresAt: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CredentialId, Ext, IssuedCredentialBase };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/credentials/issue/0.2" as const;

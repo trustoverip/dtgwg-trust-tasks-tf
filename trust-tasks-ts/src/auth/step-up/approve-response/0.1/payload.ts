@@ -3,6 +3,9 @@
  * Source: specs/auth/step-up/approve-response/0.1/payload.schema.json
  */
 
+import type { AuthenticatorAssertionResponseLogin, Ext, Session } from "../../../../_shared/components.js";
+
+
 /**
  * How the approver demonstrated the factor backing this elevation. A tagged union on `kind`. When `evidence` is absent the elevation is gated solely by the document's framework `proof` (equivalent to `kind: did-signed`). When `kind: webauthn` is supplied, the carried WebAuthn assertion over `challenge` is the gate and the framework `proof` MAY be omitted.
  */
@@ -47,35 +50,19 @@ export interface DidSigned {
 }
 export interface WebAuthn {
   kind: "webauthn";
+  /**
+   * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects "passkey".
+   */
   assertion: AuthenticatorAssertionResponseLogin;
-}
-/**
- * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API (`navigator.credentials.get` / ASAuthorization / Credential Manager). Its `clientDataJSON` challenge MUST equal the step-up `challenge`. The relying party verifies it per WebAuthn Level 2 §7.2 exactly as auth/passkey/login/finish does; the assertion is the gate and `amr` reflects "passkey".
- */
-export interface AuthenticatorAssertionResponseLogin {
-  id: string;
-  rawId: string;
-  type: "public-key";
-  response: {
-    clientDataJSON: string;
-    authenticatorData: string;
-    signature: string;
-    userHandle?: string | null;
-  };
-  authenticatorAttachment?: "platform" | "cross-platform";
-  clientExtensionResults?: {};
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.
  */
 export interface AuthStepUpApproveResponseRelyingPartyAck {
   status: "elevated" | "rejected";
+  /**
+   * Present when status is `elevated`. The session's updated amr/acr after the approval was applied.
+   */
   session?: Session;
   /**
    * Present when status is `rejected` (e.g. "challenge expired", "session not found", "acr ceiling exceeded").
@@ -83,44 +70,9 @@ export interface AuthStepUpApproveResponseRelyingPartyAck {
   reason?: string;
   ext?: Ext;
 }
-/**
- * Present when status is `elevated`. The session's updated amr/acr after the approval was applied.
- */
-export interface Session {
-  /**
-   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
-   */
-  id: string;
-  /**
-   * The authenticated party's VID (typically a DID URL).
-   */
-  subject: string;
-  /**
-   * ISO-8601 timestamp when the session was created.
-   */
-  issuedAt: string;
-  /**
-   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
-   */
-  expiresAt: string;
-  /**
-   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
-   *
-   * @minItems 1
-   */
-  amr?: [string, ...string[]];
-  /**
-   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
-   */
-  acr?: string;
-  ext?: Ext1;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AuthenticatorAssertionResponseLogin, Ext, Session };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" as const;

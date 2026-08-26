@@ -13,3 +13,9 @@
 export interface SealedEnvelopePluggableCipherBearingEnvelopeForVaultPayloads {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { DidcommAuthcryptEnvelope_VaultV0_2 as DidcommAuthcryptEnvelope, HpkeArmoredEnvelope_VaultV0_2 as HpkeArmoredEnvelope, SealedEnvelope_VaultV0_2 as SealedEnvelope, TspMessageEnvelope_VaultV0_2 as TspMessageEnvelope } from "../../../_shared/components.js";

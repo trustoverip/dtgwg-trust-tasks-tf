@@ -3,34 +3,25 @@
  * Source: specs/vault/release/0.1/payload.schema.json
  */
 
-/**
- * Optional — for entries with multiple targets, indicates which one the consumer is acting against. The maintainer's policy may decide release based on the target (e.g. release for web origin allowed, release for iOS app denied).
- */
-export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
-/**
- * Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`.
- */
-export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
-/**
- * Discriminator so the consumer can pre-allocate the right type before unsealing.
- */
-export type SecretKind =
-  | "password"
-  | "passkey"
-  | "oauth-tokens"
-  | "did-self-issued"
-  | "didcomm-peer"
-  | "bearer-token"
-  | "ssh-key"
-  | "custom";
+import type { AndroidApp_VaultV0_1 as AndroidApp, ConsumerContext, Did_VaultV0_1 as Did, DidcommAuthcryptEnvelope_VaultV0_1 as DidcommAuthcryptEnvelope, Ext, HpkeArmoredEnvelope_VaultV0_1 as HpkeArmoredEnvelope, IosApp_VaultV0_1 as IosApp, SealedEnvelope_VaultV0_1 as SealedEnvelope, SecretKind_VaultV0_1 as SecretKind, SiteTarget_VaultV0_1 as SiteTarget, StepUpProof_VaultV0_1 as StepUpProof, TspMessageEnvelope_VaultV0_1 as TspMessageEnvelope, WebOrigin_VaultV0_1 as WebOrigin } from "../../../_shared/components.js";
+
 
 /**
  * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:notProxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
  */
 export interface VaultReleasePayload {
   entryId: string;
+  /**
+   * Optional — for entries with multiple targets, indicates which one the consumer is acting against. The maintainer's policy may decide release based on the target (e.g. release for web origin allowed, release for iOS app denied).
+   */
   target?: SiteTarget;
+  /**
+   * Caller's situational context — fed to the policy engine.
+   */
   consumerContext?: ConsumerContext;
+  /**
+   * Step-up proof on retry after step_up_required.
+   */
   stepUpProof?: StepUpProof;
   /**
    * Consumer's requested cache TTL for the released secret. The maintainer MAY cap this; the consumer MUST honour the maintainer's decision.
@@ -38,83 +29,14 @@ export interface VaultReleasePayload {
   ttlSecondsHint?: number;
   ext?: Ext;
 }
-export interface WebOrigin {
-  kind: "web-origin";
-  /**
-   * Web origin per RFC 6454 (scheme + host + optional port), e.g. "https://github.com". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.
-   */
-  origin: string;
-}
-export interface Did {
-  kind: "did";
-  /**
-   * DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.
-   */
-  did: string;
-}
-export interface IosApp {
-  kind: "ios-app";
-  /**
-   * iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
-   */
-  bundleId: string;
-  /**
-   * Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.
-   */
-  teamId?: string;
-}
-export interface AndroidApp {
-  kind: "android-app";
-  /**
-   * Android package name in reverse-DNS form (e.g. "com.github.android").
-   */
-  packageName: string;
-  /**
-   * SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).
-   *
-   * @minItems 1
-   */
-  sha256CertFingerprints: [string, ...string[]];
-}
-/**
- * Caller's situational context — fed to the policy engine.
- */
-export interface ConsumerContext {
-  /**
-   * Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
-   */
-  deviceId?: string;
-  /**
-   * Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.
-   */
-  lastUserVerificationAt?: string;
-  /**
-   * Producer-supplied network classification. Advisory.
-   */
-  networkClass?: "unknown" | "home" | "corp" | "public" | "vpn";
-}
-/**
- * Step-up proof on retry after step_up_required.
- */
-export interface StepUpProof {
-  kind: "webauthn-uv" | "push-approval" | "totp";
-  /**
-   * Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
-   */
-  proof: string;
-  /**
-   * Maintainer-issued challenge id the proof responds to.
-   */
-  challengeId: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VaultReleaseResponsePayload {
+  /**
+   * Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`.
+   */
   sealedSecret: SealedEnvelope;
+  /**
+   * Discriminator so the consumer can pre-allocate the right type before unsealing.
+   */
   secretKind: SecretKind;
   /**
    * Cache TTL the consumer MUST enforce — wipe the cleartext after this many seconds, even if the user has not finished interacting with it.
@@ -122,48 +44,9 @@ export interface VaultReleaseResponsePayload {
   ttlSeconds: number;
   ext?: Ext;
 }
-/**
- * DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.
- *
- * M2A is the only implementation today; this is also the canonical default for new code.
- */
-export interface DidcommAuthcryptEnvelope {
-  envelope: "didcomm-authcrypt";
-  /**
-   * Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
-   */
-  jwe: string;
-}
-/**
- * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
- *
- * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
- */
-export interface HpkeArmoredEnvelope {
-  envelope: "hpke-armored";
-  /**
-   * ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
-   */
-  armored: string;
-  /**
-   * did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.
-   */
-  recipientKeyId: string;
-  /**
-   * Producer-assertion mode per the sealed-transfer framework. `did-signed` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinned-only` = OOB SHA-256 digest only (dev/test, NOT for production).
-   */
-  producerAssertion?: "did-signed" | "attested" | "pinned-only";
-}
-/**
- * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
- */
-export interface TspMessageEnvelope {
-  envelope: "tsp-message";
-  /**
-   * Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
-   */
-  message: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AndroidApp, ConsumerContext, Did, DidcommAuthcryptEnvelope, Ext, HpkeArmoredEnvelope, IosApp, SealedEnvelope, SecretKind, SiteTarget, StepUpProof, TspMessageEnvelope, WebOrigin };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/release/0.1" as const;

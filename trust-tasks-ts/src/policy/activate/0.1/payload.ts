@@ -3,6 +3,9 @@
  * Source: specs/policy/activate/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../_shared/components.js";
+
+
 export interface PolicyActivatePayload {
   /**
    * The id of the policy module to make active for `purpose`.
@@ -17,12 +20,6 @@ export interface PolicyActivatePayload {
    */
   contextId?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface PolicyActivateResponsePayload {
   /**
@@ -43,6 +40,9 @@ export interface PolicyActivateResponsePayload {
   contextId?: string;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/activate/0.1" as const;

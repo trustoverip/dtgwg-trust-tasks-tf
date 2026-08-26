@@ -3,23 +3,16 @@
  * Source: specs/keys/derive-and-sign/0.1/payload.schema.json
  */
 
-/**
- * Algorithm to derive. MUST be one that can sign.
- */
-export type KeyType = "ed25519" | "x25519" | "p256";
-/**
- * Signature algorithm. MUST be compatible with the derived key's type.
- */
-export type SignAlgorithm = "EdDSA" | "ES256";
-/**
- * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
- */
-export type SignAlgorithm1 = "EdDSA" | "ES256";
+import type { Ext, KeyType, SignAlgorithm } from "../../../_shared/components.js";
+
 
 /**
  * Derive a key at a path and sign with it in one step, without adding a stored key record.
  */
 export interface KeysDeriveAndSignPayload {
+  /**
+   * Algorithm to derive. MUST be one that can sign.
+   */
   keyType: KeyType;
   /**
    * Hierarchical-deterministic path to derive at. The same path against the same seed always yields the same key, which is what makes this reproducible rather than ephemeral.
@@ -29,14 +22,14 @@ export interface KeysDeriveAndSignPayload {
    * The exact bytes to sign, base64url-encoded without padding. Signed verbatim — not parsed, canonicalized or wrapped.
    */
   payload: string;
+  /**
+   * Signature algorithm. MUST be compatible with the derived key's type.
+   */
   algorithm: SignAlgorithm;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.
@@ -50,15 +43,12 @@ export interface KeysDeriveAndSignResponsePayload {
    * Signature bytes, base64url-encoded without padding.
    */
   signature: string;
-  algorithm: SignAlgorithm1;
-  ext?: Ext1;
+  algorithm: SignAlgorithm;
+  ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, KeyType, SignAlgorithm };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/keys/derive-and-sign/0.1" as const;

@@ -3,22 +3,14 @@
  * Source: specs/vta/services/list/1.0/payload.schema.json
  */
 
-/**
- * Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
- */
-export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
+import type { Ext, ServiceKind, ServiceState } from "../../../../_shared/components.js";
+
 
 /**
  * Request payload for vta/services/list. Takes no filters: the answer is the agent's whole advertised surface, which is public in its DID document anyway.
  */
 export interface VTAServicesListPayload {
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Success response to vta/services/list. Type https://trusttasks.org/spec/vta/services/list/1.0#response.
@@ -30,29 +22,9 @@ export interface VTAServicesListResponsePayload {
   services: ServiceState[];
   ext?: Ext;
 }
-/**
- * What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.
- */
-export interface ServiceState {
-  kind: ServiceKind;
-  /**
-   * Whether the agent currently advertises this transport in its DID document.
-   */
-  enabled: boolean;
-  /**
-   * The mediator this transport routes through. Present for `didcomm` and `tsp`.
-   */
-  mediatorDid?: string;
-  /**
-   * The advertised endpoint. Present for `rest` and `webauthn`.
-   */
-  url?: string;
-  /**
-   * RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.
-   */
-  drainsUntil?: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, ServiceKind, ServiceState };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/list/1.0" as const;

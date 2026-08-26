@@ -3,14 +3,8 @@
  * Source: specs/messaging/admin/list/0.1/payload.schema.json
  */
 
-/**
- * The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).
- */
-export type Vid = string;
-/**
- * The admin role; one of `admin` or `rootAdmin`.
- */
-export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
+import type { AccountType, AdminAccount, Ext, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingListAdminsPayload {
   /**
@@ -21,13 +15,10 @@ export interface MessagingListAdminsPayload {
    * Maximum number of admin accounts to return in this page. The mediator chooses a default when omitted.
    */
   limit?: number;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.
@@ -41,21 +32,14 @@ export interface MessagingListAdminsResponsePayload {
    * Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.
    */
   nextCursor?: string;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * A privileged account at the mediator (an `admin` or `rootAdmin`).
- */
-export interface AdminAccount {
-  did: Vid;
-  accountType: AccountType;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AccountType, AdminAccount, Ext, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/list/0.1" as const;

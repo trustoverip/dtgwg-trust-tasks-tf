@@ -3,14 +3,8 @@
  * Source: specs/vault/proxy-login/0.2/payload.schema.json
  */
 
-/**
- * Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).
- */
-export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
-/**
- * Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.
- */
-export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
+import type { AndroidApp_VaultV0_2 as AndroidApp, ConsumerContext, Did_VaultV0_2 as Did, DidcommAuthcryptEnvelope_VaultV0_2 as DidcommAuthcryptEnvelope, Ext, HpkeArmoredEnvelope_VaultV0_2 as HpkeArmoredEnvelope, IosApp_VaultV0_2 as IosApp, SealedEnvelope_VaultV0_2 as SealedEnvelope, SiteTarget_VaultV0_2 as SiteTarget, StepUpProof_VaultV0_2 as StepUpProof, TspMessageEnvelope_VaultV0_2 as TspMessageEnvelope, WebOrigin_VaultV0_2 as WebOrigin } from "../../../_shared/components.js";
+
 
 /**
  * Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.
@@ -20,8 +14,17 @@ export interface VaultProxyLoginPayload {
    * Vault entry id to log in with.
    */
   entryId: string;
+  /**
+   * Optional — when an entry has multiple targets, names which one the consumer is acting against. The maintainer matches this against the entry's `targets[]`; if not supplied, the maintainer chooses the most specific target compatible with the requesting consumer's form factor (e.g. an iOS Companion gets the iOS-app target if one exists; otherwise the web-origin target).
+   */
   target?: SiteTarget;
+  /**
+   * Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state.
+   */
   consumerContext?: ConsumerContext;
+  /**
+   * Optional — included on retry after a prior proxy-login attempt returned `stepUpRequired`.
+   */
   stepUpProof?: StepUpProof;
   /**
    * Optional caller-supplied nonce the maintainer SHOULD embed verbatim in the resulting session credential when one applies — typically the relying party's challenge for SIOPv2-shaped flows, where the SIOP id_token's `nonce` claim MUST match the RP's authorization-request `nonce` for the RP to verify the token. When omitted, the maintainer generates its own nonce; that path is appropriate for flows where the consumer doesn't need to bind the credential to an external challenge (e.g. push-mode logins that don't pre-fetch a challenge). Drivers that have no nonce concept (Password POST, OAuth refresh) ignore this field.
@@ -33,127 +36,16 @@ export interface VaultProxyLoginPayload {
   ttlSecondsHint?: number;
   ext?: Ext;
 }
-export interface WebOrigin {
-  kind: "webOrigin";
-  /**
-   * Web origin per RFC 6454 (scheme + host + optional port), e.g. "https://github.com". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.
-   */
-  origin: string;
-}
-export interface Did {
-  kind: "did";
-  /**
-   * DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.
-   */
-  did: string;
-}
-export interface IosApp {
-  kind: "iosApp";
-  /**
-   * iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
-   */
-  bundleId: string;
-  /**
-   * Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.
-   */
-  teamId?: string;
-}
-export interface AndroidApp {
-  kind: "androidApp";
-  /**
-   * Android package name in reverse-DNS form (e.g. "com.github.android").
-   */
-  packageName: string;
-  /**
-   * SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).
-   *
-   * @minItems 1
-   */
-  sha256CertFingerprints: [string, ...string[]];
-}
-/**
- * Caller's situational context — fed to the maintainer's policy engine to decide proxy vs fill, require step-up, etc. Producers populate what they can observe; fields are advisory and the maintainer MUST cross-check anything security-relevant against its own state.
- */
-export interface ConsumerContext {
-  /**
-   * Device-binding id assigned at registration. The maintainer cross-checks this against the authenticated transport identity.
-   */
-  deviceId?: string;
-  /**
-   * Most recent local user-verification on the consumer device (WebAuthn UV, biometric unlock). The maintainer's policy may require this to be within N seconds.
-   */
-  lastUserVerificationAt?: string;
-  /**
-   * Producer-supplied network classification. Advisory.
-   */
-  networkClass?: "unknown" | "home" | "corp" | "public" | "vpn";
-}
-/**
- * Optional — included on retry after a prior proxy-login attempt returned `stepUpRequired`.
- */
-export interface StepUpProof {
-  kind: "webauthnUv" | "pushApproval" | "totp";
-  /**
-   * Format depends on kind: WebAuthn assertion (base64url), DIDComm approval-response message id, or 6–8-digit TOTP code.
-   */
-  proof: string;
-  /**
-   * Maintainer-issued challenge id the proof responds to.
-   */
-  challengeId: string;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface VaultProxyLoginResponsePayload {
+  /**
+   * Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.
+   */
   sealedSessionBlob: SealedEnvelope;
   ext?: Ext;
 }
-/**
- * DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.
- *
- * M2A is the only implementation today; this is also the canonical default for new code.
- */
-export interface DidcommAuthcryptEnvelope {
-  envelope: "didcommAuthcrypt";
-  /**
-   * Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
-   */
-  jwe: string;
-}
-/**
- * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.
- *
- * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
- */
-export interface HpkeArmoredEnvelope {
-  envelope: "hpkeArmored";
-  /**
-   * ASCII-armored bundle text. Multi-line base64 with framing headers + CRC24.
-   */
-  armored: string;
-  /**
-   * did:key identifier of the X25519 public key the envelope was sealed to. The recipient uses this to select the matching private key.
-   */
-  recipientKeyId: string;
-  /**
-   * Producer-assertion mode per the sealed-transfer framework. `didSigned` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinnedOnly` = OOB SHA-256 digest only (dev/test, NOT for production).
-   */
-  producerAssertion?: "didSigned" | "attested" | "pinnedOnly";
-}
-/**
- * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
- */
-export interface TspMessageEnvelope {
-  envelope: "tspMessage";
-  /**
-   * Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
-   */
-  message: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AndroidApp, ConsumerContext, Did, DidcommAuthcryptEnvelope, Ext, HpkeArmoredEnvelope, IosApp, SealedEnvelope, SiteTarget, StepUpProof, TspMessageEnvelope, WebOrigin };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/proxy-login/0.2" as const;

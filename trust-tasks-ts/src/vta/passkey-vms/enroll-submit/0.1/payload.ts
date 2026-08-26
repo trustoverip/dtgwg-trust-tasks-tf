@@ -3,6 +3,9 @@
  * Source: specs/vta/passkey-vms/enroll-submit/0.1/payload.schema.json
  */
 
+import type { Ext, PasskeyVerificationMethod } from "../../../../_shared/components.js";
+
+
 /**
  * Finalise passkey enrolment by submitting the WebAuthn registration result for a ceremony opened by vta/passkey-vms/enroll-challenge. The VTA re-derives the Multikey from attestationObject.authData and rejects on mismatch with the browser-claimed publicKeyMultibase — the browser's value is NOT trusted as authoritative. On success the VTA appends the verificationMethod to the DID document via a WebVH log entry. All byte-valued fields are base64url-encoded (no padding).
  */
@@ -47,64 +50,31 @@ export interface VTAPasskeyVMEnrollSubmitPayload {
    * Optional operator-supplied label (e.g. "MacBook Touch ID"), carried through to the published verificationMethod.
    */
   label?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.
  */
 export interface VTAPasskeyVMEnrollSubmitResponsePayload {
+  /**
+   * The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative.
+   */
   verificationMethod: PasskeyVerificationMethod;
   /**
    * The WebVH log-entry version that recorded the change (e.g. "3-Qm…").
    */
   webvhVersion: string;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * The verificationMethod entry exactly as it now appears in the DID document. `publicKeyMultibase` here is the server-re-derived key, which is authoritative.
- */
-export interface PasskeyVerificationMethod {
-  /**
-   * The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
-   */
-  id: string;
-  /**
-   * Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.
-   */
-  type: "Multikey";
-  /**
-   * The DID this verificationMethod is published on (the DID being augmented).
-   */
-  controller: string;
-  /**
-   * W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).
-   */
-  publicKeyMultibase: string;
-  /**
-   * The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.
-   */
-  webauthnCredentialId: string;
-  /**
-   * Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.
-   */
-  webauthnTransports?: string[];
-  /**
-   * Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
-   */
-  label?: string;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, PasskeyVerificationMethod };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1" as const;

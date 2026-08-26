@@ -9,3 +9,9 @@
 export interface VTCSharedCommunityDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../../_shared/components.js".
+ */
+export type { CommunityProfileView, PersonhoodGovernance } from "../../../_shared/components.js";

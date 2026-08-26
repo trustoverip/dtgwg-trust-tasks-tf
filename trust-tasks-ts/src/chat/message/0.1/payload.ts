@@ -3,14 +3,8 @@
  * Source: specs/chat/message/0.1/payload.schema.json
  */
 
-/**
- * OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper.
- */
-export type DigestMultibase = string;
-/**
- * Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here.
- */
-export type DigestMultibase1 = string;
+import type { DigestMultibase, Ext } from "../../../_shared/components.js";
+
 
 /**
  * A conversational message exchanged between an AI agent and a messaging-platform bridge. Signed by its author (via the document `proof`) and hash-linked to the previous message in the conversation (`prev`), so a third party can verify each message's author and ordering after the transport has closed — for audit and dispute resolution. Conversations and contacts are referenced by opaque, bridge-issued handles, never raw platform addresses.
@@ -94,6 +88,9 @@ export interface AttachmentRef {
    * OPTIONAL. Size in bytes, if known ahead of fetch.
    */
   sizeBytes?: number;
+  /**
+   * OPTIONAL. Multibase-encoded multihash over the attachment bytes, so the reference is itself verifiable and tamper-evident. Taken over the bytes as transferred, not over any JSON wrapper.
+   */
   digest?: DigestMultibase;
 }
 /**
@@ -104,14 +101,14 @@ export interface ChainLink {
    * The `id` of the previous `chat/message` Trust Task document in this conversation.
    */
   id: string;
-  digest: DigestMultibase1;
+  /**
+   * Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the previous document, so a gap, reorder, or removal in the chain is detectable. The algorithm travels in the multihash rather than being fixed here.
+   */
+  digest: DigestMultibase;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/chat/message/0.1" as const;

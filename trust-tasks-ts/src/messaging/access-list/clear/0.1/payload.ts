@@ -3,42 +3,39 @@
  * Source: specs/messaging/access-list/clear/0.1/payload.schema.json
  */
 
-/**
- * The target account's DID whose access list is being cleared.
- */
-export type Vid = string;
-/**
- * The account whose access list was cleared.
- */
-export type Vid1 = string;
+import type { Ext, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingClearAccessListPayload {
+  /**
+   * The target account's DID whose access list is being cleared.
+   */
   did: Vid;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/access-list/clear request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/clear/0.1#response.
  */
 export interface MessagingClearAccessListResponsePayload {
-  did: Vid1;
+  /**
+   * The account whose access list was cleared.
+   */
+  did: Vid;
   /**
    * The resulting number of entries in the account's access list (0 after a clear).
    */
   accessListCount: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/access-list/clear/0.1" as const;

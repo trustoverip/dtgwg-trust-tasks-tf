@@ -3,14 +3,8 @@
  * Source: specs/audit/list/0.1/payload.schema.json
  */
 
-/**
- * Hash-chain link: the `entryHash` of the immediately-preceding entry. Present only on chained logs; its integrity is what audit/verify checks. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the predecessor's immutable content — the same derivation as `entryHash`, so a verifier recomputes both the same way.
- */
-export type DigestMultibase = string;
-/**
- * Hash-chain commitment over this entry's immutable content. The next entry's `prevHash` points here. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of that content; the canonicalization is what makes the commitment reproducible by a verifier that did not write the entry.
- */
-export type DigestMultibase1 = string;
+import type { AuditEnvelope, DigestMultibase, Ext } from "../../../_shared/components.js";
+
 
 export interface AuditListPayload {
   /**
@@ -47,12 +41,6 @@ export interface AuditListPayload {
   cursor?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface AuditListResponsePayload {
   /**
    * The matching audit entries, newest first.
@@ -68,52 +56,9 @@ export interface AuditListResponsePayload {
   cursor?: string;
   ext?: Ext;
 }
-/**
- * One entry in an append-only audit log. Only eventId/recordedAt/action are universal; every other field is populated by maintainers that track it. `prevHash`/`entryHash` are present on hash-chained logs (see audit/verify) and absent otherwise. Principal DIDs are plaintext and MAY be absent when a right-to-be-forgotten redaction has nulled them after the fact.
- */
-export interface AuditEnvelope {
-  /**
-   * Stable identifier for this event. Also the tie-breaker component of a cursor's position key.
-   */
-  eventId: string;
-  /**
-   * Wall-clock time the entry was written. The primary ordering key.
-   */
-  recordedAt: string;
-  /**
-   * The operation this entry records — a maintainer-defined action name (e.g. `member.removed`, `policy.activated`). The discriminator for `detail`.
-   */
-  action: string;
-  /**
-   * How the operation resolved. Typically `success` or `denied`; a maintainer MAY use others. Absent for events that have no pass/fail sense.
-   */
-  outcome?: string;
-  /**
-   * DID of the principal that performed the action. `null` when a right-to-be-forgotten redaction has removed the plaintext; a maintainer that keeps a keyed hash of the actor for correlation carries it in `ext`, not here.
-   */
-  actor?: string | null;
-  /**
-   * DID of the principal the action acted upon, when the event has one. `null`/absent for events whose target is the maintainer itself. Same redaction semantics as `actor`.
-   */
-  target?: string | null;
-  /**
-   * Trust context the event occurred in, for a maintainer that partitions its log per context.
-   */
-  contextId?: string;
-  /**
-   * Envelope-shape version at the maintainer, for consumers that need to reason about wire-shape evolution.
-   */
-  schemaVersion?: number;
-  prevHash?: DigestMultibase;
-  entryHash?: DigestMultibase1;
-  /**
-   * Event-specific payload, keyed by `action`. Opaque to the framework; a consumer that does not recognise the action treats it as an unstructured record.
-   */
-  detail?: {
-    [k: string]: unknown | undefined;
-  };
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AuditEnvelope, DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/audit/list/0.1" as const;

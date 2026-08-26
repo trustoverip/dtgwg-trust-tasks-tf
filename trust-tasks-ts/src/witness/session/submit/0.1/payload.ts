@@ -3,10 +3,8 @@
  * Source: specs/witness/session/submit/0.1/payload.schema.json
  */
 
-/**
- * Digest over the RFC 8785 canonicalization of the delivered credential, computed by the witness. It binds this evidence to one specific credential rather than to the session alone, so a verifier pairing a presented VWC with this response can check it is the credential this session issued and not another the same witness signed. This covers the credential whole, proof included — unlike the task digest of SPEC.md §4.9.3, which excludes the top-level proof of the Trust Task document it names. The inputs differ because the questions do: this value identifies one delivered artifact, a task digest identifies what a document says whether or not it was signed.
- */
-export type DigestMultibase = string;
+import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
+
 
 /**
  * A participating party submits its presentation bound to its session challenge; the witness's mandatory response delivers the Verifiable Witness Credential and its digest. The response is the outcome evidence a VWC presentation must ship.
@@ -19,12 +17,6 @@ export interface WitnessSessionSubmitPayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * The Verifiable Witness Credential and its digest, delivered under the REQUIRED proof. This document is the session's terminal success form and the outcome evidence a VWC presentation must ship.
  */
 export interface WitnessSessionSubmitResponsePayload {
@@ -32,9 +24,15 @@ export interface WitnessSessionSubmitResponsePayload {
    * A signed Verifiable Witness Credential (opaque here; its schema belongs to DTG Core Credentials). Its taskContext MUST equal the id of the witness/session document that opened this session — the innermost exchange that attests the witnessing (SPEC.md §4.9.1) — and its taskDigestMultibase MUST be that document's task digest (SPEC.md §4.9.3). The id locates the session document; the digest binds it, because an id is a name anyone can reuse on a counterfeit.
    */
   vwc: {};
+  /**
+   * Digest over the RFC 8785 canonicalization of the delivered credential, computed by the witness. It binds this evidence to one specific credential rather than to the session alone, so a verifier pairing a presented VWC with this response can check it is the credential this session issued and not another the same witness signed. This covers the credential whole, proof included — unlike the task digest of SPEC.md §4.9.3, which excludes the top-level proof of the Trust Task document it names. The inputs differ because the questions do: this value identifies one delivered artifact, a task digest identifies what a document says whether or not it was signed.
+   */
   vwcDigestMultibase: DigestMultibase;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/witness/session/submit/0.1" as const;

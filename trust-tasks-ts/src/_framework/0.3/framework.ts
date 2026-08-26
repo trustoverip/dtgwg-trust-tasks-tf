@@ -11,3 +11,9 @@
 export interface TrustTasksFrameworkReusableJSONSchemaDefinitions {
   [k: string]: unknown | undefined;
 }
+
+/**
+ * The definitions this shared schema publishes, hoisted to one declaration each.
+ * See "../../_shared/components.js".
+ */
+export type { DigestMultibase, Ext } from "../../_shared/components.js";

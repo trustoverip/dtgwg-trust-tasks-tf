@@ -3,6 +3,9 @@
  * Source: specs/vtc/join-requests/decide/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface VTCJoinRequestsDecidePayload {
   /**
    * The join request being decided.
@@ -17,12 +20,6 @@ export interface VTCJoinRequestsDecidePayload {
    */
   reason?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.
@@ -45,6 +42,9 @@ export interface VTCJoinRequestsDecideResponsePayload {
   roleVec?: {} | null;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/decide/0.1" as const;

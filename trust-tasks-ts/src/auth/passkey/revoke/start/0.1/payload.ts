@@ -3,6 +3,9 @@
  * Source: specs/auth/passkey/revoke/start/0.1/payload.schema.json
  */
 
+import type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOptions } from "../../../../../_shared/components.js";
+
+
 /**
  * Ask the auth service to begin revoking one of the subject's passkeys. The response carries PublicKeyCredentialRequestOptions for a fresh user-verification ceremony; nothing is removed until the matching auth/passkey/revoke/finish presents the assertion.
  */
@@ -11,13 +14,10 @@ export interface AuthPasskeyRevokeStart {
    * The credential to revoke, as returned by auth/passkey/list. Echoed verbatim; opaque to the producer.
    */
   credentialId: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Server-issued re-authentication options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response.
@@ -27,44 +27,18 @@ export interface AuthPasskeyRevokeStartResponsePayload {
    * Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim. The consumer binds it to the target credentialId server-side, so the finish carries no target of its own.
    */
   revocationId: string;
+  /**
+   * PublicKeyCredentialRequestOptions for navigator.credentials.get — a fresh user-verification ceremony proving a human with an enrolled authenticator is present right now. userVerification SHOULD be "required".
+   */
   uvOptions: PublicKeyCredentialRequestOptions;
-  ext?: Ext1;
-}
-/**
- * PublicKeyCredentialRequestOptions for navigator.credentials.get — a fresh user-verification ceremony proving a human with an enrolled authenticator is present right now. userVerification SHOULD be "required".
- */
-export interface PublicKeyCredentialRequestOptions {
   /**
-   * Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.
-   *
-   * This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
-   *
-   * Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
-  extensions?: {};
-  /**
-   * base64url-encoded one-time nonce.
-   */
-  challenge: string;
-  timeout?: number;
-  rpId?: string;
-  allowCredentials?: PublicKeyCredentialDescriptor[];
-  userVerification?: "discouraged" | "preferred" | "required";
+  ext?: Ext;
 }
-export interface PublicKeyCredentialDescriptor {
-  type: "public-key";
-  /**
-   * base64url-encoded credential id.
-   */
-  id: string;
-  transports?: ("usb" | "nfc" | "ble" | "internal" | "hybrid")[];
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOptions };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" as const;

@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/servers/register/1.0/payload.schema.json
  */
 
+import type { Ext, WebvhServerRecord } from "../../../../../_shared/components.js";
+
+
 export interface VTAWebVHServersRegisterPayload {
   /**
    * Local id for the server. Referenced by every DID published through it.
@@ -15,29 +18,9 @@ export interface VTAWebVHServersRegisterPayload {
   label?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
- * A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.
- */
-export interface WebvhServerRecord {
-  /**
-   * Local id for the server, chosen by the operator.
-   */
-  id: string;
-  /**
-   * The server's own DID, used to authenticate it.
-   */
-  did: string;
-  label?: string;
-  createdAt: string;
-  updatedAt: string;
-  ext?: Ext;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, WebvhServerRecord };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/servers/register/1.0" as const;

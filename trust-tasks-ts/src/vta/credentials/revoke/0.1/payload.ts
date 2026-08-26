@@ -3,34 +3,28 @@
  * Source: specs/vta/credentials/revoke/0.1/payload.schema.json
  */
 
-/**
- * The id of the credential to revoke (as returned by vta/credentials/issue).
- */
-export type CredentialId = string;
-/**
- * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
- */
-export type CredentialId1 = string;
+import type { CredentialId, Ext } from "../../../../_shared/components.js";
+
 
 export interface VTACredentialsRevokePayload {
+  /**
+   * The id of the credential to revoke (as returned by vta/credentials/issue).
+   */
   credentialId: CredentialId;
   /**
    * Optional human-readable rationale, recorded for audit.
    */
   reason?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a vta/credentials/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/revoke/0.1#response.
  */
 export interface VTACredentialsRevokeResponsePayload {
-  credentialId: CredentialId1;
+  credentialId: CredentialId;
   /**
    * When the revocation was recorded.
    */
@@ -39,14 +33,14 @@ export interface VTACredentialsRevokeResponsePayload {
    * When the revoked credential carried a credentialStatus entry (claims-profile credentials such as GovernancePolicyCredential), the published status-list index whose bit was flipped — so the caller can confirm the externally-visible effect. Absent for credentials without published status.
    */
   statusListIndex?: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { CredentialId, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/credentials/revoke/0.1" as const;

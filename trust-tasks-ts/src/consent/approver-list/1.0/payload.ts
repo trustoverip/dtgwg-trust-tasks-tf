@@ -3,6 +3,9 @@
  * Source: specs/consent/approver-list/1.0/payload.schema.json
  */
 
+import type { ApproverBinding, Ext, Route } from "../../../_shared/components.js";
+
+
 /**
  * Fetch approver bindings, optionally filtered by platform or context.
  */
@@ -17,12 +20,6 @@ export interface ConsentListApproversPayload {
   context?: string;
   ext?: Ext;
 }
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface ConsentListApproversResponsePayload {
   /**
    * Matching approver bindings.
@@ -30,31 +27,9 @@ export interface ConsentListApproversResponsePayload {
   approvers: ApproverBinding[];
   ext?: Ext;
 }
-/**
- * Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.
- */
-export interface ApproverBinding {
-  /**
-   * Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
-   */
-  platform: string;
-  /**
-   * The VTA context path this binding applies to.
-   */
-  context: string;
-  /**
-   * VID (DID) of the operator authorized to decide consent for this platform/context.
-   */
-  approver: string;
-  /**
-   * Optional. How to deliver the prompt; defaults to bridge-relay when omitted.
-   */
-  route?: "wake" | "bridge-relay";
-  /**
-   * Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.
-   */
-  routeHint?: string;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { ApproverBinding, Ext, Route };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/approver-list/1.0" as const;

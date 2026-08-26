@@ -3,10 +3,8 @@
  * Source: specs/messaging/admin/strip/0.1/payload.schema.json
  */
 
-/**
- * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
- */
-export type Vid = string;
+import type { Ext, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingStripAdminsPayload {
   /**
@@ -15,13 +13,10 @@ export interface MessagingStripAdminsPayload {
    * @minItems 1
    */
   dids: [Vid, ...Vid[]];
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/admin/strip request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/strip/0.1#response.
@@ -31,14 +26,14 @@ export interface MessagingStripAdminsResponsePayload {
    * The accounts whose admin rights were removed.
    */
   stripped: Vid[];
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/strip/0.1" as const;

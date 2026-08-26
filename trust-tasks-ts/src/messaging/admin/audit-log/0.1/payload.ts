@@ -3,28 +3,8 @@
  * Source: specs/messaging/admin/audit-log/0.1/payload.schema.json
  */
 
-/**
- * The authenticated account that made the change (an admin, or the owner for a self-service change).
- */
-export type Vid = string;
-/**
- * The account whose record changed.
- */
-export type Vid1 = string;
-/**
- * The kind of privileged change recorded in the audit log.
- */
-export type AuditAction =
-  | "setAcl"
-  | "accessListAdd"
-  | "accessListRemove"
-  | "accessListClear"
-  | "accountAdd"
-  | "accountRemove"
-  | "accountChangeType"
-  | "accountChangeQueueLimits"
-  | "adminAdd"
-  | "adminStrip";
+import type { AuditAction, AuditEntry, Ext, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingAuditLogPayload {
   /**
@@ -35,13 +15,10 @@ export interface MessagingAuditLogPayload {
    * Maximum number of audit entries to return in this page. The mediator chooses a default when omitted.
    */
   limit?: number;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/admin/audit-log request (newest-first). Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response.
@@ -55,30 +32,14 @@ export interface MessagingAuditLogResponsePayload {
    * Opaque continuation token. Present only when further entries remain beyond this page; omitted on the final page.
    */
   nextCursor?: string;
-  ext?: Ext1;
-}
-/**
- * One record in the mediator's privileged-change audit log: one change, by one actor, at one time.
- */
-export interface AuditEntry {
   /**
-   * Unix epoch seconds at which the change was recorded.
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
-  timestamp: number;
-  actor: Vid;
-  target: Vid1;
-  action: AuditAction;
-  /**
-   * Short human-readable summary of the change; not machine-parsed.
-   */
-  detail?: string;
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AuditAction, AuditEntry, Ext, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1" as const;

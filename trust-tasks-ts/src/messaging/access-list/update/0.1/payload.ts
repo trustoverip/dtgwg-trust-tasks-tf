@@ -3,20 +3,13 @@
  * Source: specs/messaging/access-list/update/0.1/payload.schema.json
  */
 
-/**
- * The target account's DID whose access list is being modified.
- */
-export type Vid = string;
-/**
- * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
- */
-export type Vid1 = string;
-/**
- * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
- */
-export type Vid2 = string;
+import type { Ext, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingUpdateAccessListPayload {
+  /**
+   * The target account's DID whose access list is being modified.
+   */
   did: Vid;
   /**
    * Where true, empty the access list before applying `add`. Applied first; combining `clear: true` with `add` replaces the list wholesale.
@@ -27,46 +20,46 @@ export interface MessagingUpdateAccessListPayload {
    *
    * @minItems 1
    */
-  add?: [Vid1, ...Vid1[]];
+  add?: [Vid, ...Vid[]];
   /**
    * The DIDs to remove from the account's access list. Applied last. Entries not present are ignored.
    *
    * @minItems 1
    */
-  remove?: [Vid1, ...Vid1[]];
+  remove?: [Vid, ...Vid[]];
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.
  */
 export interface MessagingUpdateAccessListResponsePayload {
-  did: Vid2;
+  /**
+   * The account whose access list was modified.
+   */
+  did: Vid;
   /**
    * The entries actually added (those not already present when `add` was applied).
    */
-  added: Vid1[];
+  added: Vid[];
   /**
    * The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.
    */
-  removed: Vid1[];
+  removed: Vid[];
   /**
    * The resulting number of entries in the account's access list.
    */
   accessListCount: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/access-list/update/0.1" as const;

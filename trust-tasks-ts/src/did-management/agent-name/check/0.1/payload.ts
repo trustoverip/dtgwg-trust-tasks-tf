@@ -3,6 +3,9 @@
  * Source: specs/did-management/agent-name/check/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export interface DIDManagementCheckAgentNamePayload {
   /**
    * The agent name's local part to probe, without the leading `@` (the `alice` in `/@alice`). A leading `@` submitted by a lenient client is stripped by the consumer before evaluation.
@@ -13,12 +16,6 @@ export interface DIDManagementCheckAgentNamePayload {
    */
   domain?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface DIDManagementCheckAgentNameResponsePayload {
   /**
@@ -39,6 +36,9 @@ export interface DIDManagementCheckAgentNameResponsePayload {
   reserved: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/agent-name/check/0.1" as const;

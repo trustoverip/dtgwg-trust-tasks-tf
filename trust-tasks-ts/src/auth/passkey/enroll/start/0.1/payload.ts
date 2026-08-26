@@ -3,6 +3,9 @@
  * Source: specs/auth/passkey/enroll/start/0.1/payload.schema.json
  */
 
+import type { Ext, PublicKeyCredentialCreationOptions, PublicKeyCredentialDescriptor } from "../../../../../_shared/components.js";
+
+
 /**
  * Ask the auth service to begin a WebAuthn registration ceremony. The response carries PublicKeyCredentialCreationOptions; the producer hands them to `navigator.credentials.create({ publicKey: ... })`.
  */
@@ -11,13 +14,10 @@ export interface AuthPasskeyEnrollStart {
    * Operator-facing label for the credential (e.g. "Alice's MacBook"). Surfaced in the credential list for later management.
    */
   deviceLabel?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Server-issued WebAuthn creation options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.
@@ -27,80 +27,18 @@ export interface AuthPasskeyEnrollStartResponsePayload {
    * Opaque server handle correlating this start with the matching finish. The producer MUST echo it verbatim.
    */
   enrollmentId: string;
+  /**
+   * PublicKeyCredentialCreationOptions for navigator.credentials.create.
+   */
   options: PublicKeyCredentialCreationOptions;
-  ext?: Ext1;
-}
-/**
- * PublicKeyCredentialCreationOptions for navigator.credentials.create.
- */
-export interface PublicKeyCredentialCreationOptions {
   /**
-   * Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.
-   *
-   * This component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.
-   *
-   * Structure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
-  extensions?: {};
-  /**
-   * base64url-encoded one-time nonce.
-   */
-  challenge: string;
-  rp: {
-    id: string;
-    name: string;
-  };
-  user: {
-    /**
-     * base64url-encoded user handle. SHOULD be a stable opaque identifier — never reuse a human-readable username here.
-     */
-    id: string;
-    name: string;
-    displayName: string;
-  };
-  /**
-   * @minItems 1
-   */
-  pubKeyCredParams: [
-    {
-      type: "public-key";
-      /**
-       * COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).
-       */
-      alg: number;
-    },
-    ...{
-      type: "public-key";
-      /**
-       * COSE algorithm identifier (e.g. -8 Ed25519, -7 ES256, -257 RS256).
-       */
-      alg: number;
-    }[]
-  ];
-  timeout?: number;
-  excludeCredentials?: PublicKeyCredentialDescriptor[];
-  authenticatorSelection?: {
-    authenticatorAttachment?: "platform" | "cross-platform";
-    requireResidentKey?: boolean;
-    residentKey?: "discouraged" | "preferred" | "required";
-    userVerification?: "discouraged" | "preferred" | "required";
-  };
-  attestation?: "none" | "indirect" | "direct" | "enterprise";
+  ext?: Ext;
 }
-export interface PublicKeyCredentialDescriptor {
-  type: "public-key";
-  /**
-   * base64url-encoded credential id.
-   */
-  id: string;
-  transports?: ("usb" | "nfc" | "ble" | "internal" | "hybrid")[];
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, PublicKeyCredentialCreationOptions, PublicKeyCredentialDescriptor };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1" as const;

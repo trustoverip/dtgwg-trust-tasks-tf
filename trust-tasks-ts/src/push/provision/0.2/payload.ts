@@ -3,6 +3,9 @@
  * Source: specs/push/provision/0.2/payload.schema.json
  */
 
+import type { Ext, WakeTriggerPolicy } from "../../../_shared/components.js";
+
+
 /**
  * The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs permitted to wake the device. The gateway accepts it only from the handle's recorded controller VTA and enforces it on every push/wake. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
  */
@@ -11,38 +14,23 @@ export interface PushProvisionPayload {
    * The opaque gateway-issued handle (from push/register) whose allowlist is being set.
    */
   handle: string;
+  /**
+   * The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.
+   */
   policy: WakeTriggerPolicy;
   ext?: Ext;
 }
-/**
- * The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.
- */
-export interface WakeTriggerPolicy {
-  /**
-   * DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
-   */
-  allowedTriggers: string[];
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
 export interface PushProvisionResponsePayload {
   handle: string;
-  policy: WakeTriggerPolicy1;
+  /**
+   * The effective allowlist the gateway recorded.
+   */
+  policy: WakeTriggerPolicy;
   ext?: Ext;
 }
-/**
- * The effective allowlist the gateway recorded.
- */
-export interface WakeTriggerPolicy1 {
-  /**
-   * DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
-   */
-  allowedTriggers: string[];
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, WakeTriggerPolicy };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/push/provision/0.2" as const;

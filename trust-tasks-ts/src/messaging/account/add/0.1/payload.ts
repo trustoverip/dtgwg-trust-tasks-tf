@@ -3,226 +3,47 @@
  * Source: specs/messaging/account/add/0.1/payload.schema.json
  */
 
-/**
- * The DID of the account to register.
- */
-export type Vid = string;
-/**
- * The role to assign the new account. Defaults to `standard`; assigning a non-standard role requires administrative standing (only a rootAdmin may assign rootAdmin).
- */
-export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
-/**
- * The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.
- */
-export type Vid1 = string;
-/**
- * The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
- */
-export type AccountType1 = "standard" | "admin" | "rootAdmin" | "mediator";
+import type { Account, AccountType, Ext, MediatorAcl, QueueLimits, Vid } from "../../../../_shared/components.js";
+
 
 export interface MessagingAddAccountPayload {
+  /**
+   * The DID of the account to register.
+   */
   did: Vid;
+  /**
+   * The role to assign the new account. Defaults to `standard`; assigning a non-standard role requires administrative standing (only a rootAdmin may assign rootAdmin).
+   */
   accountType?: AccountType;
+  /**
+   * Initial access-control capabilities. Members omitted take the mediator's configured defaults.
+   */
   acl?: MediatorAcl;
+  /**
+   * Initial queued-message limits. Members omitted take the mediator's configured defaults.
+   */
   queueLimits?: QueueLimits;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Initial access-control capabilities. Members omitted take the mediator's configured defaults.
- */
-export interface MediatorAcl {
-  /**
-   * How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
-   */
-  accessListMode?: "explicitAllow" | "explicitDeny";
-  /**
-   * The account is blocked from authenticating and transacting.
-   */
-  blocked?: boolean;
-  /**
-   * Messages for this account may be stored locally at this mediator for pickup.
-   */
-  local?: boolean;
-  /**
-   * May send direct messages through the mediator.
-   */
-  sendMessages?: boolean;
-  /**
-   * May receive direct messages.
-   */
-  receiveMessages?: boolean;
-  /**
-   * May send routing/forward (relay) messages.
-   */
-  sendForwarded?: boolean;
-  /**
-   * May be the next hop of a forwarded message.
-   */
-  receiveForwarded?: boolean;
-  /**
-   * May create out-of-band invitations.
-   */
-  createInvites?: boolean;
-  /**
-   * Accepts anonymous (no authenticated sender) messages.
-   */
-  anonReceive?: boolean;
-  /**
-   * May self-manage its own access list.
-   */
-  selfManageList?: boolean;
-  /**
-   * May self-manage its own send-queue limit.
-   */
-  selfManageSendQueueLimit?: boolean;
-  /**
-   * May self-manage its own receive-queue limit.
-   */
-  selfManageReceiveQueueLimit?: boolean;
-  /**
-   * The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.
-   */
-  didcommEnabled?: boolean;
-  /**
-   * The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.
-   */
-  tspEnabled?: boolean;
-}
-/**
- * Initial queued-message limits. Members omitted take the mediator's configured defaults.
- */
-export interface QueueLimits {
-  /**
-   * Maximum queued send messages; -1 = unlimited.
-   */
-  sendQueueLimit?: number;
-  /**
-   * Maximum queued receive messages; -1 = unlimited.
-   */
-  receiveQueueLimit?: number;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The success response to a messaging/account/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/add/0.1#response.
  */
 export interface MessagingAddAccountResponsePayload {
+  /**
+   * The full realized mediator view of the newly created account.
+   */
   account: Account;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * The full realized mediator view of the newly created account.
- */
-export interface Account {
-  did: Vid1;
-  accountType: AccountType1;
-  acl: MediatorAcl1;
-  queueLimits?: QueueLimits1;
-  /**
-   * Current count of queued send messages.
-   */
-  sendQueueCount?: number;
-  /**
-   * Current byte size of queued send messages.
-   */
-  sendQueueBytes?: number;
-  /**
-   * Current count of queued receive messages.
-   */
-  receiveQueueCount?: number;
-  /**
-   * Current byte size of queued receive messages.
-   */
-  receiveQueueBytes?: number;
-  /**
-   * Number of entries in the account's access list.
-   */
-  accessListCount?: number;
-}
-/**
- * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
- */
-export interface MediatorAcl1 {
-  /**
-   * How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
-   */
-  accessListMode?: "explicitAllow" | "explicitDeny";
-  /**
-   * The account is blocked from authenticating and transacting.
-   */
-  blocked?: boolean;
-  /**
-   * Messages for this account may be stored locally at this mediator for pickup.
-   */
-  local?: boolean;
-  /**
-   * May send direct messages through the mediator.
-   */
-  sendMessages?: boolean;
-  /**
-   * May receive direct messages.
-   */
-  receiveMessages?: boolean;
-  /**
-   * May send routing/forward (relay) messages.
-   */
-  sendForwarded?: boolean;
-  /**
-   * May be the next hop of a forwarded message.
-   */
-  receiveForwarded?: boolean;
-  /**
-   * May create out-of-band invitations.
-   */
-  createInvites?: boolean;
-  /**
-   * Accepts anonymous (no authenticated sender) messages.
-   */
-  anonReceive?: boolean;
-  /**
-   * May self-manage its own access list.
-   */
-  selfManageList?: boolean;
-  /**
-   * May self-manage its own send-queue limit.
-   */
-  selfManageSendQueueLimit?: boolean;
-  /**
-   * May self-manage its own receive-queue limit.
-   */
-  selfManageReceiveQueueLimit?: boolean;
-  /**
-   * The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.
-   */
-  didcommEnabled?: boolean;
-  /**
-   * The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.
-   */
-  tspEnabled?: boolean;
-}
-/**
- * Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.
- */
-export interface QueueLimits1 {
-  /**
-   * Maximum queued send messages; -1 = unlimited.
-   */
-  sendQueueLimit?: number;
-  /**
-   * Maximum queued receive messages; -1 = unlimited.
-   */
-  receiveQueueLimit?: number;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Account, AccountType, Ext, MediatorAcl, QueueLimits, Vid };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/account/add/0.1" as const;

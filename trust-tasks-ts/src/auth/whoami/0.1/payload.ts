@@ -3,22 +3,25 @@
  * Source: specs/auth/whoami/0.1/payload.schema.json
  */
 
+import type { Ext, Session } from "../../../_shared/components.js";
+
+
 /**
  * Introspect the current session. The proof on the document identifies the subject; the response carries what the auth service knows about them.
  */
 export interface AuthWhoami {
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The auth service's view of the producer. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/whoami/0.1#response.
  */
 export interface AuthWhoamiResponsePayload {
+  /**
+   * Current session state for the producer.
+   */
   session: Session;
   /**
    * Role assignments the auth service holds for the producer. Ecosystem-defined vocabulary.
@@ -28,52 +31,14 @@ export interface AuthWhoamiResponsePayload {
    * Capability tags effective on the producer's current session. Mirrors the issued TokenBundle.scope; included here so a producer can reconcile after policy edits without re-issuing tokens.
    */
   scopes?: string[];
-  ext?: Ext2;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Current session state for the producer.
- */
-export interface Session {
-  /**
-   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
-   */
-  id: string;
-  /**
-   * The authenticated party's VID (typically a DID URL).
-   */
-  subject: string;
-  /**
-   * ISO-8601 timestamp when the session was created.
-   */
-  issuedAt: string;
-  /**
-   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
-   */
-  expiresAt: string;
-  /**
-   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
-   *
-   * @minItems 1
-   */
-  amr?: [string, ...string[]];
-  /**
-   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
-   */
-  acr?: string;
-  ext?: Ext1;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext2 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Session };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/whoami/0.1" as const;

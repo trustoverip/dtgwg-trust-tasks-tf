@@ -3,6 +3,9 @@
  * Source: specs/auth/passkey/revoke/finish/0.1/payload.schema.json
  */
 
+import type { AuthenticatorAssertionResponseLogin, Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.
  */
@@ -11,30 +14,14 @@ export interface AuthPasskeyRevokeFinish {
    * The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.
    */
   revocationId: string;
+  /**
+   * AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded.
+   */
   uvCredential: AuthenticatorAssertionResponseLogin;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded.
- */
-export interface AuthenticatorAssertionResponseLogin {
-  id: string;
-  rawId: string;
-  type: "public-key";
-  response: {
-    clientDataJSON: string;
-    authenticatorData: string;
-    signature: string;
-    userHandle?: string | null;
-  };
-  authenticatorAttachment?: "platform" | "cross-platform";
-  clientExtensionResults?: {};
-}
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.
@@ -52,14 +39,14 @@ export interface AuthPasskeyRevokeFinishResponsePayload {
    * How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.
    */
   remaining: number;
-  ext?: Ext1;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
 }
-/**
- * Ecosystem-defined extension members per SPEC.md §4.5.1.
- */
-export interface Ext1 {
-  [k: string]: unknown | undefined;
-}
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { AuthenticatorAssertionResponseLogin, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1" as const;

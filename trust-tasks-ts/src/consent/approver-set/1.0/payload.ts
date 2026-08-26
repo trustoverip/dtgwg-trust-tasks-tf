@@ -3,6 +3,9 @@
  * Source: specs/consent/approver-set/1.0/payload.schema.json
  */
 
+import type { Ext, Route } from "../../../_shared/components.js";
+
+
 /**
  * An admin binds the operator who approves inbound-messaging consent for a platform within a context.
  */
@@ -22,18 +25,12 @@ export interface ConsentSetApproverPayload {
   /**
    * How the prompt reaches the approver; defaults to bridge-relay.
    */
-  route?: "wake" | "bridge-relay";
+  route?: Route;
   /**
    * Optional routing detail (e.g. the operator's opaque conversationRef).
    */
   routeHint?: string;
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface ConsentSetApproverResponsePayload {
   /**
@@ -42,6 +39,9 @@ export interface ConsentSetApproverResponsePayload {
   status: "set";
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext, Route };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/consent/approver-set/1.0" as const;

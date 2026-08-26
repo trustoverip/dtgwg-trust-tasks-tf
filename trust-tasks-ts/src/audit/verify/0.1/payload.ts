@@ -3,22 +3,14 @@
  * Source: specs/audit/verify/0.1/payload.schema.json
  */
 
-/**
- * The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.
- */
-export type DigestMultibase = string;
+import type { DigestMultibase, Ext } from "../../../_shared/components.js";
+
 
 /**
  * Request to verify the integrity of a maintainer's append-only audit hash chain. The request carries no parameters — verification is store-wide.
  */
 export interface AuditVerifyPayload {
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 /**
  * The outcome of walking the audit log in chronological order and checking each envelope's hash links. `verified` is true only when every chainable envelope re-derived its own `entryHash` and pointed at its predecessor's. When false, `chainBreak` locates the first failure.
@@ -44,6 +36,9 @@ export interface AuditVerifyResponsePayload {
    * Envelopes that could not be deserialized and so could not be checked. Reported at the same prominence as a break, not swallowed.
    */
   unparseableSkipped: number;
+  /**
+   * The `entryHash` of the newest envelope reached, in the same multibase-multihash encoding the envelope carries it. Absent when the log is empty.
+   */
   head?: DigestMultibase;
   chainBreak?: ChainBreak;
   ext?: Ext;
@@ -65,6 +60,9 @@ export interface ChainBreak {
    */
   eventId?: string;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/audit/verify/0.1" as const;

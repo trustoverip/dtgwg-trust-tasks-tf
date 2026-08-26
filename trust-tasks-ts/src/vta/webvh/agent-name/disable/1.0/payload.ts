@@ -3,6 +3,9 @@
  * Source: specs/vta/webvh/agent-name/disable/1.0/payload.schema.json
  */
 
+import type { Ext } from "../../../../../_shared/components.js";
+
+
 /**
  * Stop a name resolving while continuing to hold it. Unlike `remove`, nobody else can take it.
  */
@@ -18,12 +21,6 @@ export interface VTAWebVHAgentNameDisablePayload {
   ext?: Ext;
 }
 /**
- * Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
-}
-/**
  * Success response to vta/webvh/agent-name/disable. Type https://trusttasks.org/spec/vta/webvh/agent-name/disable/1.0#response.
  */
 export interface VTAWebVHAgentNameDisableResponsePayload {
@@ -35,6 +32,9 @@ export interface VTAWebVHAgentNameDisableResponsePayload {
   enabled: boolean;
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/agent-name/disable/1.0" as const;
