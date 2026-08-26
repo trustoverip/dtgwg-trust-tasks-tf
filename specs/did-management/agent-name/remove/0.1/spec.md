@@ -27,22 +27,22 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/agent-name/remove:not_owner
+  - code: did-management/agent-name/remove:notOwner
     meaning: The caller is not the DID slot's current owner or an admin.
     retryable: false
-  - code: did-management/agent-name/remove:not_found
+  - code: did-management/agent-name/remove:notFound
     meaning: No such name is bound to this DID.
     retryable: false
-  - code: did-management/agent-name/remove:also_known_as_mismatch
+  - code: did-management/agent-name/remove:alsoKnownAsMismatch
     meaning: The submitted `didData` still claims the name via `alsoKnownAs`. A release MUST be accompanied by a document that no longer claims the name, so the two states cannot diverge.
     retryable: false
-  - code: did-management/agent-name/remove:invalid_did_data
+  - code: did-management/agent-name/remove:invalidDidData
     meaning: The submitted `didData` failed proof or structural validation for the target DID.
     retryable: false
-  - code: did-management/agent-name/remove:step_up_required
+  - code: did-management/agent-name/remove:stepUpRequired
     meaning: The operation requires a higher authentication assurance level (operator step-up) that has not been satisfied. Releasing a name is destructive and a consumer MUST gate it behind step-up.
     retryable: true
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/agent-name/update, did-management/agent-name/list, auth/step-up/approve-response]
@@ -58,13 +58,13 @@ Draft.
 
 ## The `alsoKnownAs` invariant, in reverse
 
-[`agent-name/update`](../../update/0.1/spec.md) with `state: active` requires the submitted document to *claim* the name. Remove requires the mirror: the submitted `didData` must **no longer** claim the name via `alsoKnownAs`. The host verifies this and rejects with `also_known_as_mismatch` otherwise.
+[`agent-name/update`](../../update/0.1/spec.md) with `state: active` requires the submitted document to *claim* the name. Remove requires the mirror: the submitted `didData` must **no longer** claim the name via `alsoKnownAs`. The host verifies this and rejects with `alsoKnownAsMismatch` otherwise.
 
 The reason is symmetry of the invariant. If the host stopped serving a name while the document still claimed it, the DID would advertise an `alsoKnownAs` entry that no longer resolves — a dangling claim a resolver cannot verify. So the release of the redirect and the removal of the `alsoKnownAs` entry land in one commit, driven by one signed document.
 
 ## Step-up
 
-Releasing a name is **destructive**: once free, the name may be registered by a different party, and the previous holder cannot unilaterally get it back. A consumer **MUST** gate this task behind operator **step-up** — an elevated authentication assurance level satisfied by an operator-signed approval (see [`auth/step-up/approve-response`](../../../../auth/step-up/approve-response/0.1/spec.md)) — and, until it is satisfied, respond with `step_up_required`.
+Releasing a name is **destructive**: once free, the name may be registered by a different party, and the previous holder cannot unilaterally get it back. A consumer **MUST** gate this task behind operator **step-up** — an elevated authentication assurance level satisfied by an operator-signed approval (see [`auth/step-up/approve-response`](../../../../auth/step-up/approve-response/0.1/spec.md)) — and, until it is satisfied, respond with `stepUpRequired`.
 
 Per the framework, this requirement is a **consumer policy** derived from the task's destructive classification; it is not, and cannot be, delegated to the registry. The declaration here is descriptive guidance, not a wire-enforceable flag.
 

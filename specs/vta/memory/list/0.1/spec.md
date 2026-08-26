@@ -46,7 +46,7 @@ exposure:
     the caller keeps it, so the bulk read is a secret disclosure and not an
     enumeration.
 errorCodes:
-  - code: vta/memory/list:context_forbidden
+  - code: vta/memory/list:contextForbidden
     meaning: The caller is not permitted to read memory in the named context.
     retryable: false
 related:
@@ -70,7 +70,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) apply.
 
-A conforming **consumer** (the VTA) **MUST** refuse with `vta/memory/list:context_forbidden` when the caller lacks access to `payload.contextId`, and otherwise return all items under that context.
+A conforming **consumer** (the VTA) **MUST** refuse with `vta/memory/list:contextForbidden` when the caller lacks access to `payload.contextId`, and otherwise return all items under that context.
 
 ## Request
 

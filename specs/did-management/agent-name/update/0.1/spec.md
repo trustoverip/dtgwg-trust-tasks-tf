@@ -48,7 +48,7 @@ errorCodes:
   - code: did-management/agent-name/update:stepUpRequired
     meaning: The operation requires a higher authentication assurance level (operator step-up) that has not been satisfied. Parking a name takes it out of service and is a consumer-gated operation.
     retryable: true
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/agent-name/remove, did-management/agent-name/check, did-management/agent-name/list, did-management/did/register]

@@ -36,7 +36,7 @@ exposure:
   actsAsSubject: false
   rationale: "Returns a sealed bundle carrying the minted admin credential and the integration's DID key material."
 errorCodes:
-  - code: provision/integration:invalid_bootstrap_request
+  - code: provision/integration:invalidBootstrapRequest
     meaning: The presented VP failed structural validation (missing required field, malformed `holder`, unsupported cryptosuite, freshness window passed, signature does not verify, `verificationMethod` does not resolve under `holder`).
     retryable: false
     detailsSchema:
@@ -54,7 +54,7 @@ errorCodes:
             - "expired"
             - "nonce_invalid"
             - "shape"
-  - code: provision/integration:template_not_found
+  - code: provision/integration:templateNotFound
     meaning: The integration or admin template named in the ask is not registered at the maintainer. Operator must upload it via the maintainer's template-management surface before retrying.
     retryable: false
     detailsSchema:
@@ -65,13 +65,13 @@ errorCodes:
         kind:
           type: "string"
           enum: ["integration", "admin"]
-  - code: provision/integration:template_vars_invalid
+  - code: provision/integration:templateVarsInvalid
     meaning: The template's `requiredVars` are not satisfied by `template.vars`, or unknown vars were supplied. Producer SHOULD consult the template's declaration and retry with corrected bindings.
     retryable: false
-  - code: provision/integration:context_not_found
+  - code: provision/integration:contextNotFound
     meaning: "The requested `context` does not exist at the maintainer and `createContext` was either omitted or denied. When the caller has super-admin privileges they MAY retry with `createContext = true` to provision the context inline."
     retryable: false
-  - code: provision/integration:context_required
+  - code: provision/integration:contextRequired
     meaning: "`payload.context` was omitted and the maintainer could not infer a unique target context from the relayer's grant. The relayer either holds admin role in multiple contexts (rule #1 ambiguous) or is a super-admin and the maintainer has multiple contexts registered (rule #2 ambiguous). The relayer SHOULD retry with an explicit `context` value selected from `details.candidates`."
     retryable: false
     detailsSchema:
@@ -86,10 +86,10 @@ errorCodes:
   - code: provision/integration:forbidden
     meaning: The authenticated caller is not authorised to provision into `context` (or to create it). Distinct from the framework's `unauthorized` — the caller was authenticated successfully but lacks the role.
     retryable: false
-  - code: provision/integration:envelope_unsupported
+  - code: provision/integration:envelopeUnsupported
     meaning: The maintainer cannot emit a sealed bundle in any cipher envelope the holder's `did:key` supports. The wire shape pins HPKE/X25519-HKDF-SHA256/ChaCha20-Poly1305 as the only envelope today; the code reserves the slot for future envelope negotiation.
     retryable: false
-  - code: provision/integration:assertion_unsupported
+  - code: provision/integration:assertionUnsupported
     meaning: The producer requested an `assertion` mode (e.g. `attested` for TEE deployments) that the maintainer does not support in its current configuration.
     retryable: false
 related:
@@ -148,23 +148,23 @@ A conforming **producer** (the integration holder or its relayer) **MUST**:
    * carry a `proof` of cryptosuite `eddsa-jcs-2022`, `proofPurpose: "authentication"`, whose `verificationMethod` resolves under `holder`. The proof MUST sign the JCS canonicalisation of the VP with `proof` removed.
 3. **MAY** populate `payload.context` with the maintainer's context identifier the integration is to land in. Producers that don't track the maintainer's context layout (typically wallet-class consumers — browser plugins, mobile companions) SHOULD omit this and let the maintainer infer per "Context inference" below. Producers targeting a specific operational context (typically integration-class consumers — mediators, did-hosting hosts) SHOULD send it explicitly.
 4. **MAY** include `payload.assertion` to request a non-default sealed-bundle assertion mode. The wire enum is `"did-signed"` (default — Ed25519 signature over the bundle's domain-bound digest, verified by the holder out-of-band against the producer's published key) and `"pinned-only"` (the holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only).
-5. **MAY** include `payload.vcValiditySeconds` to request a non-default validity window for the issued authorization VC. The maintainer's policy decides the floor and ceiling; values outside that range MAY be silently clamped or rejected with `provision/integration:invalid_bootstrap_request` (`reason: "shape"`).
+5. **MAY** include `payload.vcValiditySeconds` to request a non-default validity window for the issued authorization VC. The maintainer's policy decides the floor and ceiling; values outside that range MAY be silently clamped or rejected with `provision/integration:invalidBootstrapRequest` (`reason: "shape"`).
 6. **MAY** include `payload.createContext: true` to provision the target context inline if it does not exist. The maintainer accepts this **only** when the caller has super-admin role; context-admin callers MUST receive `provision/integration:forbidden` against a missing context.
 7. Persist the holder's Ed25519 seed in operator-private storage (RECOMMENDED file mode `0600` on POSIX, ACL-restricted on Windows). The same seed derives the X25519 receiver key the sealed bundle is opened with.
 
 A conforming **consumer** (the provisioning maintainer) **MUST**:
 
 1. Validate the *Trust Task document* per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). Verify the transport-level proof; refuse with `unauthorized` if it fails.
-2. Validate the VP structurally before any signature work: required fields present, `type` array contains the two reserved entries, `holder` decodes as `did:key`, `validUntil` parses as RFC 3339 UTC and falls within the maintainer's freshness window. Failures emit `provision/integration:invalid_bootstrap_request` with a `details.reason` from the enum.
+2. Validate the VP structurally before any signature work: required fields present, `type` array contains the two reserved entries, `holder` decodes as `did:key`, `validUntil` parses as RFC 3339 UTC and falls within the maintainer's freshness window. Failures emit `provision/integration:invalidBootstrapRequest` with a `details.reason` from the enum.
 3. Verify the VP's `proof`:
    * cryptosuite MUST equal `eddsa-jcs-2022`;
    * `verificationMethod` MUST split on `#` into a DID that equals `holder`;
    * the proof MUST verify against the JCS canonicalisation of the VP with `proof` removed, using the public key derived from `holder`.
 4. Validate the `ask` variant against the maintainer's template registry:
-   * for `TemplateBootstrap`: `template.name` MUST be registered with `kind` ≠ `"admin"`; when `adminTemplate` is present, `adminTemplate.name` MUST be registered with `kind == "admin"`. Missing → `provision/integration:template_not_found`.
-   * for `AdminRotation`: `adminTemplate.name` MUST be registered with `kind == "admin"`. Missing → `provision/integration:template_not_found`.
-   * For every named template, validate `vars` against the template's declared `requiredVars` / `optionalVars`. Missing or unknown vars → `provision/integration:template_vars_invalid`.
-5. Resolve the target context: use `payload.context` when present; otherwise infer per "Context inference" above and emit `provision/integration:context_required` if no unique target can be determined. Authorise the relayer in the resolved context. If the context does not exist and `payload.createContext` is `true`, the relayer MUST be super-admin; otherwise emit `provision/integration:context_not_found`. If the relayer is authenticated but lacks the required role, emit `provision/integration:forbidden`.
+   * for `TemplateBootstrap`: `template.name` MUST be registered with `kind` ≠ `"admin"`; when `adminTemplate` is present, `adminTemplate.name` MUST be registered with `kind == "admin"`. Missing → `provision/integration:templateNotFound`.
+   * for `AdminRotation`: `adminTemplate.name` MUST be registered with `kind == "admin"`. Missing → `provision/integration:templateNotFound`.
+   * For every named template, validate `vars` against the template's declared `requiredVars` / `optionalVars`. Missing or unknown vars → `provision/integration:templateVarsInvalid`.
+5. Resolve the target context: use `payload.context` when present; otherwise infer per "Context inference" above and emit `provision/integration:contextRequired` if no unique target can be determined. Authorise the relayer in the resolved context. If the context does not exist and `payload.createContext` is `true`, the relayer MUST be super-admin; otherwise emit `provision/integration:contextNotFound`. If the relayer is authenticated but lacks the required role, emit `provision/integration:forbidden`.
 6. Mint the keys server-side:
    * for `TemplateBootstrap`: render the integration template; mint Ed25519 (signing) and X25519 (key-agreement) keypairs for every verification method the template declares; persist private halves in the maintainer's keystore; allocate a DID identifier per the template's method (`did:webvh` writes a `did.jsonl` log; `did:key` derives from the signing pubkey). When `adminTemplate` is present, additionally mint the admin DID + keys.
    * for `AdminRotation`: render the admin template only.
@@ -175,7 +175,7 @@ A conforming **consumer** (the provisioning maintainer) **MUST**:
 11. Audit-log the provisioning with `{ relayer, holder, context, templateName, adminTemplateName, adminDid, bundleIdHex, outcome }`. The log entry MUST persist even if the response delivery later fails — the keys have been minted and the ACL bound; that's an audit event regardless of whether the relayer received the bundle.
 12. **MUST NOT** include any private key material outside the sealed `bundle`. The wire `summary` is non-secret metadata only.
 
-A consumer **MAY** support additional `assertion` modes (e.g. `attested` carrying a Nitro attestation quote for TEE deployments). When a producer requests an unsupported mode, emit `provision/integration:assertion_unsupported`.
+A consumer **MAY** support additional `assertion` modes (e.g. `attested` carrying a Nitro attestation quote for TEE deployments). When a producer requests an unsupported mode, emit `provision/integration:assertionUnsupported`.
 
 ## Ask variants
 
@@ -231,7 +231,7 @@ When the producer omits `payload.context`, the maintainer infers the target cont
 
 2. **Single-context maintainer.** If the relayer is a super-admin (Admin role with unrestricted `allowed_contexts`) and the maintainer has exactly one context registered, use that context. Covers the typical single-VTA, single-context, single-admin deployment where the wallet's ephemeral was granted with `pnm acl create --did <eph> --role admin` (no `--contexts` flag, producing a super-admin grant).
 
-3. **Ambiguous — refuse.** Any other state — multi-context relayer, super-admin against a multi-context maintainer — emits `provision/integration:context_required` with `details.candidates` listing the contexts the maintainer considered. The relayer picks one and retries with an explicit `context`.
+3. **Ambiguous — refuse.** Any other state — multi-context relayer, super-admin against a multi-context maintainer — emits `provision/integration:contextRequired` with `details.candidates` listing the contexts the maintainer considered. The relayer picks one and retries with an explicit `context`.
 
 The inference is opportunistic, not authoritative — when the producer DOES send a `context`, the maintainer uses it verbatim and inference does not run. Producers MAY send `context` even when inference would succeed, e.g. to make audit logs unambiguous; the wire shape supports both modes interchangeably.
 
@@ -456,7 +456,7 @@ Response summary:
   "recipient": "did:web:operator.example",
   "issuedAt": "2026-05-26T13:00:01Z",
   "payload": {
-    "code": "provision/integration:template_not_found",
+    "code": "provision/integration:templateNotFound",
     "message": "template 'mediator-custom' is not registered at this maintainer",
     "details": { "templateName": "mediator-custom", "kind": "integration" }
   }

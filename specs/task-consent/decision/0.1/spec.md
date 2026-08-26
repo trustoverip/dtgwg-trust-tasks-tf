@@ -34,16 +34,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: task-consent/decision:no_pending
+  - code: task-consent/decision:noPending
     meaning: No live pending consent exists for the `payloadDigest` — never raised, already decided, or lapsed.
     retryable: false
-  - code: task-consent/decision:challenge_mismatch
+  - code: task-consent/decision:challengeMismatch
     meaning: The `challenge` does not match the pending request for this digest.
     retryable: false
-  - code: task-consent/decision:not_an_approver
+  - code: task-consent/decision:notAnApprover
     meaning: The proven signer is not a member of the approver set the policy named.
     retryable: false
-  - code: task-consent/decision:requester_excluded
+  - code: task-consent/decision:requesterExcluded
     meaning: The proven signer is the task's requester and the policy set `excludeRequester`.
     retryable: false
 related:
@@ -103,10 +103,10 @@ A conforming **producer** (the approver device) **MUST**:
 A conforming **consumer** (the executor) **MUST**, on receipt:
 
 1. Verify the `proof` and take the approver's identity from it.
-2. Look up the pending request by `payloadDigest`; absent or lapsed → `no_pending`.
-3. Assert `challenge` matches that pending request → else `challenge_mismatch`.
-4. Assert the proven signer is a member of the approver set the policy named → else `not_an_approver`.
-5. Assert the signer is not the requester when `excludeRequester` is set → else `requester_excluded`.
+2. Look up the pending request by `payloadDigest`; absent or lapsed → `noPending`.
+3. Assert `challenge` matches that pending request → else `challengeMismatch`.
+4. Assert the proven signer is a member of the approver set the policy named → else `notAnApprover`.
+5. Assert the signer is not the requester when `excludeRequester` is set → else `requesterExcluded`.
 6. On `deny`, delete the pending request. A subsequent submit of the same task starts a fresh one.
 7. On `approve`, record the approval idempotently per approver, and at `minApprovals` distinct approvers issue a single-use, time-boxed grant.
 

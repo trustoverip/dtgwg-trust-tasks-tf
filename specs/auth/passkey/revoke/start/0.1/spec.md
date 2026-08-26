@@ -33,10 +33,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/revoke/start:credential_not_found
+  - code: auth/passkey/revoke/start:credentialNotFound
     meaning: No credential with this id is bound to the subject. Consumers MUST return this for a credential belonging to a different subject as well, so the code cannot be used to probe whether an id exists elsewhere.
     retryable: false
-  - code: auth/passkey/revoke/start:last_credential
+  - code: auth/passkey/revoke/start:lastCredential
     meaning: This is the subject's only remaining passkey and the consumer refuses to leave them with none. `details.remaining` MAY carry the count.
     retryable: false
     detailsSchema:
@@ -44,7 +44,7 @@ errorCodes:
       additionalProperties: false
       properties:
         remaining: { type: integer, minimum: 0 }
-  - code: auth/passkey/revoke/start:reauth_unavailable
+  - code: auth/passkey/revoke/start:reauthUnavailable
     meaning: The consumer requires user verification to revoke but cannot mount a ceremony — for example every enrolled authenticator is itself unusable. Recovery is out of band.
     retryable: false
 related:
@@ -85,8 +85,8 @@ A conforming **producer** **MUST**:
 A conforming **consumer** **MUST**:
 
 1. Verify the `proof` and identify the producer's VID.
-2. Resolve `credentialId` **within that subject's credentials only**. A credential bound to anybody else **MUST** yield `credential_not_found`, identically to an id that exists nowhere.
-3. Refuse with `last_credential` if removing it would leave the subject with no passkey — **before** issuing any challenge, so the subject is not walked through a ceremony that was always going to fail.
+2. Resolve `credentialId` **within that subject's credentials only**. A credential bound to anybody else **MUST** yield `credentialNotFound`, identically to an id that exists nowhere.
+3. Refuse with `lastCredential` if removing it would leave the subject with no passkey — **before** issuing any challenge, so the subject is not walked through a ceremony that was always going to fail.
 4. Generate a fresh `revocationId` and bind it server-side to: the producer's VID, the target `credentialId`, the challenge in `uvOptions.challenge`, and an expiry (RECOMMENDED 5 minutes).
 5. Return `uvOptions` whose `allowCredentials` covers the subject's enrolled credentials and whose `userVerification` is `"required"`.
 
@@ -175,7 +175,7 @@ Note that `allowCredentials` here offers the MacBook — not the YubiKey being r
   "recipient": "did:web:alice.example",
   "issuedAt": "2026-07-27T10:00:01Z",
   "payload": {
-    "code": "auth/passkey/revoke/start:last_credential",
+    "code": "auth/passkey/revoke/start:lastCredential",
     "message": "Refusing to remove your only passkey — you would not be able to sign in again. Enroll another authenticator first.",
     "details": { "remaining": 1 }
   }
@@ -186,7 +186,7 @@ Note that `allowCredentials` here offers the MacBook — not the YubiKey being r
 
 **Why the target is bound at start.** The finish carries only the `revocationId` and the assertion. If it carried the target too, a consumer that trusted the finish's copy would let an attacker who intercepted a legitimate ceremony redirect the removal to a different credential — the user verifies one thing and a different one is destroyed. Binding the target to the handle server-side means the user-verification ceremony authorizes precisely what the subject saw.
 
-**Enumeration.** `credential_not_found` covers both "no such id" and "that id belongs to someone else". Distinguishing them would turn this task into an oracle for credential ownership.
+**Enumeration.** `credentialNotFound` covers both "no such id" and "that id belongs to someone else". Distinguishing them would turn this task into an oracle for credential ownership.
 
 **Ceremony expiry.** A `revocationId` **MUST** expire (RECOMMENDED 5 minutes) and **MUST** be single-use. An unexpiring handle is a standing authorization to destroy a credential, redeemable by whoever obtains it.
 

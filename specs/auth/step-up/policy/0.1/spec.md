@@ -32,13 +32,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/step-up/policy:not_authorized
+  - code: auth/step-up/policy:notAuthorized
     meaning: The issuer is not authorized to set the maintainer's step-up policy.
     retryable: false
-  - code: auth/step-up/policy:unknown_operation
+  - code: auth/step-up/policy:unknownOperation
     meaning: A floor names an operation-class the maintainer does not recognize or does not gate.
     retryable: false
-  - code: auth/step-up/policy:lockout_refused
+  - code: auth/step-up/policy:lockoutRefused
     meaning: The requested policy would enable enforcement for an operation-class while leaving no party able to satisfy it, locking the maintainer's administrators out. The maintainer refuses rather than apply a self-lockout.
     retryable: false
 related:
@@ -72,9 +72,9 @@ A conforming **producer** (the administrator) **MUST**:
 
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
-1. Verify the document's `proof` and that the `issuer` is authorized to set policy; otherwise reject with `not_authorized`.
-2. Reject with `unknown_operation` if a `floor.operation` is neither `*` nor an operation-class the maintainer gates.
-3. **Refuse self-lockout.** If applying the policy would enable enforcement (`enabled: true`) for an operation-class whose resolved mode requires AAL2, while **no** party currently holds a usable method to satisfy it (no registered `approver`, no self authenticator), the maintainer **MUST** reject with `lockout_refused` and leave the prior policy in force. Enabling enforcement is the moment to prove an approver exists.
+1. Verify the document's `proof` and that the `issuer` is authorized to set policy; otherwise reject with `notAuthorized`.
+2. Reject with `unknownOperation` if a `floor.operation` is neither `*` nor an operation-class the maintainer gates.
+3. **Refuse self-lockout.** If applying the policy would enable enforcement (`enabled: true`) for an operation-class whose resolved mode requires AAL2, while **no** party currently holds a usable method to satisfy it (no registered `approver`, no self authenticator), the maintainer **MUST** reject with `lockoutRefused` and leave the prior policy in force. Enabling enforcement is the moment to prove an approver exists.
 4. Apply the policy atomically and return a `#response` carrying the effective (canonicalized) policy.
 5. **Default posture.** Until a policy is set, the maintainer **MUST** behave as `enabled: false` (AAL1 everywhere) and **SHOULD** surface the not-enforced state prominently to operators.
 6. Enforce the **resolution algorithm** (below) on every gated operation.
@@ -172,7 +172,7 @@ The form an operator applies from the local console to recover from an over-stri
 
 ## Response
 
-The **maintainer** returns the effective policy it now holds — `floors` canonicalized (deduplicated by `operation`, defaults materialized). The sub-schema is reachable via `$anchor: "response"` in [`payload.schema.json`](./payload.schema.json). Failures use `trust-task-error` (e.g. `lockout_refused`), not a `#response`.
+The **maintainer** returns the effective policy it now holds — `floors` canonicalized (deduplicated by `operation`, defaults materialized). The sub-schema is reachable via `$anchor: "response"` in [`payload.schema.json`](./payload.schema.json). Failures use `trust-task-error` (e.g. `lockoutRefused`), not a `#response`.
 
 ```json
 {
@@ -208,7 +208,7 @@ The **maintainer** returns the effective policy it now holds — `floors` canoni
   "recipient": "did:web:admin.acme.example",
   "issuedAt": "2026-06-01T09:00:01Z",
   "payload": {
-    "code": "auth/step-up/policy:lockout_refused",
+    "code": "auth/step-up/policy:lockoutRefused",
     "message": "Enabling 'delegated' for acl/grant would lock out all administrators: no AclEntry carries a stepUp.approver. Register an approver, then enable."
   }
 }
@@ -222,7 +222,7 @@ The **maintainer** returns the effective policy it now holds — `floors` canoni
 
 **Additive-only overrides.** Per-entry `stepUp` settings may only raise the requirement. A consumer MUST ignore an override weaker than the resolved floor, so a compromised or misconfigured entry cannot weaken a system-wide protection.
 
-**Anti-lockout.** Enabling enforcement is the one operation that can brick the maintainer. Consumers MUST refuse a policy that would leave an operation-class enforced with no party able to satisfy it (`lockout_refused`), forcing the operator to register an approver first.
+**Anti-lockout.** Enabling enforcement is the one operation that can brick the maintainer. Consumers MUST refuse a policy that would leave an operation-class enforced with no party able to satisfy it (`lockoutRefused`), forcing the operator to register an approver first.
 
 **Break-glass.** This policy governs **wire-facing** access control only. A maintainer MUST retain an out-of-band administrative path — available to an operator with direct, locally-trusted control of the maintainer's key material — to read and roll back this policy **without** traversing the step-up gate, so an over-strict policy can be recovered even when every remote credential is locked out. Implementations differ by deployment: a local administrative CLI with direct store access is one form; deployments that intentionally expose **no** local operator backdoor (e.g. confidential-computing / TEE maintainers) MUST instead provide a re-provisioning or emergency-recovery ceremony, since for those the wire is the only channel and a self-lockout is otherwise terminal.
 

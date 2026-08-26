@@ -30,13 +30,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/did/delete:not_owner
+  - code: did-management/did/delete:notOwner
     meaning: The caller is not the slot's current owner (and is not an admin).
     retryable: false
-  - code: did-management/did/delete:already_deleted
+  - code: did-management/did/delete:alreadyDeleted
     meaning: The slot is already in the deleted state.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain on this consumer. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/did/disable, did-management/did/register]

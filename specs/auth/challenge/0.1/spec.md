@@ -33,10 +33,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/challenge:subject_not_recognized
+  - code: auth/challenge:subjectNotRecognized
     meaning: The producer named a `subject` that the auth service does not know how to authenticate (e.g. an unregistered DID, or a VID scheme outside the issuer's trust framework).
     retryable: false
-  - code: auth/challenge:rate_limited
+  - code: auth/challenge:rateLimited
     meaning: The producer (by source identifier — IP, DID, or both) has exceeded the issuer's challenge-issuance budget. The producer SHOULD back off; details.retryAfter MAY carry a seconds-until-retry hint.
     retryable: true
     detailsSchema:
@@ -79,8 +79,8 @@ A conforming **consumer** (the auth service) **MUST**:
    - The `sessionId` returned. The same `(sessionId, challenge)` pair MUST NOT be issued twice.
    - The `expiresAt` returned. The consumer MUST refuse an authenticate carrying a challenge whose binding has expired.
 4. Return a `#response` document carrying the issued challenge, sessionId, and expiry. Issuers SHOULD pick `expiresAt` between 30 s and 5 min in the future — long enough for slow network paths, short enough to bound replay risk.
-5. Refuse with `auth/challenge:subject_not_recognized` when the named subject is outside the issuer's trust framework (unregistered DID, unsupported VID scheme).
-6. Apply rate limiting on its own policy axes (source IP, source DID, both) and refuse with `auth/challenge:rate_limited` when exceeded.
+5. Refuse with `auth/challenge:subjectNotRecognized` when the named subject is outside the issuer's trust framework (unregistered DID, unsupported VID scheme).
+6. Apply rate limiting on its own policy axes (source IP, source DID, both) and refuse with `auth/challenge:rateLimited` when exceeded.
 
 A consumer **MAY** issue a *subject-agnostic* challenge when `payload.subject` is omitted. In that case the binding is established by the subject named in the proof on the authenticate document — the consumer trusts whichever VID signs the authenticate, subject to any later policy gates (e.g. ACL admission).
 
@@ -176,7 +176,7 @@ Response to the first request example:
   "recipient": "did:web:alice.example",
   "issuedAt": "2026-05-23T10:00:00Z",
   "payload": {
-    "code": "auth/challenge:subject_not_recognized",
+    "code": "auth/challenge:subjectNotRecognized",
     "message": "VID did:web:alice.example is not registered with this auth service."
   }
 }
@@ -190,7 +190,7 @@ The challenge document itself carries no evidentiary value — it does NOT prove
 
 **Entropy.** The 128-bit minimum is a floor, not a target. Consumers SHOULD use 192–256 bits of entropy in the `challenge` value to leave headroom against future cryptanalysis.
 
-**Enumeration.** Returning `subject_not_recognized` distinguishes registered VIDs from unregistered ones. Consumers operating in environments where membership is sensitive (private communities, regulated rosters) MAY substitute a generic rate-limited error to avoid leaking the registered set.
+**Enumeration.** Returning `subjectNotRecognized` distinguishes registered VIDs from unregistered ones. Consumers operating in environments where membership is sensitive (private communities, regulated rosters) MAY substitute a generic rate-limited error to avoid leaking the registered set.
 
 **Rate limiting.** Unauthenticated challenge issuance is the cheapest attack surface in the auth family. Consumers SHOULD apply per-IP AND per-subject limits; a single-axis limiter is bypassable by either rotating IPs or rotating attempted subjects.
 

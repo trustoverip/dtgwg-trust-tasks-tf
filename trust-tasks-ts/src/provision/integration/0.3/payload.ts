@@ -18,11 +18,11 @@ export type DigestMultibase = string;
 export interface ProvisionIntegrationPayload {
   request: BootstrapRequest;
   /**
-   * The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:context_required`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly.
+   * The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:contextRequired`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly.
    */
   context?: string;
   /**
-   * Producer-assertion mode the maintainer should apply to the returned sealed bundle. `didSigned` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinnedOnly` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertion_unsupported` to unsupported requests.
+   * Producer-assertion mode the maintainer should apply to the returned sealed bundle. `didSigned` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinnedOnly` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertionUnsupported` to unsupported requests.
    */
   assertion?: "didSigned" | "pinnedOnly";
   /**
@@ -99,7 +99,7 @@ export interface DidTemplateRef {
    */
   name: string;
   /**
-   * Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:template_vars_invalid`.
+   * Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.
    */
   vars?: {
     [k: string]: unknown | undefined;
@@ -114,7 +114,7 @@ export interface DidTemplateRef1 {
    */
   name: string;
   /**
-   * Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:template_vars_invalid`.
+   * Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.
    */
   vars?: {
     [k: string]: unknown | undefined;
@@ -144,7 +144,7 @@ export interface DidTemplateRef2 {
    */
   name: string;
   /**
-   * Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:template_vars_invalid`.
+   * Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`.
    */
   vars?: {
     [k: string]: unknown | undefined;
@@ -288,7 +288,7 @@ export const PAYLOAD_SCHEMA = {
     "context": {
       "type": "string",
       "minLength": 1,
-      "description": "The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:context_required`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly."
+      "description": "The maintainer's context identifier the integration is to be provisioned into. When present, authoritative — overrides any `contextHint` carried inside `request.ask`. When ABSENT, the maintainer infers the target context using these rules in order: (1) if the relayer's grant scopes to exactly one context, use that context; (2) if the relayer is a super-admin (Admin role with unrestricted scope) and the maintainer has exactly one context registered, use that context; (3) otherwise reject the request with `provision/integration:contextRequired`. Wallet-class consumers (browser plugins, mobile companions) that don't know the maintainer's context layout SHOULD omit this field; integration-class consumers (mediator, did-hosting) targeting a specific operational context SHOULD send it explicitly."
     },
     "assertion": {
       "type": "string",
@@ -297,7 +297,7 @@ export const PAYLOAD_SCHEMA = {
         "pinnedOnly"
       ],
       "default": "didSigned",
-      "description": "Producer-assertion mode the maintainer should apply to the returned sealed bundle. `didSigned` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinnedOnly` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertion_unsupported` to unsupported requests."
+      "description": "Producer-assertion mode the maintainer should apply to the returned sealed bundle. `didSigned` (default) — Ed25519 signature over the bundle's domain-bound digest, verified by the holder against the maintainer's published key. `pinnedOnly` — holder pins the bundle's SHA-256 digest as the sole integrity anchor; for dev/test only. Maintainers MAY support additional modes (e.g. `attested` for TEE deployments) and respond with `provision/integration:assertionUnsupported` to unsupported requests."
     },
     "vcValiditySeconds": {
       "type": "integer",
@@ -487,7 +487,7 @@ export const PAYLOAD_SCHEMA = {
           "type": "object",
           "additionalProperties": true,
           "default": {},
-          "description": "Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:template_vars_invalid`."
+          "description": "Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`."
         }
       }
     },
@@ -836,7 +836,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "additionalProperties": true,
           "default": {},
-          "description": "Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:template_vars_invalid`."
+          "description": "Variable bindings the maintainer feeds to the template renderer. MUST satisfy the template's `requiredVars`; values for `optionalVars` MAY be supplied. Unknown vars are rejected with `provision/integration:templateVarsInvalid`."
         }
       }
     },

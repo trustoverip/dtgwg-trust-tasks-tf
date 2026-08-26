@@ -30,10 +30,10 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: policy/evaluate:permission_denied
+  - code: policy/evaluate:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.
     retryable: false
-  - code: policy/evaluate:candidate_rego_invalid
+  - code: policy/evaluate:candidateRegoInvalid
     meaning: The supplied `candidateModule` failed parsing.
     retryable: false
     detailsSchema:

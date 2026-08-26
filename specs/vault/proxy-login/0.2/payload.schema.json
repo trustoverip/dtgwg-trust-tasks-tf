@@ -48,7 +48,7 @@
       "properties": {
         "sealedSessionBlob": {
           "$ref": "../../_shared/0.2/sealed-envelope.schema.json#/$defs/SealedEnvelope",
-          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`."
+          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`."
         },
         "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
       }

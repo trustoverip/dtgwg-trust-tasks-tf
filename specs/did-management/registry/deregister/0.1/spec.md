@@ -26,7 +26,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/registry/deregister:not_found
+  - code: did-management/registry/deregister:notFound
     meaning: No registry entry matches the submitted `instanceId`.
     retryable: false
 related: [did-management/registry/admin-register, did-management/server/register]

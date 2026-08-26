@@ -30,13 +30,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: device/disable:not_found
+  - code: device/disable:notFound
     meaning: No DeviceBinding with this id (or the consumer cannot see it).
     retryable: false
-  - code: device/disable:permission_denied
+  - code: device/disable:permissionDenied
     meaning: The consumer lacks DeviceAdmin capability.
     retryable: false
-  - code: device/disable:already_disabled
+  - code: device/disable:alreadyDisabled
     meaning: The device is already disabled (idempotent — maintainers MAY return success with the original disabledAt instead).
     retryable: false
 ---

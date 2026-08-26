@@ -27,7 +27,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/registry/admin-register:instance_exists
+  - code: did-management/registry/admin-register:instanceExists
     meaning: A registry entry with the same `instanceId` is already present.
     retryable: false
 related: [did-management/registry/deregister, did-management/server/register]

@@ -31,7 +31,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/did/check-name:invalid_path
+  - code: did-management/did/check-name:invalidPath
     meaning: The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots).
     retryable: false
     detailsSchema:
@@ -40,7 +40,7 @@ errorCodes:
       properties:
         path: { type: string }
         reason: { type: string }
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain on this consumer. See [the category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
     detailsSchema:

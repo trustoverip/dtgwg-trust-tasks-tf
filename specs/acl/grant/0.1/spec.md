@@ -32,7 +32,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: acl/grant:role_not_recognized
+  - code: acl/grant:roleNotRecognized
     meaning: The role string is not part of the ACL maintainer's role vocabulary.
     retryable: false
     detailsSchema:
@@ -74,7 +74,7 @@ A conforming **producer** (the granting authority) **MUST**:
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Where the role string is not recognized, respond with `acl/grant:role_not_recognized`. Where the granting authority is not permitted to assign the requested role, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
+2. Where the role string is not recognized, respond with `acl/grant:roleNotRecognized`. Where the granting authority is not permitted to assign the requested role, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. Where the subject already exists in the ACL with a different role, respond with `permission_denied` and `details.reason` indicating that role changes use [`acl/change-role`](../../change-role/0.1/spec.md).
 4. On acceptance, persist the document as the evidentiary record of the change.
 

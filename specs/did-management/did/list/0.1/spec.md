@@ -29,7 +29,7 @@ errorCodes:
   - code: did-management/did/list:forbidden
     meaning: Non-admin caller specified an `owner` other than themselves.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` filter is not a known hosting domain on this consumer. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related:

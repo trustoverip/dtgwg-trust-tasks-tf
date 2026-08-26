@@ -33,19 +33,19 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/step-up/approve-response:challenge_unknown
+  - code: auth/step-up/approve-response:challengeUnknown
     meaning: The relying party has no pending step-up matching the echoed challenge.
     retryable: false
-  - code: auth/step-up/approve-response:challenge_expired
+  - code: auth/step-up/approve-response:challengeExpired
     meaning: The matching step-up has expired.
     retryable: false
-  - code: auth/step-up/approve-response:subject_mismatch
+  - code: auth/step-up/approve-response:subjectMismatch
     meaning: The document's issuer (or the proof's verificationMethod DID) does not equal the session's subject.
     retryable: false
-  - code: auth/step-up/approve-response:acr_unsatisfied
+  - code: auth/step-up/approve-response:acrUnsatisfied
     meaning: The grantedAcr is below the targetAcr the relying party originally requested.
     retryable: false
-  - code: auth/step-up/approve-response:assertion_invalid
+  - code: auth/step-up/approve-response:assertionInvalid
     meaning: The WebAuthn assertion carried in `evidence` failed verification. `details.reason` carries a machine-readable hint.
     retryable: false
     detailsSchema:
@@ -55,7 +55,7 @@ errorCodes:
         reason:
           type: string
           enum: ["challenge_mismatch", "origin_mismatch", "rp_id_mismatch", "signature_invalid", "counter_regressed", "credential_unknown", "user_handle_mismatch"]
-  - code: auth/step-up/approve-response:no_gate
+  - code: auth/step-up/approve-response:noGate
     meaning: The document carried neither a verifiable framework proof (did-signed) nor a `webauthn` evidence assertion. There is no cryptographic basis to elevate.
     retryable: false
 related:
@@ -98,14 +98,14 @@ A conforming **producer** (the approver) **MUST**:
 A conforming **consumer** (the relying party) **MUST**:
 
 1. Validate the document. Determine the gate from `payload.evidence.kind` (treating an absent `evidence` as `did-signed`).
-2. Locate the matching pending step-up via `payload.challenge`. Unknown → `challenge_unknown`. Expired → `challenge_expired`.
+2. Locate the matching pending step-up via `payload.challenge`. Unknown → `challengeUnknown`. Expired → `challengeExpired`.
 3. Verify `payload.challenge` equals the bound challenge bit-for-bit (constant-time comparator).
 4. Verify the gate:
-   - **`did-signed`** — verify the framework `proof`. Verify `payload.subject` equals the session's subject AND equals the document's `issuer` AND equals the DID resolved from the proof's `verificationMethod`. Mismatch → `subject_mismatch`. Missing/invalid proof → `proof_invalid` (or `no_gate` if no gate of either kind is present).
-   - **`webauthn`** — perform full WebAuthn Level 2 §7.2 assertion verification against the bound challenge: decode `clientDataJSON` (`type === "webauthn.get"`, challenge match, `origin` match); verify `rpIdHash` matches the consumer's RP ID; verify the signature with the stored credential public key; verify the signature counter strictly increased. Any failure → `assertion_invalid` with `details.reason`. Resolve `credential.id` (and `userHandle`) to a subject and verify it equals the session's subject. Mismatch → `assertion_invalid:user_handle_mismatch`.
+   - **`did-signed`** — verify the framework `proof`. Verify `payload.subject` equals the session's subject AND equals the document's `issuer` AND equals the DID resolved from the proof's `verificationMethod`. Mismatch → `subjectMismatch`. Missing/invalid proof → `proof_invalid` (or `noGate` if no gate of either kind is present).
+   - **`webauthn`** — perform full WebAuthn Level 2 §7.2 assertion verification against the bound challenge: decode `clientDataJSON` (`type === "webauthn.get"`, challenge match, `origin` match); verify `rpIdHash` matches the consumer's RP ID; verify the signature with the stored credential public key; verify the signature counter strictly increased. Any failure → `assertionInvalid` with `details.reason`. Resolve `credential.id` (and `userHandle`) to a subject and verify it equals the session's subject. Mismatch → `assertion_invalid:user_handle_mismatch`.
 5. When `decision === "approved"`:
    - Apply the session elevation per the consumer's policy: update `session.amr` to include the new factor (`"passkey"` for a webauthn gate, `"vta"`/`"did"` for a did-signed gate), raise `session.acr` to at most `payload.grantedAcr`.
-   - If the session's `acr` cannot reach the originally-requested `targetAcr` → `acr_unsatisfied`.
+   - If the session's `acr` cannot reach the originally-requested `targetAcr` → `acrUnsatisfied`.
    - Consume the step-up so the same approve-response cannot be replayed. For a webauthn gate, persist the credential counter update.
 6. When `decision === "denied"`:
    - Verify the did-signed gate (a denial MUST be subject-signed).
@@ -126,7 +126,7 @@ A conforming **consumer** (the relying party) **MUST**:
 
 `payload.grantedAcr` — optional approver-declared AAL.
 
-`payload.evidence` — optional tagged union selecting the gate: `{ "kind": "did-signed" }` (framework proof is the gate; the default when omitted) or `{ "kind": "webauthn", "assertion": <AuthenticatorAssertionResponse> }` (the assertion over `challenge` is the gate). New kinds may be added in later minor versions; consumers that do not recognise a `kind` MUST reject with `no_gate` rather than silently elevate.
+`payload.evidence` — optional tagged union selecting the gate: `{ "kind": "did-signed" }` (framework proof is the gate; the default when omitted) or `{ "kind": "webauthn", "assertion": <AuthenticatorAssertionResponse> }` (the assertion over `challenge` is the gate). New kinds may be added in later minor versions; consumers that do not recognise a `kind` MUST reject with `noGate` rather than silently elevate.
 
 `payload.ext` — extension slot.
 
@@ -261,7 +261,7 @@ The relying party's `#response` confirms whether elevation succeeded.
 
 ## Security & Privacy
 
-**Exactly one gate, never zero.** The relying party MUST NOT take any field in this document as authoritative without a verified gate — either a framework `proof` (did-signed) or a verified WebAuthn assertion (webauthn). A bearer-token-style step-up is not safe — the threat model includes a token-stealing attacker who would happily issue their own approve-response. A document presenting neither gate, or an `evidence.kind` the consumer does not recognise, MUST be rejected (`no_gate`), never elevated.
+**Exactly one gate, never zero.** The relying party MUST NOT take any field in this document as authoritative without a verified gate — either a framework `proof` (did-signed) or a verified WebAuthn assertion (webauthn). A bearer-token-style step-up is not safe — the threat model includes a token-stealing attacker who would happily issue their own approve-response. A document presenting neither gate, or an `evidence.kind` the consumer does not recognise, MUST be rejected (`noGate`), never elevated.
 
 **WebAuthn challenge binding.** For a webauthn gate the assertion's `clientDataJSON` challenge MUST equal `payload.challenge` — the same nonce the relying party bound server-side at approve-request time. This is what stops an attacker from harvesting a passkey assertion gathered for one ceremony and replaying it into a step-up. The relying party verifies the binding before consulting `subject`; the WebAuthn `rpId`/`origin` checks supply the audience binding that the framework `recipient` would otherwise provide, which is why the framework `proof` MAY be omitted for this kind.
 
@@ -269,7 +269,7 @@ The relying party's `#response` confirms whether elevation succeeded.
 
 **Echo verification.** All three echo fields (`subject`, `sessionId`, `challenge`) MUST be compared bit-for-bit. An attacker who can re-target a captured approve-response to a different session (by mutating `sessionId`) MUST be defeated by the proof — but defense-in-depth: comparing all three fields blocks attacks against weak proof implementations.
 
-**Replay.** Consuming the challenge on success-or-denial is mandatory. A second approve-response carrying the same challenge MUST fail with `challenge_unknown`.
+**Replay.** Consuming the challenge on success-or-denial is mandatory. A second approve-response carrying the same challenge MUST fail with `challengeUnknown`.
 
 **Denied responses as audit.** A signed `denied` response is valuable evidence — it proves the user actively refused, not that they were absent. Relying parties SHOULD preserve denied responses with the same retention policy as approvals.
 

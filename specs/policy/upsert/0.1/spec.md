@@ -33,16 +33,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: policy/upsert:permission_denied
+  - code: policy/upsert:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.
     retryable: false
-  - code: policy/upsert:not_found
+  - code: policy/upsert:notFound
     meaning: An `id` was supplied for update but no policy with that id exists.
     retryable: false
-  - code: policy/upsert:version_conflict
+  - code: policy/upsert:versionConflict
     meaning: "`expectedVersion` does not match."
     retryable: true
-  - code: policy/upsert:rego_invalid
+  - code: policy/upsert:regoInvalid
     meaning: The supplied `module` failed Rego parsing or static analysis.
     retryable: false
     detailsSchema:
@@ -52,7 +52,7 @@ errorCodes:
         line: { type: "integer", minimum: 1 }
         column: { type: "integer", minimum: 1 }
         message: { type: "string" }
-  - code: policy/upsert:context_not_found
+  - code: policy/upsert:contextNotFound
     meaning: An entry in `appliesTo` references a context that does not exist.
     retryable: false
 ---
@@ -65,7 +65,7 @@ The **Policy — Upsert** Trust Task creates or updates a Rego policy module. Th
 
 Producer: populate `name`, `module`. Supply `id` + `expectedVersion` on update. Carry a proof.
 
-Consumer: verify `PolicyAdmin` capability. Parse the Rego with the evaluator (e.g. `regorus`); on parse failure return `rego_invalid` with `details.line/column/message`. Validate `appliesTo` against known context ids. On successful upsert, increment `version`, emit `sync/event/0.1` with kind `policy.changed`, hot-load into the evaluator cache so the next request sees the new rules.
+Consumer: verify `PolicyAdmin` capability. Parse the Rego with the evaluator (e.g. `regorus`); on parse failure return `regoInvalid` with `details.line/column/message`. Validate `appliesTo` against known context ids. On successful upsert, increment `version`, emit `sync/event/0.1` with kind `policy.changed`, hot-load into the evaluator cache so the next request sees the new rules.
 
 ## Security & Privacy
 

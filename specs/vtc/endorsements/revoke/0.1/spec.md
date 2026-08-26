@@ -76,7 +76,7 @@ Consumer:
 Revocation is **idempotent in effect** but **MUST** report `alreadyRevoked` on
 re-revocation, matching the registry-wide contract stated on
 [`RevocationReceipt`](../../../../credentials/_shared/0.1/credentials.schema.json)
-and mirroring `vta/credentials/revoke:already_revoked`. The caller has to be
+and mirroring `vta/credentials/revoke:alreadyRevoked`. The caller has to be
 able to distinguish "I revoked it now" from "it was already gone".
 
 > **Change from the pre-migration VTC behaviour.** The superseded

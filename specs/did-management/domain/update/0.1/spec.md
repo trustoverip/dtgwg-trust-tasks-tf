@@ -27,7 +27,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/domain/create]

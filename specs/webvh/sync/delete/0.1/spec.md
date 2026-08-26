@@ -29,7 +29,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: webvh/sync/delete:not_authorized
+  - code: webvh/sync/delete:notAuthorized
     meaning: Sender DID is not the configured control plane for the receiving server.
     retryable: false
 related:
@@ -53,7 +53,7 @@ Draft.
 
 Producer (control plane) MUST emit `type: https://trusttasks.org/spec/webvh/sync/delete/0.1` with `payload.mnemonic`. Consumer (hosting server) MUST:
 
-1. Verify the sender DID is the server's configured control plane, else reject with `webvh/sync/delete:not_authorized`.
+1. Verify the sender DID is the server's configured control plane, else reject with `webvh/sync/delete:notAuthorized`.
 2. Remove the slot's record, log, witness content, owner index, and watcher markers in a single atomic batch; if the slot is not present, treat as a no-op.
 3. Respond with `status: "deleted"` referencing the same `mnemonic`.
 
@@ -77,6 +77,6 @@ Producer (control plane) MUST emit `type: https://trusttasks.org/spec/webvh/sync
 
 ## Security & Privacy
 
-The `not_authorized` gate is load-bearing: a successful sync-delete is destructive against the server's local copy. Servers MUST refuse sync-delete messages from any sender other than the configured control plane DID, even if the sender holds Service role generally.
+The `notAuthorized` gate is load-bearing: a successful sync-delete is destructive against the server's local copy. Servers MUST refuse sync-delete messages from any sender other than the configured control plane DID, even if the sender holds Service role generally.
 
 A control plane that issues a sync-delete is asserting that the canonical record has been removed centrally; servers SHOULD NOT mirror the deletion to caches outside the slot's record set (e.g. external resolver caches) — that responsibility belongs to the resolver's own TTL management.

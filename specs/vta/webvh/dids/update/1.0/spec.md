@@ -36,13 +36,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vta/webvh/dids/update:not_found
+  - code: vta/webvh/dids/update:notFound
     meaning: The agent holds no update key for this DID.
     retryable: false
-  - code: vta/webvh/dids/update:version_conflict
+  - code: vta/webvh/dids/update:versionConflict
     meaning: The DID's latest entry no longer matches `expectedVersionId` — someone else updated it since the caller read it. The caller SHOULD re-read and re-apply its edits.
     retryable: false
-  - code: vta/webvh/dids/update:invalid_document
+  - code: vta/webvh/dids/update:invalidDocument
     meaning: The document is not a valid DID document for this subject (for example, its `id` does not match `did`).
     retryable: false
 related:
@@ -100,7 +100,7 @@ A conforming **consumer** (the agent) **MUST**:
 
 1. Verify the `proof` and that the issuer is authorized over `did`.
 2. Reject a payload carrying members this schema does not define. The schema is closed, and it is closed for a reason (see *Closed payloads*).
-3. Refuse the update when `expectedVersionId` is present and no longer matches the DID's latest entry → `version_conflict`.
+3. Refuse the update when `expectedVersionId` is present and no longer matches the DID's latest entry → `versionConflict`.
 4. Derive the task's side-effect class from the handler it is about to invoke — **not** from this specification's declaration, which is advisory. See SPEC §7.3 item 13.
 
 ## `expectedVersionId`, and why it is not a formality

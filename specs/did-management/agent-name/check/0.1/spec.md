@@ -29,7 +29,7 @@ errorCodes:
   - code: did-management/agent-name/check:invalidName
     meaning: "The submitted `name` violates the agent-name grammar (length bounds, character set). Grammatical invalidity is an error, not unavailability — a reserved-list hit is reported in-band via `reserved: true`."
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/agent-name/update, did-management/agent-name/list, did-management/did/check-name]

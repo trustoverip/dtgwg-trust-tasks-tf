@@ -10,11 +10,11 @@
     "entryId": {
       "type": "string",
       "minLength": 1,
-      "description": "Identifier of the vault entry whose principal will sign. The maintainer rejects with `not_signable` when `entry.secretKind` is not `did-self-issued` or `didcomm-peer` (other kinds have no DID-based signing identity)."
+      "description": "Identifier of the vault entry whose principal will sign. The maintainer rejects with `notSignable` when `entry.secretKind` is not `did-self-issued` or `didcomm-peer` (other kinds have no DID-based signing identity)."
     },
     "unsignedEnvelope": {
       "$ref": "#/$defs/UnsignedTrustTaskEnvelope",
-      "description": "The Trust Task document to sign. MUST satisfy the framework's structural requirements (id/type/issuer/recipient/issuedAt/payload). MUST NOT carry a `proof`. `issuer` MUST equal the referenced entry's principalDid — the maintainer refuses to silently rewrite `issuer` (see `envelope_issuer_mismatch`)."
+      "description": "The Trust Task document to sign. MUST satisfy the framework's structural requirements (id/type/issuer/recipient/issuedAt/payload). MUST NOT carry a `proof`. `issuer` MUST equal the referenced entry's principalDid — the maintainer refuses to silently rewrite `issuer` (see `envelopeIssuerMismatch`)."
     },
     "consumerContext": {
       "$ref": "../../_shared/0.1/consumer-context.schema.json#/$defs/ConsumerContext",
@@ -22,7 +22,7 @@
     },
     "stepUpProof": {
       "$ref": "../../_shared/0.1/consumer-context.schema.json#/$defs/StepUpProof",
-      "description": "Step-up proof on retry after `step_up_required`."
+      "description": "Step-up proof on retry after `stepUpRequired`."
     },
     "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
   },
@@ -53,7 +53,7 @@
         "issuer": {
           "type": "string",
           "minLength": 1,
-          "description": "Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelope_issuer_mismatch` rather than overwriting."
+          "description": "Issuer DID of the inner task. MUST equal the vault entry's principalDid — the maintainer rejects mismatches with `envelopeIssuerMismatch` rather than overwriting."
         },
         "recipient": {
           "type": "string",
@@ -68,7 +68,7 @@
         "expiresAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Optional inner-task expiry. The maintainer rejects with `envelope_expired` when this is in the past at sign time."
+          "description": "Optional inner-task expiry. The maintainer rejects with `envelopeExpired` when this is in the past at sign time."
         },
         "payload": {
           "description": "Inner task's payload object. Opaque to the maintainer — passed through unchanged into the signed envelope."

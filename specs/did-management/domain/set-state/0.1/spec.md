@@ -27,7 +27,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
   - code: did-management/domain/set-state:isDefault
@@ -58,7 +58,7 @@ Draft.
 
 ## Conformance
 
-Admin caller emits `type: https://trusttasks.org/spec/did-management/domain/set-state/0.1` with `payload.name` and `payload.state`. Consumer rejects with `did-management:unknown_domain` if the domain is not in the registry; with `isDefault` when disabling the current system default; and with `alreadyPurged` when activating a purged domain. Otherwise it transitions the entry (a no-op when already in the requested state), fans the updated entry out to registered servers, and replies with the updated `DomainEntry`.
+Admin caller emits `type: https://trusttasks.org/spec/did-management/domain/set-state/0.1` with `payload.name` and `payload.state`. Consumer rejects with `did-management:unknownDomain` if the domain is not in the registry; with `isDefault` when disabling the current system default; and with `alreadyPurged` when activating a purged domain. Otherwise it transitions the entry (a no-op when already in the requested state), fans the updated entry out to registered servers, and replies with the updated `DomainEntry`.
 
 ## Request
 

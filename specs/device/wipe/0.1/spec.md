@@ -34,13 +34,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: device/wipe:not_found
+  - code: device/wipe:notFound
     meaning: No DeviceBinding with this id.
     retryable: false
-  - code: device/wipe:permission_denied
+  - code: device/wipe:permissionDenied
     meaning: The issuer lacks DeviceAdmin capability on the maintainer.
     retryable: false
-  - code: device/wipe:wipe_partial
+  - code: device/wipe:wipePartial
     meaning: The target executed the wipe but could not complete every step (e.g. OS keychain APIs returned errors). The target completed as much as possible and reports `diagnostics.partialReasons`.
     retryable: false
     detailsSchema:
@@ -54,7 +54,7 @@ errorCodes:
 
 The **Device — Wipe** Trust Task instructs a Companion or Service to destroy its local cache and (per `scope`) its device-local key material. Wipe is best-effort from the target's perspective — a compromised device may silently drop the message — so the maintainer pairs it with **defence-in-depth** server-side actions:
 
-1. The target's ACL entry is **revoked at the moment the wipe is issued**, not when the target acknowledges. Existing refresh tokens expire (existing 24h TTL); proxy-login and release calls return `permission_denied`.
+1. The target's ACL entry is **revoked at the moment the wipe is issued**, not when the target acknowledges. Existing refresh tokens expire (existing 24h TTL); proxy-login and release calls return `permissionDenied`.
 2. The maintainer rotates the **cache-key derivation root** for that device. Future sync deltas would be encrypted under a key the device can never derive again.
 3. The maintainer instructs the mediator to **refuse forwarding** of inbound traffic to the wiped device's holder DID.
 4. A `sync/event/0.1` of kind `acl.changed` with `change: "device_wiped"` is fanned out to every other Companion, so their UIs surface the wiped device in the device-manager.
@@ -77,7 +77,7 @@ A conforming **consumer** (the target Companion or Service) **MUST**:
    - `cache` — wipe the encrypted vault cache and any other maintainer-derived caches; preserve the device's long-term key material so re-sync can resume with the same identity.
    - `cache-and-keys` — wipe cache + device-local `device_secret`, WebAuthn-PRF-wrapped material, and any OS keychain handles. The device becomes unregistered; re-onboarding via §3a of the design plan is required to use the maintainer again.
    - `full` — `cache-and-keys` + invoke every available OS-level revocation hook (`navigator.credentials.preventSilentAccess()` on browsers, `ASCredentialIdentityStore.removeAllCredentialIdentities` on iOS, equivalent on Android) + clear extension/app storage.
-4. Acknowledge by sending the `device/wipe/0.1#response` document (over whatever transport is still functional). Populate `diagnostics` truthfully — partial wipes are surfaced via `wipe_partial`. **MUST NOT** suppress diagnostics to make the wipe appear cleaner than it was.
+4. Acknowledge by sending the `device/wipe/0.1#response` document (over whatever transport is still functional). Populate `diagnostics` truthfully — partial wipes are surfaced via `wipePartial`. **MUST NOT** suppress diagnostics to make the wipe appear cleaner than it was.
 5. After acknowledging, the target **MUST NOT** perform any operation against the maintainer (it would fail anyway because the ACL is revoked).
 
 A maintainer **MAY** issue subsequent wipes to the same `deviceId` at a wider `scope`. Targets MUST execute each wipe; idempotency is at the operation level (re-wiping already-clean state is a no-op).

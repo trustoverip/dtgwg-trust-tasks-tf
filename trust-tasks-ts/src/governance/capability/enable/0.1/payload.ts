@@ -16,7 +16,7 @@ export interface GovernanceCapabilityEnablePayload {
    */
   version: string;
   /**
-   * Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `config_invalid` on mismatch.
+   * Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch.
    */
   config?: {};
   /**
@@ -176,7 +176,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "config": {
       "type": "object",
-      "description": "Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `config_invalid` on mismatch."
+      "description": "Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch."
     },
     "delegate": {
       "type": "string",

@@ -33,16 +33,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/login/finish:auth_not_found
+  - code: auth/passkey/login/finish:authNotFound
     meaning: The `authId` does not refer to any active login ceremony.
     retryable: false
-  - code: auth/passkey/login/finish:auth_expired
+  - code: auth/passkey/login/finish:authExpired
     meaning: The login's start-time expiry has elapsed.
     retryable: true
-  - code: auth/passkey/login/finish:credential_unknown
+  - code: auth/passkey/login/finish:credentialUnknown
     meaning: The asserted credential id is not registered with this auth service.
     retryable: false
-  - code: auth/passkey/login/finish:assertion_invalid
+  - code: auth/passkey/login/finish:assertionInvalid
     meaning: The WebAuthn assertion failed verification. `details.reason` carries a machine-readable hint.
     retryable: false
     detailsSchema:
@@ -53,7 +53,7 @@ errorCodes:
           type: string
           enum:
             ["challenge_mismatch", "origin_mismatch", "rp_id_mismatch", "signature_invalid", "counter_regressed", "user_handle_mismatch"]
-  - code: auth/passkey/login/finish:step_up_session_not_found
+  - code: auth/passkey/login/finish:stepUpSessionNotFound
     meaning: A step-up finish referenced a session id that the consumer does not hold or that has expired.
     retryable: false
 related:
@@ -87,8 +87,8 @@ A conforming **producer** **MUST**:
 
 A conforming **consumer** **MUST**:
 
-1. Look up the login ceremony via `payload.authId`. Unknown → `auth_not_found`. Expired → `auth_expired`.
-2. Resolve `credential.id` to a registered credential. Unknown → `credential_unknown`.
+1. Look up the login ceremony via `payload.authId`. Unknown → `authNotFound`. Expired → `authExpired`.
+2. Resolve `credential.id` to a registered credential. Unknown → `credentialUnknown`.
 3. Perform full WebAuthn Level 2 §7.2 assertion verification:
    - Decode `clientDataJSON`; verify `type === "webauthn.get"`, `challenge` matches the bound challenge, `origin` matches the consumer's expected origin.
    - Verify `rpIdHash` in `authenticatorData` matches the consumer's RP ID.

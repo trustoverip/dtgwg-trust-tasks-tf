@@ -33,7 +33,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: registry/record/delete:not_found
+  - code: registry/record/delete:notFound
     meaning: No record exists for the given entity+authority+action+resource key.
     retryable: false
 related:
@@ -43,7 +43,7 @@ related:
 
 ## Abstract
 
-The **Registry — Delete Record** Trust Task removes the trust record identified by its four TRQP identifiers (`entity_id`, `authority_id`, `action`, `resource`) from a trust registry. Deleting a non-existent key is an error (`registry/record/delete:not_found`).
+The **Registry — Delete Record** Trust Task removes the trust record identified by its four TRQP identifiers (`entity_id`, `authority_id`, `action`, `resource`) from a trust registry. Deleting a non-existent key is an error (`registry/record/delete:notFound`).
 
 ## Status of this Document
 
@@ -74,7 +74,7 @@ The *registry administrator* (document `issuer`) sends the key to the *trust reg
 
 ## Response
 
-The *trust registry* replies with the `#response` document (`$anchor: "response"`) carrying `ok: true`. A missing key returns `trust-task-error` with `registry/record/delete:not_found`.
+The *trust registry* replies with the `#response` document (`$anchor: "response"`) carrying `ok: true`. A missing key returns `trust-task-error` with `registry/record/delete:notFound`.
 
 ### Example response
 

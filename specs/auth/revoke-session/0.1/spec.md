@@ -31,10 +31,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/revoke-session:session_not_found
+  - code: auth/revoke-session:sessionNotFound
     meaning: The named `sessionId` does not exist (already revoked, or never belonged to this subject).
     retryable: false
-  - code: auth/revoke-session:not_owner
+  - code: auth/revoke-session:notOwner
     meaning: The named `sessionId` exists but belongs to a different subject than the producer. The auth service MUST NOT reveal whether the session exists at all when the producer is not its owner.
     retryable: false
 related:
@@ -67,8 +67,8 @@ A conforming **consumer** (the auth service) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. When `sessionId` is provided:
-   - Look up the session; if absent, respond with `auth/revoke-session:session_not_found`.
-   - Verify the session's `subject` equals the document `issuer`. Mismatch → `auth/revoke-session:not_owner`.
+   - Look up the session; if absent, respond with `auth/revoke-session:sessionNotFound`.
+   - Verify the session's `subject` equals the document `issuer`. Mismatch → `auth/revoke-session:notOwner`.
    - Mark the session and its refresh tokens revoked.
 3. When `all: true` is provided, enumerate every session for the issuer's subject and revoke each. The response's `revokedCount` carries the total.
 4. Persist revocation state for at least the longest issued refresh-token lifetime, so a late-arriving refresh from a stolen token cannot succeed by waiting out the consumer's session-row cleanup.
@@ -155,7 +155,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/re
 
 **Cleanup horizon.** A consumer cleaning up old session rows MUST retain the revocation marker for at least the longest issued refresh-token lifetime. Otherwise a stolen refresh token replayed after cleanup would succeed.
 
-**Information leakage.** `not_owner` deliberately does NOT distinguish "exists but yours not" from "doesn't exist" beyond the error code itself. The error message MUST NOT reveal the actual owner of a session the producer doesn't control.
+**Information leakage.** `notOwner` deliberately does NOT distinguish "exists but yours not" from "doesn't exist" beyond the error code itself. The error message MUST NOT reveal the actual owner of a session the producer doesn't control.
 
 **Administrative revoke.** When the producer is not the session's subject (the administrative case), the consumer's policy decides whether to allow it. Audit logs MUST record both the actual issuer and the targeted subject so an incident investigation can reconstruct who acted on whose behalf.
 

@@ -29,6 +29,21 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.13.1] - 2026-08-26
+
+### Changed
+
+- **Regenerated after the registry re-cased 200 extended error codes to
+  lowerCamelCase** (SPEC §4.10 rule 4). The only movement is `description` text
+  inside embedded `PAYLOAD_SCHEMA` literals, where 21 schemas referenced a code
+  by name. Descriptions do not participate in validation, so no generated type,
+  constant or behaviour changes — this is a patch.
+
+  The rename itself is wire-visible for *services*: an emitter sending the old
+  spelling no longer matches what the registry declares. That migration is
+  documented on the pull request, not here, because it does not reach this
+  library's API.
+
 ## [0.13.0] - 2026-08-26
 
 ### Changed

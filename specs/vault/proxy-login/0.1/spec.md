@@ -35,13 +35,13 @@ exposure:
   actsAsSubject: true
   rationale: "Logs in as the holder at the bound site and returns a usable session blob, exercising the bound credential."
 errorCodes:
-  - code: vault/proxy-login:not_found
+  - code: vault/proxy-login:notFound
     meaning: No entry with this id exists in the consumer's scope.
     retryable: false
-  - code: vault/proxy-login:permission_denied
+  - code: vault/proxy-login:permissionDenied
     meaning: The consumer lacks ProxyLogin capability for this entry.
     retryable: false
-  - code: vault/proxy-login:step_up_required
+  - code: vault/proxy-login:stepUpRequired
     meaning: Policy demands a step-up proof before the login can proceed. Consumer retries with `stepUpProof` populated.
     retryable: true
     detailsSchema:
@@ -52,19 +52,19 @@ errorCodes:
         method: { type: "string", enum: ["webauthn-uv", "push-approval", "totp"] }
         challengeId: { type: "string" }
         ttlSeconds: { type: "integer", minimum: 1 }
-  - code: vault/proxy-login:target_unreachable
+  - code: vault/proxy-login:targetUnreachable
     meaning: The maintainer attempted the login at the third-party site but the site is unreachable, rate-limiting, or returned an unexpected response. Consumer SHOULD retry with backoff.
     retryable: true
-  - code: vault/proxy-login:credential_rejected
+  - code: vault/proxy-login:credentialRejected
     meaning: The maintainer attempted the login but the third party rejected the credential (wrong password, expired token, revoked passkey). Consumer SHOULD prompt the user to update the entry via vault/upsert.
     retryable: false
-  - code: vault/proxy-login:not_proxyable
+  - code: vault/proxy-login:notProxyable
     meaning: This entry cannot be proxy-logged-in (e.g. the site requires browser-bound channel binding). Consumer falls back to vault/release for a fill flow.
     retryable: false
-  - code: vault/proxy-login:policy_deny
+  - code: vault/proxy-login:policyDeny
     meaning: Policy denies proxy-login for this consumer + entry combination outright (no step-up will satisfy it).
     retryable: false
-  - code: vault/proxy-login:envelope_unsupported
+  - code: vault/proxy-login:envelopeUnsupported
     meaning: The maintainer cannot emit a `sealedSessionBlob` in any envelope kind the consumer accepts. Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
     retryable: false
     detailsSchema:
@@ -81,7 +81,7 @@ The **Vault — Proxy Login** Trust Task asks the maintainer to perform an authe
 
 The long-term credential never leaves the maintainer. The consumer learns only the session blob, which the maintainer scopes with a short TTL and binds to a specific origin.
 
-For sites that cannot be proxy-logged-in (rare — browser-bound channel binding, anti-bot, captcha walls), the maintainer returns `not_proxyable` and the consumer falls back to `vault/release/0.1` for a fill flow.
+For sites that cannot be proxy-logged-in (rare — browser-bound channel binding, anti-bot, captcha walls), the maintainer returns `notProxyable` and the consumer falls back to `vault/release/0.1` for a fill flow.
 
 ## Conformance
 
@@ -90,18 +90,18 @@ A conforming **producer** **MUST**:
 1. Populate `entryId`. **MAY** populate `target` to disambiguate when the entry has multiple targets and the consumer's form factor doesn't uniquely identify the right one.
 2. Populate `consumerContext` truthfully — populating false UV claims to bypass policy is a violation and maintainers MAY ban consumers caught doing so.
 3. Carry a `proof`.
-4. On `step_up_required`, satisfy the demanded method and retry with `stepUpProof` carrying the proof bytes and the challenge id.
+4. On `stepUpRequired`, satisfy the demanded method and retry with `stepUpProof` carrying the proof bytes and the challenge id.
 5. For SIOPv2-shaped flows where the consumer will post the resulting credential to a relying party that issued an authorization-request `nonce`, **MUST** populate `nonce` with that value. Omitting it forces the maintainer to generate its own nonce — which the RP will reject during id_token verification.
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Verify proof and the consumer's `ProxyLogin` capability on the entry.
 2. Cross-check `consumerContext.deviceId` against the authenticated transport identity. Discard any consumer-supplied field the maintainer can verify independently (e.g. the maintainer trusts its own record of the device's `last_seen_at`, not the consumer's `lastUserVerificationAt` blindly).
-3. Evaluate the policy engine (Rego per the policy/* family) against `{ site, contextId, consumer, request: { kind: "proxy_login" } }`. Possible outcomes: `allow + proxy`, `allow + fill` (returns `not_proxyable` to nudge the consumer to use `vault/release` instead), `require_step_up`, or `deny`.
-4. On `require_step_up`, mint a challenge id, return `step_up_required` with `details.method` and `details.challengeId`. On the consumer's retry, verify the proof against the challenge id; on success, proceed.
+3. Evaluate the policy engine (Rego per the policy/* family) against `{ site, contextId, consumer, request: { kind: "proxy_login" } }`. Possible outcomes: `allow + proxy`, `allow + fill` (returns `notProxyable` to nudge the consumer to use `vault/release` instead), `require_step_up`, or `deny`.
+4. On `require_step_up`, mint a challenge id, return `stepUpRequired` with `details.method` and `details.challengeId`. On the consumer's retry, verify the proof against the challenge id; on success, proceed.
 5. Perform the login at the third-party site using the entry's secret. The mechanism depends on `secretKind`:
    - `password`: HTTP form post / API call with username + password, then TOTP if seed present.
-   - `passkey`: WebAuthn assertion using the stored credential — only viable when the third party accepts a non-browser WebAuthn flow (rare; usually falls through to `not_proxyable`).
+   - `passkey`: WebAuthn assertion using the stored credential — only viable when the third party accepts a non-browser WebAuthn flow (rare; usually falls through to `notProxyable`).
    - `oauth-tokens`: refresh the access token if needed, return it as a header.
    - `did-self-issued`: issue a SIOP id_token signed by the referenced key. If the consumer supplied `nonce`, embed it verbatim as the id_token's `nonce` claim; otherwise generate a fresh nonce. Drivers MUST treat the consumer's nonce as opaque (no canonicalisation, trimming, or re-encoding) so the RP's exact-match check succeeds.
    - `didcomm-peer`: complete the DIDComm authentication handshake to the relying party.
@@ -109,7 +109,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 6. Construct a `SessionBlob` with `expiresAt` set conservatively (RECOMMENDED ≤ the third party's session TTL, and never more than 1 hour for high-value sites). Seal with HPKE to the consumer's published recipient X25519 key.
 7. Record `lastUsedAt = now` on the entry; emit a `sync/event/0.1` of kind `vault.upserted` so other consumers see the update.
 8. Audit-log the proxy-login with `{ who, when, entryId, sessionId, outcome }`.
-9. On third-party failure: distinguish reachability (`target_unreachable`, retryable) from credential rejection (`credential_rejected`, not retryable).
+9. On third-party failure: distinguish reachability (`targetUnreachable`, retryable) from credential rejection (`credentialRejected`, not retryable).
 10. **MUST NOT** include the long-term credential in any field of the response.
 
 ## Payload
@@ -189,7 +189,7 @@ Maintainer's first response:
   "recipient": "did:peer:2.Ez6LSc…",
   "issuedAt": "2026-05-26T13:00:01Z",
   "payload": {
-    "code": "vault/proxy-login:step_up_required",
+    "code": "vault/proxy-login:stepUpRequired",
     "details": { "method": "push-approval", "challengeId": "ch_abc123", "ttlSeconds": 60 }
   }
 }

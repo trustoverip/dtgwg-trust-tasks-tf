@@ -32,7 +32,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/list:passkeys_not_supported
+  - code: auth/passkey/list:passkeysNotSupported
     meaning: This auth service does not manage passkeys, so there is no inventory to return. Distinct from an empty list, which asserts that passkeys ARE supported and this subject has none.
     retryable: false
 related:
@@ -159,7 +159,7 @@ The backup key has no `lastUsedAt`: it has never completed an assertion. For a k
 
 **Why proof-required, and why there is no subject filter.** The list is an inventory of everything that can authenticate as the subject. Its value to an attacker is not the identifiers — those are useless without the authenticator — but the *shape*: how many credentials exist, whether any is a lone platform credential whose loss would lock the subject out, and which have gone unused long enough that revoking them would go unnoticed. Binding enumeration to the subject's signing key, and taking the subject from the `proof` rather than from the payload, removes the class of bug where a filter parameter and an authorization check disagree.
 
-**Empty list versus unsupported.** A consumer that does not manage passkeys **MUST** return `auth/passkey/list:passkeys_not_supported` rather than an empty array. Conflating them tells a subject auditing their own security that they have no passkeys, when the truth is that this service would not know.
+**Empty list versus unsupported.** A consumer that does not manage passkeys **MUST** return `auth/passkey/list:passkeysNotSupported` rather than an empty array. Conflating them tells a subject auditing their own security that they have no passkeys, when the truth is that this service would not know.
 
 **What is deliberately absent.** No public key, no signature counter, no AAGUID. A subject choosing which authenticator to revoke needs a label, a date, and a transport hint; the cryptographic material serves only an attacker fingerprinting the authenticator estate. Consumers needing an attestation-grade inventory for regulatory reasons **SHOULD** carry it under `ext` rather than widening the default surface.
 

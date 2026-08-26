@@ -29,7 +29,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: device/heartbeat:not_registered
+  - code: device/heartbeat:notRegistered
     meaning: The issuer's DID has no DeviceBinding. The consumer SHOULD complete device/register.
     retryable: false
 ---

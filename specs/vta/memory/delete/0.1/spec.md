@@ -31,10 +31,10 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vta/memory/delete:context_forbidden
+  - code: vta/memory/delete:contextForbidden
     meaning: The caller is not permitted to delete memory in the named context.
     retryable: false
-  - code: vta/memory/delete:not_found
+  - code: vta/memory/delete:notFound
     meaning: No item with that key exists in the context.
     retryable: false
 related:
@@ -47,7 +47,7 @@ related:
 The **VTA Memory — Delete** Trust Task removes a key/value memory item from a VTA
 **context** — the agent *forgets* it. Context-isolated and ACL-gated like
 [`vta/memory/put`](../../put/0.1/spec.md): a caller may only delete in a context
-it can access, and an unknown key yields `vta/memory/delete:not_found`.
+it can access, and an unknown key yields `vta/memory/delete:notFound`.
 
 ## Status of this Document
 
@@ -55,7 +55,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ## Conformance
 
-[[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) apply. The VTA **MUST** refuse with `context_forbidden` when the caller lacks access to `payload.contextId`, with `not_found` when the key is absent, and otherwise remove the item.
+[[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) apply. The VTA **MUST** refuse with `contextForbidden` when the caller lacks access to `payload.contextId`, with `notFound` when the key is absent, and otherwise remove the item.
 
 ## Request
 

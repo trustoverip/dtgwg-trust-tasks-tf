@@ -29,13 +29,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: did-management/did/change-owner:not_owner
+  - code: did-management/did/change-owner:notOwner
     meaning: The caller is not the slot's current owner.
     retryable: false
-  - code: did-management/did/change-owner:target_not_authorized
+  - code: did-management/did/change-owner:targetNotAuthorized
     meaning: The proposed `newOwner` VID is not permitted by the host's ACL / domain scope.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/did/register]

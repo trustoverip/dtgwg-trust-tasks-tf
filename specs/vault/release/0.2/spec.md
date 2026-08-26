@@ -105,7 +105,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 **TTL is contractual.** The consumer is bound to wipe within `ttlSeconds`. Maintainers SHOULD assume a non-compliant consumer cannot be detected directly — defense is in the TTL ceiling itself (short windows minimise exposure) plus device attestation and ACL revocation when misuse is suspected.
 
-**Prefer proxy-login.** Whenever the maintainer can do the login itself, it should — release is the last resort. Consumers SHOULD attempt `vault/proxy-login` first and only fall back to `release` on `not_proxyable`.
+**Prefer proxy-login.** Whenever the maintainer can do the login itself, it should — release is the last resort. Consumers SHOULD attempt `vault/proxy-login` first and only fall back to `release` on `notProxyable`.
 
 **Audit reach.** Every release is logged. AI Agent consumers with `FillRelease` are high-risk; maintainers SHOULD prefer narrow per-site capability grants for them.
 

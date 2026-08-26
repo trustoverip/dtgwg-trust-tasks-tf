@@ -33,16 +33,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/step-up/approve-request:subject_unknown
+  - code: auth/step-up/approve-request:subjectUnknown
     meaning: The approver does not speak for the named subject.
     retryable: false
-  - code: auth/step-up/approve-request:method_unsupported
+  - code: auth/step-up/approve-request:methodUnsupported
     meaning: The approver cannot deliver an approve-response (e.g. the wallet has no key for the subject, or doesn't support the requested AAL).
     retryable: false
-  - code: auth/step-up/approve-request:user_declined
+  - code: auth/step-up/approve-request:userDeclined
     meaning: The user reviewed the request and declined consent.
     retryable: false
-  - code: auth/step-up/approve-request:rate_limited
+  - code: auth/step-up/approve-request:rateLimited
     meaning: The relying party has exceeded the approver's request budget.
     retryable: true
 related:
@@ -75,7 +75,7 @@ A conforming **producer** (the relying party) **MUST**:
 2. Populate `payload.subject` with the VID whose session is being elevated.
 3. Populate `payload.sessionId` with the session id (opaque to the approver but echoed back in the approve-response so the relying party can correlate).
 4. Generate `payload.challenge` with ≥128 bits of entropy and bind it server-side to `(subject, sessionId, expiresAt)`.
-5. Populate `payload.reason` with a user-meaningful explanation. The approver MAY refuse with `user_declined` if the reason is empty or generic.
+5. Populate `payload.reason` with a user-meaningful explanation. The approver MAY refuse with `userDeclined` if the reason is empty or generic.
 6. **MAY** declare `payload.targetAcr` — the AAL the relying party expects on completion.
 7. **MAY** declare `payload.acceptableEvidence` to constrain which approve-response gates it will accept (`did-signed`, `webauthn`, or both). When the relying party wants a passkey-backed elevation (`webauthn`), it **SHOULD** also supply `payload.webauthn` — the `PublicKeyCredentialRequestOptions` the approver feeds to the platform passkey API — whose `challenge` **MUST** equal `payload.challenge`.
 8. Include a verified `proof` so the approver can rely on the request's `recipient` as authoritative.
@@ -83,9 +83,9 @@ A conforming **producer** (the relying party) **MUST**:
 A conforming **consumer** (the approver) **MUST**:
 
 1. Verify the document's `proof`.
-2. Determine whether it speaks for `payload.subject`. If not → `subject_unknown`.
+2. Determine whether it speaks for `payload.subject`. If not → `subjectUnknown`.
 3. Decide whether to surface the request to the user (subject of consent) or to ratify it programmatically (policy-bound delegation). The framework leaves this to the approver — but if a human is presented with the request, the `reason` MUST be shown verbatim.
-4. Honor `payload.acceptableEvidence` when present: the approve-response it later returns MUST carry an `evidence.kind` in that list. If the approver cannot satisfy any listed kind (e.g. `webauthn` was demanded but the device has no passkey for the subject) → `method_unsupported`. When `payload.webauthn` is present and the approver will produce `webauthn` evidence, it MUST pass those options to the platform passkey API unchanged and assert over `payload.challenge`.
+4. Honor `payload.acceptableEvidence` when present: the approve-response it later returns MUST carry an `evidence.kind` in that list. If the approver cannot satisfy any listed kind (e.g. `webauthn` was demanded but the device has no passkey for the subject) → `methodUnsupported`. When `payload.webauthn` is present and the approver will produce `webauthn` evidence, it MUST pass those options to the platform passkey API unchanged and assert over `payload.challenge`.
 5. Return a `#response` document carrying `status: accepted` (will return an approve-response asynchronously) or `status: refused` (with a `reason`).
 
 The approve-response document arrives out-of-band — typically via the approver's preferred transport (DIDComm push to the relying party's mediator, or a push channel the relying party registered at request time).

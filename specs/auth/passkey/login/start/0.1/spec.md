@@ -33,13 +33,13 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/login/start:subject_not_recognized
+  - code: auth/passkey/login/start:subjectNotRecognized
     meaning: A named `subject` is not registered with this auth service.
     retryable: false
-  - code: auth/passkey/login/start:no_credentials
+  - code: auth/passkey/login/start:noCredentials
     meaning: The named subject has no enrolled passkeys.
     retryable: false
-  - code: auth/passkey/login/start:rate_limited
+  - code: auth/passkey/login/start:rateLimited
     meaning: The producer has exceeded the issuer's login-start budget.
     retryable: true
     detailsSchema:
@@ -91,7 +91,7 @@ A conforming **consumer** **MUST**:
    - `rpId` set to the auth service's relying-party identifier.
    - `challenge` containing ≥128 bits of entropy.
    - `allowCredentials` populated with the named subject's enrolled credentials, OR empty when the producer requested a discoverable flow.
-4. Refuse with `subject_not_recognized` / `no_credentials` / `rate_limited` per the table above.
+4. Refuse with `subjectNotRecognized` / `noCredentials` / `rateLimited` per the table above.
 
 ## Definitions
 
@@ -188,7 +188,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/pa
 
 ## Security & Privacy
 
-**Subject enumeration.** Returning `no_credentials` reveals that a subject is registered but has no passkeys. Consumers operating in environments where membership is sensitive SHOULD substitute a generic `rate_limited` error for both `subject_not_recognized` and `no_credentials`, distinguishing only in audit logs.
+**Subject enumeration.** Returning `noCredentials` reveals that a subject is registered but has no passkeys. Consumers operating in environments where membership is sensitive SHOULD substitute a generic `rateLimited` error for both `subjectNotRecognized` and `noCredentials`, distinguishing only in audit logs.
 
 **Discoverable-credential UX.** A start with no `subject` causes the authenticator to surface its account picker. This is the recommended UX for first-time users but leaks the set of registered VIDs to anyone with platform-authenticator access (e.g. a shared device). Operators MAY default to username-first when their threat model includes hostile co-tenants.
 

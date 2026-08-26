@@ -31,7 +31,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: policy/list:permission_denied
+  - code: policy/list:permissionDenied
     meaning: The consumer lacks PolicyAdmin capability.
     retryable: false
 ---

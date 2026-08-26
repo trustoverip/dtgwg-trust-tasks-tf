@@ -36,7 +36,7 @@
       "minItems": 1,
       "uniqueItems": true,
       "items": { "type": "string", "enum": ["did-signed", "webauthn"] },
-      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`."
+      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`."
     },
     "webauthn": {
       "$ref": "../../../_shared/0.1/webauthn.schema.json#/$defs/CredentialRequestOptions",

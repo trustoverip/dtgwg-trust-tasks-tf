@@ -33,7 +33,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: acl/change-role:role_not_recognized
+  - code: acl/change-role:roleNotRecognized
     meaning: The fromRole or toRole string is not part of the ACL maintainer's role vocabulary.
     retryable: false
     detailsSchema:
@@ -44,7 +44,7 @@ errorCodes:
         knownRoles:
           type: array
           items: { type: string }
-  - code: acl/change-role:state_mismatch
+  - code: acl/change-role:stateMismatch
     meaning: The subject's current role does not match payload.fromRole; the change was based on stale state.
     retryable: true
     detailsSchema:
@@ -61,7 +61,7 @@ related:
 
 The **ACL — Change Role** Trust Task records the transition of a subject's role in an access-control list. It is the dedicated operation for role transitions; grants and revocations **MUST** use [`acl/grant`](../../grant/0.1/spec.md) and [`acl/revoke`](../../revoke/0.1/spec.md) respectively.
 
-The task is **state-checked**: the producer declares both the role the subject is moving *from* and the role they are moving *to*. The maintainer **MUST** reject the change with `acl/change-role:state_mismatch` if the subject's actual current role does not match `payload.fromRole` — so a race against another administrator surfaces as an error rather than a silent overwrite.
+The task is **state-checked**: the producer declares both the role the subject is moving *from* and the role they are moving *to*. The maintainer **MUST** reject the change with `acl/change-role:stateMismatch` if the subject's actual current role does not match `payload.fromRole` — so a race against another administrator surfaces as an error rather than a silent overwrite.
 
 This task changes only the `role`. Scope or label changes are out of scope; combine `acl/change-role` with `acl/grant`/`acl/revoke` under a shared `threadId` if you need both.
 
@@ -82,9 +82,9 @@ A conforming **producer** (the changing authority) **MUST**:
 A conforming **consumer** (the ACL maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Confirm the subject's current role in its own ACL equals `payload.fromRole`. If not, respond with `acl/change-role:state_mismatch`.
+2. Confirm the subject's current role in its own ACL equals `payload.fromRole`. If not, respond with `acl/change-role:stateMismatch`.
 3. Apply its own policy to decide whether the changing authority may make the requested transition. Where the policy forbids the transition, respond with the framework's `permission_denied` (see [SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
-4. Where either role string is not recognized, respond with `acl/change-role:role_not_recognized`.
+4. Where either role string is not recognized, respond with `acl/change-role:roleNotRecognized`.
 5. On acceptance, persist the document as the evidentiary record of the change.
 
 Maintainers **MAY** require stronger transport-binding-level authentication for transitions into elevated roles (e.g. a passkey step-up). Such requirements are documented by the maintainer and enforced by its transport handler; this task carries intent, not the step-up dance.
@@ -93,9 +93,9 @@ Maintainers **MAY** require stronger transport-binding-level authentication for 
 
 *Stated in anticipation of [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15, which binds specifications targeting framework 0.4; this one targets 0.1, where the declaration is not yet required.*
 
-The authorization evidence this task presupposes is the *changing authority*'s standing to alter this subject's role in **this** ACL, determined by the ACL maintainer's own policy. The role vocabulary is the maintainer's (`acl/change-role:role_not_recognized`), and so is the question of who may move a subject between roles within it.
+The authorization evidence this task presupposes is the *changing authority*'s standing to alter this subject's role in **this** ACL, determined by the ACL maintainer's own policy. The role vocabulary is the maintainer's (`acl/change-role:roleNotRecognized`), and so is the question of who may move a subject between roles within it.
 
-Neither of the checks Conformance names is that question. Verifying the `proof` establishes who asked; confirming `payload.fromRole` against the maintainer's own record establishes that the caller is not acting on stale state, and a `state_mismatch` is a concurrency failure rather than a permission one. A caller that passes both and is not entitled to change roles is refused with `permissionDenied`.
+Neither of the checks Conformance names is that question. Verifying the `proof` establishes who asked; confirming `payload.fromRole` against the maintainer's own record establishes that the caller is not acting on stale state, and a `stateMismatch` is a concurrency failure rather than a permission one. A caller that passes both and is not entitled to change roles is refused with `permissionDenied`.
 
 The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
@@ -165,7 +165,7 @@ But Bob's current role in the maintainer's ACL is `moderator` (changed moments e
   "recipient": "did:web:org.example",
   "issuedAt": "2026-06-11T09:00:01Z",
   "payload": {
-    "code": "acl/change-role:state_mismatch",
+    "code": "acl/change-role:stateMismatch",
     "message": "Subject's current role is 'moderator', not 'member'.",
     "retryable": true,
     "details": { "currentRole": "moderator" }
@@ -181,7 +181,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/acl/cha
 
 The response payload is `{ entry: AclEntry }`, where `entry.role` equals `payload.toRole` of the request. The changing authority can verify in one step that the transition landed.
 
-Failures (including `acl/change-role:state_mismatch`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (including `acl/change-role:stateMismatch`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ### Successful promotion
 

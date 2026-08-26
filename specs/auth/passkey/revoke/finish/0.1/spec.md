@@ -33,16 +33,16 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/revoke/finish:revocation_not_found
+  - code: auth/passkey/revoke/finish:revocationNotFound
     meaning: No pending revocation with this id, or it belongs to a different subject.
     retryable: false
-  - code: auth/passkey/revoke/finish:revocation_expired
+  - code: auth/passkey/revoke/finish:revocationExpired
     meaning: The revocationId outlived its window. Start a new ceremony.
     retryable: true
-  - code: auth/passkey/revoke/finish:user_verification_failed
+  - code: auth/passkey/revoke/finish:userVerificationFailed
     meaning: The assertion did not verify, did not match the challenge bound at start, or did not carry the UV flag. Deliberately one code for all three — see Security & Privacy.
     retryable: true
-  - code: auth/passkey/revoke/finish:last_credential
+  - code: auth/passkey/revoke/finish:lastCredential
     meaning: Re-checked at commit time and the credential is now the subject's last, because another revocation completed in between. `details.remaining` MAY carry the count.
     retryable: false
     detailsSchema:
@@ -81,9 +81,9 @@ A conforming **producer** **MUST**:
 A conforming **consumer** **MUST**, in this order:
 
 1. Verify the `proof` and identify the producer's VID.
-2. Resolve `revocationId`. Unknown, expired, already-consumed, or bound to a different VID → `revocation_not_found` / `revocation_expired`.
-3. Verify the assertion: signature valid against an enrolled credential of *this* subject, `clientDataJSON.challenge` equal to the challenge bound at start, origin and `rpId` as expected, and the **UV flag set** in the authenticator data. Any failure → `user_verification_failed`.
-4. Re-check the last-credential guard **at commit time**, under the same per-subject serialization as start. Still the last → `last_credential`.
+2. Resolve `revocationId`. Unknown, expired, already-consumed, or bound to a different VID → `revocationNotFound` / `revocationExpired`.
+3. Verify the assertion: signature valid against an enrolled credential of *this* subject, `clientDataJSON.challenge` equal to the challenge bound at start, origin and `rpId` as expected, and the **UV flag set** in the authenticator data. Any failure → `userVerificationFailed`.
+4. Re-check the last-credential guard **at commit time**, under the same per-subject serialization as start. Still the last → `lastCredential`.
 5. Unbind the credential recorded against the `revocationId`, consume the handle, and emit an audit record.
 6. Return `{ credentialId, revokedAt, remaining }`.
 
@@ -168,7 +168,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/auth/pa
 
 ## Security & Privacy
 
-**One code for every verification failure.** `user_verification_failed` covers a bad signature, a mismatched challenge, a wrong origin, and a clear UV flag alike. Separating them would tell an attacker probing a captured assertion precisely which control stopped them — which is the whole map they need. The consumer's own logs **SHOULD** record the specific cause; the wire **MUST NOT**.
+**One code for every verification failure.** `userVerificationFailed` covers a bad signature, a mismatched challenge, a wrong origin, and a clear UV flag alike. Separating them would tell an attacker probing a captured assertion precisely which control stopped them — which is the whole map they need. The consumer's own logs **SHOULD** record the specific cause; the wire **MUST NOT**.
 
 **UV, not UP.** A consumer that accepts a bare user-presence touch has built a control that a stolen-and-still-plugged-in security key satisfies by itself. The UV flag is what distinguishes "somebody touched a key" from "somebody who can unlock this key authorized this".
 

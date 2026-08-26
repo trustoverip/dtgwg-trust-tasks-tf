@@ -33,7 +33,7 @@ errorCodes:
   - code: did-management/agent-name/list:notFound
     meaning: No slot exists under the submitted mnemonic.
     retryable: false
-  - code: did-management:unknown_domain
+  - code: did-management:unknownDomain
     meaning: The submitted `domain` is not a known hosting domain, or is inconsistent with the slot's recorded domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     retryable: false
 related: [did-management/agent-name/update, did-management/agent-name/remove, did-management/agent-name/check]

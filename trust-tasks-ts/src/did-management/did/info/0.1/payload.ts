@@ -6,7 +6,7 @@
 export interface DIDManagementInfoPayload {
   mnemonic: string;
   /**
-   * Optional explicit hosting domain. See [category conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-domain-resolution). Unknown domains return `did-management:unknown_domain`.
+   * Optional explicit hosting domain. See [category conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-domain-resolution). Unknown domains return `did-management:unknownDomain`.
    */
   domain?: string;
   ext?: Ext;
@@ -116,7 +116,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "domain": {
       "type": "string",
-      "description": "Optional explicit hosting domain. See [category conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-domain-resolution). Unknown domains return `did-management:unknown_domain`."
+      "description": "Optional explicit hosting domain. See [category conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-domain-resolution). Unknown domains return `did-management:unknownDomain`."
     },
     "ext": {
       "$ref": "#/$defs/Ext"

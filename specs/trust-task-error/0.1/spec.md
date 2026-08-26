@@ -93,7 +93,7 @@ See [SPEC.md §8.3](/SPEC.md#83-standard-error-codes) for the authoritative vers
 
 ## Extending the code set
 
-An individual *Trust Task specification* **MAY** define additional codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` followed by a colon and a snake_case local name — for example, `acl/grant:role_not_recognized`. Extended codes **MUST NOT** shadow any code in the standard table above. See [SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications).
+An individual *Trust Task specification* **MAY** define additional codes specific to its task. Extended codes **MUST** be namespaced with the specification's `<slug>` followed by a colon and a snake_case local name — for example, `acl/grant:roleNotRecognized`. Extended codes **MUST NOT** shadow any code in the standard table above. See [SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications).
 
 A consumer that does not recognize an extended code **SHOULD** treat the failure as if its code were `task_failed`, and **MUST** still honor the `retryable` and `retryAfter` members.
 

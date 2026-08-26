@@ -32,7 +32,7 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: auth/passkey/enroll/start:max_credentials_reached
+  - code: auth/passkey/enroll/start:maxCredentialsReached
     meaning: The subject already has the maximum number of passkeys this auth service is configured to bind. `details.limit` MAY carry the cap.
     retryable: false
     detailsSchema:
@@ -40,10 +40,10 @@ errorCodes:
       additionalProperties: false
       properties:
         limit: { type: integer, minimum: 0 }
-  - code: auth/passkey/enroll/start:enrollment_not_supported
+  - code: auth/passkey/enroll/start:enrollmentNotSupported
     meaning: This auth service does not accept passkey enrollment (for example, a deployment that mandates an external IdP).
     retryable: false
-  - code: auth/passkey/enroll/start:reauth_unavailable
+  - code: auth/passkey/enroll/start:reauthUnavailable
     meaning: The consumer requires re-authentication to add an authenticator but cannot mount a ceremony against the subject's existing credentials. Recovery is out of band.
     retryable: false
 related:
@@ -95,7 +95,7 @@ A conforming **consumer** **MUST**:
    - `rp.id` set to the auth service's relying-party identifier.
    - `user.id` set to a stable opaque user handle for the producer's VID (NOT the VID itself, per WebAuthn's privacy guidance — `user.id` SHOULD be a per-RP-per-subject hash or random-mapped identifier).
    - `pubKeyCredParams` containing at least one algorithm the consumer accepts. Ed25519 (`alg: -8`) is RECOMMENDED.
-4. Refuse with `auth/passkey/enroll/start:max_credentials_reached` if the subject is at the consumer's credential cap.
+4. Refuse with `auth/passkey/enroll/start:maxCredentialsReached` if the subject is at the consumer's credential cap.
 5. Decide whether re-authentication is required. A consumer that requires it **MUST** also return `uvOptions` — `PublicKeyCredentialRequestOptions` over the subject's **existing** credentials, with `userVerification: "required"` — and **MUST** bind that challenge to the same `enrollmentId`. A consumer **SHOULD** require it whenever the subject already has at least one credential.
 
 A conforming consumer **MUST NOT** return `uvOptions` for a subject with no enrolled credentials: there is nothing to verify against, and a challenge that cannot be satisfied is indistinguishable to the producer from a broken service.

@@ -43,13 +43,13 @@ exposure:
     because the credential is minted under the issuing context's own key and
     asserts claims in its name.
 errorCodes:
-  - code: vta/credentials/issue:holder_invalid
+  - code: vta/credentials/issue:holderInvalid
     meaning: The holder identifier is not a resolvable DID.
     retryable: false
-  - code: vta/credentials/issue:scope_empty
+  - code: vta/credentials/issue:scopeEmpty
     meaning: The requested claims object is empty — a share must convey at least one claim.
     retryable: false
-  - code: vta/credentials/issue:validity_too_long
+  - code: vta/credentials/issue:validityTooLong
     meaning: The requested validity exceeds the issuer's maximum.
     retryable: false
     detailsSchema:
@@ -58,7 +58,7 @@ errorCodes:
       properties:
         requestedSeconds: { type: integer }
         maxSeconds: { type: integer }
-  - code: vta/credentials/issue:step_up_required
+  - code: vta/credentials/issue:stepUpRequired
     meaning: The operation requires a higher authentication assurance level (operator step-up) that has not been satisfied.
     retryable: true
   - code: vta/credentials/issue:profileViolation
@@ -102,8 +102,8 @@ A conforming **producer** (the issuing authority) **MUST**:
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
-2. Refuse the operation unless the caller has satisfied operator step-up; otherwise respond with `vta/credentials/issue:step_up_required`.
-3. Refuse with `vta/credentials/issue:scope_empty` when `payload.claims` is empty, and with `vta/credentials/issue:validity_too_long` when `payload.validitySeconds` exceeds its configured maximum.
+2. Refuse the operation unless the caller has satisfied operator step-up; otherwise respond with `vta/credentials/issue:stepUpRequired`.
+3. Refuse with `vta/credentials/issue:scopeEmpty` when `payload.claims` is empty, and with `vta/credentials/issue:validityTooLong` when `payload.validitySeconds` exceeds its configured maximum.
 4. Mint a Verifiable Credential whose `credentialSubject.id` is `payload.holder`, whose claims are `payload.claims`, with `validFrom = now` and `validUntil = now + validitySeconds`, signed by the issuing context's key.
 5. Persist a record keyed by the returned `credentialId` so the credential can be revoked ([`vta/credentials/revoke`](../../revoke/0.1/spec.md)) and audited, and return the `#response` document.
 6. When `payload.credentialType` names a claims profile defined below, enforce that profile's additional rules; refuse a violation with `vta/credentials/issue:profileViolation`.

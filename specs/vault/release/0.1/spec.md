@@ -34,14 +34,14 @@ exposure:
   actsAsSubject: false
   rationale: "Returns the entry's cleartext secret material to the caller (HPKE-sealed in transit)."
 errorCodes:
-  - code: vault/release:not_found
+  - code: vault/release:notFound
     meaning: No entry with this id exists in the consumer's scope.
     retryable: false
-  - code: vault/release:permission_denied
+  - code: vault/release:permissionDenied
     meaning: The consumer lacks FillRelease capability for this entry.
     retryable: false
-  - code: vault/release:step_up_required
-    meaning: Policy demands a step-up proof. Same shape as vault/proxy-login:step_up_required.
+  - code: vault/release:stepUpRequired
+    meaning: Policy demands a step-up proof. Same shape as vault/proxy-login:stepUpRequired.
     retryable: true
     detailsSchema:
       type: object
@@ -51,10 +51,10 @@ errorCodes:
         method: { type: "string", enum: ["webauthn-uv", "push-approval", "totp"] }
         challengeId: { type: "string" }
         ttlSeconds: { type: "integer", minimum: 1 }
-  - code: vault/release:policy_deny
+  - code: vault/release:policyDeny
     meaning: Policy refuses to release this secret to this consumer.
     retryable: false
-  - code: vault/release:envelope_unsupported
+  - code: vault/release:envelopeUnsupported
     meaning: The consumer's published recipient key advertises envelope kinds the maintainer does not implement (e.g. consumer requests `tsp-message` against a maintainer that only emits `didcomm-authcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
     retryable: false
     detailsSchema:
@@ -79,7 +79,7 @@ A conforming **producer** **MUST**:
 2. Carry a `proof`.
 3. **MUST** enforce the maintainer's returned `ttlSeconds` — wipe the cleartext from memory after that window.
 4. **MUST NOT** persist the cleartext beyond the TTL — not to disk, not to logs, not to syncing storage.
-5. On `step_up_required`, satisfy the demanded method and retry with `stepUpProof`.
+5. On `stepUpRequired`, satisfy the demanded method and retry with `stepUpProof`.
 
 A conforming **consumer** (the vault maintainer) **MUST**:
 
@@ -114,7 +114,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 
 **TTL is contractual.** The consumer is bound to wipe within `ttlSeconds`. Maintainers SHOULD assume a non-compliant consumer cannot be detected directly — defense is in the TTL ceiling itself (short windows minimise exposure) plus device attestation and ACL revocation when misuse is suspected.
 
-**Prefer proxy-login.** Whenever the maintainer can do the login itself, it should — release is the last resort. Consumers SHOULD attempt `vault/proxy-login` first and only fall back to `release` on `not_proxyable`.
+**Prefer proxy-login.** Whenever the maintainer can do the login itself, it should — release is the last resort. Consumers SHOULD attempt `vault/proxy-login` first and only fall back to `release` on `notProxyable`.
 
 **Audit reach.** Every release is logged. AI Agent consumers with `FillRelease` are high-risk; maintainers SHOULD prefer narrow per-site capability grants for them.
 
