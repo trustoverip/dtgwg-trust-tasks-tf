@@ -27,6 +27,9 @@ parties:
 proofRequirement:
   requirement: RECOMMENDED
   rationale: Authorization binds to the caller's authenticated identity — the gateway accepts the update only from the handle's controller VTA. Over the DIDComm binding the authcrypt sender provides that identity intrinsically; over HTTPS the caller carries a did-signed proof. Proof is therefore RECOMMENDED (redundant on DIDComm, the auth anchor on HTTPS).
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Provisioning a push channel binds a device token the service will subsequently deliver to. A replayed provision reinstates a token the owner has retired, sending notifications to a device that should no longer receive them.
 sideEffects:
   level: mutating
   rationale: "Sets a wake handle's trigger allowlist on the gateway; reconfigurable."

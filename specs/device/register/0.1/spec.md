@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Registration binds a device identity to operator-significant capabilities. The producer's identity MUST be verifiable so the maintainer can attribute the registration to a specific consumer key (the one the operator authorised in provision-integration).
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registration binds a device to the account. A replayed registration re-admits a device the owner has since removed, which is the second execution SPEC §7.2 item 11 exists to absorb and can only absorb inside a bounded window.
 sideEffects:
   level: mutating
   rationale: "Claims a device record on the maintainer; revocable via disable/wipe."

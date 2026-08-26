@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Setting the wake channel determines who can cause this device to be woken and what the VTA provisions to the gateway. It is security-significant and infrequent (only on token rotation), so — unlike the high-volume device/heartbeat — it carries a REQUIRED holder proof and is fully audited.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A wake schedule is an overwrite, so an out-of-order copy silently reverts the device to a schedule the owner has already changed. Ordering the two requires a timestamp.
 sideEffects:
   level: mutating
   rationale: "Sets the device's opaque WakeHandle on the VTA; idempotent config write."
