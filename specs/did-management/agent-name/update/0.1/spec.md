@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A binding-state transition is an evidentiary change — the name becomes (or ceases to be) publicly resolvable to the DID — so the maintainer retains a signed record. The submitted `didData` is itself signed, but the request that instructs the host to serve or park the redirect is a separate authorization worth retaining.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An agent-name update repoints a human-meaningful name at a DID. Replayed out of order it repoints the name back at a DID the owner has already moved away from, which is how a name comes to resolve to retired key material.
 sideEffects:
   level: mutating
   rationale: "Transitions a name→DID binding between `active` and `parked`. Both directions are reversible with another update; the reservation itself is never released by this task (that is agent-name/remove, which stays destructive)."

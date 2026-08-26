@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Purge is irreversible and may delete every DID hosted under the domain. The maintainer MUST retain a signed authorisation.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A purge destroys every DID under the domain and cannot be undone. It is the clearest case for a bounded window in this family, because a captured purge with no issue time is an unexpiring instruction to empty a namespace.
 sideEffects:
   level: destructive
   rationale: "Force-removes a disabled domain, bypassing the grace period and optionally purging it from every serving instance."

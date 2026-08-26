@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Releasing a name is an evidentiary transition an auditor retains — the name leaves this DID's control and may be re-registered by another party.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Removing an agent name frees the name for re-registration, so a replayed removal takes down whatever has since claimed it. The effect is irreversible from the registry side and the payload names only the name, never the moment.
 sideEffects:
   level: destructive
   rationale: "The name stops resolving and its reservation is released, so it can be claimed by a different DID. Not reversible by re-issuing the same request — reclaiming requires the name still be free."

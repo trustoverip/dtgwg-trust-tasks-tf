@@ -19,6 +19,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Moving the system default changes the answer to every "no domain specified" operation; an evidentiary record protects against later disputes about when the cutover took effect.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: The default domain decides where identifiers created without an explicit domain land, so a stale copy of this document silently redirects future registrations to a domain the operator has already stopped using.
 sideEffects:
   level: mutating
   rationale: "Promotes a domain to the system default; reversible by setting another."
