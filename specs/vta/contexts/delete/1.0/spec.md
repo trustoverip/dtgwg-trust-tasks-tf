@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The most destructive task in the family — keys and published DIDs go with the context. The VTA must attribute it to a specific administrator independently of the transport, because the audit record is what remains once the contents do not.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a context destroys everything scoped inside it. Replayed after a context was re-created under the same name, it destroys the new one and its contents with it.
 sideEffects:
   level: destructive
   rationale: "Destroys the context, the keys and DIDs scoped to it, and the ACL entries that named it. Internally generated keys are unrecoverable."

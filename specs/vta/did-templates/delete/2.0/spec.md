@@ -25,6 +25,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Removing a template is a privileged, audited write to a VTA's provisioning surface. The VTA MUST attribute the change to a specific administrator — a super-administrator for the global scope, a context administrator for a context scope — for the audit record, so transport-independent producer identity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a template breaks the creations that depend on it. Replayed after the name was re-used it deletes the new template rather than the one the operator meant.
 sideEffects:
   level: mutating
   rationale: "Removes a DID template from the selected scope; re-creatable config, not an issued identity."

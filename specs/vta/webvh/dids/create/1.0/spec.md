@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "Creating a DID commits an identity that third parties will resolve and rely on; the VTA must attribute it to a specific administrator in the audit record independently of the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Creating a webvh DID publishes an identifier to a log others resolve. A replayed create publishes a second identifier the operator did not ask for, and log entries are not retractable.
 sideEffects:
   level: mutating
   rationale: "Mints keys and writes a DID log's first entry. The SCID and portability are committed here and cannot be changed later."

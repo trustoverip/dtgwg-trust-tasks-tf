@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "A hosting server serves the VTA's DIDs to the world; registering the wrong one redirects identities. Attribution must not depend on the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registering a server adds a host that will serve DID logs on the operator’s behalf. A replayed registration restores a host that was removed, and every resolver reading from it inherits whatever it serves.
 sideEffects:
   level: mutating
   rationale: "Adds a hosting registration the VTA will publish DIDs through."

@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Revocation mutates a DID document (the verificationMethod is removed via a WebVH log entry) and is admin-gated. The VTA MUST attribute the change to a producer holding the admin role on the target DID's context; transport-independent producer identity is required so the removal is non-repudiable and auditable.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Revoking a verification method removes it irreversibly. Replayed after a replacement was enrolled it removes the replacement, and can leave the agent with no usable authenticator at all.
 sideEffects:
   level: destructive
   rationale: "Removes a passkey verificationMethod from a live DID document via a log entry."

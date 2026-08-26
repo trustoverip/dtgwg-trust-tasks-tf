@@ -23,6 +23,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Re-points live traffic; the request should be as attributable as the log entry it produces.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: An update replaces the service's running configuration or version wholesale, so an out-of-order copy redeploys a superseded release as though it were current.
 sideEffects:
   level: mutating
   rationale: "Edits the agent's DID document and republishes its signed log."

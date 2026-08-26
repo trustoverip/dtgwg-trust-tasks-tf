@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: "Publishing a DID at a hosting location is visible to every party that resolves it, and can displace another registration. Attribution must not depend on the transport."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Registration tells a witness server to serve this DID's log. A replayed registration reinstates a server the operator removed, and resolvers will then read the DID from it.
 sideEffects:
   level: mutating
   rationale: "Publishes a DID's log at a hosting server; with force, may displace an existing registration."

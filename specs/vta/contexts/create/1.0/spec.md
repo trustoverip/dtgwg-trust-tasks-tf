@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: Creating a context creates a scope that ACL grants will later name, so the VTA must attribute it to a specific administrator in the audit record — independently of the transport that carried it.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A context is the isolation boundary other tasks are scoped by. A replayed create leaves a second context the operator did not ask for, and anything scoped into it sits outside the boundary they believe they have.
 sideEffects:
   level: mutating
   rationale: "Creates a durable context. Re-creatable, but grants made against it are not."

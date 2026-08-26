@@ -26,6 +26,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A memory write mutates durable per-context state the VTA audits and may replay; transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A put overwrites what the agent remembers, and the agent acts on it. A stale copy therefore restores a superseded belief rather than merely an old value.
 sideEffects:
   level: mutating
   rationale: "Stores a key/value memory item in a context."

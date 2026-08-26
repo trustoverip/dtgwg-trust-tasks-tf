@@ -24,6 +24,9 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: A delete mutates durable per-context state the VTA audits; transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: Deleting a memory removes what the agent will subsequently reason from. Replayed after the slot was written again it removes the new content instead.
 sideEffects:
   level: mutating
   rationale: "Forgets a memory item from a context by key."
