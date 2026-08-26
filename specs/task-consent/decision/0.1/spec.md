@@ -18,9 +18,11 @@ parties:
   - role: Approver device
     requirement: REQUIRED
     member: issuer
+    identifierScope: pairwise
   - role: Executor (Verifiable Trust Agent)
     requirement: REQUIRED
     member: recipient
+    identifierScope: pairwise
 proofRequirement:
   requirement: REQUIRED
   rationale: The decision IS the authorization, so the proof is the only thing that carries it. The executor takes the approver's identity from the verified proof and never from the transport session — a bearer token proves who opened the channel, not who agreed. Without a proof an attacker holding any authenticated session to the executor could approve their own pending task.
@@ -32,7 +34,12 @@ consequences:
   - "The grant is single-use and time-boxed; it authorizes exactly one execution of exactly one payload."
 exposure:
   discloses: none
+  ingests: personal
   actsAsSubject: false
+  rationale: "Three of the four payload members are not the approver's to author — `challenge` and `payloadDigest` are echoed verbatim from the request, `decision` is a two-valued enum — so the classification turns entirely on `reason`. That member is unbounded free text in which a human explains a decision they have just taken, most often a refusal, and it travels onward to the executor and potentially to the requester. Nothing is disclosed back to the producer beyond the approval tally, so `discloses` stays `none`."
+retention:
+  class: durable
+  rationale: "The pending request, the single-use `challenge`, and the time-boxed grant are all exchange-scoped and end at execution, at denial, or at the request's `expiresAt`. The decision document is not: because the proof on it — rather than the session that carried it — is the authorization, it is the only evidence that a privileged and possibly irreversible operation was agreed to, and by which enrolled approver. An executor that discards it cannot afterwards show that a `destructive` task it ran was authorized at all. What it keeps in exchange is a signed, attributed record of an individual's decisions; see Security & Privacy → Retention for what an executor should therefore not keep alongside it."
 errorCodes:
   - code: task-consent/decision:noPending
     meaning: No live pending consent exists for the `payloadDigest` — never raised, already decided, or lapsed.
@@ -189,3 +196,122 @@ persistence.
   }
 }
 ```
+
+## Security & Privacy
+
+### Data carried
+
+The payload is four members and three of them are not the approver's to choose.
+`challenge` and `payloadDigest` are echoed **verbatim** from the
+[`task-consent/request`](../../request/0.1/spec.md) the device verified — a producer
+**MUST NOT** recompute the digest from any payload handed to it by a party other than
+the executor — and `decision` is a two-valued enum. That leaves exactly one free
+member, and it is worth putting next to its counterpart in the request: the
+requester's `note` is capped at 500 characters precisely because it is untrusted prose
+crossing a trust boundary, while `reason` has **no** length bound at all and crosses
+the same boundary in the opposite direction.
+
+The asymmetry matters, because `reason` is a channel the person writing it may not
+realise is one. The schema says it is most useful on a `deny`, which is exactly the
+moment a human is most likely to write something explanatory and personal — where they
+are, what they suspect, who they think is behind the request. It reaches the executor,
+and an executor that relays denials back to the requester is doing something entirely
+reasonable ([`task-consent/granted`](../../granted/0.1/spec.md) exists so requesters do
+not have to poll) while delivering that text to the very party the human just refused.
+A producer **SHOULD** confine `reason` to why *this request* was refused, in terms of
+the request, and **MUST NOT** treat it as a private aside to the executor.
+
+The rest of the document is engineered to say as little as possible. `payloadDigest`
+is echoed in the encoding the request carried it and is salted with `challenge`, so it
+commits to the payload the human approved without disclosing anything about it.
+
+The response carries `status`, the echoed `payloadDigest`, and — where relevant —
+`approvals` and `needed`. Those last two are a small, easily-overlooked disclosure:
+they tell the approver how many colleagues have already agreed and how many are
+required, which is information about other people's actions and about the
+organisation's approval policy that neither the approver nor those colleagues chose to
+share. They are carried because an approver who cannot tell whether their approval
+completed the threshold cannot tell whether to expect anything to happen.
+
+### Correlation
+
+Almost nothing in this document joins to anything else, and that is a deliberate
+result rather than a happy accident. `challenge` is per-request and single-use;
+`payloadDigest` is salted with that challenge, so approving the same operation twice
+produces two unrelated digests; `decision` is an enum; the remaining member is prose.
+As a binding, this is close to the minimum that could work, and the minimum is also
+the least correlatable.
+
+The joinable thing is the signer, unavoidably. The whole design rests on the executor
+taking the approver's identity from the **verified proof on this document** and never
+from the transport session — see [*The proof is the
+authorization*](#the-proof-is-the-authorization) — which means every approval and every
+denial an individual ever makes is signed by them, non-repudiably, and lands in one
+place. The executor therefore accumulates an attributed history of one person's
+judgements. That is the correct trade and it is what makes a relayed decision sound
+when it passes through the requester's untrusted hands, but it should be recognised for
+what it is rather than discovered later.
+
+Both parties declare `identifierScope: pairwise`, and here that declaration does real
+work. Every check in the *Conformance* pipeline is internal to one enrolment: the
+executor asserts the proven signer is a member of *the approver set it named*, and the
+device answers only an executor *it is enrolled with*. Neither check improves if the
+identifiers are recognisable to strangers. Given that this document is a durable,
+signed statement about a named human's decisions, a publicly recognisable approver
+identifier would make that history attributable by anyone who came into possession of a
+single decision — so pairwise identifiers are what keep the non-repudiability pointed
+at the executor rather than at the world.
+
+### Retention
+
+Two lifetimes, and the split is the whole story.
+
+The **exchange state is short**. On `deny` the executor deletes the pending request
+outright, and a subsequent submit of the same task starts a fresh one. The grant issued
+at the threshold is single-use and time-boxed. The `challenge` is consumed **at
+execution rather than on receipt of this decision**, which is a correctness rule — it
+lets an executor's own retry legitimately replay — and it also means the window closes
+at execution or at the request's `expiresAt`, whichever comes first.
+
+The **decision document is durable**, which is what the front matter declares and why.
+Because the proof on it is the authorization, it is the only evidence that a privileged
+operation — including, where the task was classified `destructive`, an irreversible one
+— was agreed to at all, and by which enrolled approver. An executor that discards it
+has performed an unaccountable act. Note that re-evaluating enrolment at execution does
+not change this: revoking a device stops its *future* approvals from being honoured and
+leaves its past ones standing in the record, because revocation is a change of
+authority and not a retraction of history.
+
+What an executor **SHOULD NOT** keep alongside it is the request it rendered. The
+decision carries a digest; the request carries `effects[].before` and
+`effects[].after`, which are the `subject`'s data and were shown for one decision. The
+durable record that makes an authorization accountable needs the challenge, the digest,
+the decision, and the proof — not the diff. Keeping the two together turns an audit
+trail into a data store, which is the failure this separation exists to avoid.
+
+### Consent/purpose
+
+The data moves for one narrow reason: so that an executor can establish that a
+specific, currently-enrolled human agreed to a specific payload, and can refuse to act
+if any part of that fails. Every member serves it — the echoes bind the answer to the
+question, the enum is the answer, and the proof attributes it. Nothing is collected
+here that is not consumed by one of the eleven checks in *Conformance*.
+
+The limit is on what the accumulated record may then be used for. It is authorization
+evidence, not performance data. Scoring approvers on how fast they respond or how often
+they agree, and — worse — using that history to choose *which* approver to route a
+request to in order to obtain an approval, are uses no approver assented to when they
+answered a prompt. The second is not merely a privacy problem but an attack on the
+mechanism itself: routing for agreeableness is how `minApprovals` and
+`excludeRequester` are defeated in practice, without a single signature failing to
+verify. It is the same reasoning that puts [*Consent fatigue*](#consent-fatigue) in
+this specification — the thing being protected is a human's genuine assent, and every
+optimisation that makes assent easier to obtain erodes it.
+
+Finally, and per [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 13: this
+specification describes what a decision *is*, never that one is required. Whether a
+given task must be approved is a consumer's policy decision, expressed through
+[`policy/evaluate`](../../../policy/evaluate/0.3/spec.md). This specification does
+constrain the mechanism in one direction only — an executor **MUST NOT** gate this task
+behind the very consent mechanism it implements, because a decision that itself
+required a decision would not terminate.
