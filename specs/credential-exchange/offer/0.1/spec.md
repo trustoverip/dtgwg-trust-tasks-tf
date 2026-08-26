@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Offer
 summary: Issuer to holder — an OID4VCI Credential Offer that opens an issuance thread, leaving the credential format to be negotiated rather than fixed by the envelope.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

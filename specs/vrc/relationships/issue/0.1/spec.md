@@ -4,7 +4,7 @@ version: "0.1"
 title: VRC Relationships — Issue
 summary: Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange, and returns a delivery receipt. Performed once in each direction — the exchange is mutual.
 status: draft
-targetFrameworkVersion: "0.4"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - vrc

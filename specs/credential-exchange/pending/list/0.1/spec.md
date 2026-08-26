@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Pending List
 summary: List the presentation requests this holder deferred for consent, showing who asked, why, and exactly which claims answering would disclose.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

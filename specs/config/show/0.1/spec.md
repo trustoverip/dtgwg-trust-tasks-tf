@@ -4,7 +4,7 @@ version: "0.1"
 title: Config — Show
 summary: Read the effective value of a maintainer's runtime configuration keys, each with the layer it came from and whether changing it needs a restart.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - config

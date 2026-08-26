@@ -4,7 +4,7 @@ version: "0.1"
 title: Device — List
 summary: List DeviceBindings (Companions and Services) registered on the maintainer, optionally filtered by kind, capability, status, or last-seen time.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device

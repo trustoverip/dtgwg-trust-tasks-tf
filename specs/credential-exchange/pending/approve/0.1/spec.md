@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Pending Approve
 summary: Approve a deferred presentation request, minting the presentation against the verifier's original query and nonce and returning it to the approver.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

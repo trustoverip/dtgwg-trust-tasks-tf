@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Pending Deny
 summary: Refuse a deferred presentation request. Nothing is presented, the deferral is retired, and the verifier learns nothing about why.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

@@ -4,7 +4,7 @@ version: "0.1"
 title: Credential Exchange — Present
 summary: Holder to verifier — an OID4VP vp_token disclosing exactly the consented claims, bound to the verifier's nonce and audience.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: credentials
 keywords:
   - credential-exchange

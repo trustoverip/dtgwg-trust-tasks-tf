@@ -5,7 +5,7 @@ wireCompatibleWith: "0.1"
 title: Device — Wipe
 summary: The maintainer issues a wipe to a Companion or Service. Target destroys its cache (and optionally device-local keys); the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root so defence in depth neutralises non-compliant targets.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: identity
 keywords:
   - device
