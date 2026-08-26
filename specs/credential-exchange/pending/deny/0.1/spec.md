@@ -39,9 +39,6 @@ errorCodes:
   - code: credential-exchange/pending/deny:notFound
     meaning: No actionable deferral matches `id`.
     retryable: false
-  - code: credential-exchange/pending/deny:permissionDenied
-    meaning: The caller is not authorized to decide disclosures for this agent.
-    retryable: false
 related:
   - credential-exchange/pending/list
   - credential-exchange/pending/approve

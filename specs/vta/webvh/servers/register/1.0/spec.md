@@ -31,10 +31,7 @@ subjectPath: /id
 exposure:
   discloses: none
   actsAsSubject: false
-errorCodes:
-  - code: "vta/webvh/servers/register:idConflict"
-    meaning: "A server is already registered under this id."
-    retryable: false
+errorCodes: []
 related:
   - vta/webvh/servers/list
   - vta/webvh/servers/remove
@@ -55,7 +52,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) apply.
 
 A conforming **consumer** (the VTA) **MUST** refuse an id already in use with
-`vta/webvh/servers/register:idConflict` rather than replacing the existing
+`idConflict` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) rather than replacing the existing
 registration — DIDs reference servers by this id, and silently repointing it
 would move every one of them.
 

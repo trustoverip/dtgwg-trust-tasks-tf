@@ -30,10 +30,7 @@ exposure:
   discloses: metadata
   actsAsSubject: false
   rationale: "`lastError` may echo upstream registry URLs, HTTP codes, or messages, which are operationally sensitive."
-errorCodes:
-  - code: vtc/registry/diagnostics:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

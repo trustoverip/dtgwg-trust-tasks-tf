@@ -31,9 +31,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vtc/relationships/list:permissionDenied
-    meaning: The consumer lacks the capability to read this member's relationships.
-    retryable: false
   - code: vtc/relationships/list:notFound
     meaning: No member with the supplied did exists.
     retryable: false

@@ -27,9 +27,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/endorsement-types/register:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/endorsement-types/register:reserved
     meaning: The typeUri is a workspace-reserved URI (e.g. CommunityRole) and cannot be registered.
     retryable: false

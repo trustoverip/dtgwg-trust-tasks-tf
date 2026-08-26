@@ -33,9 +33,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vtc/members/update:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/members/update:notFound
     meaning: No member with the supplied `did` exists.
     retryable: false

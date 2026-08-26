@@ -32,7 +32,13 @@ exposure:
   discloses: none
   actsAsSubject: true
   rationale: The custodian exercises the named key's private half, producing a signature that verifies as that key's identity. Nothing is disclosed to the caller beyond the signature, but the artefact is attributable to the key's holder.
-errorCodes: []
+errorCodes:
+  - code: keys:invalidArgument
+    meaning: A payload member is well-formed against the schema but unusable for this request. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
+    retryable: false
+  - code: keys/sign:failedPrecondition
+    meaning: The named key exists but its `status` is not `active`, so it cannot sign.
+    retryable: false
 related:
   - keys/derive-and-sign
   - keys/show
@@ -64,8 +70,8 @@ A conforming **consumer** (the key custodian) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Decide, from its own policy, whether **this producer may use this key** — and refuse with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) where it may not. The custodian signs bytes it does not interpret, so this decision is the only limit on what the producer can obtain a signature for.
-3. Refuse a key whose `status` is not `active`, with `failed_precondition`.
-4. Refuse an `algorithm` the named key's `keyType` cannot perform, with `invalid_argument`. An `x25519` key signs nothing and **MUST** be refused whatever algorithm is named.
+3. Refuse a key whose `status` is not `active`, with `keys/sign:failedPrecondition`.
+4. Refuse an `algorithm` the named key's `keyType` cannot perform, with `keys:invalidArgument`. An `x25519` key signs nothing and **MUST** be refused whatever algorithm is named.
 5. Sign the decoded bytes **verbatim** and return the signature under the `#response` variant.
 6. **Not** return the private key, or any encoding of it, under any circumstances.
 
@@ -118,7 +124,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/si
 }
 ```
 
-Failures (`permissionDenied`, `failed_precondition`, `invalid_argument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
+Failures (`permissionDenied`, `keys/sign:failedPrecondition`, `keys:invalidArgument`) use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
 ## Security & Privacy
 

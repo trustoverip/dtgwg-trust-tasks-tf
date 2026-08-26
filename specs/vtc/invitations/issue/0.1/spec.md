@@ -32,9 +32,6 @@ exposure:
   actsAsSubject: false
   rationale: Returns the signed Invitation Credential itself, which is the bearer artifact that admits its subject.
 errorCodes:
-  - code: vtc/invitations/issue:permissionDenied
-    meaning: The consumer lacks the inviter capability (admin, moderator, or issuer).
-    retryable: false
   - code: vtc/invitations/issue:unknownRole
     meaning: The requested `role` is not one this community defines.
     retryable: false

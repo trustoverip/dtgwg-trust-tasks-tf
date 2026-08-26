@@ -27,9 +27,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vtc/website/files/delete:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
   - code: vtc/website/files/delete:notFound
     meaning: No file exists at the supplied path.
     retryable: false

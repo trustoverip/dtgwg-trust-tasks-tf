@@ -31,9 +31,6 @@ exposure:
   discloses: metadata
   actsAsSubject: false
 errorCodes:
-  - code: vault/usage:permissionDenied
-    meaning: The consumer lacks visibility into the requested scope.
-    retryable: false
   - code: vault/usage:filterConflict
     meaning: Invalid filter combination.
     retryable: false

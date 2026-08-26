@@ -36,9 +36,6 @@ errorCodes:
   - code: vault/list:contextNotFound
     meaning: The `contextId` filter does not match any context the maintainer knows about. Distinguished from an empty result so consumers can tell "no entries" from "wrong context id".
     retryable: false
-  - code: vault/list:permissionDenied
-    meaning: The consumer is authenticated but lacks the VaultRead capability for the requested context (or for any context if `contextId` was omitted).
-    retryable: false
   - code: vault/list:filterConflict
     meaning: The supplied filter combination is invalid (e.g. both `usedSince` and `neverUsed` set).
     retryable: false
@@ -80,7 +77,7 @@ A conforming **producer** (the vault consumer) **MUST**:
 A conforming **consumer** (the vault maintainer) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements). When a `proof` is present, verify it.
-2. Authenticate and authorise the requesting consumer against its ACL. If the consumer lacks `VaultRead` for the requested scope → `vault/list:permissionDenied`.
+2. Authenticate and authorise the requesting consumer against its ACL. If the consumer lacks `VaultRead` for the requested scope → `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)).
 3. If `contextId` is supplied and unknown → `vault/list:contextNotFound`. (The maintainer SHOULD NOT silently degrade to "all contexts" when a `contextId` is supplied — explicit feedback prevents the consumer from believing it queried a narrower scope than it actually did.)
 4. If `usedSince` and `neverUsed` are both present → `vault/list:filterConflict` with `details.reason = "used_since_with_never_used"`.
 5. Apply the filter set as the intersection of all populated criteria. For target filters (`targetOriginPrefix`, `targetDid`, `targetIosBundleId`, `targetAndroidPackage`), an entry matches when AT LEAST ONE of its `targets[]` entries satisfies the corresponding criterion. Return the resulting `entries` in metadata-only view (per the `VaultEntry` shared schema). **MUST NOT** populate any field that would carry secret material.

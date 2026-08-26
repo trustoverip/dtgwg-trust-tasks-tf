@@ -37,9 +37,6 @@ errorCodes:
   - code: vtc/policies/test:evaluationFailed
     meaning: The module failed to evaluate — a compile error, or the queried rule does not exist.
     retryable: false
-  - code: vtc/policies/test:permissionDenied
-    meaning: The consumer lacks the community-admin capability.
-    retryable: false
 ---
 
 ## Abstract

@@ -34,9 +34,6 @@ errorCodes:
   - code: vault/get:notFound
     meaning: No entry with this id exists in any context the consumer can read.
     retryable: false
-  - code: vault/get:permissionDenied
-    meaning: The entry exists but the consumer lacks VaultRead on its context.
-    retryable: false
 ---
 
 ## Abstract
@@ -49,7 +46,7 @@ Like `vault/list/0.1`, this task **never returns secret material**. Use `vault/r
 
 A conforming **producer** **MUST** populate `payload.id` with a non-empty entry identifier. A conforming **consumer** **MUST** authorise the requesting consumer against the context the entry belongs to, return `vault/get:notFound` when the entry is absent OR the consumer lacks visibility into its context (so existence cannot be probed by enumeration), and return the entry in the metadata-only view per the shared `VaultEntry` schema.
 
-Maintainers MAY return `vault/get:permissionDenied` instead of `vault/get:notFound` only when the consumer can already prove existence via another channel (e.g. the entry id appeared in a prior list response with redacted fields). The default is to conflate the two to deny enumeration.
+Maintainers MAY return `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) instead of `vault/get:notFound` only when the consumer can already prove existence via another channel (e.g. the entry id appeared in a prior list response with redacted fields). The default is to conflate the two to deny enumeration.
 
 ## Payload
 

@@ -34,9 +34,6 @@ errorCodes:
   - code: vtc/backup/export:passwordTooShort
     meaning: The supplied password is under the 12-character minimum.
     retryable: false
-  - code: vtc/backup/export:permissionDenied
-    meaning: The consumer lacks the community super-admin capability.
-    retryable: false
 ---
 
 ## Abstract

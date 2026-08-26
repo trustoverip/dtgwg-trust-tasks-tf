@@ -37,9 +37,6 @@ errorCodes:
   - code: vault/release:notFound
     meaning: No entry with this id exists in the consumer's scope.
     retryable: false
-  - code: vault/release:permissionDenied
-    meaning: The consumer lacks FillRelease capability for this entry.
-    retryable: false
   - code: vault/release:stepUpRequired
     meaning: Policy demands a step-up proof. Same shape as vault/proxy-login:stepUpRequired.
     retryable: true

@@ -41,9 +41,6 @@ errorCodes:
   - code: vtc/config/import:unsupportedSchemaVersion
     meaning: The document's schemaVersion is one this consumer does not implement.
     retryable: false
-  - code: vtc/config/import:permissionDenied
-    meaning: The consumer lacks the community administrator capability.
-    retryable: false
 related:
   - vtc/config/export
   - config/patch

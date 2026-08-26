@@ -32,9 +32,6 @@ exposure:
   actsAsSubject: false
   rationale: "Audit envelopes carry plaintext principal DIDs and full event payloads — the maintainer's operations record, and the tightest-gated read it offers."
 errorCodes:
-  - code: audit/list:permissionDenied
-    meaning: The consumer lacks the audit-read capability. This is the tightest-gated read a maintainer offers; a context-scoped admin does not qualify for the whole-log tail.
-    retryable: false
   - code: audit/list:invalidCursor
     meaning: The supplied cursor failed to verify — malformed, or minted before an audit-key rotation. The consumer restarts from the first page rather than retrying.
     retryable: false

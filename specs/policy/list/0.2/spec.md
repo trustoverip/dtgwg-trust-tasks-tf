@@ -31,10 +31,7 @@ subjectPath: /contextId
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: policy/list:permissionDenied
-    meaning: The consumer lacks PolicyAdmin capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

@@ -29,10 +29,7 @@ sideEffects:
 exposure:
   discloses: metadata
   actsAsSubject: false
-errorCodes:
-  - code: vtc/invitations/list:permissionDenied
-    meaning: The consumer lacks the inviter capability.
-    retryable: false
+errorCodes: []
 ---
 
 ## Abstract

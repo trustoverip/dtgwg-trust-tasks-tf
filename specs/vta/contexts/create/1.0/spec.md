@@ -32,9 +32,6 @@ exposure:
   discloses: none
   actsAsSubject: false
 errorCodes:
-  - code: vta/contexts/create:idConflict
-    meaning: A context with this id already exists under the same parent.
-    retryable: false
   - code: vta/contexts/create:parentNotFound
     meaning: The named parent context does not exist or is not reachable by the caller.
     retryable: false
@@ -64,7 +61,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) apply.
 
 A conforming **consumer** (the VTA) **MUST** refuse an id that already exists
-under the same parent with `vta/contexts/create:idConflict`, and **MUST NOT**
+under the same parent with `idConflict` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)), and **MUST NOT**
 treat the request as an update. A caller that meant to change an existing
 context asks [`vta/contexts/update`](../../update/1.0/spec.md).
 
