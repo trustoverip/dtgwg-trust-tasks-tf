@@ -4,7 +4,7 @@ HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework
 
 ## Binding URI
 
-`https://trusttasks.org/binding/https/0.1`
+`https://trusttasks.org/binding/https/0.2`
 
 ## On the wire
 
@@ -24,7 +24,22 @@ Authorization: Bearer <token>
 }
 ```
 
-The server maps `<token>` to a VID, runs the [`§7.2`](../SPEC.md#72-consumer-requirements) consumer-side validation pipeline (cross-checking the in-band `issuer` against the authenticated sender per [§4.8.1](../SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)), and dispatches the document to the handler registered for its `type` URI. Success responses return as `#response`-variant documents inside an HTTP 200 body. Failures return as `trust-task-error/0.1` documents with the [status mapping documented in `status.rs`](src/status.rs).
+The server maps `<token>` to a VID, runs the [`§7.2`](../SPEC.md#72-consumer-requirements) consumer-side validation pipeline (cross-checking the in-band `issuer` against the authenticated sender per [§4.8.1](../SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)), and dispatches the document to the handler registered for its `type` URI. Success responses return as `#response`-variant documents inside an HTTP 200 body. Failures return as `trust-task-error` documents with the [status mapping documented in `status.rs`](src/status.rs).
+
+## Security defaults
+
+The binding specification is explicit that [it "does not permit `proof` to be omitted"](../bindings/https/0.2/spec.md): a bearer token authenticates *whoever presents it* to whatever terminates TLS, which is not the same party as whoever composed the document. The runtime enforces that:
+
+| Default | Effect | Opt out with |
+|---|---|---|
+| `require_attribution = true` | A document arriving with **neither** a transport-authenticated peer **nor** a `proof` is rejected `proofRequired` before any handler runs. Without it, an unauthenticated POST asserting `"issuer": "did:web:victim"` reaches handlers with that string as the caller's identity. | `.require_attribution(false)` — dev and tests only |
+| Discovery requires authentication | `enable_discovery()` answers an unauthenticated discoverer with `permissionDenied` rather than the full route table (SPEC §10). | `.public_discovery()` |
+| Route lookup precedes proof verification | An unknown `type` is rejected before DID resolution, so the endpoint cannot be aimed at an arbitrary host by a stranger. | — |
+| `Content-Type: application/json` required | A `text/plain` cross-origin simple POST is refused with 415 instead of reaching the pipeline. | — |
+| Request timeout + concurrency limit | Slowloris and flood controls on the router. | `.request_timeout(..)`, `.max_concurrent_requests(..)` |
+| Response binding on the client | `HttpsClient::send` checks the response's `threadId`, `type`, `issuer` and `recipient` against the request before returning it. | — |
+
+Optionally, `.allowed_did_methods(["key"])` pre-screens `proof.verificationMethod` before the verifier resolves it, and `HttpsClient::builder().with_response_verifier(..)` requires signed responses.
 
 ## Quickstart
 
