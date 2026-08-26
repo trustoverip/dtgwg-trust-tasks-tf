@@ -9,7 +9,7 @@
 use trust_tasks_rs::{TransportContext, TransportHandler};
 
 /// Stable identifier for the HTTPS binding, per SPEC.md §9.2.
-pub const BINDING_URI: &str = "https://trusttasks.org/binding/https/0.1";
+pub const BINDING_URI: &str = "https://trusttasks.org/binding/https/0.2";
 
 /// A [`TransportHandler`] for a single HTTPS exchange.
 ///
@@ -25,7 +25,10 @@ pub const BINDING_URI: &str = "https://trusttasks.org/binding/https/0.1";
 ///   handle recipient-identity out-of-band.
 /// * `peer = None` — the transport authenticated nothing (no bearer header,
 ///   or an unrecognised token). The framework then falls back entirely to
-///   the document's in-band `issuer` plus any `proof` it carries.
+///   the document's in-band `issuer` plus any `proof` it carries — which,
+///   with no `proof`, means the "issuer" is an unverified string the sender
+///   chose. `HttpsServer` refuses that combination by default; see
+///   `HttpsServerBuilder::require_attribution`.
 #[derive(Debug, Clone)]
 pub struct HttpsHandler {
     local: Option<String>,

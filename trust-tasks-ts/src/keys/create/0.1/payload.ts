@@ -16,16 +16,22 @@ export type KeyType1 = "ed25519" | "x25519" | "p256";
  */
 export type KeyStatus = "active" | "revoked";
 /**
- * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.
+ * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
  */
-export type KeyOrigin = "derived" | "imported";
+export type KeyOrigin = "derived" | "imported" | "internal";
 
 export interface KeysCreatePayload {
   keyType: KeyType;
   /**
-   * Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian.
+   * Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian. MUST NOT be combined with `internal: true`, which derives from no seed and records no path — a request carrying both is contradictory and the maintainer SHOULD reject it.
    */
   derivationPath?: string;
+  /**
+   * Absent is the same as `false`, and this member deliberately declares no JSON Schema `default`: a declared default is materialised by generated bindings, so an absent `internal` would reappear as an explicit `false` on re-serialisation and break round-trip idempotence for every existing request document. Request a key generated from the maintainer's CSPRNG rather than derived from a seed. Such a key is reproducible from nothing: it is not recoverable from a recovery phrase, and a maintainer offering it SHOULD exclude it from backup and export. A consumer asks for this when the key's value lies in being unexportable — the maintainer can sign with it and nothing can take it away — and accepts that losing the maintainer's storage destroys it permanently.
+   *
+   * A maintainer that cannot mint such a key MUST reject the request rather than silently return a derived one, because the consumer's whole reason for asking is a property the derived key does not have. Consumers MUST confirm the outcome by reading `origin` on the returned record, which is `internal` iff the request was honoured; a maintainer that ignored an unrecognised member returns `derived`, and that difference is the consumer's only reliable signal.
+   */
+  internal?: boolean;
   /**
    * BIP-39 phrase to derive from instead of the custodian's own seed. Supplying it makes this an import of externally-generated seed material wearing create's clothes: the phrase reconstitutes the key anywhere, so it is secret-bearing in exactly the way the rest of this payload is not. A custodian MUST refuse it on any transport that is not end-to-end confidential, for the reason `keys/import` refuses its cleartext carrier, and MUST NOT log or echo it.
    */
@@ -138,7 +144,11 @@ export const PAYLOAD_SCHEMA = {
     },
     "derivationPath": {
       "type": "string",
-      "description": "Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian."
+      "description": "Hierarchical-deterministic path to derive at. Where the custodian derives from a seed, supplying the path makes the key reproducible from that seed; omitting it leaves the choice to the custodian. MUST NOT be combined with `internal: true`, which derives from no seed and records no path — a request carrying both is contradictory and the maintainer SHOULD reject it."
+    },
+    "internal": {
+      "type": "boolean",
+      "description": "Absent is the same as `false`, and this member deliberately declares no JSON Schema `default`: a declared default is materialised by generated bindings, so an absent `internal` would reappear as an explicit `false` on re-serialisation and break round-trip idempotence for every existing request document. Request a key generated from the maintainer's CSPRNG rather than derived from a seed. Such a key is reproducible from nothing: it is not recoverable from a recovery phrase, and a maintainer offering it SHOULD exclude it from backup and export. A consumer asks for this when the key's value lies in being unexportable — the maintainer can sign with it and nothing can take it away — and accepts that losing the maintainer's storage destroys it permanently.\n\nA maintainer that cannot mint such a key MUST reject the request rather than silently return a derived one, because the consumer's whole reason for asking is a property the derived key does not have. Consumers MUST confirm the outcome by reading `origin` on the returned record, which is `internal` iff the request was honoured; a maintainer that ignored an unrecognised member returns `derived`, and that difference is the consumer's only reliable signal."
     },
     "mnemonic": {
       "type": "string",
@@ -255,9 +265,10 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "enum": [
         "derived",
-        "imported"
+        "imported",
+        "internal"
       ],
-      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.",
+      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
       "default": "derived"
     },
     "KeyStatus": {
@@ -384,9 +395,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "enum": [
         "derived",
-        "imported"
+        "imported",
+        "internal"
       ],
-      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately.",
+      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
       "default": "derived"
     },
     "KeyStatus": {

@@ -71,9 +71,11 @@ What that buys, and what it does not:
 |---|---|
 | Forging a step | The step issuer's key — the recorder cannot mint one |
 | Fabricating a whole enactment | The same |
-| Omitting an **intermediate** step | The chain: its successor committed to its digest |
-| Omitting the **trailing** steps (truncation) | The terminal marker — see below |
+| Omitting an **intermediate** step | The chain: its successor committed to its digest. Detectable **only by a verifier holding the successor's document** — the receipt's own enumeration is the recorder's word for what happened |
+| Omitting the **trailing** steps (truncation) | The terminal marker — see below. Detectable **only by a verifier holding the terminal step's document**, for the same reason |
 | Refusing to issue a receipt at all | **Nothing here.** An availability failure, not an integrity one |
+
+Both entries in that table depend on the verifier holding step documents, and a verifier holding none is explicitly permitted (see the conformance rules below). What such a verifier learns is that *a recorder the definition names* enumerated a set of steps that satisfies the completion rule — a real claim, and a strictly weaker one than "this enactment completed". A conforming verifier reports the difference rather than eliding it.
 
 A definition **SHOULD** name more than one recorder. Integrity rests on the terminal marker and the pinned definition rather than on who issued, so a second recorder costs nothing and removes the single point of availability. Receipts from different recorders for one enactment are directly comparable, because each is checked against the same pinned definition rather than against the other.
 
@@ -83,7 +85,9 @@ A hash chain detects an omitted step through its *successor*. The trailing steps
 
 Two things close it, and both are required:
 
-1. **A terminal step.** At least one enumerated step **MUST** have carried `ceremony.terminal` in its signed content. A recorder cannot mint that marker without the terminal step issuer's key, so a truncated receipt is visibly a prefix.
+1. **A terminal step.** At least one enumerated step **MUST** have carried `ceremony.terminal` in its signed content, on a step the definition declares `terminal: true`. A recorder cannot mint that marker without the terminal step issuer's key, so a truncated receipt is visibly a prefix.
+
+    The force of this rests entirely on the marker being *signed*. `steps[].terminal` in the receipt payload is the recorder's **echo** of it, written by the party truncation is the attack of; a verifier that accepted the echo in place of the signed value would have handed the recorder the one member it must not be able to produce. A verifier therefore confirms the marker in the step document itself, and reports that it could not verify completion where it does not hold that document.
 2. **Verifier-side completion.** The verifier evaluates the definition's completion rule itself. This works only because `definitionDigest` pins the rule — the two mechanisms are load-bearing on each other, and either alone is insufficient.
 
 ## Computing a step digest
@@ -124,12 +128,24 @@ A conforming **verifier** **MUST**:
 1. Apply the [SPEC.md §7.2](../../../SPEC.md#72-consumer-requirements) pipeline, including verifying the receipt's own `proof` against its `issuer`.
 2. Resolve the definition and check that its digest equals `payload.definitionDigest`. A mismatch, or an unresolvable definition, means the receipt cannot be verified — **not** that it is invalid.
 3. Confirm the recorder is one the definition names.
-4. Evaluate the definition's completion rule over `payload.steps` **itself**, and **MUST NOT** rely on `payload.complete`.
-5. Confirm at least one enumerated step carries `terminal`.
-6. For every step document it holds, recompute the digest and reject the receipt on mismatch.
-7. Verify each held step document's own `proof` against that step's `issuer`. The receipt does not vouch for step content and cannot be made to.
+4. **De-duplicate `payload.steps` before counting anything.** Reject a receipt that enumerates two steps sharing a document `id` — an `id` is globally unique and never reused ([SPEC.md §4.3](../../../SPEC.md#43-the-id-member)), so a repeat is one document listed twice. Reject two entries for one step at one `round`, except where the definition declares that step `multiplicity: perRole`, in which case one instance per bound `issuer` is permitted and two entries at one round from one issuer **MUST** be rejected. Without this a recorder satisfies a `threshold.ofStep` of `n` by listing one party's single step `n` times.
+5. Evaluate the definition's completion rule over the de-duplicated `payload.steps` **itself**, and **MUST NOT** rely on `payload.complete`.
+6. Confirm at least one enumerated step names a step the definition declares `terminal: true`. A receipt enumerating none is a prefix, and `steps[].terminal` on a step the definition does not so declare **MUST** be rejected: a recorder does not get to nominate a terminal step.
+7. **Confirm the terminal marker in the step document's signed content.** Where the verifier holds a document for such a step, its `ceremony.terminal` **MUST** be `true` for the enactment to be reported complete, and a `steps[].terminal` the held document contradicts **MUST** be rejected. Where the verifier holds **no** document for any step the definition declares terminal, it **MUST** report that it could not verify completion, naming the marker it could not check — **not** that the enactment is complete. `payload.steps[].terminal` is recorder-supplied and is never sufficient on its own.
+8. Confirm each enumerated step's `issuer` is a VID the enactment bound to the role the definition names as that step's issuer, and — for a held document — that its `recipient` is bound to the recipient role. Where the enactment's role bindings are not available to the verifier, it **MUST** report that it could not verify these rather than treating them as satisfied. This applies to rule 3 as well: `evidence.recorders` names roles, not VIDs.
+9. For every step document it holds, recompute the digest and reject the receipt on mismatch; and confirm the document's `ceremony.enactment`, `ceremony.definitionDigest`, `ceremony.step`, `ceremony.round` and `issuer` agree with what the receipt enumerates for it. A document that disagrees on `enactment` or `definitionDigest` is a step of a different ceremony.
+10. **Walk the chain over the documents it holds.** For each entry of a held document's `ceremony.prev`: the receipt **MUST** enumerate the named `id`, with the same `digestMultibase`; and the predecessor's step **MUST** be an ancestor of this step in the definition's `prev` graph, or the same step at an earlier round. A predecessor a held document commits to but the receipt does not enumerate is an omitted intermediate step, and the receipt **MUST** be rejected. A `prev` entry naming a document the verifier does not hold is **not** a failure — it means the verifier lacks that document.
+11. Verify each held step document's own `proof` against that step's `issuer`. The receipt does not vouch for step content and cannot be made to.
 
-A verifier **MAY** hold none of the step documents. It then verifies the recorder's attestation and the shape of the enactment, and learns nothing about step content — which is the correct outcome, not a degraded one.
+A verifier **MAY** hold none of the step documents. It then verifies the recorder's attestation and the shape of the enactment, and learns nothing about step content — which is the correct outcome, not a degraded one. It is also the case in which rules 7, 9, 10 and 11 have nothing to operate on, so such a verifier **MUST** report that completion could not be verified rather than that the enactment completed. The claim it *can* make — that a recorder the definition names enumerated a set of steps satisfying the completion rule — is a real one, and stating it accurately is the requirement here.
+
+## What a verifier is not required to check
+
+Stated so that a conforming verifier is not read as having established more than it did.
+
+* **Nested ceremonies.** Where a step is itself a ceremony, this specification does **not** require a verifier of the parent receipt to resolve or verify the child. The child's evidence is its own receipt, verified on its own terms against its own pinned definition, and a verifier that does not do so **MUST NOT** report the parent as complete on the strength of a step it did not verify. `docs/design-notes/trust-ceremonies.md` §7.9 item 6 describes the recursion as the intended end state; it is not a requirement of this version.
+* **`maxDuration`.** A definition **MAY** bound an enactment's issuance window, but the receipt payload does not carry any step's `issuedAt` — so the window is not evaluable from a receipt alone, and no rule above requires it. A verifier holding the step documents may check it against their timestamps under the definition's rule; that is outside this specification.
+* **Whether the enumeration is complete.** Rule 10 catches an omitted step that a held successor committed to, and rule 7 catches a truncated tail. Nothing catches the omission of a step that has no successor the verifier holds and is not itself terminal. This is the residual of the recorder's position, and it is why a receipt is evidence about a flow rather than proof of one.
 
 ## Bearer
 

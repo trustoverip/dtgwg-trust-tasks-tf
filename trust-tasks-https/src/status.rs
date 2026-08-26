@@ -1,24 +1,41 @@
 //! Mapping from framework error codes to HTTP status codes.
 //!
 //! The mapping is informative — SPEC.md leaves transport-level signalling
-//! to the binding. This crate uses the table below so a client that
-//! cannot or does not want to parse the body can still classify the
-//! response broadly.
+//! to the binding. The authority for this table is the HTTPS binding
+//! specification's §4 status mapping (`bindings/https/0.2/spec.md`); a
+//! client that cannot or does not want to parse the body can still
+//! classify the response broadly.
 //!
 //! | Standard code        | HTTP status |
 //! |----------------------|-------------|
 //! | `malformedRequest`   | 400 Bad Request |
-//! | `unsupportedType`    | 400 Bad Request |
-//! | `unsupportedVersion` | 400 Bad Request |
-//! | `expired`            | 400 Bad Request |
-//! | `proofRequired`      | 401 Unauthorized |
-//! | `proofInvalid`       | 401 Unauthorized |
 //! | `permissionDenied`   | 403 Forbidden |
-//! | `wrongRecipient`     | 403 Forbidden |
-//! | `identityMismatch`   | 403 Forbidden |
+//! | `unsupportedType`    | 422 Unprocessable Entity |
+//! | `unsupportedVersion` | 422 Unprocessable Entity |
+//! | `expired`            | 422 Unprocessable Entity |
+//! | `proofRequired`      | 422 Unprocessable Entity |
+//! | `proofInvalid`       | 422 Unprocessable Entity |
+//! | `identityMismatch`   | 422 Unprocessable Entity |
+//! | `wrongRecipient`     | 422 Unprocessable Entity |
+//! | `cancelled`          | 422 Unprocessable Entity |
 //! | `taskFailed`         | 422 Unprocessable Entity |
 //! | `unavailable`        | 503 Service Unavailable |
 //! | `internalError`      | 500 Internal Server Error |
+//!
+//! `idConflict` has no row in the binding's table and keeps this crate's
+//! **409 Conflict**, which is what the code means at the HTTP layer.
+//!
+//! The flatness of the 422 bucket is the point, not an oversight. An
+//! earlier version of this table split `proofRequired` / `proofInvalid`
+//! into 401 and `permissionDenied` / `wrongRecipient` / `identityMismatch`
+//! into 403 — which handed an unauthenticated prober a status-code oracle
+//! distinguishing "your proof is bad" from "you are not who you said" from
+//! "this is not addressed to me", without ever reading a body. Collapsing
+//! them to one status removes that signal; the framework error code in the
+//! body remains available to a legitimate producer, which is the party
+//! entitled to it. `permissionDenied` keeps 403 because the binding's table
+//! says so: it is the one outcome that reports on the *authenticated*
+//! caller's authorization, and so tells an unauthenticated prober nothing.
 //!
 //! Extension codes (`<slug>:<local>`) default to **422 Unprocessable
 //! Entity** since they are spec-defined application-layer failures.
@@ -39,20 +56,22 @@ pub fn status_for_code(code: &TrustTaskCode) -> u16 {
 
 fn standard_status(code: StandardCode) -> u16 {
     match code {
-        StandardCode::MalformedRequest
-        | StandardCode::UnsupportedType
-        | StandardCode::UnsupportedVersion
-        | StandardCode::Expired => 400,
-        StandardCode::ProofRequired | StandardCode::ProofInvalid => 401,
-        StandardCode::PermissionDenied
-        | StandardCode::WrongRecipient
-        | StandardCode::IdentityMismatch => 403,
+        StandardCode::MalformedRequest => 400,
+        StandardCode::PermissionDenied => 403,
         StandardCode::IdConflict => 409,
-        // A deliberate stop by the consumer is not a server fault and not a
-        // malformed request: the task was understood and accepted, and then
-        // ended. 422 is the same bucket as `TaskFailed` for the same reason.
-        StandardCode::Cancelled => 422,
-        StandardCode::TaskFailed => 422,
+        // The flat 422 bucket of the binding spec's §4 table. Everything
+        // here is "understood, well-formed, and refused"; keeping them
+        // indistinguishable at the status line is deliberate — see the
+        // module docs for the oracle the finer split created.
+        StandardCode::UnsupportedType
+        | StandardCode::UnsupportedVersion
+        | StandardCode::Expired
+        | StandardCode::ProofRequired
+        | StandardCode::ProofInvalid
+        | StandardCode::WrongRecipient
+        | StandardCode::IdentityMismatch
+        | StandardCode::Cancelled
+        | StandardCode::TaskFailed => 422,
         StandardCode::Unavailable => 503,
         StandardCode::InternalError => 500,
         // `StandardCode` is `#[non_exhaustive]` (trust-tasks-rs 0.7.0): a
@@ -67,24 +86,51 @@ fn standard_status(code: StandardCode) -> u16 {
 mod tests {
     use super::*;
 
+    /// REGRESSION: the table must match `bindings/https/0.2/spec.md` §4.
+    /// Before this was fixed, `proofRequired`/`proofInvalid` mapped to 401,
+    /// `permissionDenied`/`wrongRecipient`/`identityMismatch` to 403, and
+    /// `unsupportedType`/`unsupportedVersion`/`expired` to 400 — three rows
+    /// of drift from the binding, and a status-code identity oracle.
     #[test]
-    fn standard_codes_map_to_documented_statuses() {
-        // All twelve standard codes — keep in lockstep with the module table.
+    fn standard_codes_map_to_binding_spec_statuses() {
         assert_eq!(status_for_code(&StandardCode::MalformedRequest.into()), 400);
-        assert_eq!(status_for_code(&StandardCode::UnsupportedType.into()), 400);
+        assert_eq!(status_for_code(&StandardCode::PermissionDenied.into()), 403);
+        assert_eq!(status_for_code(&StandardCode::IdConflict.into()), 409);
+        assert_eq!(status_for_code(&StandardCode::UnsupportedType.into()), 422);
         assert_eq!(
             status_for_code(&StandardCode::UnsupportedVersion.into()),
-            400
+            422
         );
-        assert_eq!(status_for_code(&StandardCode::Expired.into()), 400);
-        assert_eq!(status_for_code(&StandardCode::ProofRequired.into()), 401);
-        assert_eq!(status_for_code(&StandardCode::ProofInvalid.into()), 401);
-        assert_eq!(status_for_code(&StandardCode::PermissionDenied.into()), 403);
-        assert_eq!(status_for_code(&StandardCode::WrongRecipient.into()), 403);
-        assert_eq!(status_for_code(&StandardCode::IdentityMismatch.into()), 403);
+        assert_eq!(status_for_code(&StandardCode::Expired.into()), 422);
+        assert_eq!(status_for_code(&StandardCode::ProofRequired.into()), 422);
+        assert_eq!(status_for_code(&StandardCode::ProofInvalid.into()), 422);
+        assert_eq!(status_for_code(&StandardCode::WrongRecipient.into()), 422);
+        assert_eq!(status_for_code(&StandardCode::IdentityMismatch.into()), 422);
+        assert_eq!(status_for_code(&StandardCode::Cancelled.into()), 422);
         assert_eq!(status_for_code(&StandardCode::TaskFailed.into()), 422);
         assert_eq!(status_for_code(&StandardCode::Unavailable.into()), 503);
         assert_eq!(status_for_code(&StandardCode::InternalError.into()), 500);
+    }
+
+    /// REGRESSION: the codes that report on identity or attribution must be
+    /// indistinguishable at the status line. Asserted as a set property so a
+    /// future edit that re-splits one of them out fails here, not only in
+    /// the per-code table above.
+    #[test]
+    fn identity_related_codes_share_one_status() {
+        let identity_codes = [
+            StandardCode::ProofRequired,
+            StandardCode::ProofInvalid,
+            StandardCode::IdentityMismatch,
+            StandardCode::WrongRecipient,
+        ];
+        for code in identity_codes {
+            assert_eq!(
+                status_for_code(&code.into()),
+                422,
+                "{code:?} must not be distinguishable by status code"
+            );
+        }
     }
 
     #[test]
