@@ -145,6 +145,56 @@ For [SPEC §4.7.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main
 
 These guarantees apply end-to-end between producer and consumer in **direct** and **nested** modes; in **non-nested routed** mode they apply only hop-by-hop (see [§5.3](#53-proof-and-identity-under-routing)).
 
+### 7.1 Duplicate-execution record
+
+The freshness bullet above says a *consumer* whose task has persistent effect
+**SHOULD** apply the framework's `id`-keyed idempotency; it names no mechanism,
+and [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11 is in any case a **MUST** for a
+*consequential Trust Task*. The mechanism is stated here.
+
+A *consumer* implementing a *consequential Trust Task* over this binding
+**MUST** keep the duplicate-execution record of item 11, and:
+
+1. **The record is keyed on the *Trust Task document*'s `id`.** Nothing the TSP
+   envelope carries — the envelope itself, its ephemeral material, or the
+   relationship state that produced it — **MUST** substitute for it, per
+   §7.2's keying paragraph. On this transport the point is stark: sealing the
+   same document a second time produces an envelope sharing no bytes with the
+   first, because TSP derives fresh ephemeral material per message. There is
+   nothing about the envelope a record *could* key on and still absorb a
+   re-send — which [§5.2](#52-routed-and-nested-mode) makes an ordinary event,
+   since each intermediary may hold and re-forward the sealed inner message.
+2. **Comparison is over the document, not the `id` alone.** A second document
+   under a reused `id` whose content differs — including a re-signed or
+   re-stamped `proof` — is **not** the retry of [§8.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#84-retries-and-idempotency) and **MUST** be rejected
+   with `idConflict`.
+3. **Retention and the acceptance window are one bound.** The record **MUST**
+   be retained at least as long as the *consumer* remains willing to execute
+   the document — `expiresAt` where present, otherwise `issuedAt` plus the
+   *consumer*'s acceptance window. A *consumer* that can establish neither
+   **MUST NOT** execute a *consequential Trust Task* on the document. A routed
+   path that may hold a message for longer than the *consumer*'s window widens
+   both bounds together; there is no second retention setting to configure.
+4. **A duplicate is not an error.** Where the *Trust Task specification*
+   defines a success response the *consumer* **SHOULD** return the result the
+   first execution produced; where the original execution is still running it
+   **SHOULD** return or expose that execution's state rather than begin
+   another; where the specification defines no response — including the
+   fire-and-forget case [§6](#6-responses-and-error-delivery) describes, where
+   no return relationship exists — silence is the correct disposition. In no
+   case is a duplicate reported as `taskFailed`: the task did not fail, it
+   already happened.
+5. **A record that cannot be consulted fails closed.** Where the *consumer*
+   cannot establish whether a document is a duplicate it **MUST NOT** execute,
+   and **SHOULD** respond `unavailable` with `retryable` true: the producer's
+   bit-for-bit resend is absorbed correctly once the record is reachable
+   again.
+
+A *consumer* replicated across processes **MUST** back the record with a store
+every replica shares. Two replicas serving the same VID and each keeping their
+own record accept the same document once apiece, which is the double execution
+in a different shape.
+
 ## 8. Discovery wiring
 
 A consumer **MAY** advertise the set of *Type URIs* it dispatches by handling `https://trusttasks.org/spec/trust-task-discovery/0.1` ([SPEC §11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#11-discovery-and-capability-negotiation)). A discovery request is carried as an ordinary Trust Task envelope over TSP per [§2](#2-document-carriage); no separate mechanism is defined.

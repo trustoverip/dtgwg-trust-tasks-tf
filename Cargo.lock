@@ -6586,13 +6586,15 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.11.0"
+version = "0.12.0"
 dependencies = [
  "affinidi-tsp",
+ "async-trait",
  "chrono",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
+ "tokio",
  "trust-tasks-rs",
 ]
 
