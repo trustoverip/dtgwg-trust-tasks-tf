@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Domain Purge
 summary: An administrator force-removes a disabled hosting domain, bypassing the standard grace period and optionally fanning a purge directive out to every server instance currently serving the domain.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, domain, purge, admin, destructive]
 authors:

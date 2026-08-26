@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Query Records
 summary: An administrator fetches one trust record by its full four-part key, or enumerates matching records with cursor pagination — one task for both halves of the superseded read/list pair.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry

@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Rotate DID Keys
 summary: An administrator rotates the keys of a trust registry's own agent-managed did:webvh in place, preserving the registry's DID while refreshing its key material.
 status: draft
-targetFrameworkVersion: "0.2"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry

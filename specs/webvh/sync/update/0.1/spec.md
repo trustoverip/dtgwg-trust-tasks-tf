@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH — Sync Update
 summary: A did:webvh control plane replicates a DID's current log and witness content to a registered hosting server.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [webvh, sync, replication, control-plane, hosting-server]
 authors:

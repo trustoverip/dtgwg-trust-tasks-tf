@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Rollback
 summary: A DID owner reverts the slot's log chain to a prior published version, discarding the entries above that point.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, rollback, revert]
 authors:

@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Server Register
 summary: A hosting server announces itself to the control plane, declaring which hosting domains it serves and where it can be reached.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, server, register, fleet]
 authors:

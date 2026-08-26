@@ -4,7 +4,7 @@ version: "0.1"
 title: Registry — Authorization Query
 summary: A relying party asks a trust registry whether an entity is authorized by an authority for a given action and resource, per the ToIP Trust Registry Query Protocol (TRQP) v2.0.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: governance
 keywords:
   - trust-registry

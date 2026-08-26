@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Check Name
 summary: A prospective DID owner asks a hosting service whether a given path is available, and optionally — in the same round-trip — reserves it; or asks the host to auto-assign and reserve a fresh path.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords:
   - did

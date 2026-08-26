@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — List
 summary: A caller enumerates DID slots they can see — their own when non-admin, or any/by-owner when admin.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did, did-hosting, list, enumerate]
 authors:

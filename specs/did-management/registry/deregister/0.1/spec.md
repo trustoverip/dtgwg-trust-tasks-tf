@@ -4,7 +4,7 @@ version: "0.1"
 title: DID Management — Registry Deregister
 summary: An administrator removes a server instance from the control-plane registry.
 status: draft
-targetFrameworkVersion: "0.1"
+targetFrameworkVersion: "0.5"
 category: did-management
 keywords: [did-hosting, registry, admin, deregister]
 authors:
