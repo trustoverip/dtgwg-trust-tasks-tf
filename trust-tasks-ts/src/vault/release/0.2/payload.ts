@@ -8,7 +8,7 @@
  */
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
 /**
- * Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelope_unsupported`.
+ * Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`.
  */
 export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
 /**
@@ -25,7 +25,7 @@ export type SecretKind =
   | "custom";
 
 /**
- * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:not_proxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
+ * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:notProxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
  */
 export interface VaultReleasePayload {
   entryId: string;
@@ -155,7 +155,7 @@ export interface HpkeArmoredEnvelope {
   producerAssertion?: "didSigned" | "attested" | "pinnedOnly";
 }
 /**
- * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
+ * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
  */
 export interface TspMessageEnvelope {
   envelope: "tspMessage";
@@ -190,7 +190,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/release/0.2",
   "title": "Vault Release — payload",
-  "description": "Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:not_proxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).",
+  "description": "Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:notProxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -237,7 +237,7 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "sealedSecret": {
           "$ref": "#/$defs/SealedEnvelope",
-          "description": "Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelope_unsupported`."
+          "description": "Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`."
         },
         "secretKind": {
           "$ref": "#/$defs/SecretKind",
@@ -296,7 +296,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "TspMessageEnvelope": {
       "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -549,7 +549,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "sealedSecret": {
           "$ref": "#/$defs/SealedEnvelope",
-          "description": "Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelope_unsupported`."
+          "description": "Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`."
         },
         "secretKind": {
           "$ref": "#/$defs/SecretKind",
@@ -608,7 +608,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "TspMessageEnvelope": {
       "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tspMessage` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
       "type": "object",
       "additionalProperties": false,
       "required": [

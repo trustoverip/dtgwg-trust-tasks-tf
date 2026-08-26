@@ -8,7 +8,7 @@
  */
 export type SiteTarget = WebOrigin | Did | IosApp | AndroidApp;
 /**
- * Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`.
+ * Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.
  */
 export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
 
@@ -89,7 +89,7 @@ export interface ConsumerContext {
   networkClass?: "unknown" | "home" | "corp" | "public" | "vpn";
 }
 /**
- * Optional — included on retry after a prior proxy-login attempt returned `step_up_required`.
+ * Optional — included on retry after a prior proxy-login attempt returned `stepUpRequired`.
  */
 export interface StepUpProof {
   kind: "webauthn-uv" | "push-approval" | "totp";
@@ -145,7 +145,7 @@ export interface HpkeArmoredEnvelope {
   producerAssertion?: "did-signed" | "attested" | "pinned-only";
 }
 /**
- * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
+ * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
  */
 export interface TspMessageEnvelope {
   envelope: "tsp-message";
@@ -202,7 +202,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "stepUpProof": {
       "$ref": "#/$defs/StepUpProof",
-      "description": "Optional — included on retry after a prior proxy-login attempt returned `step_up_required`."
+      "description": "Optional — included on retry after a prior proxy-login attempt returned `stepUpRequired`."
     },
     "nonce": {
       "type": "string",
@@ -232,7 +232,7 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "sealedSessionBlob": {
           "$ref": "#/$defs/SealedEnvelope",
-          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`."
+          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -266,7 +266,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "TspMessageEnvelope": {
       "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -517,7 +517,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "sealedSessionBlob": {
           "$ref": "#/$defs/SealedEnvelope",
-          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelope_unsupported`."
+          "description": "Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -551,7 +551,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "TspMessageEnvelope": {
       "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
       "type": "object",
       "additionalProperties": false,
       "required": [

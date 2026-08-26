@@ -28,7 +28,7 @@ export interface AuthStepUpApproveRequest {
    */
   targetAcr?: string;
   /**
-   * Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`.
+   * Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`.
    *
    * @minItems 1
    */
@@ -160,7 +160,7 @@ export const PAYLOAD_SCHEMA = {
           "webauthn"
         ]
       },
-      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `method_unsupported`."
+      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`."
     },
     "webauthn": {
       "$ref": "#/$defs/CredentialRequestOptions",

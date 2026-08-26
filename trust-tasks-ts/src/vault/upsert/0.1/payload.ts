@@ -28,7 +28,7 @@ export type SecretKind =
   | "ssh-key"
   | "custom";
 /**
- * Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelope_unsupported`. REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated.
+ * Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelopeUnsupported`. REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated.
  */
 export type SealedEnvelope = DidcommAuthcryptEnvelope | HpkeArmoredEnvelope | TspMessageEnvelope;
 /**
@@ -61,7 +61,7 @@ export interface VaultUpsertPayload {
    */
   id?: string;
   /**
-   * When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:version_conflict` if the current version differs. Omit on create.
+   * When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:versionConflict` if the current version differs. Omit on create.
    */
   expectedVersion?: number;
   /**
@@ -158,7 +158,7 @@ export interface HpkeArmoredEnvelope {
   producerAssertion?: "did-signed" | "attested" | "pinned-only";
 }
 /**
- * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
+ * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
  */
 export interface TspMessageEnvelope {
   envelope: "tsp-message";
@@ -349,7 +349,7 @@ export const PAYLOAD_SCHEMA = {
     "expectedVersion": {
       "type": "integer",
       "minimum": 0,
-      "description": "When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:version_conflict` if the current version differs. Omit on create."
+      "description": "When updating, the consumer's last-observed `version` for the entry. The maintainer rejects with `vault/upsert:versionConflict` if the current version differs. Omit on create."
     },
     "contextId": {
       "type": "string",
@@ -410,7 +410,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "sealedSecret": {
       "$ref": "#/$defs/SealedEnvelope",
-      "description": "Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelope_unsupported`. REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated."
+      "description": "Pluggable cipher envelope (discriminated by `envelope`) whose cleartext is a JCS-canonical JSON conforming to `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. The supported envelope kinds are listed in the SealedEnvelope shared schema; M2A consumers reject any kind they don't implement with `vault/upsert:envelopeUnsupported`. REQUIRED on create unless `secretKind` is `did-self-issued` or `didcomm-peer` (those carry only references to maintainer-internal key ids and have no extra secret bytes). On update, omit if the secret material is unchanged; populate if the secret is being rotated."
     },
     "clearFields": {
       "type": "array",
@@ -799,7 +799,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "TspMessageEnvelope": {
       "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1247,7 +1247,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "TspMessageEnvelope": {
       "title": "TspMessageEnvelope",
-      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelope_unsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
+      "description": "Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.",
       "type": "object",
       "additionalProperties": false,
       "required": [
