@@ -44,6 +44,21 @@
 //! [`SenderAllowlist`] and calls [`unpack_trust_task_from`], which reads
 //! the envelope's `skid`, looks the sender up once, and decrypts once.
 //!
+//! ## The guarded inbound path
+//!
+//! [`unpack_trust_task`] opens the envelope and stops there. The consumer
+//! obligations of SPEC.md §7.2 still have to run over the document it
+//! returns, and two of them are stateful: item 11's duplicate-execution
+//! record and the freshness bound that lets that record be dropped.
+//!
+//! [`DidcommConsumer`] is that path with both already wired, **on by
+//! default**. It matters most here: §6 of the binding records that this
+//! transport guarantees no freshness and that a mediator may re-deliver, so an
+//! ordinary queue retry — no attacker involved — grants an ACL entry twice
+//! unless the consumer keeps the record. The record is keyed on the document
+//! `id` and never on the DIDComm `@id` or `thid`, because a redelivery
+//! legitimately carries a fresh transport identifier for the same document.
+//!
 //! ## Sketch
 //!
 //! ```rust,ignore
@@ -68,10 +83,12 @@
 
 mod error;
 mod handler;
+pub mod inbound;
 mod pack;
 
 pub use error::DidcommError;
 pub use handler::{DidcommHandler, BINDING_URI};
+pub use inbound::DidcommConsumer;
 pub use pack::{
     advertised_sender_did, pack_trust_task, unpack_trust_task, unpack_trust_task_from,
     SenderAllowlist, ENVELOPE_TYPE,

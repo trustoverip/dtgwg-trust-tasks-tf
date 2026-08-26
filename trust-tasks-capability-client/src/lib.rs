@@ -20,6 +20,33 @@
 //! - **Replies**: [`classify_git_trust_reply`] (for grant/revoke writers) and
 //!   [`parse_capability_reply`] (for governance management UIs).
 //!
+//! ## Retries versus fresh attempts
+//!
+//! This crate is a **producer**, and the producer half of SPEC §7.2 item 11 is
+//! §8.4: *a retry is a bit-for-bit identical resend*. As of `trust-tasks-rs`
+//! 0.12.0 there is a consumer that enforces it — the record is keyed on the
+//! document `id` and compared against the whole document — and the DIDComm and
+//! TSP bindings now keep that record by default. So the two ways of sending a
+//! request again have become genuinely different operations:
+//!
+//! | Intent | What to send | What the consumer does |
+//! |---|---|---|
+//! | The first send may not have arrived | `previous` itself, unchanged | Absorbs it; returns whatever the first execution determined |
+//! | Something about the request changed | [`new_attempt(&previous)`](new_attempt) | Treats it as the new document it is |
+//! | Anything else under a reused `id` | — | Rejects it with `idConflict` |
+//!
+//! "Something about the request changed" is wider than it sounds: a re-stamped
+//! `issuedAt` or a re-signed `proof` over identical content is already a
+//! different document. That is deliberate — §8.4 says a producer that
+//! "retries" by re-signing "has not retried", and the whole point of item 11's
+//! comparison is that an `id` alone cannot tell the retry it must absorb from
+//! the conflict it must reject.
+//!
+//! [`build_document`] and every builder over it mint a fresh `id` per call, so
+//! a caller that rebuilds is already minting a new attempt. [`new_attempt`]
+//! covers the case where the document has already been built (and possibly
+//! signed) and is about to be sent again.
+//!
 //! Signing is deliberately **not** here — it is a thin Data-Integrity call
 //! each consumer makes with its own signer (a service reuses its credential
 //! signer; a client signs with the persona key), so this crate stays free of
@@ -81,7 +108,20 @@ pub enum CapabilityClientError {
 
 // --- builders ----------------------------------------------------------------
 
+/// A fresh document `id`. One per *attempt* — never reused across attempts;
+/// see [`new_attempt`] and the [module docs](self#retries-versus-fresh-attempts).
+fn fresh_id() -> String {
+    format!("urn:uuid:{}", Uuid::new_v4())
+}
+
 /// Build a capability Trust Task addressed `issuer` → `recipient`.
+///
+/// Mints a fresh `id` and stamps `issuedAt` **on every call**, so each built
+/// document is a new attempt in the sense of SPEC §8.4. To re-send one you
+/// have already built, see [`new_attempt`] — and read
+/// [Retries versus fresh attempts](self#retries-versus-fresh-attempts) first,
+/// because the choice between resending the identical document and minting a
+/// new one is now enforced by the consumer.
 pub fn build_document(
     issuer_did: &str,
     recipient_did: &str,
@@ -91,11 +131,53 @@ pub fn build_document(
     let type_uri = type_uri
         .parse()
         .unwrap_or_else(|_| unreachable!("static capability type URIs are valid"));
-    let mut doc = TrustTask::new(format!("urn:uuid:{}", Uuid::new_v4()), type_uri, payload);
+    let mut doc = TrustTask::new(fresh_id(), type_uri, payload);
     doc.issuer = Some(issuer_did.to_string());
     doc.recipient = Some(recipient_did.to_string());
     doc.issued_at = Some(chrono::Utc::now());
     doc
+}
+
+/// A **new attempt** at the request `previous` carried: the same addressing,
+/// type and payload under a *fresh* `id`, a fresh `issuedAt`, and no `proof`.
+///
+/// This is the counterpart of a SPEC §8.4 retry, and the two are not
+/// interchangeable:
+///
+/// * A **retry** is a bit-for-bit identical resend of `previous`. Send
+///   `previous` itself — unchanged, same `id`, same `issuedAt`, same `proof`.
+///   The consumer's §7.2 item 11 record absorbs it and returns whatever the
+///   first execution determined; that absorption is the whole reason retrying
+///   is safe.
+/// * A **new attempt** is a different document. Anything that changes the
+///   bytes makes it one: an edited payload, a re-stamped `issuedAt`, even a
+///   re-signed `proof` over identical content. It **MUST** carry a fresh `id`,
+///   which is what this function is for.
+///
+/// Reusing an `id` with altered content used to pass unnoticed. As of
+/// `trust-tasks-rs` 0.12.0 the consumer keeps a record keyed on the document
+/// `id` and compares the whole document against it, so that combination is
+/// rejected with `idConflict` — and, as the DIDComm and TSP bindings now
+/// default that record on, it will be rejected by every consumer this client
+/// talks to.
+///
+/// `proof` is cleared because it committed to the previous `id` and
+/// `issuedAt`; carrying it over would ship a signature over a document that no
+/// longer exists. Sign the returned document before sending it.
+///
+/// **Hold the new correlation thread.** Where `previous` opened its own
+/// exchange (no `threadId`), SPEC §4.9's fallback names that exchange by the
+/// document `id` — so a new attempt opens a *new* exchange, and the value to
+/// wait on is [`correlation_thread`] of the returned document, not of
+/// `previous`. Where `previous` carried an explicit `threadId` it is preserved
+/// and the attempt stays in the same exchange.
+#[must_use]
+pub fn new_attempt(previous: &TrustTask<Value>) -> TrustTask<Value> {
+    let mut next = previous.clone();
+    next.id = fresh_id();
+    next.issued_at = Some(chrono::Utc::now());
+    next.proof = None;
+    next
 }
 
 /// Build a `governance/capability/list` request (status `all`).
@@ -774,5 +856,115 @@ mod tests {
         // The correlating form takes the same body only for the right thread.
         assert!(parse_envelope_document_for(&body, &grant.id).is_some());
         assert!(parse_envelope_document_for(&body, "urn:uuid:someone-else").is_none());
+    }
+
+    // --- SPEC §8.4: retries versus fresh attempts ---------------------------
+
+    /// Every builder mints its own `id`, so rebuilding a request is already a
+    /// new attempt rather than a reuse.
+    #[test]
+    fn builders_mint_a_fresh_id_per_attempt() {
+        let first = build_git_trust_grant("did:a", "did:r", "did:s", "openvtc");
+        let second = build_git_trust_grant("did:a", "did:r", "did:s", "openvtc");
+        assert_ne!(first.id, second.id);
+        assert!(first.id.starts_with("urn:uuid:"));
+    }
+
+    /// A new attempt is a *different document*: fresh `id`, fresh `issuedAt`,
+    /// and no carried-over `proof` — the old one committed to the old `id`.
+    #[test]
+    fn a_new_attempt_mints_a_fresh_id_and_drops_the_stale_proof() {
+        let mut first = build_git_trust_grant("did:a", "did:r", "did:s", "openvtc");
+        first.proof = Some(trust_tasks_rs::Proof {
+            proof_type: "DataIntegrityProof".into(),
+            cryptosuite: "eddsa-jcs-2022".into(),
+            created: chrono::Utc::now(),
+            proof_purpose: "assertionMethod".into(),
+            verification_method: "did:a#key-1".into(),
+            proof_value: "zStale".into(),
+            extra: Default::default(),
+        });
+
+        let next = new_attempt(&first);
+        assert_ne!(next.id, first.id, "a new attempt MUST NOT reuse the `id`");
+        assert!(next.proof.is_none(), "the old proof signed the old `id`");
+        assert_eq!(next.payload, first.payload);
+        assert_eq!(next.issuer, first.issuer);
+        assert_eq!(next.recipient, first.recipient);
+        assert_eq!(next.type_uri.to_string(), first.type_uri.to_string());
+    }
+
+    /// SPEC §4.9's fallback: a request that opens its own exchange is named by
+    /// its `id`, so a new attempt opens a new exchange and the caller must
+    /// hold the *new* correlation thread. An explicit `threadId` is preserved.
+    #[test]
+    fn a_new_attempt_re_threads_only_where_the_id_was_the_thread() {
+        let opening = build_git_trust_grant("did:a", "did:r", "did:s", "openvtc");
+        let next = new_attempt(&opening);
+        assert_eq!(correlation_thread(&next), next.id);
+        assert_ne!(correlation_thread(&next), correlation_thread(&opening));
+
+        let mut in_exchange = build_git_trust_grant("did:a", "did:r", "did:s", "openvtc");
+        in_exchange.thread_id = Some("exchange-0001".into());
+        let next = new_attempt(&in_exchange);
+        assert_eq!(correlation_thread(&next), "exchange-0001");
+    }
+
+    /// The end-to-end producer property, checked against the consumer rule
+    /// that now enforces it (`trust-tasks-rs` 0.12's §7.2 item 11 record).
+    ///
+    /// * resending the identical document is absorbed — that is the §8.4 retry;
+    /// * altering it while reusing the `id` is `Conflict` → `idConflict`;
+    /// * `new_attempt` is the way through, because its `id` is fresh.
+    #[tokio::test]
+    async fn a_reused_id_with_altered_content_conflicts_and_new_attempt_does_not() {
+        use trust_tasks_rs::{document_digest, InMemoryReplayGuard, ReplayGuard, ReplayVerdict};
+
+        let guard = InMemoryReplayGuard::new(16);
+        let now = chrono::Utc::now();
+        let retain = Some(now + chrono::TimeDelta::minutes(5));
+
+        let sent = build_git_trust_grant("did:a", "did:r", "did:s", "openvtc");
+        let digest = document_digest(&sent).unwrap();
+        assert_eq!(
+            guard.claim(&sent.id, &digest, retain, now).await.unwrap(),
+            ReplayVerdict::Fresh
+        );
+
+        // §8.4 retry: the identical document, resent. Absorbed.
+        let retried = sent.clone();
+        let retried_digest = document_digest(&retried).unwrap();
+        assert_eq!(retried_digest, digest, "a retry is bit-for-bit identical");
+        assert!(matches!(
+            guard
+                .claim(&retried.id, &retried_digest, retain, now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Duplicate { .. }
+        ));
+
+        // The mistake this release closes: edit the payload, keep the `id`.
+        let mut altered = sent.clone();
+        altered.payload["resource"] = serde_json::json!("some-other-org");
+        let altered_digest = document_digest(&altered).unwrap();
+        assert_eq!(
+            guard
+                .claim(&altered.id, &altered_digest, retain, now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Conflict,
+            "a reused `id` with altered content is `idConflict`, not a retry"
+        );
+
+        // `new_attempt` is how a producer sends a changed request instead.
+        let attempt = new_attempt(&altered);
+        let attempt_digest = document_digest(&attempt).unwrap();
+        assert_eq!(
+            guard
+                .claim(&attempt.id, &attempt_digest, retain, now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Fresh
+        );
     }
 }

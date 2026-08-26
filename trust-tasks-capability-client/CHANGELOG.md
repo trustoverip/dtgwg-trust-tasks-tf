@@ -3,6 +3,63 @@
 All notable changes to `trust-tasks-capability-client` are documented in this
 file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.12.0] - 2026-08-26
+
+The producer half of SPEC §7.2 item 11. 0.11.0 flagged that this client
+"should no longer reuse a document `id` across attempts"; this release makes
+the two ways of sending a request again into two named operations, because as
+of this same release the consumer enforces the difference.
+
+### Added
+
+- **`new_attempt(&previous)` — a fresh attempt at a request already built.**
+  Same addressing, type and payload; **fresh `id`**, fresh `issuedAt`, and no
+  carried-over `proof` (the old one committed to the old `id`, so re-sending it
+  would ship a signature over a document that no longer exists).
+
+  This is the counterpart of a §8.4 retry, and the two are now genuinely
+  different operations:
+
+  * a **retry** is `previous` itself, resent bit-for-bit — the consumer's
+    record absorbs it and returns whatever the first execution determined;
+  * a **new attempt** is any send whose bytes differ, including a re-stamped
+    `issuedAt` or a `proof` re-signed over identical content. It **MUST** carry
+    a fresh `id`, and `new_attempt` is how to mint one.
+
+  Anything else — a reused `id` with altered content — is rejected `idConflict`
+  by a `trust-tasks-rs` 0.12 consumer, and the DIDComm and TSP bindings in this
+  release keep that record **on by default**, so it will be rejected by every
+  consumer this client talks to. The module docs carry the table; a test drives
+  all three cases through the real `InMemoryReplayGuard` rather than restating
+  the rule.
+
+  Note the correlation consequence: where the previous request opened its own
+  exchange (no `threadId`), SPEC §4.9 names that exchange by the document `id`,
+  so a new attempt opens a *new* exchange — hold `correlation_thread` of the
+  returned document, not of the previous one. An explicit `threadId` is
+  preserved.
+
+### Changed
+
+- **Audited: the builders were already correct.** `build_document`, and
+  therefore `build_list_document`, `build_toggle_document`,
+  `build_git_trust_grant` and `build_git_trust_revoke`, mint a fresh
+  `urn:uuid:` `id` and stamp `issuedAt` on *every* call, so a caller that
+  rebuilds a request has always been making a new attempt rather than reusing
+  an `id`. The gap was that the crate offered no way to express the *other*
+  intent — re-sending a document already built and signed — and left a caller
+  who reached for "re-stamp and re-sign" with a document the consumer now
+  refuses. That is what `new_attempt` closes; no builder behaviour changed.
+
+- **The leading component moves** to keep this crate in step with the
+  behavioural break its siblings ship in the same release. The API change here
+  is additive, but a producer built against 0.11 will start receiving
+  `idConflict` from consumers it previously reached, and `issuedAt` is now
+  required by the bindings' default freshness policy — both are changes to what
+  this client observes in the field.
+
+- `tokio` is a dev-dependency (one test drives the async `ReplayGuard`).
+
 ## [0.11.0] - 2026-08-26
 
 ### Changed

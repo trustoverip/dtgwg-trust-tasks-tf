@@ -230,6 +230,52 @@ be retained or relied upon beyond the receiving agent,
 binding's allowance, and a *Trust Task specification* declaring `proof`
 **REQUIRED** settles it (§5).
 
+### 6.1 Duplicate-execution record
+
+`0.1` and this binding through its first revisions named no mechanism for the
+obligation above, which left "the *consumer*'s job" as the whole of the
+guidance. It is named here.
+
+A *consumer* implementing a *consequential Trust Task* over this binding
+**MUST** keep the duplicate-execution record of [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) item 11, and:
+
+1. **The record is keyed on the *Trust Task document*'s `id`.** The v1 message
+   `@id` and the `~thread` decorator's `thid` / `pthid` **MUST NOT** substitute
+   for it, per §7.2's keying paragraph. This is not a formality on this
+   transport: a mediator redelivery is a *new* v1 message carrying the *same*
+   document in the same attachment, and v1 agents generate a fresh `@id` for
+   every message they emit. A record keyed on a transport identifier admits
+   every redelivery and executes the task again, which is the outcome item 11
+   exists to prevent. Note that `~thread` cannot substitute either, and for a
+   second reason: the omit rule of [§3.1](#31-thread-correlation) means a document
+   whose correlator is not RFC 0008-shaped travels with no `thid` at all.
+2. **Comparison is over the document, not the `id` alone.** A second document
+   under a reused `id` whose content differs — including a re-signed or
+   re-stamped `proof` — is **not** the retry of [§8.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#84-retries-and-idempotency) and **MUST** be rejected
+   with `idConflict`.
+3. **Retention and the acceptance window are one bound.** The record **MUST**
+   be retained at least as long as the *consumer* remains willing to execute
+   the document — `expiresAt` where present, otherwise `issuedAt` plus the
+   *consumer*'s acceptance window. A *consumer* that can establish neither
+   **MUST NOT** execute a *consequential Trust Task* on the document. There is
+   no second retention setting to configure.
+4. **A duplicate is not an error.** Where the *Trust Task specification*
+   defines a success response the *consumer* **SHOULD** return the result the
+   first execution produced; where the original execution is still running it
+   **SHOULD** return or expose that execution's state rather than begin
+   another; where the specification defines no response, silence is the
+   correct disposition. In no case is a duplicate reported as `taskFailed` —
+   the task did not fail, it already happened.
+5. **A record that cannot be consulted fails closed.** Where the *consumer*
+   cannot establish whether a document is a duplicate it **MUST NOT** execute,
+   and **SHOULD** respond `unavailable` with `retryable` true: the producer's
+   bit-for-bit resend is absorbed correctly once the record is reachable
+   again.
+
+A *consumer* replicated across processes **MUST** back the record with a store
+every replica shares. Two replicas each keeping their own record accept the
+same document once apiece, which is the double execution in a different shape.
+
 ## 7. Versioning
 
 This binding follows the framework's `MAJOR.MINOR` versioning ([§5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#5-versioning)). A `MINOR` revision **MUST** remain backwards-compatible with *documents produced under* an earlier `MINOR` of this binding: the attachment id and the extraction rules are preserved, earlier carriages remain acceptable to a consumer, and only additive conventions, identity-mapping refinements, or stricter error mappings may be introduced. Dropping acceptance of an earlier carriage requires a `MAJOR` bump and a new binding URI.
