@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import { discoverSpecs as discoverSpecsShared } from './lib/specs.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -82,31 +83,25 @@ function firstAdded(dirRel) {
   return new Date().toISOString().slice(0, 10);
 }
 
+/* Spec discovery lives in scripts/lib/specs.mjs — one rule, shared with
+ * scripts/check-bindings-conformance.mjs. See that module for why: the build
+ * used to find specs by `spec.md` while the code generators found them by
+ * `payload.schema.json`, which agree only for as long as every version folder
+ * carries both. This wiring makes the disagreement a build failure instead of
+ * two tools describing two different registries in silence.
+ *
+ * Memoised because the module walks the tree and several callers want the list
+ * (checkExampleDocuments() runs before main()'s own pass), and because the
+ * structural problems below must be reported once, not once per caller. */
+let specsCache = null;
 function discoverSpecs() {
-  if (!fs.existsSync(SPECS_DIR)) return [];
-  const found = [];
-  walk(SPECS_DIR);
-  return found;
-
-  function walk(dir) {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
-      const full = path.join(dir, entry.name);
-      const specPath = path.join(full, 'spec.md');
-      if (fs.existsSync(specPath)) {
-        // `full` is a version directory (it contains spec.md). Slug is the
-        // relative path from SPECS_DIR to `full`'s parent, with `/` separators.
-        const relVersionDir = path.relative(SPECS_DIR, full);
-        const segments = relVersionDir.split(path.sep);
-        const version = segments[segments.length - 1];
-        const slug = segments.slice(0, -1).join('/');
-        found.push({ slug, version, dir: full, specPath });
-      } else {
-        walk(full);
-      }
-    }
-  }
+  if (specsCache) return specsCache;
+  specsCache = discoverSpecsShared({
+    specsDir: SPECS_DIR,
+    onIncomplete: ({ rel, message }) => fail(rel, message),
+    onNestedSlug: ({ rel, message }) => warn(`specs/${rel}: ${message}`)
+  });
+  return specsCache;
 }
 
 /* ---------- Shared schemas: discovery, slug, ref-walk ----------
