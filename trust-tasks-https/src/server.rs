@@ -55,11 +55,13 @@ use crate::auth::{Auth, BearerAuth};
 use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
 
-/// Maximum accepted request-body size (SPEC §10.2). Trust Task payloads are
-/// small; 256 KiB is generous headroom while bounding pre-auth memory use.
-/// Callers needing a different bound can rebuild the router with their own
-/// [`DefaultBodyLimit`] layer.
-const MAX_BODY_BYTES: usize = 256 * 1024;
+/// Maximum accepted request-body size (SPEC §10.2), applied by
+/// [`HttpsServer::into_router`]. Trust Task payloads are small; 256 KiB is
+/// generous headroom while bounding pre-auth memory use. Callers needing a
+/// different bound can rebuild the router with their own
+/// [`DefaultBodyLimit`] layer — which is why the value is public: a caller
+/// replacing the layer wants to know what it is replacing.
+pub const MAX_BODY_BYTES: usize = 256 * 1024;
 
 /// Default per-request wall-clock budget applied by [`HttpsServer::into_router`].
 /// A Trust Task exchange is one small JSON round trip; a request still in
@@ -419,8 +421,8 @@ impl HttpsServer {
     /// Build the axum [`Router`] without starting a listener — useful for
     /// integration tests that want to spawn the app inline.
     ///
-    /// The router applies an explicit `DefaultBodyLimit` of
-    /// `MAX_BODY_BYTES` (256 KiB) as an audited DoS control (SPEC §10.2): the body is
+    /// The router applies an explicit [`DefaultBodyLimit`] of
+    /// [`MAX_BODY_BYTES`] (256 KiB) as an audited DoS control (SPEC §10.2): the body is
     /// buffered and parsed *before* authentication, so an unbounded body would
     /// otherwise be a pre-auth memory-exhaustion vector. JSON nesting depth is
     /// separately bounded by `serde_json`'s default 128-level recursion limit,

@@ -99,6 +99,8 @@ accepted. Nothing on the wire moved; read the first entry before upgrading.
   `serve()` was previously a bare `axum::serve` with neither, so a stalled
   request held a connection and a task open indefinitely (slowloris). An expired
   request answers `408`.
+- `MAX_BODY_BYTES` is now public and exported. A caller replacing the router's
+  `DefaultBodyLimit` layer wants to know what it is replacing.
 - `HttpsClientBuilder::with_response_verifier` — optional verification of the
   `proof` on response documents. Configuring it makes a signed response
   mandatory: a proofless response is rejected rather than silently downgraded.
