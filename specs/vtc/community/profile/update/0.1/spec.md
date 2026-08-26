@@ -79,3 +79,13 @@ worse than no declaration at all.
 
 **Admin-class mutation** (`discloses: metadata`). Behind the community-admin
 gate; the framework proof makes each edit attributable.
+
+**Free text.** `name` is free text, bounded at 256 characters — a display name,
+not prose; `description` was already bounded at 1024. Both are OPTIONAL here, as
+members of a patch should be. `name` is authored by a community administrator,
+read by anyone at all — the profile is public — and **retained** by the community
+for as long as the community exists, replacing the previous value outright when
+supplied. Renaming grants and revokes nothing: verification binds to
+`communityDid`, which this payload deliberately cannot set, and two communities
+MAY publish the same name.
+

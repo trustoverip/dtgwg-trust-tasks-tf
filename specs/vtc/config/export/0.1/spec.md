@@ -66,3 +66,13 @@ Consumer: verify the community administrator capability. Return the community pr
 `exposure.discloses` is `metadata`, matching [`config/show`](../../../../config/show/0.1/): the document describes how a community is configured and presents itself, but it carries no secrets. The community signing key bundle, the audit log, and member records are all outside this task — an operator who needs those needs [`vtc/backup/export`](../../../backup/export/0.1/) and the passphrase discipline that comes with it.
 
 The one member worth noting is `extensions`, an opaque community-defined bag. A community that has put sensitive values in it exports them here. That is a property of what was stored rather than of this task, but it is why an export still warrants the administrator capability instead of being a public read.
+
+**Free text.** The community profile inside the export carries `name`, free text
+bounded at 256 characters — a display name, not prose. It is administrator-
+authored and already public, so exporting it discloses nothing new; what changes
+is its **retention**, because an export is a file that outlives the community's
+live state and will be read by whoever holds that file rather than by whoever
+could read the profile. An operator handling an export SHOULD treat it as a
+record to be stored and eventually destroyed on the same terms as the rest of
+the configuration it travels with.
+

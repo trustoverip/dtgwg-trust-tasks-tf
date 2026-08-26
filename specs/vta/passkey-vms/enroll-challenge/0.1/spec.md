@@ -192,6 +192,20 @@ registration ceremony this specification did not describe, and the anti-tamper
 gate at [`enroll-submit`](../../enroll-submit/0.1/spec.md) checks the key, not the
 ceremony's shape.
 
+Three members of the response are free text and are bounded at 64 characters
+each: `rpName`, `userName` and `userDisplayName`. Sixty-four is the figure
+[WebAuthn’s user entity definition](https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialuserentity)
+tells authenticators to truncate these entity names to, so a longer value would
+be silently cut on the device rather than carried. All three are
+**REQUIRED** — WebAuthn's `PublicKeyCredentialCreationOptions` has no shape
+without them — which is the departure from item 19's SHOULD noted here rather
+than hidden. Their reader is the *authenticator*, which may store and redisplay
+them at future ceremonies on hardware the VTA does not control; that is the
+retention that matters, and it is outside this exchange. `userName` in
+particular is documented as "the DID or the operator-supplied label", so a VTA
+that puts a DID there has published it to the authenticator's own credential
+list.
+
 ### Correlation
 
 `rpId` is a single DNS name matching the origin the administration UI is served

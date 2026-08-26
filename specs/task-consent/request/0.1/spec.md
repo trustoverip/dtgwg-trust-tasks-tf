@@ -350,6 +350,18 @@ it will not prompt should say which of the specification's refusal conditions
 applied, not describe its own state; "locked" and "the user is asleep" are not the
 same disclosure.
 
+Two more members are free text and now carry the same 500-character bound as
+`note`, for the same reason: 500 is what a person reads at a prompt.
+`effects[].summary` is **REQUIRED** and executor-authored — it is the one member
+a surface is obliged to render, so it is trusted exactly as far as the executor's
+signature reaches, and an executor MUST write it to be decidable on its own.
+`consequences[]` is the specification's own static fallback text, carried by the
+executor when it has no dry-run; it describes the task type rather than this
+request, and a surface MUST NOT present it as though it had been computed against
+real state. Both are read only by the approver, and both are exchange-scoped on
+the terms *Retention* sets out below — the bound is what stops a handler with a
+long effect list turning one prompt into an unbounded document.
+
 ### Correlation
 
 The salient correlation in this task is not between documents — it is the archive one

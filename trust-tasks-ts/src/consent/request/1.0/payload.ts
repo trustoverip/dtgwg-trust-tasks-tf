@@ -103,6 +103,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "displayHint": {
       "type": "string",
+      "maxLength": 256,
       "description": "Optional operator-facing label (e.g. \"Signal group 'Family'\"). MUST NOT contain a raw platform address."
     },
     "firstMessageDigest": {

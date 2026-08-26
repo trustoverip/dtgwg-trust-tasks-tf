@@ -42,7 +42,7 @@
       "additionalProperties": false,
       "required": ["purpose", "policy"],
       "properties": {
-        "purpose": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1, "maxLength": 128 },
         "contextId": {
           "type": "string",
           "minLength": 1,

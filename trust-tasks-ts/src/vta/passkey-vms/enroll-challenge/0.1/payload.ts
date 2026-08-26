@@ -151,6 +151,7 @@ export const PAYLOAD_SCHEMA = {
         "rpName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "Human-readable Relying-Party name."
         },
         "userHandle": {
@@ -161,11 +162,13 @@ export const PAYLOAD_SCHEMA = {
         "userName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "WebAuthn user name (e.g. the DID or the operator-supplied label)."
         },
         "userDisplayName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "WebAuthn user display name."
         },
         "timeoutMs": {
@@ -231,6 +234,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "rpName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "Human-readable Relying-Party name."
         },
         "userHandle": {
@@ -241,11 +245,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "userName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "WebAuthn user name (e.g. the DID or the operator-supplied label)."
         },
         "userDisplayName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "WebAuthn user display name."
         },
         "timeoutMs": {

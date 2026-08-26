@@ -136,3 +136,11 @@ posture, and it is worth being explicit about what it costs: a legitimate
 administrator who mistypes an id gets the same answer as an outsider probing
 for one. That is the intended trade — the alternative turns this task into an
 existence oracle for context ids.
+
+**Free text.** The returned record's `name` is free text, bounded at 256
+characters — a display name, not prose. It was authored by whichever operator
+created or last updated the context, is read by whoever reads this response, and
+is **retained** by the VTA for the life of the context. It is operator-facing
+only and carries no authorization meaning; two contexts may share a name, so a
+caller MUST match on the context identifier rather than on `name`.
+

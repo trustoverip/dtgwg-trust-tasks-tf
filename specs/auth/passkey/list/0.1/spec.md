@@ -166,3 +166,16 @@ The backup key has no `lastUsedAt`: it has never completed an assertion. For a k
 **Confidentiality.** The response is privacy-sensitive. Consumers **MUST** require transport-level confidentiality.
 
 The optional `ext` extension is part of the producer's signed surface.
+
+**Free text.** `deviceLabel` on each returned credential is free text, bounded
+at 256 characters. It was written at enrollment by whoever enrolled the
+credential — usually the subject, but an invited enrollment carries the
+*inviter's* suggestion — and nothing in the response attests to it. It is
+**untrusted**: it describes the authenticator only as well as its author chose
+to, and a management surface MUST NOT present it as an attested property. This
+response is where it is read, by an operator or by the subject deciding which
+credential to revoke, and it is **retained** by the consumer for the life of the
+credential precisely so that this listing can show it. A consumer MUST NOT
+synthesize a label for a credential enrolled without one: an invented label is
+indistinguishable from a chosen one to the person about to revoke something.
+

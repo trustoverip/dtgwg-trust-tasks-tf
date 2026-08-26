@@ -153,6 +153,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "title": {
           "type": "string",
+          "maxLength": 256,
           "description": "Human-readable capability name for management surfaces."
         },
         "description": {
@@ -333,6 +334,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "title": {
           "type": "string",
+          "maxLength": 256,
           "description": "Human-readable capability name for management surfaces."
         },
         "description": {

@@ -159,3 +159,13 @@ On redemption (a separate flow that the consumer drives once the invitee opens t
 **Audit.** Both the issuance and the redemption MUST log the administrator + invitee VIDs and the timestamps; a future incident review needs to reconstruct who admitted whom.
 
 The optional `ext` extension is part of the producer's signed surface.
+
+**Free text.** `deviceLabel` is free text, bounded at 256 characters — a
+display name rather than prose. Here it is authored by the *inviter*, not by the
+invitee whose credential it will name, which makes it the one member of this
+payload written by somebody other than the subject it describes. It is a
+suggestion only: the invitee MAY override it at redemption, and a surface
+rendering it before redemption SHOULD attribute it to the inviter. If it is not
+overridden the consumer **retains** it with the credential and shows it on every
+later credential listing, so an inviter's wording outlives the invitation.
+

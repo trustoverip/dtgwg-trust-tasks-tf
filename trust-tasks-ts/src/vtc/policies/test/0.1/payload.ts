@@ -119,6 +119,7 @@ export const PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Governance purpose the module is classified under."
         },
         "sha256": {
@@ -172,6 +173,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Governance purpose the module is classified under."
         },
         "sha256": {

@@ -106,6 +106,7 @@ export const PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one."
         },
         "ext": {
@@ -160,6 +161,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "string",
             "null"
           ],
+          "maxLength": 1024,
           "description": "Lookup failure detail — a configured but unreachable registry, distinct from an unconfigured one."
         },
         "ext": {

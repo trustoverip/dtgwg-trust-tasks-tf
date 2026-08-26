@@ -124,6 +124,7 @@ export const PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Governance purpose this ceremony decides, e.g. join, removal."
         },
         "pkg": {
@@ -149,6 +150,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "blurb": {
           "type": "string",
+          "maxLength": 256,
           "description": "One-line explanation shown beside the label."
         },
         "fields": {
@@ -217,6 +219,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "purpose": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 128,
           "description": "Governance purpose this ceremony decides, e.g. join, removal."
         },
         "pkg": {
@@ -242,6 +245,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "blurb": {
           "type": "string",
+          "maxLength": 256,
           "description": "One-line explanation shown beside the label."
         },
         "fields": {

@@ -172,7 +172,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.",
       "items": {
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "maxLength": 500
       }
     },
     "subject": {
@@ -301,6 +302,7 @@ export const PAYLOAD_SCHEMA = {
         "summary": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 500,
           "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose."
         },
         "path": {
@@ -441,6 +443,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "summary": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 500,
           "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose."
         },
         "path": {

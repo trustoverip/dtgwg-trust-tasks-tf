@@ -56,3 +56,14 @@ Consumer: verify the community-admin capability, then return the current
 **Admin-class metadata** (`discloses: metadata`). The profile is largely
 public-facing, but `contactEmail` and `registryStatus` are operational
 detail; the task sits behind the community-admin gate.
+
+**Free text.** The profile's `name` is free text, bounded at 256 characters — a
+display name, not prose; `description` was already bounded at 1024. Both are
+authored by a community administrator and are, by the nature of this task,
+**public**: the profile is what a stranger reads to decide whether to approach
+the community. The community **retains** them for as long as the community
+exists. Neither carries authorization meaning: a verifier binds to
+`communityDid`, never to a name, and two communities MAY publish the same one —
+which is precisely why a client that recognises a community by its name rather
+than its DID can be pointed at the wrong one.
+

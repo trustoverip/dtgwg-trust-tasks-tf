@@ -85,6 +85,7 @@ export const PAYLOAD_SCHEMA = {
         "name": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name."
         },
         "did": {
@@ -164,6 +165,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "name": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 256,
           "description": "Human-readable name. Operator-facing only; carries no authorization meaning, and two contexts may share a name."
         },
         "did": {

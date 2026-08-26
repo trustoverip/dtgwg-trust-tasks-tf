@@ -94,6 +94,15 @@ rather than a decision input, and surfacing it would invite an operator to read 
 query instead of the resolved disclosure — the same substitution of the abstract for the
 concrete that `requested` exists to prevent.
 
+`purpose` on each pending entry is free text, bounded at 500 characters — the
+consent-surface figure, carried through verbatim from the query that raised the
+deferral. It is the *verifier's* prose, not the agent's, so it is **untrusted**
+wherever it is rendered: the surface listing pending decisions MUST attribute it
+to the verifier that wrote it and MUST NOT let it stand in for the credential
+types being requested. Its reader is the holder working through their pending
+list. This task retains nothing — it is a projection — so the value lives
+exactly as long as the deferral it belongs to.
+
 ### Correlation
 
 The `requested` array is a join the holder performs on itself: it resolves the verifier's

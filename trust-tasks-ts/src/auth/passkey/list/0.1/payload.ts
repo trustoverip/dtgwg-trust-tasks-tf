@@ -118,6 +118,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "deviceLabel": {
           "type": "string",
+          "maxLength": 256,
           "description": "Operator-facing label captured at enrollment (e.g. \"Alice's MacBook Pro\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke."
         },
         "transports": {
@@ -199,6 +200,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "deviceLabel": {
           "type": "string",
+          "maxLength": 256,
           "description": "Operator-facing label captured at enrollment (e.g. \"Alice's MacBook Pro\"). Absent when the subject enrolled without one. Consumers MUST NOT synthesize a label, because an invented one is indistinguishable from a chosen one to somebody deciding which credential to revoke."
         },
         "transports": {

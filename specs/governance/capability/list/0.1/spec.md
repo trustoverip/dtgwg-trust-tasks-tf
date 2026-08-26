@@ -116,3 +116,11 @@ each entry carrying `manifest` and `enabled`, with optional `enabledAt` and
 The capability list reveals a community's governance posture; hosts MAY
 restrict `available`/`all` listings to community members or operators while
 leaving `enabled` open, per their read policy.
+
+**Free text.** `title` on each returned capability manifest is free text,
+bounded at 256 characters — a human-readable capability name for a management
+surface, not prose. It is authored by whoever published the capability, read by
+the operator reading this listing, and **retained** by the maintainer for as
+long as the manifest is installed. It carries no authorization meaning: a caller
+MUST match on the capability's identifier, never on its title.
+

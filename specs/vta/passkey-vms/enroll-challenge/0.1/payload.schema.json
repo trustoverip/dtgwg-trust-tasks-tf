@@ -50,6 +50,7 @@
         "rpName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "Human-readable Relying-Party name."
         },
         "userHandle": {
@@ -60,11 +61,13 @@
         "userName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "WebAuthn user name (e.g. the DID or the operator-supplied label)."
         },
         "userDisplayName": {
           "type": "string",
           "minLength": 1,
+          "maxLength": 64,
           "description": "WebAuthn user display name."
         },
         "timeoutMs": {

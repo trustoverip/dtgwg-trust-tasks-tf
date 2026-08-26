@@ -140,7 +140,8 @@ export const PAYLOAD_SCHEMA = {
         },
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 256
         },
         "description": {
           "type": "string",
@@ -315,7 +316,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "name": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 256
         },
         "description": {
           "type": "string",

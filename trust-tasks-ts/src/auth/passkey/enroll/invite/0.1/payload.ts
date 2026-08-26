@@ -108,6 +108,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "deviceLabel": {
       "type": "string",
+      "maxLength": 256,
       "description": "Suggested label for the credential. Used as a default; the invitee MAY override during redemption."
     },
     "ttl": {
