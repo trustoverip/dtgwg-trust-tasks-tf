@@ -33,3 +33,6 @@ trust-tasks-ts/.test-build/
 # that do not belong in a public repository. infra/cloudfront/associate.sh uses
 # a mktemp directory precisely so none of this lands in the tree.
 infra/cloudfront/dist*.json
+
+# Agent scratch worktrees — never part of a spec change.
+.claude/worktrees/

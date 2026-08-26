@@ -29,6 +29,39 @@ consumer should read it.
 > rather than discovering it mid-bump. (`trust-tasks-ceremony` does not depend
 > on this crate and is not part of the set.)
 
+## [0.11.17] - 2026-08-26
+
+### Added
+
+- **`keys/create/0.1` gains `internal`, and `KeyOrigin` gains `internal`.**
+
+  A maintainer may hold keys that are generated from a CSPRNG rather than
+  derived from a seed — reproducible from nothing, recoverable by no means once
+  the maintainer's storage is gone. The value of such a key is precisely that
+  it cannot be exported. Neither the request nor the response vocabulary could
+  express it: `keys/create` is `additionalProperties: false`, so a consumer
+  asking for one was rejected outright, and `KeyOrigin` offered only `derived`
+  and `imported`, so a maintainer that minted one could not describe it.
+
+  The response side matters more than it looks. A consumer asks for an
+  unexportable key because it needs that property; a maintainer that ignored an
+  unrecognised member and returned a derived key would hand back something that
+  looks identical and is not. `origin` is `internal` iff the request was
+  honoured, which makes the difference detectable rather than a matter of
+  trust — and the specification now says a maintainer that cannot mint one MUST
+  reject rather than silently downgrade.
+
+  `derivationPath` and `internal: true` are documented as contradictory: an
+  internal key derives from no seed and records no path.
+
+  `internal` declares no JSON Schema `default`, for the reason 0.11.16 records
+  for `VaultEntry.status`: a declared default is materialised by the generated
+  bindings, so an absent member reappears as an explicit `false` and breaks
+  round-trip idempotence. `keys/create`'s own request example caught it.
+
+  Additive: both members are optional, and `KeyOrigin` gains a value rather
+  than changing one, so no previously-valid document becomes invalid.
+
 ## [0.11.16] - 2026-08-26
 
 ### Added
