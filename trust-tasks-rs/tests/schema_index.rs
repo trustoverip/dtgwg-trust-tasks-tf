@@ -132,3 +132,81 @@ fn each_side_refuses_the_other_side_document() {
 fn an_unknown_response_uri_is_none() {
     assert!(schema_for("https://trusttasks.org/spec/not/a/task/9.9#response").is_none());
 }
+
+// ── spec_policy_for ────────────────────────────────────────────────────────
+//
+// The URI-keyed half of the same problem. A consumer that dispatches on the URI
+// holds a `TrustTask<Value>` and has no `P` to read the codegen-emitted flags
+// from, so without this it must hand-maintain its own URI → payload-type table.
+
+use trust_tasks_rs::schema_index::spec_policy_for;
+use trust_tasks_rs::{Payload, RejectReason, SpecPolicy, TrustTask, TypeUri};
+
+/// `auth/authenticate/0.1` — proof-REQUIRED, and the reason is the point: the
+/// Data Integrity proof *is* the authentication.
+const AUTHENTICATE: &str = "https://trusttasks.org/spec/auth/authenticate/0.1";
+
+#[test]
+fn a_dispatching_consumer_can_find_a_policy_by_type_uri() {
+    assert!(spec_policy_for(AUTHENTICATE).is_some());
+    assert!(spec_policy_for("https://trusttasks.org/spec/not/a/task/9.9").is_none());
+}
+
+/// A `#response` URI has a schema but no policy: the flag-driven rules are
+/// about a document a consumer *received*, and a response carries no
+/// audience-binding or proof requirement of its own.
+#[test]
+fn a_response_uri_has_a_schema_but_no_policy() {
+    let response = format!("{AUTHENTICATE}#response");
+    assert!(schema_for(&response).is_some());
+    assert!(spec_policy_for(&response).is_none());
+}
+
+/// The URI-keyed path and the typed path must be the same code, not two
+/// implementations that agree today. This is what stops them diverging when a
+/// new flag-driven rule is added.
+#[test]
+fn the_uri_keyed_policy_matches_the_typed_one() {
+    use trust_tasks_rs::specs::auth::authenticate::v0_1::Payload as Authenticate;
+    assert_eq!(
+        spec_policy_for(AUTHENTICATE).unwrap(),
+        SpecPolicy::of::<Authenticate>(),
+    );
+    assert_eq!(Authenticate::TYPE_URI, AUTHENTICATE);
+}
+
+/// And enforcing through the URI must reach the same verdict as enforcing
+/// through the type — on a `TrustTask<Value>`, which is the whole point.
+#[test]
+fn enforcing_by_uri_refuses_what_enforcing_by_type_refuses() {
+    use trust_tasks_rs::specs::auth::authenticate::v0_1::Payload as Authenticate;
+
+    // Proofless, on a proof-REQUIRED spec. The recipient IS set: `authenticate`
+    // is recipient-REQUIRED too, and that rule is checked first, so leaving it
+    // off would refuse for the wrong reason and prove nothing about proofs.
+    let mut untyped: TrustTask<serde_json::Value> = TrustTask::new(
+        "urn:uuid:policy-1",
+        AUTHENTICATE.parse::<TypeUri>().expect("a valid type uri"),
+        json!({ "challenge": "challenge-0123456789abcdef", "sessionId": "session-0123456789abcdef", "scope": [] }),
+    );
+    untyped.recipient = Some("did:key:z6MkVta".to_string());
+
+    let by_uri = spec_policy_for(AUTHENTICATE).unwrap().enforce(&untyped);
+    assert!(
+        matches!(by_uri, Err(RejectReason::ProofRequired)),
+        "a proofless document on a proof-REQUIRED spec must be refused: {by_uri:?}"
+    );
+
+    let mut typed: TrustTask<Authenticate> = TrustTask::new(
+        "urn:uuid:policy-1",
+        AUTHENTICATE.parse::<TypeUri>().expect("a valid type uri"),
+        serde_json::from_value(json!({ "challenge": "challenge-0123456789abcdef", "sessionId": "session-0123456789abcdef", "scope": [] }))
+            .expect("the fixture matches the generated payload"),
+    );
+    typed.recipient = Some("did:key:z6MkVta".to_string());
+    assert_eq!(
+        format!("{:?}", typed.enforce_spec_policy()),
+        format!("{by_uri:?}"),
+        "the two paths must reach the same verdict"
+    );
+}

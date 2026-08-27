@@ -162,14 +162,15 @@ impl<P> TrustTask<P> {
     where
         P: Payload,
     {
-        if self.proof.is_some() && self.recipient.is_none() && !P::IS_BEARER {
-            return Err(RejectReason::MalformedRequest {
-                reason: "proof present with no in-band recipient on a non-bearer specification \
-                         (SPEC §4.8.2 audience binding)"
-                    .to_string(),
-            });
+        crate::SpecPolicy {
+            is_bearer: P::IS_BEARER,
+            // This method is item 8 alone; the other three rules belong to
+            // `enforce_spec_policy`, which runs all four.
+            is_proof_required: false,
+            is_recipient_required: false,
+            is_issued_at_required: false,
         }
-        Ok(())
+        .enforce(self)
     }
 
     /// Apply the per-spec consumer checks that depend on the payload type's
@@ -204,22 +205,7 @@ impl<P> TrustTask<P> {
     where
         P: Payload,
     {
-        if self.recipient.is_none() && P::IS_RECIPIENT_REQUIRED {
-            return Err(RejectReason::MalformedRequest {
-                reason: "specification declares recipient REQUIRED but the document \
-                         carries no in-band recipient"
-                    .to_string(),
-            });
-        }
-        if self.proof.is_none() && P::IS_PROOF_REQUIRED {
-            return Err(RejectReason::ProofRequired);
-        }
-        if self.issued_at.is_none() && P::IS_ISSUED_AT_REQUIRED {
-            return Err(RejectReason::MalformedRequest {
-                reason: crate::freshness::ISSUED_AT_REQUIRED_BY_SPEC.to_string(),
-            });
-        }
-        self.enforce_audience_binding()
+        crate::SpecPolicy::of::<P>().enforce(self)
     }
 
     /// Returns `true` if `expires_at` is set and `now ≥ expiresAt`
