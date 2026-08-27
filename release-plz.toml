@@ -65,3 +65,64 @@ pr_labels = ["release"]
 #   release_always — left at its default (true) so a hand-fixed version, or a
 #   re-run after a half-published release, still gets picked up. Publication is
 #   idempotent: a crate already at that version on crates.io is skipped.
+
+
+# ONE COMPATIBILITY UNIT.
+#
+# Every crate listed below exposes `trust-tasks-rs` types in its own public
+# API — `trust-tasks` re-exports the whole crate with `pub use
+# trust_tasks_rs::*`, and the transport bindings take and return `TrustTask<P>`
+# and `TrustTaskCode`. So a breaking change in `trust-tasks-rs` breaks all of
+# them, whether or not a line of their own source changed.
+#
+# `semver_check` cannot see this. cargo-semver-checks compares each crate's
+# rustdoc against that crate's own published baseline; it does not track type
+# identity across dependency versions. Left alone, release-plz gave
+# `trust-tasks-rs` a correct breaking bump (0.14.0 -> 0.15.0) and handed every
+# dependent a PATCH — which is a lie a consumer finds out about at compile
+# time:
+#
+#     error[E0308]: expected `TrustTask<Value>`, found a different `TrustTask<Value>`
+#     note: there are multiple different versions of crate `trust_tasks_rs`
+#           in the dependency graph
+#
+# A shared version group makes the relationship the versions already had
+# explicit: they move together, and a break anywhere in the unit is a break
+# everywhere. release-plz assigns the highest next version across the group, so
+# once they share a floor the breaking bump dominates and every crate carries
+# the right signal.
+#
+# NOT in the group: `trust-tasks-ceremony` (no `trust-tasks-rs` dependency at
+# all, so it versions on its own) and `trust-tasks-codegen` (`publish = false`).
+
+[[package]]
+name = "trust-tasks-rs"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks-https"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks-proof"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks-didcomm"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks-didcomm-v1"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks-tsp"
+version_group = "core"
+
+[[package]]
+name = "trust-tasks-capability-client"
+version_group = "core"
