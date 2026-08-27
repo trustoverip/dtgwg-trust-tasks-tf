@@ -443,3 +443,73 @@ mod tests {
         }
     }
 }
+
+/// The flag-driven consumer policy a *Trust Task specification* declares, read
+/// off a generated [`Payload`] impl.
+///
+/// [`TrustTask::enforce_spec_policy`](crate::TrustTask::enforce_spec_policy) is
+/// the typed entry point and stays the one most consumers want. This type
+/// exists for the other shape: a consumer that dispatches on the Type URI and
+/// holds a `TrustTask<serde_json::Value>`, so it has no `P` to read the
+/// constants from. [`schema_index::spec_policy_for`](crate::schema_index::spec_policy_for)
+/// hands it one keyed by URI.
+///
+/// Both paths run [`SpecPolicy::enforce`], so they cannot diverge on the check
+/// set as new flag-driven rules are added — which is the whole reason this is a
+/// value rather than four public constants for a caller to re-apply by hand.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SpecPolicy {
+    /// [`Payload::IS_BEARER`] — the spec opts out of §4.8.2 audience binding.
+    pub is_bearer: bool,
+    /// [`Payload::IS_PROOF_REQUIRED`] — §7.3 item 8.
+    pub is_proof_required: bool,
+    /// [`Payload::IS_RECIPIENT_REQUIRED`] — §7.2 item 5b.
+    pub is_recipient_required: bool,
+    /// [`Payload::IS_ISSUED_AT_REQUIRED`] — §7.3 item 17.
+    pub is_issued_at_required: bool,
+}
+
+impl SpecPolicy {
+    /// Read the policy off a generated payload type.
+    pub const fn of<P: Payload>() -> Self {
+        Self {
+            is_bearer: P::IS_BEARER,
+            is_proof_required: P::IS_PROOF_REQUIRED,
+            is_recipient_required: P::IS_RECIPIENT_REQUIRED,
+            is_issued_at_required: P::IS_ISSUED_AT_REQUIRED,
+        }
+    }
+
+    /// Apply the checks to a document's envelope.
+    ///
+    /// Generic over the payload type and never reads it: every rule here is
+    /// about `recipient`, `proof` and `issuedAt`. That is what lets a
+    /// URI-dispatching consumer run the full check set against a
+    /// `TrustTask<serde_json::Value>` without first deserializing into the
+    /// generated type.
+    pub fn enforce<P>(&self, doc: &crate::TrustTask<P>) -> Result<(), crate::RejectReason> {
+        if doc.recipient.is_none() && self.is_recipient_required {
+            return Err(crate::RejectReason::MalformedRequest {
+                reason: "specification declares recipient REQUIRED but the document \
+                         carries no in-band recipient"
+                    .to_string(),
+            });
+        }
+        if doc.proof.is_none() && self.is_proof_required {
+            return Err(crate::RejectReason::ProofRequired);
+        }
+        if doc.issued_at.is_none() && self.is_issued_at_required {
+            return Err(crate::RejectReason::MalformedRequest {
+                reason: crate::freshness::ISSUED_AT_REQUIRED_BY_SPEC.to_string(),
+            });
+        }
+        if doc.proof.is_some() && doc.recipient.is_none() && !self.is_bearer {
+            return Err(crate::RejectReason::MalformedRequest {
+                reason: "proof present with no in-band recipient on a non-bearer specification \
+                         (SPEC §4.8.2 audience binding)"
+                    .to_string(),
+            });
+        }
+        Ok(())
+    }
+}
