@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-https"
-version = "0.16.0"
+version = "0.17.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -21,7 +21,7 @@ server = ["dep:axum", "dep:tokio", "dep:tower"]
 jwt = ["dep:jsonwebtoken"]
 
 [dependencies]
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.14" }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.17" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
@@ -75,7 +75,7 @@ async-trait = "0.1"
 # example has to actually sign. Dev-deps are stripped at publish, so this
 # introduces no cycle: `trust-tasks-proof` depends on `trust-tasks-rs`, not
 # on this crate.
-trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.13", features = [
+trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.17", features = [
   "affinidi",
 ] }
 affinidi-secrets-resolver = "0.5"
