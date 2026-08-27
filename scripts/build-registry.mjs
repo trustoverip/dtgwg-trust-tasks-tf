@@ -721,6 +721,105 @@ function standardErrorCodes() {
 // Counters for the §8.5 anti-shadowing summary line, accumulated across specs.
 const shadowLint = { declared: 0, conforming: 0, frozen: 0, frozenSpecs: new Set(), offending: 0 };
 
+const freeTextLint = { bounded: 0, frozen: 0, frozenSpecs: new Set(), offending: 0 };
+
+/**
+ * SPEC §7.3 item 19 — a free-text member MUST declare a `maxLength`.
+ *
+ * A free-text member is the one place in a Trust Task document where the schema
+ * constrains the shape and nothing constrains the content. It is where personal
+ * data arrives in a task declaring it ingests none, where a secret arrives
+ * pasted by someone asked for a reason, and where instructions addressed to a
+ * downstream reader arrive in a field the specification took for a comment. It
+ * is also unbounded wire cost: §10.2 puts the limit at the transport layer,
+ * which is the right defence and the wrong place to pick the number, since one
+ * figure there covers every task the consumer implements.
+ *
+ * The corpus was brought to zero violations by #296 and #301, which bounded 112
+ * members. Nothing then stopped the next spec from reintroducing one, and the
+ * count that gets quoted in a backlog is not a check. This is the ratchet, on
+ * the same reasoning as `checkIssuedAtFloor`: a floor with no gate is a warning
+ * wearing a different hat.
+ *
+ * Detection is by member NAME against the free-text vocabulary below, and only
+ * for a string with no closed shape — a member carrying `enum`, `const`,
+ * `format`, `pattern`, `$ref` or `contentEncoding` is constrained by that, not
+ * free text. Naming rather than inferring is deliberate: `did`, `contextId` and
+ * `cursor` are unbounded strings too, but bounding an identifier is §10.2's job
+ * at the transport, and a lint that demanded `maxLength` on all 863 of them
+ * would be ignored, which is how the last backlog got its size.
+ *
+ * `retired` specs are exempt. §5.3 freezes a retired specification's schema at
+ * the moment of retirement, and adding `maxLength` narrows which documents
+ * validate — a breaking change §5.2 would require a MAJOR increment for, on a
+ * spec that is terminal and can take none. All 17 remaining unbounded members
+ * sit in retired specs whose live successors already bound them
+ * (`confirm/request/0.1` → `task-consent/request/0.1`, which bounds `note` at
+ * 500 and `reason` at 1024). Counted and reported, never failed: exempt, not
+ * debt.
+ */
+const FREE_TEXT_MEMBER =
+  /^(note|notes|reason|rationale|description|message|comment|comments|summary|justification|text|body|remark|remarks|explanation|purpose|memo|label|caption|title)$/i;
+
+function checkFreeTextBounds(meta, schema, rel) {
+  const frozen = meta.status === 'retired';
+  const offenders = [];
+
+  const visit = (node, seenNodes) => {
+    if (!node || typeof node !== 'object' || seenNodes.has(node)) return;
+    seenNodes.add(node);
+    for (const [name, prop] of Object.entries(node.properties || {})) {
+      if (prop && typeof prop === 'object') {
+        const type = prop.type;
+        const isString = type === 'string' || (Array.isArray(type) && type.includes('string'));
+        const closed = ['enum', 'const', 'format', 'pattern', '$ref', 'contentEncoding'].some(
+          (k) => k in prop
+        );
+        if (isString && !closed && FREE_TEXT_MEMBER.test(name) && !('maxLength' in prop)) {
+          offenders.push(name);
+        }
+        visit(prop, seenNodes);
+      }
+    }
+    for (const key of ['items', 'additionalProperties', 'then', 'else', 'not']) {
+      if (node[key] && typeof node[key] === 'object') visit(node[key], seenNodes);
+    }
+    for (const key of ['allOf', 'anyOf', 'oneOf', 'prefixItems']) {
+      for (const sub of node[key] || []) visit(sub, seenNodes);
+    }
+    for (const sub of Object.values(node.$defs || node.definitions || {})) visit(sub, seenNodes);
+  };
+  visit(schema, new Set());
+
+  if (!offenders.length) {
+    freeTextLint.bounded++;
+    return;
+  }
+  if (frozen) {
+    freeTextLint.frozen += offenders.length;
+    freeTextLint.frozenSpecs.add(rel);
+    return;
+  }
+  freeTextLint.offending += offenders.length;
+  const list = [...new Set(offenders)].map((n) => `'${n}'`).join(', ');
+  fail(
+    `${rel}/payload.schema.json`,
+    `free-text member(s) ${list} declare no 'maxLength'. SPEC §7.3 item 19 ` +
+      `requires one on any free-text member, because it is the only place in a ` +
+      `document where the schema fixes the shape and nothing fixes the content ` +
+      `— so it is where personal data reaches a task declaring it ingests none, ` +
+      `where a pasted secret arrives, and where text addressed to a downstream ` +
+      `reader arrives in a field this spec took for a comment. It is also ` +
+      `unbounded wire cost; §10.2's transport limit is the right defence but ` +
+      `the wrong place to pick this number. Add a 'maxLength', and prefer ` +
+      `making the member OPTIONAL. 'task-consent/request/0.1' is the pattern: ` +
+      `'note' bounded at 500, optional, attributed to its author on every ` +
+      `surface, declared explicitly untrusted. Where the value carries meaning ` +
+      `an enumeration should carry, prefer a closed 'enum' plus one bounded ` +
+      `optional note.`
+  );
+}
+
 function checkErrorCodeNamespaces(meta, rel) {
   const slug = meta.slug;
   if (typeof slug !== 'string') return;
@@ -1481,6 +1580,7 @@ function main() {
     const schema = checkPayloadSchema(slug, version, dir);
     if (!schema) continue;
     checkProofFloor(meta, rel, Boolean(schema.$defs?.Response));
+    checkFreeTextBounds(meta, schema, rel);
     const freshness = checkIssuedAtFloor(meta, rel, Boolean(schema.$defs?.Response));
     if (freshness.consequential) {
       // A frozen spec is out of the ratio entirely — including the weaker-than-
@@ -1551,6 +1651,12 @@ function main() {
       `from trust-task-error/${standardErrorCodes().version}); ${shadowLint.frozen} frozen in ` +
       `${shadowLint.frozenSpecs.size} retired spec(s) (§5.3 — exempt, not debt), ` +
       `${shadowLint.offending} shadowing`
+  );
+  console.log(
+    `  Free-text bounds (§7.3 item 19): ${freeTextLint.bounded} spec(s) carry no unbounded ` +
+      `free-text member; ${freeTextLint.frozen} member(s) frozen in ` +
+      `${freeTextLint.frozenSpecs.size} retired spec(s) (§5.3 — exempt, not debt), ` +
+      `${freeTextLint.offending} unbounded`
   );
   // The rule-4 lint above reads `errorCodes` declarations, which is where an
   // *extended* code is defined. A *standard* code (§8.3) is declared nowhere and
