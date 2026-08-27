@@ -11,6 +11,44 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.1 — 2026-08-27
+
+
+### Other
+
+- Say what identifierScope is, and that it is not a scope taxonomy (#317)
+
+Carries the framework text of trustoverip/dtgwg-trust-tasks-spec#6 into
+this repository's copy of SPEC.md, and aligns the meta-schema
+description with it.
+
+Addresses trustoverip/dtgwg-trust-tasks-spec#5: the framework's
+identifierScope and the DTG credentials specification's proposed
+declared correlation scope (trustoverip/dtgwg-cred-spec#22) read as two
+vocabularies for one axis, with `community` and `linked` unmappable
+here. They are not competing, and neither document said so.
+
+identifierScope is a machine-readable restatement of §10.5 item 1,
+which is binary: relationship-scoped, or reused across relationships
+and justified. It is not a taxonomy of correlation width. It is
+declared by a specification about a party role, not by a holder about
+an identifier it controls, so the two are assertions about different
+subjects and neither overrides the other. An identifier recognisable
+within a bounded set is, for item 1's purposes, cross-relationship, so
+it is declared `public` and carries the justification obligation in
+full.
+
+The meta-schema change is to the `description` string only. The enum
+stays at three values, so all 56 existing declarations remain valid,
+and spec.meta.schema.json is excluded from both binding generators by
+name — scripts/build-ts-bindings.mjs via NOT_PAYLOAD_SCHEMAS, and
+trust-tasks-codegen, which walks payload.schema.json only. No generated
+binding, crate, or package is affected, and no version bump is needed.
+
+npm run validate: 349 specs, no errors. Registry build clean.
+
+Signed-off-by: Glenn Gore <glenn.gore@gmail.com>
+
 ## 0.16.0 — 2026-08-27
 
 
