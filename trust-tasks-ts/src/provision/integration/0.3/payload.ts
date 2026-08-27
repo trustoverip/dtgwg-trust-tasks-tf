@@ -536,7 +536,6 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": false,
       "required": [
         "bundle",
-        "digest",
         "summary"
       ],
       "properties": {
@@ -885,7 +884,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "additionalProperties": false,
       "required": [
         "bundle",
-        "digest",
         "summary"
       ],
       "properties": {
