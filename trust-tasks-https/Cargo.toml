@@ -72,10 +72,22 @@ reqwest = { version = "0.13", default-features = false, features = [
 ] }
 async-trait = "0.1"
 # The demo sends `acl/grant/0.1`, which declares `proof` REQUIRED, so the
-# example has to actually sign. Dev-deps are stripped at publish, so this
-# introduces no cycle: `trust-tasks-proof` depends on `trust-tasks-rs`, not
-# on this crate.
-trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.17", features = [
+# example has to actually sign.
+#
+# NO `version` FIELD, deliberately. `cargo publish` resolves any dev-dependency
+# that carries one, from the registry — so a versioned dev-dependency on a
+# workspace sibling constrains publication order exactly as a normal dependency
+# does, while release-plz does NOT count dev-dependency edges when it orders the
+# publish. That mismatch broke the 0.17.0 release: cargo tried to package this
+# crate before `trust-tasks-proof` had uploaded and died on
+#   failed to select a version for the requirement `trust-tasks-proof = "^0.17"`
+# It had survived until then only because the requirement pointed at an older
+# already-published version; lockstep versioning moved it to one that did not
+# exist yet, and the latent bug became a half-published release.
+#
+# Path-only means cargo strips it from the published manifest entirely, so it
+# imposes no ordering constraint at all. The example still builds in-tree.
+trust-tasks-proof = { path = "../trust-tasks-proof", features = [
   "affinidi",
 ] }
 affinidi-secrets-resolver = "0.5"

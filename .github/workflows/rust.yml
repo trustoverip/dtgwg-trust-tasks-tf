@@ -117,18 +117,26 @@ jobs:
   # 0.14.0 uploaded and the run then died on
   #   failed to select a version for the requirement `trust-tasks-proof = "^0.13"`.
   #
-  # release-plz publishes in dependency order, but its documentation does not
-  # state whether that order counts dev-dependencies, and the closest prior art
-  # in the ecosystem (cargo-workspaces) explicitly does NOT count them, on the
-  # incorrect premise that `cargo publish` ignores them. Rather than guess, this
-  # keeps a tripwire: it asserts the intra-workspace graph INCLUDING versioned
-  # dev-dependencies is acyclic — the necessary and sufficient condition for any
-  # valid publication order to exist — and prints the order it derives, so a
-  # failed release can be compared against it.
+  # SETTLED, the hard way: release-plz does NOT count dev-dependency edges when
+  # it orders the publish. The 0.17.0 release proved it. trust-tasks-rs,
+  # -didcomm, -didcomm-v1 and -capability-client uploaded, then cargo tried to
+  # package trust-tasks-https before trust-tasks-proof and died on
+  #   failed to select a version for the requirement `trust-tasks-proof = "^0.17"`
+  # leaving four of eight crates published — and crates.io uploads cannot be
+  # undone. The edge had been there since #284 and was survivable only because
+  # the requirement named an older, already-published version; lockstep
+  # versioning moved it to one that did not exist yet.
   #
-  # If a release ever fails on ordering, the permanent fix is to drop the
-  # `version` field from that dev-dependency: a path-only dev-dependency is
-  # stripped at publish time and stops constraining the order at all.
+  # So the acyclicity tripwire was necessary but not sufficient: a valid order
+  # existing does not mean release-plz will USE it. This job now enforces the
+  # stronger, actually-sufficient rule — no intra-workspace dev-dependency may
+  # carry a `version` field. Dropping `version` makes cargo strip the dep from
+  # the published manifest, which removes the ordering constraint entirely
+  # rather than relying on release-plz to honour it.
+  #
+  # The acyclicity check and the derived-order printout are kept below: the
+  # first still catches genuine cycles among normal dependencies, and the
+  # second is what a failed release gets compared against.
   publication-order:
     name: publication order is satisfiable
     runs-on: ubuntu-latest
@@ -156,6 +164,27 @@ jobs:
                       deps.add(d["name"])
                       kinds.setdefault((name, d["name"]), d.get("kind") or "normal")
               edges[name] = deps
+
+          # THE ENFORCING RULE. Any intra-workspace dev-dependency carrying a
+          # `version` constrains cargo's publication order while being invisible
+          # to release-plz's. Fail before a release can half-complete.
+          offenders = []
+          for name, p in pkgs.items():
+              for d in p["dependencies"]:
+                  if d["name"] in pkgs and (d.get("kind") or "normal") == "dev" \
+                          and d.get("req") not in (None, "*"):
+                      offenders.append((name, d["name"], d["req"]))
+          if offenders:
+              for who, dep, req in sorted(offenders):
+                  print(f"::error file={who}/Cargo.toml::{who} dev-depends on "
+                        f"workspace crate {dep} with version \"{req}\". `cargo publish` "
+                        f"resolves versioned dev-dependencies from the registry, so this "
+                        f"forces {dep} to be published first — but release-plz does not "
+                        f"count dev-dependency edges when ordering, so it may not be. "
+                        f"That mismatch half-published the 0.17.0 release. Drop the "
+                        f"`version` field and keep `path` only: cargo then strips the "
+                        f"dependency at publish time and the constraint disappears.")
+              sys.exit(1)
 
           order, seen = [], {}
           def visit(n, stack):
