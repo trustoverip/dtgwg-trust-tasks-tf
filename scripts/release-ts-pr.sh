@@ -195,7 +195,20 @@ EOF
 
 existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
 if [ -n "$existing" ]; then
-  gh pr edit "$existing" --title "$title" --body-file "$body_file"
+  # REST, not `gh pr edit`. `gh pr edit` resolves editable metadata before it
+  # writes — assignees, reviewers, milestones and organization TEAMS — so it
+  # asks GraphQL for `login`, `name` and `slug`, and those fields require
+  # `read:org`. The release token has `repo` only, by design: it needs to push
+  # a branch and move a PR, not read the org. So `gh pr edit` failed the whole
+  # job *after* the branch had already been force-pushed, leaving the PR body
+  # and title describing the previous version while the branch described the
+  # new one — the one state a release PR must never be in.
+  #
+  # Patching the pull request over REST touches title and body only, needs no
+  # metadata resolution, and is satisfied by `repo`. `{owner}/{repo}` is
+  # resolved by gh from the checkout, so this needs no extra env var.
+  gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
+    -f title="$title" -f body="$(cat "$body_file")"
   echo "::notice::updated PR #$existing"
 else
   gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file" --label release \
