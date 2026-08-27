@@ -11,6 +11,32 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.2 — 2026-08-27
+
+
+### Fixed
+
+- **ts**: Regenerate the provision/integration/0.3 binding (#326)
+
+#324 corrected the schema — `required` named a `digest` the 0.2→0.3 rename had
+  already removed from `properties` — and regenerated the Rust bindings. It did
+  not regenerate the TypeScript ones.
+
+  So `trust-tasks-ts` still shipped `"digest"` in `required` for both the request
+  and response schemas while `trust-tasks-rs` no longer did. `check-bindings`
+  caught exactly that: "the request schema shipped by trust-tasks-ts and the one
+  shipped by trust-tasks-rs are not the same document … the two libraries would
+  disagree about which payloads conform."
+
+  `npm run build-ts-bindings`, two lines removed, nothing else moved. The TS half
+  now carries the same unsatisfiable-schema fix the Rust half got.
+
+  Worth noting for the next schema change: a spec edit needs *both* generators
+  run. The Rust one is `cargo run -p trust-tasks-codegen`, the TypeScript one is
+  `npm run build-ts-bindings`, and only running one leaves the two libraries
+  disagreeing about the wire contract — which is what `check-bindings` exists to
+  catch and did.
+
 ## 0.16.1 — 2026-08-27
 
 
