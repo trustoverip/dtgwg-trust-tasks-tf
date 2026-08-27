@@ -31,6 +31,33 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.0...trust-tasks-rs-v0.17.1) — 2026-08-27
+
+
+### Added
+
+- **rs**: Index the consumer policy by Type URI, not just the schema ([#321](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/321))
+
+`schema_index` exists, in its own words, "for consumers that dispatch on the
+  URI". Such a consumer holds a `TrustTask<serde_json::Value>` and has no `P`, so
+  it cannot reach `TrustTask::enforce_spec_policy` — the one API that applies the
+  flag-driven §7.2 checks. The index handed it the schema and stopped there, so
+  the only way to enforce recipient-REQUIRED, proof-REQUIRED, audience binding or
+  §7.3 item 17's issuedAt-REQUIRED was to hand-maintain a URI → payload-type
+  table. That is a second source of truth for data this file already generates,
+  and it goes stale the first time a spec is added.
+
+  `spec_policy_for(type_uri) -> Option<SpecPolicy>` closes that, emitted from the
+  same loop as `schema_for` so the two cannot drift.
+
+  `SpecPolicy` is a value, not four public constants, because the point is to
+  share the *checks* rather than re-apply them. `TrustTask::enforce_spec_policy`
+  and `enforce_audience_binding` now delegate to `SpecPolicy::enforce`, so the
+  typed path and the URI-keyed path are one implementation. A new flag-driven
+  rule added to `enforce` reaches both; there is no second copy to forget.
+
+
+
 ## [0.17.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.14.0...trust-tasks-rs-v0.17.0) — 2026-08-27
 
 
