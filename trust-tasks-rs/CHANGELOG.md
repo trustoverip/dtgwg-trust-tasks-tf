@@ -31,6 +31,72 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.0...trust-tasks-rs-v0.17.1) — 2026-08-27
+
+
+### Added
+
+- **rs**: Index the consumer policy by Type URI, not just the schema ([#321](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/321))
+
+`schema_index` exists, in its own words, "for consumers that dispatch on the
+  URI". Such a consumer holds a `TrustTask<serde_json::Value>` and has no `P`, so
+  it cannot reach `TrustTask::enforce_spec_policy` — the one API that applies the
+  flag-driven §7.2 checks. The index handed it the schema and stopped there, so
+  the only way to enforce recipient-REQUIRED, proof-REQUIRED, audience binding or
+  §7.3 item 17's issuedAt-REQUIRED was to hand-maintain a URI → payload-type
+  table. That is a second source of truth for data this file already generates,
+  and it goes stale the first time a spec is added.
+
+  `spec_policy_for(type_uri) -> Option<SpecPolicy>` closes that, emitted from the
+  same loop as `schema_for` so the two cannot drift.
+
+  `SpecPolicy` is a value, not four public constants, because the point is to
+  share the *checks* rather than re-apply them. `TrustTask::enforce_spec_policy`
+  and `enforce_audience_binding` now delegate to `SpecPolicy::enforce`, so the
+  typed path and the URI-keyed path are one implementation. A new flag-driven
+  rule added to `enforce` reaches both; there is no second copy to forget.
+
+
+
+### Fixed
+
+- **specs**: Provision/integration/0.3's response could never validate ([#324](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/324))
+
+The 0.2 → 0.3 change renamed the bundle digest from a bare-hex `digest` to a
+  multibase `digestMultibase`. It moved the member in `properties` and left
+  `digest` behind in `required`.
+
+  The object also declares `additionalProperties: false`, so the two rules
+  contradict: a document MUST carry `digest`, and `digest` is not a member it may
+  carry. No response can satisfy the schema, which makes the whole 0.3 response
+  side unusable — and 0.3 is the version a consumer moves to for the multibase
+  digest in the first place.
+
+  The codegen then compounded it. A `required` entry with no property schema has
+  no type to read, so `trust-tasks-rs` emitted
+
+      pub digest: ::serde_json::Value,
+
+  a required, untyped field. The generated Rust type demanded a member the schema
+  forbade, so the two halves of the same release disagreed about the wire form.
+  Both are correct now: `digest` is gone from `required`, and the regenerated type
+  carries `digestMultibase` as the optional member the spec describes.
+
+  Nothing caught it because every existing shape check reads one keyword at a
+  time — `required` is checked for presence, `properties` for casing and bounds,
+  `additionalProperties` for being declared at all. The contradiction only exists
+  between them.
+
+  So the guard is added at that level: for any object closed by
+  `additionalProperties: false`, every name in `required` must appear in
+  `properties`. It runs over the whole registry — 349 specs — and this was the
+  only instance. Restricted to `additionalProperties: false` deliberately: under
+  `unevaluatedProperties` an `allOf` branch may legitimately supply the member,
+  and failing those would punish exactly the composition the registry is moving
+  towards.
+
+
+
 ## [0.17.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.14.0...trust-tasks-rs-v0.17.0) — 2026-08-27
 
 
