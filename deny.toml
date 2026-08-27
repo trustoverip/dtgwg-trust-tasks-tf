@@ -127,6 +127,16 @@ confidence-threshold = 0.93
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"
+# Path dependencies on workspace siblings are exempt. A dev-dependency on a
+# sibling deliberately carries no `version` (see trust-tasks-https/Cargo.toml):
+# `cargo publish` resolves any dev-dependency that has one from the registry,
+# which constrains publication order while release-plz does not count
+# dev-dependency edges when ordering the publish — the mismatch that
+# half-published 0.17.0 in #316. Path-only is the fix there, and it is what
+# cargo-deny reports as a wildcard here. This narrows the check to registry
+# crates, where an unpinned requirement is an actual supply-chain risk; a
+# path dependency resolves in-tree and cannot float.
+allow-wildcard-paths = true
 deny = []
 skip = []
 skip-tree = []
