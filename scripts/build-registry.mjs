@@ -1083,6 +1083,29 @@ function checkPayloadSchema(slug, version, dir) {
       warn(`${slug}/${version}/payload.schema.json: $defs.Response declares neither additionalProperties nor unevaluatedProperties`);
     }
   }
+  // A closed object whose `required` names a member it does not declare can
+  // never validate: the member must be present, and `additionalProperties:
+  // false` forbids it. `provision/integration/0.3` shipped exactly that — a
+  // rename to `digestMultibase` that left `digest` behind in `required` — and
+  // nothing caught it, because every existing check looks at one keyword at a
+  // time. The codegen then made it worse, emitting a required, untyped
+  // `digest: serde_json::Value` from a `required` entry with no schema to read.
+  for (const [label, sub] of [['', schema], ['$defs.Response: ', schema.$defs?.Response]]) {
+    if (!sub || !Array.isArray(sub.required)) continue;
+    // Only meaningful for an object closed by `additionalProperties: false`.
+    // Under `unevaluatedProperties` an `allOf` branch may supply the member.
+    if (sub.additionalProperties !== false) continue;
+    const declared = new Set(Object.keys(sub.properties || {}));
+    for (const name of sub.required) {
+      if (!declared.has(name)) {
+        fail(
+          `${slug}/${version}/payload.schema.json`,
+          `${label}required names \`${name}\`, which is not in \`properties\`, and ` +
+            `additionalProperties is false — no document can satisfy this schema`,
+        );
+      }
+    }
+  }
   // Belt-and-braces: nothing other than Response/Request/well-known $defs should declare a `response` anchor.
   for (const [k, v] of Object.entries(schema.$defs || {})) {
     if (k === 'Response') continue;

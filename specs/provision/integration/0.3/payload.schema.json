@@ -220,7 +220,7 @@
       "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["bundle", "digest", "summary"],
+      "required": ["bundle", "summary"],
       "properties": {
         "bundle": {
           "type": "string",
