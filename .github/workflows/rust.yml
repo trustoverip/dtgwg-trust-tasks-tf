@@ -28,6 +28,11 @@ on:
       # so a doc-only edit still has to run cargo test.
       - "GETTING-STARTED.md"
       - ".github/workflows/rust.yml"
+      # `cargo deny` reads this, so a change to it must run the job it
+      # configures. Without it, the file that decides what the supply-chain
+      # check bans is the one file that change cannot be tested by — the same
+      # gap as the three crates noted above.
+      - "deny.toml"
 
 env:
   CARGO_TERM_COLOR: always
