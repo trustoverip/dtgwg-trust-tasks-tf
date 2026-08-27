@@ -53,6 +53,17 @@
 //! any crypto dependency. Sign the built document over its canonical form
 //! (the document minus its `proof` member, `eddsa-jcs-2022`) and set the
 //! `proof` member.
+//!
+//! # Versioning
+//!
+//! This crate exposes `trust-tasks-rs` types in its own public API, so a
+//! breaking change there breaks this crate's callers even when nothing here
+//! changes. `cargo-semver-checks` cannot catch that: it compares each crate's
+//! rustdoc against that crate's own published baseline, and does not track
+//! type identity across dependency versions. The crates that share
+//! `trust-tasks-rs` in their public API are therefore released as one
+//! compatibility unit with a single shared version — see `version_group` in
+//! `release-plz.toml`.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

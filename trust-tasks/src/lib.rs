@@ -77,6 +77,17 @@
 //!
 //! [Trust Tasks]: https://trusttasks.org/
 //! [`GETTING-STARTED.md`]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md
+//!
+//! # Versioning
+//!
+//! This crate exposes `trust-tasks-rs` types in its own public API, so a
+//! breaking change there breaks this crate's callers even when nothing here
+//! changes. `cargo-semver-checks` cannot catch that: it compares each crate's
+//! rustdoc against that crate's own published baseline, and does not track
+//! type identity across dependency versions. The crates that share
+//! `trust-tasks-rs` in their public API are therefore released as one
+//! compatibility unit with a single shared version — see `version_group` in
+//! `release-plz.toml`.
 
 #![warn(missing_docs)]
 #![warn(rust_2018_idioms)]
