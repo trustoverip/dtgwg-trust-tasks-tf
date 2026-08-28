@@ -22,7 +22,7 @@ on:
   pull_request:
 
 jobs:
-  # The Rust bindings have `codegen-drift` (see rust.yml) but the TS side
+  # The Rust bindings have `codegen-drift` (see codegen.yml) but the TS side
   # had no equivalent, so a spec change that regenerated only the Rust
   # modules could merge with stale `trust-tasks-ts/src` (exactly what
   # happened on the agent-name PR). This job is the TS mirror of that

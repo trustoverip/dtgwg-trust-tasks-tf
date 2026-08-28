@@ -1,0 +1,67 @@
+name: Codegen
+
+# The Rust half of "the generated bindings match the specs", in a workflow of
+# its own so it can always report.
+#
+# It used to live in `rust.yml`, which is `paths:`-filtered — and a
+# path-filtered job cannot be a required check: on a PR touching none of the
+# listed paths it never runs, reports no status, and a required check then
+# blocks that PR forever waiting for a result that will never arrive. #329 made
+# the same argument for the TypeScript guards and dropped that workflow's
+# filter outright, which was affordable because its four jobs total well under
+# a minute.
+#
+# The same move was not available here. `rust.yml` also runs clippy, the full
+# workspace test suite, `cargo package` and `cargo deny` — several minutes on
+# every documentation edit — so removing its filter would have bought this
+# guard's availability with everyone else's PR latency. Extracting the one
+# cheap job (~33s, and the Rust cache carries across PRs) buys it for free.
+#
+# The job body is unchanged and so is its name, so the check context
+# `trust-tasks-codegen drift` is the same one any protection rule already
+# names.
+
+on:
+  push:
+    branches: [main]
+  # Deliberately unfiltered. See above.
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  codegen-drift:
+    name: trust-tasks-codegen drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Run codegen
+        run: cargo run -p trust-tasks-codegen
+      # Codegen emits prettyplease-canonical output; the committed
+      # source has additionally been through `cargo fmt`, so normalise
+      # here before diffing.
+      - name: Format
+        run: cargo fmt --all
+      # Diff the whole crate, not just `src/specs`. The generator also owns
+      # `src/schema_index.rs` and the `[features]` block of `Cargo.toml`
+      # (one feature per spec family), and neither was watched — a family
+      # added without its feature would have shipped a spec no consumer
+      # could enable. Widening is safe because `cargo fmt --all` has already
+      # run and the hand-written sources are formatted, so they cannot drift
+      # here; anything this diff reports was written by the generator.
+      - name: Check for drift
+        run: |
+          if ! git diff --quiet trust-tasks-rs; then
+            echo "::error::Codegen output is stale. Run \`cargo run -p trust-tasks-codegen && cargo fmt --all\` and commit the diff."
+            git diff --stat trust-tasks-rs
+            git diff trust-tasks-rs
+            exit 1
+          fi
+
