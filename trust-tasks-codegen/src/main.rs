@@ -841,6 +841,8 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     let has_response = normalize_titles(&mut schema)?;
     // typify (0.5) expects Draft-07 `definitions` rather than 2020-12 `$defs`.
     migrate_defs_to_definitions(&mut schema);
+    // After the migration, so the pass resolves `#/definitions/...`.
+    flatten_unevaluated_compositions(&mut schema);
 
     // Round-trip the normalized schema into the schemars representation
     // typify works with.
@@ -1712,5 +1714,282 @@ fn replace_between(existing: &str, begin: &str, end: &str, body: &str) -> String
             format!("{before}\n{body}\n{after}")
         }
         _ => format!("{existing}\n{begin}\n{body}\n{end}\n"),
+    }
+}
+
+/// Rewrite an `allOf` composition closed with `unevaluatedProperties: false`
+/// into the flat, `additionalProperties: false` object it denotes.
+///
+/// ## Why this exists
+///
+/// A specification that wants to reuse a shared definition *and* add members
+/// of its own has exactly one way to close the result: `unevaluatedProperties`
+/// at the outer level. `additionalProperties` cannot do it — both keywords are
+/// evaluated against the whole instance from within the subschema that
+/// declares them, so an `additionalProperties: false` inside either the shared
+/// definition or the composing schema rejects the other's members. That is why
+/// `credentials/_shared/0.2`'s `IssuedCredentialBase` is deliberately left
+/// open and `vta/credentials/issue/0.2` closes over it.
+///
+/// typify does not model `unevaluatedProperties`. It flattens the `allOf` into
+/// a single struct with every member — the right shape — but emits no
+/// `deny_unknown_fields`, because it only maps `additionalProperties: false`.
+/// The generated type is then *more permissive than the schema it came from*:
+/// a validator rejects an unknown member, the Rust type silently accepts it.
+///
+/// This pass performs the flattening itself, before typify sees the schema, so
+/// the strictness survives the round-trip. The struct typify produces is
+/// unchanged; only the attribute is added.
+///
+/// ## When it declines
+///
+/// Only a composition whose every `allOf` member is a plain object schema —
+/// properties, required, and annotations, with no combinator of its own and no
+/// closure — is flattened. Anything else (a nested `allOf`, a `oneOf`, an
+/// `if`/`then`, a member that closes itself) is left exactly as it was: the
+/// merge would not be sound, and a wrong `deny_unknown_fields` rejects valid
+/// documents, which is worse than the permissiveness it would fix.
+fn flatten_unevaluated_compositions(schema: &mut Value) {
+    let defs = schema.get("definitions").cloned().unwrap_or(Value::Null);
+    flatten_node(schema, &defs);
+}
+
+/// Walk every object node, flattening where [`flatten_here`] applies.
+fn flatten_node(node: &mut Value, defs: &Value) {
+    match node {
+        Value::Object(map) => {
+            flatten_here(map, defs);
+            for (_, v) in map.iter_mut() {
+                flatten_node(v, defs);
+            }
+        }
+        Value::Array(items) => {
+            for v in items.iter_mut() {
+                flatten_node(v, defs);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Resolve a local `#/definitions/X` reference against the document's
+/// definitions. Returns `None` for anything else — an unresolved cross-file
+/// `$ref` means the composition cannot be reasoned about here, which is a
+/// decline, not an error.
+fn resolve_local_ref<'a>(value: &'a Value, defs: &'a Value) -> Option<&'a Value> {
+    let r = value.get("$ref")?.as_str()?;
+    let name = r.strip_prefix("#/definitions/")?;
+    defs.get(name)
+}
+
+/// Members a plain object schema may carry and still be safe to merge.
+/// Anything outside this set means the subschema constrains the instance in a
+/// way a flat merge would lose.
+const MERGEABLE_KEYS: &[&str] = &[
+    "$anchor",
+    "$comment",
+    "$id",
+    "$schema",
+    "default",
+    "description",
+    "examples",
+    "properties",
+    "required",
+    "title",
+    "type",
+];
+
+/// Flatten one node in place, if it is a closed `allOf` composition of plain
+/// object schemas. No-op otherwise.
+fn flatten_here(map: &mut serde_json::Map<String, Value>, defs: &Value) {
+    if map.get("unevaluatedProperties") != Some(&Value::Bool(false)) {
+        return;
+    }
+    let Some(Value::Array(all_of)) = map.get("allOf") else {
+        return;
+    };
+
+    // Resolve every member first, and only commit once all of them qualify —
+    // a partial merge would produce a struct that is neither the composition
+    // nor the original.
+    let mut resolved = Vec::with_capacity(all_of.len());
+    for member in all_of {
+        let target = match resolve_local_ref(member, defs) {
+            Some(t) => t,
+            None if member.get("$ref").is_none() => member,
+            None => return,
+        };
+        let Some(obj) = target.as_object() else {
+            return;
+        };
+        if obj.keys().any(|k| !MERGEABLE_KEYS.contains(&k.as_str())) {
+            return;
+        }
+        resolved.push(obj.clone());
+    }
+
+    // The outer schema's own members win a collision: it is the more specific
+    // statement, and this is the direction JSON Schema's `allOf` already
+    // resolves to (both constraints apply; the narrower one decides).
+    let mut properties = serde_json::Map::new();
+    let mut required: Vec<Value> = Vec::new();
+    for obj in &resolved {
+        if let Some(Value::Object(props)) = obj.get("properties") {
+            for (k, v) in props {
+                properties.insert(k.clone(), v.clone());
+            }
+        }
+        if let Some(Value::Array(req)) = obj.get("required") {
+            for r in req {
+                if !required.contains(r) {
+                    required.push(r.clone());
+                }
+            }
+        }
+    }
+    if let Some(Value::Object(own)) = map.get("properties") {
+        for (k, v) in own {
+            properties.insert(k.clone(), v.clone());
+        }
+    }
+    if let Some(Value::Array(own_req)) = map.get("required") {
+        for r in own_req {
+            if !required.contains(r) {
+                required.push(r.clone());
+            }
+        }
+    }
+
+    map.remove("allOf");
+    map.remove("unevaluatedProperties");
+    map.insert("type".into(), Value::String("object".into()));
+    map.insert("properties".into(), Value::Object(properties));
+    if !required.is_empty() {
+        map.insert("required".into(), Value::Array(required));
+    }
+    map.insert("additionalProperties".into(), Value::Bool(false));
+}
+
+#[cfg(test)]
+mod flatten_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn flattened(mut schema: Value) -> Value {
+        flatten_unevaluated_compositions(&mut schema);
+        schema
+    }
+
+    /// The shape `vta/credentials/issue/0.2` uses: a `$ref` to a shared open
+    /// definition, the composing schema's own members alongside it, closed
+    /// with `unevaluatedProperties`.
+    #[test]
+    fn merges_a_referenced_base_and_closes_the_result() {
+        let out = flattened(json!({
+            "definitions": {
+                "Base": {
+                    "type": "object",
+                    "properties": { "a": { "type": "string" }, "b": { "type": "string" } },
+                    "required": ["a"]
+                },
+                "Composed": {
+                    "allOf": [{ "$ref": "#/definitions/Base" }],
+                    "properties": { "c": { "type": "string" } },
+                    "unevaluatedProperties": false
+                }
+            }
+        }));
+        let c = &out["definitions"]["Composed"];
+        assert_eq!(c["additionalProperties"], json!(false));
+        assert!(c.get("allOf").is_none(), "the allOf is consumed");
+        assert!(c.get("unevaluatedProperties").is_none());
+        assert_eq!(c["properties"]["a"], json!({ "type": "string" }));
+        assert_eq!(c["properties"]["c"], json!({ "type": "string" }));
+        assert_eq!(c["required"], json!(["a"]));
+    }
+
+    /// The outer schema is the more specific statement, so its own definition
+    /// of a member decides. Merging the other way would let a shared base
+    /// silently widen a member the composing spec deliberately narrowed.
+    #[test]
+    fn the_composing_schema_wins_a_collision() {
+        let out = flattened(json!({
+            "definitions": {
+                "Base": { "type": "object", "properties": { "a": { "type": "string" } } },
+                "Composed": {
+                    "allOf": [{ "$ref": "#/definitions/Base" }],
+                    "properties": { "a": { "type": "integer" } },
+                    "unevaluatedProperties": false
+                }
+            }
+        }));
+        assert_eq!(
+            out["definitions"]["Composed"]["properties"]["a"],
+            json!({ "type": "integer" })
+        );
+    }
+
+    /// A member carrying a combinator of its own is not a plain object, so
+    /// the merge would drop a constraint. Declining leaves the schema exactly
+    /// as it was — permissive, but not wrong.
+    #[test]
+    fn declines_when_a_member_carries_a_combinator() {
+        let input = json!({
+            "definitions": {
+                "Base": { "oneOf": [{ "type": "object" }, { "type": "null" }] },
+                "Composed": {
+                    "allOf": [{ "$ref": "#/definitions/Base" }],
+                    "unevaluatedProperties": false
+                }
+            }
+        });
+        assert_eq!(flattened(input.clone()), input, "left untouched");
+    }
+
+    /// An unresolved `$ref` cannot be reasoned about, and guessing would be
+    /// how a wrong `deny_unknown_fields` gets emitted.
+    #[test]
+    fn declines_on_an_unresolvable_ref() {
+        let input = json!({
+            "definitions": {
+                "Composed": {
+                    "allOf": [{ "$ref": "../elsewhere.json#/$defs/Base" }],
+                    "unevaluatedProperties": false
+                }
+            }
+        });
+        assert_eq!(flattened(input.clone()), input);
+    }
+
+    /// `unevaluatedProperties: true` is not a closure, so there is nothing to
+    /// carry over and nothing to do.
+    #[test]
+    fn ignores_an_open_composition() {
+        let input = json!({
+            "definitions": {
+                "Base": { "type": "object", "properties": { "a": { "type": "string" } } },
+                "Composed": {
+                    "allOf": [{ "$ref": "#/definitions/Base" }],
+                    "unevaluatedProperties": true
+                }
+            }
+        });
+        assert_eq!(flattened(input.clone()), input);
+    }
+
+    /// A schema already closed with `additionalProperties` never had the
+    /// problem; typify handles it, and this pass must not disturb it.
+    #[test]
+    fn leaves_an_already_closed_object_alone() {
+        let input = json!({
+            "definitions": {
+                "Plain": {
+                    "type": "object",
+                    "properties": { "a": { "type": "string" } },
+                    "additionalProperties": false
+                }
+            }
+        });
+        assert_eq!(flattened(input.clone()), input);
     }
 }
