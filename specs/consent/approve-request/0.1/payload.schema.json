@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/consent/approve-request/0.1",
+  "title": "Consent — Approve Request — payload",
+  "description": "The prompt an agent's home service sends to a designated approver, asking a human to decide whether an agent may act on one conversation. It carries no decision itself: the approver answers with a separate, separately-signed consent/decision. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "scope",
+    "challenge"
+  ],
+  "properties": {
+    "subject": {
+      "$ref": "#/$defs/ConsentSubject",
+      "description": "What the decision is about: one conversation, for one agent."
+    },
+    "scope": {
+      "$ref": "#/$defs/ConsentScope",
+      "description": "What the agent is asking to be allowed to do."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Single-use, unpredictable value the approver MUST echo in the consent/decision it signs. This is what binds a decision to this request: without it a decision is a free-floating assertion that the approver consented to something, and cannot be shown to answer this prompt rather than an earlier one. Consumers MUST reject a decision whose challenge they did not issue, and MUST NOT accept the same challenge twice."
+    },
+    "displayHint": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Human-readable label for the conversation, for the approver's screen — \"Signal group 'Family'\". Present because conversationRef is deliberately opaque: without a hint the approver is asked to decide about an identifier that means nothing to them, and will either always allow or always deny. Advisory only. It is chosen by the requesting party, so a renderer MUST treat it as untrusted text — escape it, bound its length, and never let it displace the subject members above as the basis of the decision."
+    },
+    "firstMessageDigest": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Digest of the inbound message that prompted this request, when there is one, so an approver deciding on a receive scope can confirm the decision it is being asked to make corresponds to a real arriving message. A digest rather than the content: the approver is deciding whether the agent may read the conversation, and showing them the message in order to ask would disclose what the decision is meant to gate."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "ConsentSubject": {
+      "$anchor": "consentSubject",
+      "title": "ConsentSubject",
+      "description": "Platform-agnostic identifier of what consent is about. Deliberately not a platform address: a consent record that named one would be a stored directory of who the subject talks to, readable by anyone who reaches the store.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "conversationRef", "kind", "agent"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Messaging platform the conversation lives on, as the bridge names it (for example `signal`, `whatsapp`). Opaque to the framework."
+        },
+        "conversationRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The bridge's OPAQUE handle for the conversation. MUST NOT be a raw platform address (a phone number, a handle, a group invite link). The approver identifies the conversation from displayHint; this member exists so a decision can be matched to a conversation without the matching key being personal data."
+        },
+        "kind": {
+          "$ref": "#/$defs/ConsentKind"
+        },
+        "agent": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "DID of the agent the decision is about. Consent is granted to one agent, not to the service that hosts it, so that revoking one agent's access does not revoke another's."
+        }
+      }
+    },
+    "ConsentKind": {
+      "$anchor": "consentKind",
+      "title": "ConsentKind",
+      "description": "Interaction kind. Present because it changes what the approver is agreeing to: consenting to an agent reading a 1:1 conversation exposes two parties, and consenting on a group exposes everyone in it, most of whom are not being asked.",
+      "type": "string",
+      "enum": ["dm", "group", "channel"]
+    },
+    "ConsentScope": {
+      "$anchor": "consentScope",
+      "title": "ConsentScope",
+      "description": "What the agent may do. `receive` is read-only: the agent sees inbound messages. `converse` additionally lets it reply, which means it can speak to the other parties as the subject — a materially different decision, and the reason the two are distinct values rather than a boolean.",
+      "type": "string",
+      "enum": ["receive", "converse"]
+    }
+  }
+}

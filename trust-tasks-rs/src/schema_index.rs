@@ -183,6 +183,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "confirm")]
         "https://trusttasks.org/spec/confirm/response/0.1#response" => <crate::specs::confirm::response::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/approve-request/0.1" => <crate::specs::consent::approve_request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "consent")]
         "https://trusttasks.org/spec/consent/approver-list/1.0" => <crate::specs::consent::approver_list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "consent")]
         "https://trusttasks.org/spec/consent/approver-list/1.0#response" => <crate::specs::consent::approver_list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1577,6 +1579,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "confirm")]
         "https://trusttasks.org/spec/confirm/response/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::confirm::response::v0_1::Payload,
+        >()),
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/approve-request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::consent::approve_request::v0_1::Payload,
         >()),
         #[cfg(feature = "consent")]
         "https://trusttasks.org/spec/consent/approver-list/1.0" => Some(crate::SpecPolicy::of::<
