@@ -31,6 +31,21 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.2...trust-tasks-rs-v0.17.3) — 2026-08-28
+
+
+### Added
+
+- **consent**: Specify consent/approve-request/0.1 with proof REQUIRED ([#331](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/331))
+
+The prompt an agent's home service pushes to a designated approver, asking a
+  human whether the agent may act on one conversation. It was already being
+  sent — by OpenVTC's VTA, over DIDComm to the approver's device — with no
+  published schema on either side and no registry page a second
+  implementation could work from.
+
+
+
 ## [0.17.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.1...trust-tasks-rs-v0.17.2) — 2026-08-28
 
 
