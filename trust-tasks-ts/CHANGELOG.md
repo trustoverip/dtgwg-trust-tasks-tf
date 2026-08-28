@@ -11,6 +11,19 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.3 — 2026-08-28
+
+
+### Added
+
+- **consent**: Specify consent/approve-request/0.1 with proof REQUIRED (#331)
+
+The prompt an agent's home service pushes to a designated approver, asking a
+  human whether the agent may act on one conversation. It was already being
+  sent — by OpenVTC's VTA, over DIDComm to the approver's device — with no
+  published schema on either side and no registry page a second
+  implementation could work from.
+
 ## 0.16.2 — 2026-08-27
 
 
