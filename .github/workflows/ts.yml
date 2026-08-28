@@ -6,13 +6,20 @@ on:
   # No `branches:` filter. A PR based on another branch (a stacked PR) used to
   # run none of these jobs and report a green board made entirely of DCO and
   # licence checks, which is worse than reporting nothing.
+  #
+  # And no `paths:` filter, for the same reason one step further on: these jobs
+  # are the guards that stop `trust-tasks-rs` and `trust-tasks-ts` disagreeing
+  # about the wire contract, so they are worth being able to make *required*.
+  # A path-filtered job cannot be required — on a PR that touches none of the
+  # listed paths it never runs, reports no status, and a required check then
+  # blocks that PR forever waiting for something that will never arrive. So the
+  # filter and the requirement are mutually exclusive, and of the two it is the
+  # requirement that carries its weight.
+  #
+  # The whole workflow costs well under a minute (the four jobs ran 16s, 9s and
+  # change on their last green board), which is not a price worth paying a
+  # correctness gap for.
   pull_request:
-    paths:
-      - "specs/**"
-      - "trust-tasks-ts/**"
-      - "scripts/build-ts-bindings.mjs"
-      - "scripts/check-bindings-conformance.mjs"
-      - ".github/workflows/ts.yml"
 
 jobs:
   # The Rust bindings have `codegen-drift` (see rust.yml) but the TS side
