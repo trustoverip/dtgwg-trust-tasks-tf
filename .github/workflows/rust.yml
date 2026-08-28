@@ -216,38 +216,6 @@ jobs:
               print(f"  {i}. {n:<32} after: {after}")
           PY
 
-  codegen-drift:
-    name: trust-tasks-codegen drift
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - uses: Swatinem/rust-cache@v2
-      - name: Run codegen
-        run: cargo run -p trust-tasks-codegen
-      # Codegen emits prettyplease-canonical output; the committed
-      # source has additionally been through `cargo fmt`, so normalise
-      # here before diffing.
-      - name: Format
-        run: cargo fmt --all
-      # Diff the whole crate, not just `src/specs`. The generator also owns
-      # `src/schema_index.rs` and the `[features]` block of `Cargo.toml`
-      # (one feature per spec family), and neither was watched — a family
-      # added without its feature would have shipped a spec no consumer
-      # could enable. Widening is safe because `cargo fmt --all` has already
-      # run and the hand-written sources are formatted, so they cannot drift
-      # here; anything this diff reports was written by the generator.
-      - name: Check for drift
-        run: |
-          if ! git diff --quiet trust-tasks-rs; then
-            echo "::error::Codegen output is stale. Run \`cargo run -p trust-tasks-codegen && cargo fmt --all\` and commit the diff."
-            git diff --stat trust-tasks-rs
-            git diff trust-tasks-rs
-            exit 1
-          fi
-
   package:
     name: cargo package (trust-tasks-rs)
     runs-on: ubuntu-latest

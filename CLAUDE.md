@@ -109,8 +109,10 @@ with itself, which is the property that already held while both defects shipped.
 The Rust and TS client libraries are generated from the specs. When you add or
 change anything under `specs/` (a new task, a schema edit, a new category used by a
 task), you MUST regenerate **both** sides in the same PR. Drift CI guards both —
-`rust.yml` has `codegen-drift` and `ts.yml` has `bindings-drift` (added after PR
-#85 → #86, where only Rust was regenerated).
+`codegen.yml` has `codegen-drift` and `ts.yml` has `bindings-drift` (added after
+PR #85 → #86, where only Rust was regenerated). Both workflows are deliberately
+unfiltered so those two checks always report — a path-filtered job cannot be a
+required check.
 
 1. **Regenerate Rust bindings:** `cargo run -p trust-tasks-codegen && cargo fmt --all`
    (commit the diff — CI fails on drift).
