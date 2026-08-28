@@ -60,6 +60,7 @@ export * as ConfigShow_v0_1 from "./config/show/0.1/payload.js";
 export * as ConfirmRequest_v0_1 from "./confirm/request/0.1/payload.js";
 export * as ConfirmResponse_v0_1 from "./confirm/response/0.1/payload.js";
 export * as ConsentShared_v0_1 from "./consent/_shared/0.1/consent.js";
+export * as ConsentApproveRequest_v0_1 from "./consent/approve-request/0.1/payload.js";
 export * as ConsentApproverList_v1_0 from "./consent/approver-list/1.0/payload.js";
 export * as ConsentApproverSet_v1_0 from "./consent/approver-set/1.0/payload.js";
 export * as ConsentDecision_v1_0 from "./consent/decision/1.0/payload.js";
