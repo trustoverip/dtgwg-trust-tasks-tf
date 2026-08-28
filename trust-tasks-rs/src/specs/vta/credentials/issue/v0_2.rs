@@ -783,27 +783,46 @@ Composed from the shared IssuedCredential rather than restating it: that definit
 ///{
 ///  "title": "Response",
 ///  "description": "\nThe success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
-///  "allOf": [
-///    {
-///      "$ref": "#/definitions/IssuedCredentialBase"
-///    }
+///  "type": "object",
+///  "required": [
+///    "credential",
+///    "credentialId",
+///    "expiresAt"
 ///  ],
 ///  "properties": {
+///    "credential": {
+///      "description": "The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.",
+///      "type": "object"
+///    },
+///    "credentialId": {
+///      "$ref": "#/definitions/CredentialId"
+///    },
+///    "expiresAt": {
+///      "description": "When the credential's validUntil falls due.",
+///      "type": "string",
+///      "format": "date-time"
+///    },
 ///    "ext": {
 ///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
 ///      "$ref": "#/definitions/Ext"
+///    },
+///    "issuedAt": {
+///      "description": "When the credential was minted.",
+///      "type": "string",
+///      "format": "date-time"
 ///    },
 ///    "supersedes": {
 ///      "description": "credentialId of the previously-active credential this issuance revoked, for claims profiles with a single-active rule (GovernancePolicyCredential). Mirrors policy/activate's previousPolicyId: it makes the rotation auditable and reversible. Absent when nothing was displaced.",
 ///      "type": "string"
 ///    }
 ///  },
-///  "$anchor": "response",
-///  "unevaluatedProperties": false
+///  "additionalProperties": false,
+///  "$anchor": "response"
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
     ///The issued Verifiable Credential (W3C VC Data Model 2.0), signed by the issuer's key. Opaque to the framework.
