@@ -31,6 +31,56 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.1...trust-tasks-rs-v0.17.2) — 2026-08-28
+
+
+### Fixed
+
+- **codegen**: Carry unevaluatedProperties strictness into the generated type ([#327](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/327))
+
+* fix(codegen): carry unevaluatedProperties strictness into the generated type
+
+  A specification that reuses a shared definition and adds members of its own
+  has exactly one way to close the result: `unevaluatedProperties` at the
+  outer level. `additionalProperties` cannot do it — both keywords are
+  evaluated against the whole instance from within the subschema that declares
+  them, so one inside either the shared definition or the composing schema
+  rejects the other's members. That is why `credentials/_shared/0.2`'s
+  `IssuedCredentialBase` is deliberately left open and
+  `vta/credentials/issue/0.2` closes over it.
+
+  typify does not model `unevaluatedProperties`. It flattens the `allOf` into
+  a single struct carrying every member — the right shape — but emits no
+  `deny_unknown_fields`, because it maps only `additionalProperties: false`.
+  The generated type is then more permissive than the schema it came from: a
+  validator rejects an unknown member, the Rust type silently accepts it.
+
+  `issue/0.1` closes with `additionalProperties` and generates
+  `#[serde(deny_unknown_fields)]`. `issue/0.2` says the same thing the only
+  way a composition can, and generated nothing. That is a silent weakening
+  across a version bump whose whole purpose was to stop the two definitions
+  drifting.
+
+  This flattens the composition before typify sees it, so the strictness
+  survives. The struct is unchanged; only the attribute is added.
+
+  Two things it deliberately does not do:
+
+  - It runs after `raw` is captured, so `PAYLOAD_SCHEMA` still carries the
+    published `allOf` + `unevaluatedProperties` text. Runtime validation is
+    against the real schema, not this rewrite.
+  - It declines any composition whose members are not plain object schemas —
+    a nested combinator, an `if`/`then`, a member that closes itself, an
+    unresolvable `$ref`. The merge would not be sound there, and a wrong
+    `deny_unknown_fields` rejects valid documents, which is worse than the
+    permissiveness it would fix.
+
+  Only `vta/credentials/issue/0.2` uses the pattern today, so the regenerated
+  output is one file. It is the composition style the registry is moving
+  toward, which is why it is worth fixing at the generator.
+
+
+
 ## [0.17.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.0...trust-tasks-rs-v0.17.1) — 2026-08-27
 
 
