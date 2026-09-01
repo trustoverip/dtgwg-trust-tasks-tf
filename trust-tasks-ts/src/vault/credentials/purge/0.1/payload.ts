@@ -3,6 +3,9 @@
  * Source: specs/vault/credentials/purge/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Erase a stored credential immediately and irrecoverably.
  */
@@ -15,13 +18,10 @@ export interface VaultCredentialsPurge {
    * Free text recorded with the transition. Must not carry credential contents.
    */
   reason?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VaultCredentialsPurgeResponsePayload {
   id: string;
@@ -29,8 +29,14 @@ export interface VaultCredentialsPurgeResponsePayload {
    * State after the transition, echoed rather than left to be inferred from the verb.
    */
   lifecycle: "active" | "archived" | "deleted";
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/credentials/purge/0.1" as const;
@@ -77,7 +83,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Free text recorded with the transition. Must not carry credential contents."
     },
     "ext": {
-      "$ref": "#/$defs/Ext"
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
   "$defs": {
@@ -101,7 +108,8 @@ export const PAYLOAD_SCHEMA = {
           "description": "State after the transition, echoed rather than left to be inferred from the verb."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
@@ -116,7 +124,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,
@@ -152,7 +160,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "State after the transition, echoed rather than left to be inferred from the verb."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
@@ -167,7 +176,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,

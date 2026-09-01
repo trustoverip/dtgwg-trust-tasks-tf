@@ -3,6 +3,9 @@
  * Source: specs/vault/credentials/query/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 export type Did = string;
 /**
  * Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.
@@ -45,19 +48,19 @@ export interface VaultCredentialsQuery {
    * Modifier, not a filter: also return soft-deleted tombstones matching the other constraints. Absent means false.
    */
   includeDeleted?: boolean;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VaultCredentialsQueryResponsePayload {
   /**
    * Matching descriptors. Empty when nothing matched — a successful answer, not an error.
    */
   credentials: CredentialDescriptor[];
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
 /**
@@ -94,6 +97,9 @@ export interface CredentialDescriptor {
    */
   graceUntil?: string;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/credentials/query/0.1" as const;
@@ -155,7 +161,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Modifier, not a filter: also return soft-deleted tombstones matching the other constraints. Absent means false."
     },
     "ext": {
-      "$ref": "#/$defs/Ext"
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
   "$defs": {
@@ -176,7 +183,8 @@ export const PAYLOAD_SCHEMA = {
           "description": "Matching descriptors. Empty when nothing matched — a successful answer, not an error."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
@@ -276,7 +284,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,
@@ -309,7 +317,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Matching descriptors. Empty when nothing matched — a successful answer, not an error."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
@@ -409,7 +418,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,

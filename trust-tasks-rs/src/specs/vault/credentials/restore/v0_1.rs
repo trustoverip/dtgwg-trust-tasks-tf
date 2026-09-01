@@ -29,14 +29,14 @@ pub mod error {
         }
     }
 }
-///Vendor-namespaced extension object per SPEC.md §4.5.1.
+///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
 ///  "type": "object",
 ///  "minProperties": 1,
 ///  "additionalProperties": true,
@@ -152,6 +152,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "id": {
@@ -175,6 +176,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
@@ -348,6 +350,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 ///  ],
 ///  "properties": {
 ///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "id": {
@@ -369,6 +372,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub id: ResponseId,
@@ -675,7 +679,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"State after the transition, echoed rather than left to be inferred from the verb.\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"lifecycle\"\n      ],\n      \"title\": \"Vault Credentials Restore — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/restore/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Return a soft-deleted credential to the active state, while its grace window lasts.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"Local handle from a query descriptor. Opaque; consumers must not derive or guess one.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Free text recorded with the transition. Must not carry credential contents.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"Vault Credentials — Restore\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"State after the transition, echoed rather than left to be inferred from the verb.\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"lifecycle\"\n      ],\n      \"title\": \"Vault Credentials Restore — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/restore/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Return a soft-deleted credential to the active state, while its grace window lasts.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"id\": {\n      \"description\": \"Local handle from a query descriptor. Opaque; consumers must not derive or guess one.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Free text recorded with the transition. Must not carry credential contents.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"Vault Credentials — Restore\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -685,7 +689,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"State after the transition, echoed rather than left to be inferred from the verb.\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"lifecycle\"\n      ],\n      \"title\": \"Vault Credentials Restore — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"State after the transition, echoed rather than left to be inferred from the verb.\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"lifecycle\"\n      ],\n      \"title\": \"Vault Credentials Restore — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

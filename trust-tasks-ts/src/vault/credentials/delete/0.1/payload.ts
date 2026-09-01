@@ -3,6 +3,9 @@
  * Source: specs/vault/credentials/delete/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Move a stored credential to a recoverable tombstone, or erase it outright.
  */
@@ -19,13 +22,10 @@ export interface VaultCredentialsDelete {
    * Erase immediately rather than tombstoning. Irrecoverable. Absent means false.
    */
   force?: boolean;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VaultCredentialsDeleteResponsePayload {
   id: string;
@@ -37,8 +37,14 @@ export interface VaultCredentialsDeleteResponsePayload {
    * Restore deadline. Present on the default path; absent when `force` was set, and its absence is how a consumer knows nothing can be restored.
    */
   graceUntil?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/credentials/delete/0.1" as const;
@@ -89,7 +95,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Erase immediately rather than tombstoning. Irrecoverable. Absent means false."
     },
     "ext": {
-      "$ref": "#/$defs/Ext"
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
   "$defs": {
@@ -118,7 +125,8 @@ export const PAYLOAD_SCHEMA = {
           "description": "Restore deadline. Present on the default path; absent when `force` was set, and its absence is how a consumer knows nothing can be restored."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
@@ -133,7 +141,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,
@@ -174,7 +182,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Restore deadline. Present on the default path; absent when `force` was set, and its absence is how a consumer knows nothing can be restored."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
@@ -189,7 +198,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,

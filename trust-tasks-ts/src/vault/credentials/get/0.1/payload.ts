@@ -3,6 +3,9 @@
  * Source: specs/vault/credentials/get/0.1/payload.schema.json
  */
 
+import type { Ext } from "../../../../_shared/components.js";
+
+
 /**
  * Fetch one stored credential's full body by id.
  */
@@ -11,21 +14,24 @@ export interface VaultCredentialsGet {
    * Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
    */
   id: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
-}
-/**
- * Vendor-namespaced extension object per SPEC.md §4.5.1.
- */
-export interface Ext {
-  [k: string]: unknown | undefined;
 }
 export interface VaultCredentialsGetResponsePayload {
   /**
    * The verifiable credential as stored, carried verbatim. Maintainers must not re-serialise it — the bytes carry a proof over themselves.
    */
   credential: {};
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
   ext?: Ext;
 }
+
+/** Shared definitions this specification references, re-exported under the names it used to declare them with. */
+export type { Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/credentials/get/0.1" as const;
@@ -66,7 +72,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Local handle from a query descriptor. Opaque; consumers must not derive or guess one."
     },
     "ext": {
-      "$ref": "#/$defs/Ext"
+      "$ref": "#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
     }
   },
   "$defs": {
@@ -85,13 +92,14 @@ export const PAYLOAD_SCHEMA = {
           "description": "The verifiable credential as stored, carried verbatim. Maintainers must not re-serialise it — the bytes carry a proof over themselves."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,
@@ -122,13 +130,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The verifiable credential as stored, carried verbatim. Maintainers must not re-serialise it — the bytes carry a proof over themselves."
         },
         "ext": {
-          "$ref": "#/$defs/Ext"
+          "$ref": "#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     },
     "Ext": {
       "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": true,

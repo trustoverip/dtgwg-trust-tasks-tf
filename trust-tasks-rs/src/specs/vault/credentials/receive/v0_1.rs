@@ -29,14 +29,14 @@ pub mod error {
         }
     }
 }
-///Vendor-namespaced extension object per SPEC.md §4.5.1.
+///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1.",
+///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
 ///  "type": "object",
 ///  "minProperties": 1,
 ///  "additionalProperties": true,
@@ -179,6 +179,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "pattern": "^[A-Za-z0-9_-]+$"
 ///    },
 ///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "format": {
@@ -212,6 +213,7 @@ pub enum Payload {
         context_id: ::std::option::Option<PayloadVariant0ContextId>,
         ///The verifiable credential as a JSON object.
         credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Credential format, when not evident from the body. An unimplemented format is refused, not stored.
@@ -232,6 +234,7 @@ pub enum Payload {
         ///The credential base64url-encoded without padding, for formats whose canonical form is not JSON.
         #[serde(rename = "credentialBase64")]
         credential_base64: PayloadVariant1CredentialBase64,
+        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
         #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
         ext: ::std::option::Option<Ext>,
         ///Credential format, when not evident from the body. An unimplemented format is refused, not stored.
@@ -774,6 +777,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Id {
 ///  ],
 ///  "properties": {
 ///    "ext": {
+///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "id": {
@@ -817,6 +821,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Id {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The handle the credential can now be fetched by.
@@ -1243,7 +1248,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The handle the credential can now be fetched by.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Classification the maintainer derived. Never supplied by the consumer.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Validity the maintainer computed at storage time.\",\n          \"enum\": [\n            \"valid\",\n            \"expired\",\n            \"revoked\",\n            \"unknown\"\n          ],\n          \"type\": \"string\"\n        },\n        \"types\": {\n          \"description\": \"VC `type` tags the maintainer read.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"types\",\n        \"status\"\n      ],\n      \"title\": \"Vault Credentials Receive — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/receive/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Verify and store a W3C verifiable credential. Exactly one of `credential` or `credentialBase64` must be present.\",\n  \"oneOf\": [\n    {\n      \"required\": [\n        \"credential\"\n      ]\n    },\n    {\n      \"required\": [\n        \"credentialBase64\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Context to hold the credential in. Absent, the consumer's own.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"credential\": {\n      \"description\": \"The verifiable credential as a JSON object.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"credentialBase64\": {\n      \"description\": \"The credential base64url-encoded without padding, for formats whose canonical form is not JSON.\",\n      \"maxLength\": 1048576,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"format\": {\n      \"description\": \"Credential format, when not evident from the body. An unimplemented format is refused, not stored.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"id\": {\n      \"description\": \"Local handle to store under. Absent, derived from the credential's own id. A handle, not a description — see Data carried.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Vault Credentials — Receive\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"The handle the credential can now be fetched by.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Classification the maintainer derived. Never supplied by the consumer.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Validity the maintainer computed at storage time.\",\n          \"enum\": [\n            \"valid\",\n            \"expired\",\n            \"revoked\",\n            \"unknown\"\n          ],\n          \"type\": \"string\"\n        },\n        \"types\": {\n          \"description\": \"VC `type` tags the maintainer read.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"types\",\n        \"status\"\n      ],\n      \"title\": \"Vault Credentials Receive — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/receive/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Verify and store a W3C verifiable credential. Exactly one of `credential` or `credentialBase64` must be present.\",\n  \"oneOf\": [\n    {\n      \"required\": [\n        \"credential\"\n      ]\n    },\n    {\n      \"required\": [\n        \"credentialBase64\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Context to hold the credential in. Absent, the consumer's own.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"credential\": {\n      \"description\": \"The verifiable credential as a JSON object.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"credentialBase64\": {\n      \"description\": \"The credential base64url-encoded without padding, for formats whose canonical form is not JSON.\",\n      \"maxLength\": 1048576,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"format\": {\n      \"description\": \"Credential format, when not evident from the body. An unimplemented format is refused, not stored.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"id\": {\n      \"description\": \"Local handle to store under. Absent, derived from the credential's own id. A handle, not a description — see Data carried.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Vault Credentials — Receive\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1253,7 +1258,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The handle the credential can now be fetched by.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Classification the maintainer derived. Never supplied by the consumer.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Validity the maintainer computed at storage time.\",\n          \"enum\": [\n            \"valid\",\n            \"expired\",\n            \"revoked\",\n            \"unknown\"\n          ],\n          \"type\": \"string\"\n        },\n        \"types\": {\n          \"description\": \"VC `type` tags the maintainer read.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"types\",\n        \"status\"\n      ],\n      \"title\": \"Vault Credentials Receive — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"The handle the credential can now be fetched by.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"Classification the maintainer derived. Never supplied by the consumer.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Validity the maintainer computed at storage time.\",\n          \"enum\": [\n            \"valid\",\n            \"expired\",\n            \"revoked\",\n            \"unknown\"\n          ],\n          \"type\": \"string\"\n        },\n        \"types\": {\n          \"description\": \"VC `type` tags the maintainer read.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"types\",\n        \"status\"\n      ],\n      \"title\": \"Vault Credentials Receive — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
