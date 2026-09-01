@@ -894,6 +894,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/credentials/issue/0.2#response" => <crate::specs::vta::credentials::issue::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/list/0.1" => <crate::specs::vta::credentials::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/list/0.1#response" => <crate::specs::vta::credentials::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/credentials/revoke/0.1" => <crate::specs::vta::credentials::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/credentials/revoke/0.1#response" => <crate::specs::vta::credentials::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2486,6 +2490,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/credentials/issue/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::credentials::issue::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::credentials::list::v0_1::Payload,
         >()),
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/credentials/revoke/0.1" => Some(crate::SpecPolicy::of::<
