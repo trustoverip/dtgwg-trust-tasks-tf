@@ -690,6 +690,38 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => <crate::specs::trust_task_next_step::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-ok/0.1" => <crate::specs::trust_task_ok::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/archive/0.1" => <crate::specs::vault::credentials::archive::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/archive/0.1#response" => <crate::specs::vault::credentials::archive::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/delete/0.1" => <crate::specs::vault::credentials::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/delete/0.1#response" => <crate::specs::vault::credentials::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/get/0.1" => <crate::specs::vault::credentials::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/get/0.1#response" => <crate::specs::vault::credentials::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/purge/0.1" => <crate::specs::vault::credentials::purge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/purge/0.1#response" => <crate::specs::vault::credentials::purge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/query/0.1" => <crate::specs::vault::credentials::query::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/query/0.1#response" => <crate::specs::vault::credentials::query::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/receive/0.1" => <crate::specs::vault::credentials::receive::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/receive/0.1#response" => <crate::specs::vault::credentials::receive::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/restore/0.1" => <crate::specs::vault::credentials::restore::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/restore/0.1#response" => <crate::specs::vault::credentials::restore::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/unarchive/0.1" => <crate::specs::vault::credentials::unarchive::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/unarchive/0.1#response" => <crate::specs::vault::credentials::unarchive::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vault")]
         "https://trusttasks.org/spec/vault/delete/0.1" => <crate::specs::vault::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vault")]
         "https://trusttasks.org/spec/vault/delete/0.1#response" => <crate::specs::vault::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2225,6 +2257,48 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/trust-task-ok/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::trust_task_ok::v0_1::Payload,
         >()),
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/archive/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vault::credentials::archive::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/delete/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vault::credentials::delete::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vault::credentials::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/purge/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vault::credentials::purge::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/query/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vault::credentials::query::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/receive/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vault::credentials::receive::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/restore/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vault::credentials::restore::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/unarchive/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vault::credentials::unarchive::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "vault")]
         "https://trusttasks.org/spec/vault/delete/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vault::delete::v0_1::Payload,
