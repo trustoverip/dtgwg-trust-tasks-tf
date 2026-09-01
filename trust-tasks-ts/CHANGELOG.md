@@ -11,6 +11,69 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.4 — 2026-09-01
+
+
+### Added
+
+- **vault**: Specify the vault/credentials family from its implementation (#338)
+
+* feat(vault): specify the vault/credentials family from its implementation
+
+  Eight tasks — receive, query, get, archive, unarchive, delete, restore,
+  purge — are dispatched by `vta-sdk` and driven by `pnm cred-vault`, and none
+  of them has an entry under `specs/`. The registry generates no bindings for
+  what it does not know about, so every TypeScript consumer that wants the
+  holder-side credential store has to hand-transcribe the shapes out of the
+  Rust: a copy that drifts, silently, in the direction of whatever the reader
+  guessed.
+
+  This writes the family down. The shapes are read out of the implementation
+  rather than invented, so `status: draft` is honest — the aim is to stop the
+  contract being recoverable only by reading someone's service code, not to
+  foreclose the working group changing it.
+
+  Three properties the implementation enforces and prose has to carry, because
+  a consumer that misses them writes something unsafe that still validates:
+
+  - **Query refuses an unconstrained filter.** An empty filter returns the shape
+    of the holder's whole life — every community, every role, every issuer. A
+    consumer granted read access to answer one question does not thereby acquire
+    the right to ask all of them, and `includeArchived` / `includeDeleted` are
+    modifiers that deliberately do not satisfy the ≥1-filter rule.
+  - **Descriptors never carry the body.** Query enumerates, get discloses, and
+    they are separate tasks so the far narrower act of reading credential
+    contents stays separately authorised and separately recorded. `get` is the
+    only member of the family declaring `discloses: secret`.
+  - **Not-found and not-yours give the same answer.** Distinguishing them lets a
+    consumer map another context's vault one identifier at a time.
+
+  Validity and archival lifecycle are documented as orthogonal, because they
+  are: a credential can be `valid` and `archived`, or `revoked` and `active`,
+  and a consumer that collapses the two axes mis-renders its own wallet.
+
+  Two constraints found while writing these, both worth knowing:
+
+  - A top-level `anyOf` is not usable in this registry. typify renders it as an
+    untagged enum the generated example cannot deserialize into, and
+    json-schema-to-typescript widens the type to an index signature — which
+    would have let TS consumers write payloads that typecheck and then fail
+    validation. Query's ≥1-filter rule is therefore stated as a requirement on
+    the maintainer with its own error code, and the spec says why rather than
+    leaving the absence to look like an oversight. No other spec in the registry
+    uses a top-level `anyOf`.
+  - `default` on a boolean breaks the generated round-trip test: typify
+    materialises the value, and the example no longer matches itself. Defaults
+    are stated in prose here, matching the registry's existing specs.
+
+  Every spec carries `payload.invalid-examples.json`, so the negative space is
+  tested rather than assumed — including fixtures for the enumeration shapes and
+  for a consumer trying to declare a `purpose` that the maintainer derives.
+
+  Found while building a browser-based VTA management console, whose
+  credentials pane currently renders an explicit "this waits for the bindings"
+  notice rather than hand-copying these shapes.
+
 ## 0.16.3 — 2026-08-28
 
 
