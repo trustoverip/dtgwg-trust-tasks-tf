@@ -31,6 +31,31 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.4...trust-tasks-rs-v0.17.5)
+
+
+### Added
+
+- **device**: Four `Capability` values the registry was missing. `sign-trust-task`
+  and `credential-write` were already served by the reference implementation
+  without ever reaching the schema; `memory-read` and `memory-write` are new,
+  and split a gate that was previously binary — before them, any consumer that
+  could reach a trust context could also rewrite every memory in it, so there
+  was no way to grant an agent read-only access to a person's memory. Added to
+  both published shapes in each one's own convention: `device/_shared/0.1`
+  (kebab-case) and `device/_shared/0.2` (camelCase).
+
+> **Additive, and still a call-site break.** The generated `Capability` is a
+> plain Rust enum, so four new variants make every exhaustive `match` on it
+> non-exhaustive. Consumers that match with a wildcard arm are unaffected;
+> consumers that enumerate need one edit each. Patch bump per this crate's
+> versioning rule (the wire format is unchanged and older documents still
+> parse), but worth reading before upgrading.
+>
+> The schema description now also states the rule consumers should already have
+> been following: an unrecognised capability value is **ignored**, never treated
+> as conferring anything, and never a reason to reject the whole binding.
+
 ## [0.17.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.3...trust-tasks-rs-v0.17.4) — 2026-09-01
 
 
