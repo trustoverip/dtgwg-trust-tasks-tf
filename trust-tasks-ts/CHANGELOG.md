@@ -11,6 +11,14 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.5 — 2026-09-01
+
+
+### Added
+
+- **vta**: Propose vta/credentials/list, so an issuer can see what it issued (#342)
+- **vtc**: A task that returns a member's credential bodies (#341)
+
 ## 0.16.4 — 2026-09-01
 
 
