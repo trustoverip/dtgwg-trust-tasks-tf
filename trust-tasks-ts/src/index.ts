@@ -235,6 +235,14 @@ export * as SealedEnvelopeShared_v0_3 from "./vault/_shared/0.3/sealed-envelope.
 export * as SessionBlobShared_v0_3 from "./vault/_shared/0.3/session-blob.js";
 export * as VaultEntryShared_v0_3 from "./vault/_shared/0.3/vault-entry.js";
 export * as VaultSecretShared_v0_3 from "./vault/_shared/0.3/vault-secret.js";
+export * as VaultCredentialsArchive_v0_1 from "./vault/credentials/archive/0.1/payload.js";
+export * as VaultCredentialsDelete_v0_1 from "./vault/credentials/delete/0.1/payload.js";
+export * as VaultCredentialsGet_v0_1 from "./vault/credentials/get/0.1/payload.js";
+export * as VaultCredentialsPurge_v0_1 from "./vault/credentials/purge/0.1/payload.js";
+export * as VaultCredentialsQuery_v0_1 from "./vault/credentials/query/0.1/payload.js";
+export * as VaultCredentialsReceive_v0_1 from "./vault/credentials/receive/0.1/payload.js";
+export * as VaultCredentialsRestore_v0_1 from "./vault/credentials/restore/0.1/payload.js";
+export * as VaultCredentialsUnarchive_v0_1 from "./vault/credentials/unarchive/0.1/payload.js";
 export * as VaultDelete_v0_1 from "./vault/delete/0.1/payload.js";
 export * as VaultGet_v0_1 from "./vault/get/0.1/payload.js";
 export * as VaultGet_v0_2 from "./vault/get/0.2/payload.js";
