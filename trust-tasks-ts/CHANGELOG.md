@@ -11,6 +11,68 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.8 — 2026-09-02
+
+
+### Added
+
+- **vta**: Spec the backup family and reload-services (#347)
+
+Six families the VTA dispatches today and nothing described:
+  `vta/backup/{initiate-export, complete-export, initiate-import,
+  finalize-import, abort}/1.0` and `vta/management/reload-services/1.0`.
+
+  All five backup verbs rather than the one a console needs. A partial
+  family is worse to review than a whole one — the members are shared,
+  the state machine only makes sense end to end, and the interesting
+  rules are precisely the ones that span verbs (where the password
+  travels, which handle is quoted where, why one verb is idempotent and
+  its sibling is not).
+
+  Three things these specs say that the implementation could not.
+
+  **The password goes in, not out.** `initiate-export` and
+  `finalize-import` both carry the key-derivation secret for a complete
+  copy of an agent, inbound. That is classified `ingests: secret` with
+  prose forbidding logging, echoing and persisting, and the member is
+  annotated `writeOnly` so a generated client cannot surface it in a
+  response type. It also gets the observation that matters to anyone
+  building a producer: the password's exposure is decided by *where it
+  is typed*, and no property of the protocol recovers from a field in a
+  scriptable environment. An approval ceremony guards the action, not
+  the field.
+
+  **A recipient with no address cannot export.** `initiate-export`
+  hard-fails when the agent has no public URL — the ordinary shape for a
+  DIDComm- or TSP-only agent, which is most of what this stack exists to
+  support. Given a stable `transportUnavailable` code and a
+  "Transport preconditions" section, because the producer's response to
+  it is nothing like its response to a malformed request: this one can
+  only be fixed by whoever configures the agent.
+
+  **Commit is deliberately not idempotent, and abort deliberately is.**
+  Repeating an abort re-destroys something already destroyed, so making
+  it harmless removes a race. Repeating a commit re-applies a snapshot
+  over whatever the agent has done since — a silent rollback that looks
+  identical to the first success. Written down because the asymmetry
+  reads as an inconsistency until you know why.
+
+  Two schema decisions worth flagging for review:
+
+  - No `format: "uuid"`, though the members are UUIDs. It is the one
+    format keyword no existing spec uses, and typify turns it into
+    `::uuid::Uuid` — a new crate dependency for every Rust consumer of
+    the bindings, to annotate what `pattern` already enforces.
+  - No `default` on `confirm`. A materialised default makes an omitted
+    member indistinguishable from a deliberate one, and this is the
+    member separating a rehearsal from an irreversible replacement. The
+    rule is in prose, with a MUST on recipients so the wire behaviour is
+    unchanged.
+
+  Bindings regenerated (`build-ts-bindings`, `trust-tasks-codegen`,
+  `cargo fmt`); registry, bindings conformance, `cargo test --all-features`
+  and the TS runtime suite all pass.
+
 ## 0.16.7
 
 ### Added
