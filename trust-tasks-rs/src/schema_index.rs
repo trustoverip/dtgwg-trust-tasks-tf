@@ -677,6 +677,14 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/epoch/mint/0.1#response" => <crate::specs::rooms::epoch::mint::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/open/0.1" => <crate::specs::rooms::keys::open::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/open/0.1#response" => <crate::specs::rooms::keys::open::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/present/0.1" => <crate::specs::rooms::keys::present::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/present/0.1#response" => <crate::specs::rooms::keys::present::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/get/0.1" => <crate::specs::rooms::records::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/get/0.1#response" => <crate::specs::rooms::records::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2281,6 +2289,14 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/epoch/mint/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::epoch::mint::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/open/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::open::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/present/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::present::v0_1::Payload,
         >()),
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/get/0.1" => Some(crate::SpecPolicy::of::<
