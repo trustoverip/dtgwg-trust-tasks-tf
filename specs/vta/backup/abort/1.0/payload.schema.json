@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/backup/abort/1.0",
+  "title": "VTA Backup — Abort — payload",
+  "description": "Cancels an in-flight export or import bundle and discards its staged bytes. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundleId"
+  ],
+  "properties": {
+    "bundleId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "Handle from an initiate-export or initiate-import descriptor; either kind is accepted. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Backup Abort — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleId",
+        "aborted"
+      ],
+      "properties": {
+        "bundleId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Echoed so the response stands alone as a record."
+        },
+        "aborted": {
+          "type": "boolean",
+          "description": "Whether this request is what moved the bundle to a terminal state. False means it was already terminal — a success, not a failure, and the reason abort can be retried safely. Required rather than optional: an absent member on an idempotent no-op would be indistinguishable from a cancellation that happened."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

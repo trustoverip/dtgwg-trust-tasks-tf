@@ -854,6 +854,26 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/app-state/put-many/1.0#response" => <crate::specs::vta::app_state::put_many::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/abort/1.0" => <crate::specs::vta::backup::abort::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/abort/1.0#response" => <crate::specs::vta::backup::abort::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/complete-export/1.0" => <crate::specs::vta::backup::complete_export::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/complete-export/1.0#response" => <crate::specs::vta::backup::complete_export::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/finalize-import/1.0" => <crate::specs::vta::backup::finalize_import::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/finalize-import/1.0#response" => <crate::specs::vta::backup::finalize_import::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-export/1.0" => <crate::specs::vta::backup::initiate_export::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-export/1.0#response" => <crate::specs::vta::backup::initiate_export::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-import/1.0" => <crate::specs::vta::backup::initiate_import::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-import/1.0#response" => <crate::specs::vta::backup::initiate_import::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/create/1.0" => <crate::specs::vta::contexts::create::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/create/1.0#response" => <crate::specs::vta::contexts::create::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -969,6 +989,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/update/2.0" => <crate::specs::vta::did_templates::update::v2_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/update/2.0#response" => <crate::specs::vta::did_templates::update::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/management/reload-services/1.0" => <crate::specs::vta::management::reload_services::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/management/reload-services/1.0#response" => <crate::specs::vta::management::reload_services::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/memory/delete/0.1" => <crate::specs::vta::memory::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
@@ -2462,6 +2486,34 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::vta::app_state::put_many::v1_0::Payload,
         >()),
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/abort/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::backup::abort::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/complete-export/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::backup::complete_export::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/finalize-import/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::backup::finalize_import::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-export/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::backup::initiate_export::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-import/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::backup::initiate_import::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/create/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::contexts::create::v1_0::Payload,
         >()),
@@ -2605,6 +2657,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vta/did-templates/update/2.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::did_templates::update::v2_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/management/reload-services/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::management::reload_services::v1_0::Payload,
             >())
         }
         #[cfg(feature = "vta")]
