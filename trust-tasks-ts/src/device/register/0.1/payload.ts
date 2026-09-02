@@ -209,9 +209,13 @@ export const PAYLOAD_SCHEMA = {
         "policy-admin",
         "device-admin",
         "sign",
-        "key-mint"
+        "key-mint",
+        "sign-trust-task",
+        "credential-write",
+        "memory-read",
+        "memory-write"
       ],
-      "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each."
+      "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },
     "KeyCustody": {
       "title": "KeyCustody",
@@ -531,9 +535,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "policy-admin",
         "device-admin",
         "sign",
-        "key-mint"
+        "key-mint",
+        "sign-trust-task",
+        "credential-write",
+        "memory-read",
+        "memory-write"
       ],
-      "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each."
+      "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },
     "KeyCustody": {
       "title": "KeyCustody",
