@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/management/reload-services/1.0",
+  "title": "VTA Management — Reload Services — payload",
+  "description": "Asks the recipient to re-read its service configuration and restart its transports. Defines no members: every parameter this task might carry would be a way of asking the agent to run on something other than its configuration — see Why the payload is empty. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Note the limit stated in the specification: an ecosystem must not use this slot to add selective reload, inline configuration, or a skip-validation flag, which are the members the empty payload exists to exclude."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Management Reload Services — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The recipient's account of what it is doing. Advisory free text, deliberately not an enum: a producer must not parse it or branch on its value, because the reliable signal is whether the agent answers afterwards, not what it said before restarting. Bounded per §7.3 item 19 — the value lands in transcripts and audit entries."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

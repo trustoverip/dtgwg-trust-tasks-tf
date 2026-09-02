@@ -1,0 +1,47 @@
+[
+  {
+    "note": "Missing both `bundleId` and `password`. There is no current bundle and no recipient-held password — an absent handle must never resolve to one, on the task that replaces the agent.",
+    "payload": {}
+  },
+  {
+    "note": "Missing `password`. A bundle is encrypted; there is no unpassworded path, and an absent member must not be read as one.",
+    "payload": {
+      "bundleId": "9c858901-8a57-4791-81fe-4c455b099bc9"
+    }
+  },
+  {
+    "note": "`bundleId` that is not a UUID. The pattern is what keeps a crafted handle from reaching the recipient's store as a lookup key.",
+    "payload": {
+      "bundleId": "most-recent",
+      "password": "a sufficiently long secret"
+    }
+  },
+  {
+    "note": "`confirm` as the string \"false\". A producer intending a rehearsal would otherwise be read as truthy by a lenient consumer and get an irreversible commit — the exact substitution this member exists to prevent.",
+    "payload": {
+      "bundleId": "9c858901-8a57-4791-81fe-4c455b099bc9",
+      "password": "a sufficiently long secret",
+      "confirm": "false"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "bundleId": "9c858901-8a57-4791-81fe-4c455b099bc9",
+      "password": "a sufficiently long secret",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `sourceDid`. What the bundle came from is what the recipient reads out of it and reports; a producer asserting it would be asserting the one fact the preview exists to establish.",
+    "payload": {
+      "bundleId": "9c858901-8a57-4791-81fe-4c455b099bc9",
+      "password": "a sufficiently long secret",
+      "sourceDid": "did:example:agent"
+    }
+  }
+]

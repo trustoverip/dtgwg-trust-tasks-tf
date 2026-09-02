@@ -1,0 +1,30 @@
+[
+  {
+    "note": "Missing `bundleId`. There is no default bundle, and an absent handle must never read as 'all of my open bundles' — abort is destructive, and a fan-out is the last thing an omitted member should mean.",
+    "payload": {}
+  },
+  {
+    "note": "`bundleId` that is not a UUID. The pattern is what keeps a crafted handle from reaching the recipient's store as a lookup key.",
+    "payload": {
+      "bundleId": "*"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "bundleId": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `force`. Abort has no forced variant: it already discards the bytes, and a member suggesting a harder version would be read as one by an implementer who has not checked.",
+    "payload": {
+      "bundleId": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+      "force": true
+    }
+  }
+]

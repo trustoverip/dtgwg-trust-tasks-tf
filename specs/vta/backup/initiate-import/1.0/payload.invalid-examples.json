@@ -1,0 +1,47 @@
+[
+  {
+    "note": "Missing both pre-commitments. A slot opened without a digest accepts whatever arrives, which is exactly the property that makes a leaked write token harmless when they are present.",
+    "payload": {}
+  },
+  {
+    "note": "Uppercase hex digest. The pattern fixes one spelling so that a recipient's comparison is a string equality rather than a normalisation it might get wrong.",
+    "payload": {
+      "expectedSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "expectedSizeBytes": 1048576
+    }
+  },
+  {
+    "note": "Digest of the wrong length — a SHA-1 in a SHA-256 member. Caught by the pattern before a slot is opened.",
+    "payload": {
+      "expectedSha256": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "expectedSizeBytes": 1048576
+    }
+  },
+  {
+    "note": "Zero `expectedSizeBytes`. There is nothing to import, and a slot sized for no bytes would accept an empty upload as a successful transfer.",
+    "payload": {
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedSizeBytes": 0
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedSizeBytes": 1048576,
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `password`. The password belongs to finalize-import; accepting it here would put the decryption secret alongside the slot that holds the ciphertext, which is the one place this family keeps them apart.",
+    "payload": {
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedSizeBytes": 1048576,
+      "password": "a sufficiently long secret"
+    }
+  }
+]
