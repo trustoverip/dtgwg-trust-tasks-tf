@@ -11,6 +11,14 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.8
+
+### Added
+
+- **rooms**: `rooms/keys/{open,present}` — the oracle pair that lets an agent use a data room
+  without holding its principal's keys or credentials. `open` returns plaintext, `present`
+  returns a presentation scoped to one action and audience; neither returns key material.
+
 ## 0.16.7
 
 ### Added

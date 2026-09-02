@@ -205,6 +205,8 @@ export * as RegistryRecordUpdate_v0_1 from "./registry/record/update/0.1/payload
 export * as RoomShared_v0_1 from "./rooms/_shared/0.1/room.js";
 export * as RoomsCreate_v0_1 from "./rooms/create/0.1/payload.js";
 export * as RoomsEpochMint_v0_1 from "./rooms/epoch/mint/0.1/payload.js";
+export * as RoomsKeysOpen_v0_1 from "./rooms/keys/open/0.1/payload.js";
+export * as RoomsKeysPresent_v0_1 from "./rooms/keys/present/0.1/payload.js";
 export * as RoomsRecordsGet_v0_1 from "./rooms/records/get/0.1/payload.js";
 export * as RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
 export * as RoomsRecordsPut_v0_1 from "./rooms/records/put/0.1/payload.js";
