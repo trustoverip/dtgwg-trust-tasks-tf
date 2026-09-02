@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/put/0.1",
+  "title": "Rooms Records Put — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "key", "presentation"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own — which is what lets a room move hosts without reissuing a credential."
+    },
+    "key": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `write` action at this room's scope."
+    },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional precondition. Omit to overwrite unconditionally; `0` means create-only and fails if the key exists. On mismatch the host returns `rooms/records/put:versionConflict` CARRYING THE CURRENT VERSION AND RECORD — a bare rejection would force a re-read, and between rejection and re-read the record can change again, so the pattern has no fixed point under contention."
+    },
+    "sealed": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/SealedRecord",
+      "description": "REQUIRED on an `attributed` or `private` room. Mutually exclusive with `cleartext`."
+    },
+    "cleartext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body"],
+      "description": "REQUIRED on an `open` room, where the host reads records and can therefore search them. Mutually exclusive with `sealed`.",
+      "properties": {
+        "title": { "type": "string", "maxLength": 512 },
+        "description": { "type": "string", "maxLength": 2048 },
+        "body": { "type": "string", "maxLength": 1048576 },
+        "tags": { "type": "array", "items": { "type": "string", "maxLength": 64 }, "maxItems": 32 }
+      }
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records Put — response payload",
+      "description": "Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "version"],
+      "properties": {
+        "key": { "type": "string", "description": "The stored record's key." },
+        "version": { "type": "integer", "minimum": 1, "description": "The version assigned, monotonic per room." },
+        "epoch": { "type": "integer", "minimum": 1, "description": "The epoch the record was stored under." },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

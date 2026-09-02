@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-rs"
-version = "0.17.4"
+version = "0.18.0"
 edition = "2021"
 # Effective MSRV is constrained by the workspace's transitive deps and
 # the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)
@@ -52,6 +52,7 @@ all-specs = [
     "provision",
     "push",
     "registry",
+    "rooms",
     "sync",
     "task-consent",
     "vault",
@@ -79,6 +80,7 @@ policy = []
 provision = []
 push = []
 registry = []
+rooms = []
 sync = []
 task-consent = []
 vault = []

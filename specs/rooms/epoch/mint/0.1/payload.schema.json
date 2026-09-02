@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/epoch/mint/0.1",
+  "title": "Rooms Epoch Mint \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "epoch",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose epoch advances."
+    },
+    "epoch": {
+      "type": "integer",
+      "minimum": 2,
+      "description": "The new epoch number, which MUST be exactly one greater than the current one. A host records the number and never learns the key."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `admin` action at this room's scope. Restricting epoch minting matters: if any key-holder could mint one, any member could evict any other by declining to seal the new key to them \u2014 silently, and with no server-side check possible on a room whose membership the host cannot see."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Optional operator-facing rationale, recorded in the room's audit."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Epoch Mint \u2014 response payload",
+      "description": "Success response to rooms/epoch/mint. Type https://trusttasks.org/spec/rooms/epoch/mint/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "epoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

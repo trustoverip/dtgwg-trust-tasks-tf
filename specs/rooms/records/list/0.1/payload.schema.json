@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/list/0.1",
+  "title": "Rooms Records List \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `read` action at this room's scope."
+    },
+    "prefix": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Return only records whose key starts with this. On an `attributed` or `private` room keys are opaque, so a prefix is only useful where the client assigned structure to them."
+    },
+    "sinceVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Return only records changed after this version \u2014 the watermark that makes incremental sync possible. Tombstones are returned too: without them a puller learns of every create and update and never of a delete, so deleted records resurrect on the next full rebuild."
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "Opaque continuation token from a previous response. A host MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Maximum records to return. A host MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records List \u2014 response payload",
+      "description": "Success response to rooms/records/list. Type https://trusttasks.org/spec/rooms/records/list/0.1#response. Returns METADATA, never bodies: a reader fetches the handful it wants with rooms/records/get.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "records"
+      ],
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordMetadata"
+          }
+        },
+        "cursor": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "Present when more records remain."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

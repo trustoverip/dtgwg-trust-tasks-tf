@@ -31,6 +31,40 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.18.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.4...trust-tasks-rs-v0.18.0)
+
+
+### Added
+
+- **rooms**: A new top-level `rooms/*` family — `create`, `records/{put,get,list}`,
+  `epoch/mint`, and a `_shared` schema carrying the visibility ladder, the authority
+  presentation and the sealed-record envelope.
+
+  A **data room** is a shared space whose access is governed by credentials the room itself
+  issues. The property distinguishing this family from every other stored-data task here is
+  that **a host never consults a member list of its own** — which is why the family is
+  top-level rather than under a service prefix. Any host that speaks it can host any room,
+  and a room moves between hosts without a credential being reissued.
+
+  Three rules are wire commitments from this first version, because retrofitting any of them
+  would break every verifier:
+
+  - **The whole authority chain is presented, leaf first, capped at 8.** A host must never
+    dereference a link's `parent`: resolving over the network would make verification depend
+    on availability, turn an identifier into a request the host can be induced to make
+    against an address the *producer* chooses, and signal credential use to whoever hosts it.
+  - **A `private` room presentation must carry `subjectBinding`** — proof that the membership
+    credential and the authority chain's leaf describe the same subject. Without it two
+    parties pool credentials and verify as one party holding both.
+  - **Reads present exactly as writes do**, and a `private` room requires no host session.
+    Authorizing reads by session would log a member identifier on every access, and a period
+    of such logs reconstructs the membership the tier exists to withhold.
+
+> **Leading-component bump.** Five new spec families reach `SpecSlug` and the generated
+> module tree, and `DTG_TYPES`-style exhaustive matches over the slug enum gain variants.
+> Consumers matching with a wildcard arm are unaffected.
+
+
 ## [0.17.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.3...trust-tasks-rs-v0.17.4) — 2026-09-01
 
 

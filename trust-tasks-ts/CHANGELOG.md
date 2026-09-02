@@ -11,6 +11,17 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.0
+
+### Added
+
+- **rooms**: the new top-level `rooms/*` family — `create`, `records/{put,get,list}`,
+  `epoch/mint` and its `_shared` types. Data rooms are governed by credentials the room
+  issues rather than by host state, so a host verifies presentations and keeps no member
+  list. The authority chain is presented whole (leaf first, max 8 links, never
+  dereferenced), a `private` room presentation must carry a same-subject binding, and reads
+  present exactly as writes do.
+
 ## 0.16.5 — 2026-09-01
 
 

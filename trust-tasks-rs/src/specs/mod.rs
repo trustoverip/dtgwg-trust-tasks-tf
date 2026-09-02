@@ -92,6 +92,8 @@ pub mod provision;
 pub mod push;
 #[cfg(feature = "registry")]
 pub mod registry;
+#[cfg(feature = "rooms")]
+pub mod rooms;
 #[cfg(feature = "sync")]
 pub mod sync;
 #[cfg(feature = "task-consent")]

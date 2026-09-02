@@ -252,6 +252,10 @@ export type Version = number;
  * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
  */
 export type Vid = string;
+/**
+ * How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
+ */
+export type Visibility = "open" | "attributed" | "private";
 
 /**
  * The mediator's view of one served account.
@@ -620,6 +624,34 @@ export interface AuthenticatorAttestationResponseRegistration {
   };
   authenticatorAttachment?: "platform" | "cross-platform";
   clientExtensionResults?: {};
+}
+/**
+ * What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.
+ */
+export interface AuthorityPresentation {
+  /**
+   * The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.
+   */
+  membership: string;
+  /**
+   * The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.
+   *
+   * @minItems 1
+   * @maxItems 8
+   */
+  authority:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.
+   */
+  subjectBinding?: string;
 }
 /**
  * Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.
@@ -2320,6 +2352,40 @@ export interface QueueLimits {
   receiveQueueLimit?: number;
 }
 /**
+ * What `rooms/records/list` returns. Never the body: ranking happens on the client, and a host that returned every body would make the caller pay for the whole room on every listing.
+ */
+export interface RecordMetadata {
+  /**
+   * The record's key within the room. On `attributed` and `private` rooms this MUST be opaque — a random identifier, never a descriptive slug. A key reading `decision/acquire-northwind` defeats the encryption sitting beside it; structured naming belongs inside the sealed body.
+   */
+  key: string;
+  /**
+   * Server-assigned, monotonic per room.
+   */
+  version: number;
+  /**
+   * The epoch the record was sealed under. Absent on an `open` room.
+   */
+  epoch?: number;
+  /**
+   * Curation state. `retracted` is a tombstone: the body is gone, the key and version remain so incremental sync converges and the audit chain stays intact.
+   */
+  status?: "active" | "deprecated" | "retracted";
+  updatedAt: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  title?: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  description?: string;
+  /**
+   * The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
+   */
+  author?: string;
+}
+/**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
  */
 export interface RegisteredCredential {
@@ -2426,6 +2492,23 @@ export interface Global_VtaV0_1 {
 export interface Context_VtaV0_1 {
   type: "context";
   contextId: string;
+}
+/**
+ * A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.
+ */
+export interface SealedRecord {
+  /**
+   * The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.
+   */
+  ciphertext: string;
+  /**
+   * AEAD nonce, base64url.
+   */
+  nonce: string;
+  /**
+   * The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.
+   */
+  epoch: number;
 }
 export interface ServiceInstance {
   /**
