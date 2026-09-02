@@ -1,0 +1,44 @@
+[
+  {
+    "note": "Missing `password`. There is no unencrypted export and no recipient-chosen default — an absent password must never read as 'encrypt it with something'.",
+    "payload": {}
+  },
+  {
+    "note": "Short `password`. minLength is the shape floor; a recipient may require more and refuses with weakPassword. Caught here so the check happens before any state is serialized.",
+    "payload": {
+      "password": "short"
+    }
+  },
+  {
+    "note": "Unbounded `algorithm` — §7.3 item 19. The value is echoed into the descriptor and into an audit entry; maxLength is what keeps both bounded.",
+    "payload": {
+      "password": "a sufficiently long secret",
+      "algorithm": "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    }
+  },
+  {
+    "note": "`includeAudit` as the string \"true\". A producer that means to exclude the trail and sends \"false\" would otherwise be read as truthy by a lenient consumer, widening the bundle silently.",
+    "payload": {
+      "password": "a sufficiently long secret",
+      "includeAudit": "true"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "password": "a sufficiently long secret",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `bundleId`. The producer asks for an export; it does not name the bundle, because minting the handle is what the recipient is being asked to do.",
+    "payload": {
+      "password": "a sufficiently long secret",
+      "bundleId": "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+    }
+  }
+]

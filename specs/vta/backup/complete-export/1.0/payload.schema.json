@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/backup/complete-export/1.0",
+  "title": "VTA Backup — Complete Export — payload",
+  "description": "Acknowledges that an export bundle was downloaded, so the recipient can release the staged bytes and retire the transport token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundleId"
+  ],
+  "properties": {
+    "bundleId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "Handle from the initiate-export descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Backup Complete Export — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleId",
+        "downloaded"
+      ],
+      "properties": {
+        "bundleId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Echoed so the response stands alone as a record."
+        },
+        "downloaded": {
+          "type": "boolean",
+          "description": "Whether the byte stream was actually fetched before this acknowledgement. Required, not optional: false is the honest answer when the operator skipped the download or the slot expired first, and an absent member would let that be read as success."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `services`. Selective reload is the member this task most invites and most deliberately excludes: it turns 'apply what is written down' into 'apply what this document says', which is a much wider authority than a reload should carry.",
+    "payload": {
+      "services": [
+        "didcomm"
+      ]
+    }
+  },
+  {
+    "note": "Unknown top-level member — `force`. There is no validation to skip; a flag suggesting otherwise would be implemented by someone who did not check.",
+    "payload": {
+      "force": true
+    }
+  },
+  {
+    "note": "Unknown top-level member — `config`. Inline configuration would let a producer put the agent into a state its own configuration does not describe, with no record of it anywhere but this request.",
+    "payload": {
+      "config": {
+        "publicUrl": "https://elsewhere.example"
+      }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced. Worth pinning on a payload whose only permitted member is ext.",
+    "payload": {
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

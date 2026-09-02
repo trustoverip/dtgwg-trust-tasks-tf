@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/backup/initiate-export/1.0",
+  "title": "VTA Backup — Initiate Export — payload",
+  "description": "Asks the recipient to serialize its entire state into a password-encrypted bundle and return the descriptor that fetches it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "password"
+  ],
+  "properties": {
+    "password": {
+      "type": "string",
+      "minLength": 15,
+      "maxLength": 1024,
+      "writeOnly": true,
+      "description": "Key-derivation input protecting the bundle. Chosen by the producer and never recoverable from the recipient. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it. The minLength floor is a shape check only — a recipient may require more, and refuses with weakPassword.",
+      "$comment": "No `format: password` — the annotation is advisory in 2020-12 and says less than writeOnly does. No example value anywhere in this directory: a specimen password is the one thing implementers copy."
+    },
+    "includeAudit": {
+      "type": "boolean",
+      "description": "Serialize the audit trail alongside the operational state. Absent means false — stated in prose rather than as a schema `default`, because a materialised default turns an omitted member into an asserted one in generated bindings, which is a different document."
+    },
+    "algorithm": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum: a recipient offering more must be askable for it without a specification revision, and one that does not implement the request refuses with unsupportedAlgorithm."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Backup Initiate Export — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "descriptor"
+      ],
+      "properties": {
+        "descriptor": {
+          "$ref": "#/$defs/BundleDescriptor",
+          "description": "Where the bytes are, what they should be, and until when."
+        },
+        "completionHint": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Operator-facing text describing how to complete the download. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "BundleDescriptor": {
+      "title": "Bundle descriptor",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-import, where it describes an upload rather than a download.",
+      "required": [
+        "bundleId",
+        "algorithm",
+        "transportUrl",
+        "transportToken",
+        "expectedSha256",
+        "expectedSizeBytes",
+        "expiresAt"
+      ],
+      "properties": {
+        "bundleId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Handle for this bundle across its whole lifecycle. Quoted back by complete-export and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence."
+        },
+        "algorithm": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The mechanism actually used, which is authoritative over what was requested."
+        },
+        "transportUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "Where to fetch the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unfetchable one."
+        },
+        "transportToken": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it and should accept it once — the token plus the URL is the export."
+        },
+        "expectedSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Lowercase hex SHA-256 of the byte stream. Independent of the encrypted envelope's own authentication tag, so a truncated or substituted transfer is caught before the password is applied to it."
+        },
+        "expectedSizeBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total byte count. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "After which the bytes are collected and the token refused. Short by design: the window is how long a fetchable copy of the agent exists."
+        }
+      }
+    }
+  }
+}
