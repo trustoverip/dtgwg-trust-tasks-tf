@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/open/0.1",
+  "title": "Rooms Keys Open \u2014 payload",
+  "description": "An agent asks the party holding its principal's room keys to open one sealed record. The key never crosses to the agent: this is a decryption oracle, not a key-release call.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "key",
+    "version",
+    "sealed"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room the record belongs to. Part of the record's associated data, so a caller naming the wrong room gets an authentication failure rather than someone else's plaintext."
+    },
+    "key": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "The record's key within the room."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The record's version. Bound into the associated data, so a record served at a different version does not open."
+    },
+    "sealed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext",
+        "nonce",
+        "epoch"
+      ],
+      "description": "The sealed record exactly as the host returned it.",
+      "properties": {
+        "ciphertext": {
+          "type": "string",
+          "description": "base64url."
+        },
+        "nonce": {
+          "type": "string",
+          "description": "base64url."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The epoch it was sealed under. The oracle refuses an epoch it holds no key for rather than guessing."
+        }
+      }
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Open \u2014 response payload",
+      "description": "Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plaintext"
+      ],
+      "properties": {
+        "plaintext": {
+          "type": "string",
+          "description": "The opened record, base64url. The only thing that crosses back \u2014 never the key."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

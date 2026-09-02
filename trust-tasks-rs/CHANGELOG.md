@@ -31,6 +31,31 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.6...trust-tasks-rs-v0.17.7)
+
+
+### Added
+
+- **rooms**: `rooms/keys/{open,present}` — the oracle pair that lets an AI agent use a data
+  room without holding its principal's keys or credentials.
+
+  `open` decrypts one sealed record and returns the plaintext; `present` produces a
+  presentation for one operation. **Neither returns key material or credentials**, and that
+  is the whole design rather than a detail: an agent runs on a general-purpose machine, and
+  a key-release call would leave it holding — indefinitely — material belonging to every
+  other member of the room.
+
+  Two properties follow that key release cannot offer. Revoking the agent actually revokes
+  it, because there is nothing else for it to keep. And the blast radius of a compromised
+  agent is bounded by time rather than by the lifetime of a key it was given.
+
+  `present` requires `action`, so a presentation is scoped to what it was asked for; an
+  implementation minting one that covers every action has handed the caller its principal's
+  whole standing, which is what attenuation exists to prevent.
+
+> Additive: new modules and types, nothing removed or reshaped, so a patch bump.
+
+
 ## [0.17.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.5...trust-tasks-rs-v0.17.6)
 
 
