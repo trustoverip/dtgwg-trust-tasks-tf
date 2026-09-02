@@ -31,7 +31,7 @@ consumer should read it.
 
 ## [Unreleased]
 
-## [0.18.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.5...trust-tasks-rs-v0.18.0)
+## [0.17.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.5...trust-tasks-rs-v0.17.6)
 
 
 ### Added
@@ -60,9 +60,11 @@ consumer should read it.
     Authorizing reads by session would log a member identifier on every access, and a period
     of such logs reconstructs the membership the tier exists to withhold.
 
-> **Leading-component bump.** Five new spec families reach `SpecSlug` and the generated
-> module tree, and `DTG_TYPES`-style exhaustive matches over the slug enum gain variants.
-> Consumers matching with a wildcard arm are unaffected.
+> **Patch, not a leading-component bump.** New spec families add modules and
+> types; the generated tree carries no enum over slugs or families for a consumer
+> to match exhaustively, so nothing existing stops compiling. A leading-component
+> bump here would be a workspace event — seven crates pin `trust-tasks-rs = "0.17"`
+> and would each need moving and releasing — for a change that breaks nobody.
 
 - **device**: Four `Capability` values the registry was missing. `sign-trust-task`
   and `credential-write` were already served by the reference implementation

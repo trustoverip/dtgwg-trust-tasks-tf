@@ -11,7 +11,7 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
-## 0.17.0
+## 0.16.7
 
 ### Added
 
@@ -31,8 +31,7 @@ component.
   implementation, never in the schema) and `memoryRead` / `memoryWrite` (new,
   splitting a gate that was previously binary). Added to `device/_shared/0.2`
   as camelCase and to `device/_shared/0.1` as kebab-case, each in its own
-  version's convention. The generated union widens; consumers that switch
-  exhaustively over it need a case each.
+  version's convention. Additive: new modules and types, nothing existing removed or reshaped.
 
 ## 0.16.5 — 2026-09-01
 
