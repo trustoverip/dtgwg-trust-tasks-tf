@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/get/0.1",
+  "title": "Rooms Records Get \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "key",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier."
+    },
+    "key": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "The record to read."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `read` action at this room's scope. A read presents exactly as a write does, and on a `private` room requires no host session at all \u2014 authorizing reads by session would hand the host a member identifier on every access, and a week of access logs would reconstruct the membership the tier exists to withhold."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records Get \u2014 response payload",
+      "description": "Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "version"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sealed": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/SealedRecord",
+          "description": "Present on an `attributed` or `private` room."
+        },
+        "cleartext": {
+          "type": "object",
+          "description": "Present on an `open` room.",
+          "additionalProperties": true
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

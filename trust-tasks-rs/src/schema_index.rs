@@ -668,6 +668,26 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/registry/record/update/0.1" => <crate::specs::registry::record::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "registry")]
         "https://trusttasks.org/spec/registry/record/update/0.1#response" => <crate::specs::registry::record::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/create/0.1" => <crate::specs::rooms::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/create/0.1#response" => <crate::specs::rooms::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/mint/0.1" => <crate::specs::rooms::epoch::mint::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/mint/0.1#response" => <crate::specs::rooms::epoch::mint::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/get/0.1" => <crate::specs::rooms::records::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/get/0.1#response" => <crate::specs::rooms::records::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/list/0.1" => <crate::specs::rooms::records::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/list/0.1#response" => <crate::specs::rooms::records::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/put/0.1" => <crate::specs::rooms::records::put::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/put/0.1#response" => <crate::specs::rooms::records::put::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => <crate::specs::sync::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
@@ -2253,6 +2273,26 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "registry")]
         "https://trusttasks.org/spec/registry/record/update/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::registry::record::update::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/create/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/mint/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::epoch::mint::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/put/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::put::v0_1::Payload,
         >()),
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => Some(crate::SpecPolicy::of::<

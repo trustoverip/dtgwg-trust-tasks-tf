@@ -31,6 +31,62 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.5...trust-tasks-rs-v0.17.6)
+
+
+### Added
+
+- **rooms**: A new top-level `rooms/*` family — `create`, `records/{put,get,list}`,
+  `epoch/mint`, and a `_shared` schema carrying the visibility ladder, the authority
+  presentation and the sealed-record envelope.
+
+  A **data room** is a shared space whose access is governed by credentials the room itself
+  issues. The property distinguishing this family from every other stored-data task here is
+  that **a host never consults a member list of its own** — which is why the family is
+  top-level rather than under a service prefix. Any host that speaks it can host any room,
+  and a room moves between hosts without a credential being reissued.
+
+  Three rules are wire commitments from this first version, because retrofitting any of them
+  would break every verifier:
+
+  - **The whole authority chain is presented, leaf first, capped at 8.** A host must never
+    dereference a link's `parent`: resolving over the network would make verification depend
+    on availability, turn an identifier into a request the host can be induced to make
+    against an address the *producer* chooses, and signal credential use to whoever hosts it.
+  - **A `private` room presentation must carry `subjectBinding`** — proof that the membership
+    credential and the authority chain's leaf describe the same subject. Without it two
+    parties pool credentials and verify as one party holding both.
+  - **Reads present exactly as writes do**, and a `private` room requires no host session.
+    Authorizing reads by session would log a member identifier on every access, and a period
+    of such logs reconstructs the membership the tier exists to withhold.
+
+> **Patch, not a leading-component bump.** New spec families add modules and
+> types; the generated tree carries no enum over slugs or families for a consumer
+> to match exhaustively, so nothing existing stops compiling. A leading-component
+> bump here would be a workspace event — seven crates pin `trust-tasks-rs = "0.17"`
+> and would each need moving and releasing — for a change that breaks nobody.
+
+- **device**: Four `Capability` values the registry was missing. `sign-trust-task`
+  and `credential-write` were already served by the reference implementation
+  without ever reaching the schema; `memory-read` and `memory-write` are new,
+  and split a gate that was previously binary — before them, any consumer that
+  could reach a trust context could also rewrite every memory in it, so there
+  was no way to grant an agent read-only access to a person's memory. Added to
+  both published shapes in each one's own convention: `device/_shared/0.1`
+  (kebab-case) and `device/_shared/0.2` (camelCase).
+
+> **Additive, and still a call-site break.** The generated `Capability` is a
+> plain Rust enum, so four new variants make every exhaustive `match` on it
+> non-exhaustive. Consumers that match with a wildcard arm are unaffected;
+> consumers that enumerate need one edit each. Patch bump per this crate's
+> versioning rule (the wire format is unchanged and older documents still
+> parse), but worth reading before upgrading.
+>
+> The schema description now also states the rule consumers should already have
+> been following: an unrecognised capability value is **ignored**, never treated
+> as conferring anything, and never a reason to reject the whole binding.
+
+
 ## [0.17.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.4...trust-tasks-rs-v0.17.5)
 
 

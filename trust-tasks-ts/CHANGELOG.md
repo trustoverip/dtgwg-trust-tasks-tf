@@ -11,6 +11,17 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.7
+
+### Added
+
+- **rooms**: the new top-level `rooms/*` family — `create`, `records/{put,get,list}`,
+  `epoch/mint` and its `_shared` types. Data rooms are governed by credentials the room
+  issues rather than by host state, so a host verifies presentations and keeps no member
+  list. The authority chain is presented whole (leaf first, max 8 links, never
+  dereferenced), a `private` room presentation must carry a same-subject binding, and reads
+  present exactly as writes do.
+
 ## 0.16.6
 
 ### Added
@@ -20,8 +31,7 @@ component.
   implementation, never in the schema) and `memoryRead` / `memoryWrite` (new,
   splitting a gate that was previously binary). Added to `device/_shared/0.2`
   as camelCase and to `device/_shared/0.1` as kebab-case, each in its own
-  version's convention. The generated union widens; consumers that switch
-  exhaustively over it need a case each.
+  version's convention. Additive: new modules and types, nothing existing removed or reshaped.
 
 ## 0.16.5 — 2026-09-01
 

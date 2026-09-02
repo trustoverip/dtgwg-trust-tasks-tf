@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/create/0.1",
+  "title": "Rooms Create \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "visibility",
+    "ownerDid"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host."
+    },
+    "visibility": {
+      "$ref": "../../_shared/0.1/room.schema.json#/$defs/Visibility"
+    },
+    "ownerDid": {
+      "type": "string",
+      "description": "The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` \u2014 a room has someone answerable for it."
+    },
+    "retentionDays": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How long the host will hold the room after its epoch lapses without renewal, before storage may be reclaimed. Stated at creation rather than discovered: reclamation that surprises a member is a failure of the design, not of the member."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Create \u2014 response payload",
+      "description": "Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "epoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Always 1 for a new room."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
