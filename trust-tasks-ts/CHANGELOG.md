@@ -22,6 +22,18 @@ component.
   dereferenced), a `private` room presentation must carry a same-subject binding, and reads
   present exactly as writes do.
 
+## 0.16.6
+
+### Added
+
+- **device**: Four `Capability` values the registry was missing —
+  `signTrustTask` and `credentialWrite` (already served by the reference
+  implementation, never in the schema) and `memoryRead` / `memoryWrite` (new,
+  splitting a gate that was previously binary). Added to `device/_shared/0.2`
+  as camelCase and to `device/_shared/0.1` as kebab-case, each in its own
+  version's convention. The generated union widens; consumers that switch
+  exhaustively over it need a case each.
+
 ## 0.16.5 — 2026-09-01
 
 

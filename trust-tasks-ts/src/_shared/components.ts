@@ -31,7 +31,7 @@ export type AuditAction =
   | "adminAdd"
   | "adminStrip";
 /**
- * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each.
+ * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
 export type Capability_DeviceV0_1 =
   | "vault-read"
@@ -41,9 +41,13 @@ export type Capability_DeviceV0_1 =
   | "policy-admin"
   | "device-admin"
   | "sign"
-  | "key-mint";
+  | "key-mint"
+  | "sign-trust-task"
+  | "credential-write"
+  | "memory-read"
+  | "memory-write";
 /**
- * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each.
+ * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
 export type Capability_DeviceV0_2 =
   | "vaultRead"
@@ -53,7 +57,11 @@ export type Capability_DeviceV0_2 =
   | "policyAdmin"
   | "deviceAdmin"
   | "sign"
-  | "keyMint";
+  | "keyMint"
+  | "signTrustTask"
+  | "credentialWrite"
+  | "memoryRead"
+  | "memoryWrite";
 /**
  * Discriminator: is this consumer a user-driven Companion or a headless Service?
  */
