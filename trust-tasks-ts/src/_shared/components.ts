@@ -45,7 +45,9 @@ export type Capability_DeviceV0_1 =
   | "sign-trust-task"
   | "credential-write"
   | "memory-read"
-  | "memory-write";
+  | "memory-write"
+  | "room-present"
+  | "room-open";
 /**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
@@ -61,7 +63,9 @@ export type Capability_DeviceV0_2 =
   | "signTrustTask"
   | "credentialWrite"
   | "memoryRead"
-  | "memoryWrite";
+  | "memoryWrite"
+  | "roomPresent"
+  | "roomOpen";
 /**
  * Discriminator: is this consumer a user-driven Companion or a headless Service?
  */
