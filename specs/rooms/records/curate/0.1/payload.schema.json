@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/curate/0.1",
+  "title": "Rooms Records Curate — payload",
+  "description": "A member curates a record: demotes it, retracts it, restores it from demotion, or pins it. Distinct from `rooms/records/put`, which replaces content — curation changes a record's standing in the room without a member having to rewrite it, and `curate` is a separate authority action so a community can grant one without the other.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "key",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own."
+    },
+    "key": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "The record to curate."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "deprecated", "retracted"],
+      "description": "The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change."
+    },
+    "pinned": {
+      "type": "boolean",
+      "description": "Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later."
+    },
+    "expectedVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "anyOf": [
+    { "required": ["status"] },
+    { "required": ["pinned"] }
+  ],
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records Curate — response payload",
+      "description": "Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "version", "status"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The record curated."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "deprecated", "retracted"],
+          "description": "The record's standing after the operation."
+        },
+        "pinned": {
+          "type": "boolean",
+          "description": "Whether the record is pinned after the operation."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
