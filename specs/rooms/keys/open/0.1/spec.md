@@ -125,3 +125,10 @@ a second copy of the room outside the room.
 The caller acts for the principal whose keys the oracle holds, within whatever authorization
 the principal granted it. That grant is what an implementation checks; this specification
 defines the shape of the request, not the policy.
+
+Where that grant is expressed as a device capability, the registered value is **`roomOpen`**
+(`room-open` in the `0.1` casing) — see `Capability` in
+[`device/_shared`](../../../../device/_shared/0.2/device-binding.schema.json). It is separate
+from `roomPresent` on purpose: producing a presentation and decrypting a record are different
+powers, and an agent that indexes a room should not thereby be able to read it. Both are
+separate from `sign`, which would grant strictly more than either task needs.

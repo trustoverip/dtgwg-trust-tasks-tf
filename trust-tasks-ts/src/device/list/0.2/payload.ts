@@ -245,7 +245,9 @@ export const PAYLOAD_SCHEMA = {
         "signTrustTask",
         "credentialWrite",
         "memoryRead",
-        "memoryWrite"
+        "memoryWrite",
+        "roomPresent",
+        "roomOpen"
       ],
       "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },
@@ -581,7 +583,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "signTrustTask",
         "credentialWrite",
         "memoryRead",
-        "memoryWrite"
+        "memoryWrite",
+        "roomPresent",
+        "roomOpen"
       ],
       "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },
