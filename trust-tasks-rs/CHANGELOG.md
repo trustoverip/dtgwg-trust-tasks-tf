@@ -31,6 +31,144 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.7...trust-tasks-rs-v0.17.8) — 2026-09-04
+
+
+### Added
+
+- **rooms/keys**: How a group reaches a key-holding agent ([#355](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/355))
+
+rooms/keys/open assumes something nothing specified: that a key-holding
+  agent HAS the room's MLS group. An oracle that opens records cannot open
+  anything until a group arrives, and nothing said how one does. Three
+  tasks, because there are three distinct steps with three distinct
+  authorization stories.
+
+  key-package - the joining side mints. Per room, never reused across
+  rooms: a KeyPackage is a stable public identifier, so the same one
+  offered to two rooms tells anyone who sees both that one party is in
+  both, which is the linkage a private room exists to deny arriving
+  through the door rather than the wall. The mint is not free either - the
+  recipient retains the private half against a Welcome that may never
+  come - so a key-holder should require an invitation and bound how long
+  it keeps an unused one.
+
+  welcome - the owner delivers, and the INVITATION is what makes it
+  acceptable. A Welcome carries a group's secrets; anyone able to reach a
+  key-holder could otherwise push group state into it. Joining a room is
+  already a two-party act and the VIC is already the consent artefact, so
+  this is where that consent stops being ceremonial. A recipient with no
+  matching unconsumed invitation MUST refuse, and MUST consume it on
+  success. Joining twice is refused rather than merged: two group states
+  for one room is a condition nothing downstream can resolve, and choosing
+  wrong returns 'did not open' for a record the member can plainly see.
+
+  commit - the half that is easy to forget and impossible to omit. A
+  Welcome gets an agent in once; commits keep it there, and an agent that
+  misses one is stuck at its last epoch and can open nothing sealed after
+  it - surfacing as 'this record does not open', which reads like
+  corruption rather than a missed message. Strictly in order: a replay is
+  success with the epoch unchanged (a retry that failed would make every
+  unreliable transport a liveness problem), a gap is refused with the
+  recipient's actual epoch so the sender resumes rather than guesses. The
+  epoch is in the payload rather than parsed out of the commit so a
+  recipient can tell replay from gap before doing cryptographic work on a
+  message it may not want.
+
+  Two things stated rather than left to be discovered.
+
+  Fan-out is O(n). MLS's logarithmic property is the SIZE of a commit, not
+  the number of recipients. On open and attributed a host may carry them;
+  on private it must not, and the owner fans out directly - so on that tier
+  membership changes need the owner online. That is a real cost of the
+  private tier and it belongs in the specification.
+
+  Routing a Welcome discloses membership. Whoever carries it learns that
+  this key-holder is joining this room, which is exactly what a private
+  room withholds - so on that tier the host is off the path entirely
+  rather than trusted not to look. Same rule, same reason, as the
+  invitation itself.
+
+  Who may commit is decided inside the group: a recipient verifies against
+  the group state it already holds, never from an access-control list of
+  its own. And none of this is authorization - holding a group's keys lets
+  an agent decrypt; what it may DO comes from the room's authority
+  credentials, checked separately.
+
+- **rooms/records/curate**: A member changes a record's standing ([#354](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/354))
+
+A data room could be written to and read from, and a member who had put
+  something in it by mistake had no answer. The rooms family had no way to
+  demote, retract, restore or pin a record.
+
+  Separate from rooms/records/put for two reasons, and the second is the
+  load-bearing one.
+
+  A record's standing is not its content. On an attributed or private room
+  a host cannot read what it stores, so 'replace this record with the same
+  content marked deprecated' would make the member re-seal and re-upload a
+  body the host already holds, for a change that says nothing about the
+  body. Curation carries no content in either direction.
+
+  And curate is its own authority action, deliberately not implied by
+  write: deciding what a room's shared knowledge is worth is a different
+  grant from the ability to add to it. A community can hand an agent write
+  - let it record what it learns - without handing it the standing to
+  demote what a person wrote.
+
+  Retraction is a tombstone, not an erasure. A host MUST drop the body and
+  MUST keep the key, version and epoch: dropping the body is what the
+  member asked for, and keeping the rest is what makes incremental sync
+  converge - a caller that never saw the tombstone resurrects the record on
+  its next full rebuild, which is why list returns them. active is refused
+  for a retracted record rather than reporting a success that restored
+  nothing.
+
+  Permanent removal is out of scope on purpose. It breaks convergence for
+  every caller that has not synchronised past the tombstone, so it belongs
+  to a host's retention lifecycle and not to a member's curation verb.
+
+  Curation assigns a new version. A demotion others are expected to
+  converge on is a change like any other, and one that left the version
+  alone would be invisible to every sinceVersion watermark in the room.
+
+  pinned is orthogonal to status - 'what matters here' and 'is this still
+  current' are different questions, and a room may well want its superseded
+  canonical decision kept in view.
+
+  The Security section says plainly that a retraction is not a deletion and
+  that a surface presenting it as erasure is making a promise the protocol
+  does not keep; and that curate is a censorship surface, which is exactly
+  why it should not arrive as a side effect of being able to write.
+
+
+
+### Specifications
+
+- **device**: Register roomPresent and roomOpen capabilities ([#351](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/351))
+
+The rooms/keys oracle pair ([#349](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/349)) says an implementation checks whatever
+  authorization the principal granted, and leaves the shape of that grant
+  to the implementation. Where it is a device capability, there should be a
+  registered value rather than a private one per implementation - that is
+  what the shared Capability enum is for, and both values are additive, so
+  a consumer that does not recognise one ignores it.
+
+  Two values, not one. Producing a presentation and decrypting a record are
+  different powers: an agent that indexes a room should not thereby be able
+  to read it.
+
+  Both are separate from sign. An agent that may ask for a scoped,
+  audience-bound presentation is not thereby an agent that may sign
+  anything at all with its principal's key - and gating either task on the
+  generic signing oracle would grant strictly more than it needs, which is
+  the opposite of what an oracle is for.
+
+  Each spec's Consent/purpose section now names its value, since that is
+  where an implementer reading the task will look.
+
+
+
 ## [0.17.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.6...trust-tasks-rs-v0.17.7)
 
 
