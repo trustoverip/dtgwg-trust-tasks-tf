@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/key-package/0.1",
+  "title": "Rooms Keys Key-Package — payload",
+  "description": "An invited party asks the agent that will hold its room keys to mint an MLS KeyPackage, so the room's owner can add it to the group. The private half stays with the agent; only the KeyPackage travels.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny."
+    },
+    "invitation": {
+      "type": "string",
+      "description": "The invitation credential (VIC) the room issued to this party, serialized per the governing profile. Where an implementation requires one — and one that mints group state on unauthenticated request should — this is what authorizes the mint."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Key-Package — response payload",
+      "description": "Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keyPackage"],
+      "properties": {
+        "keyPackage": {
+          "type": "string",
+          "description": "The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the KeyPackage stops being offered. A KeyPackage is single-use and an unused one is retained key material, so an implementation SHOULD bound how long it holds the private half."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
