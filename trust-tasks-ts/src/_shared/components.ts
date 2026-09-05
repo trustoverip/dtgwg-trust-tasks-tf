@@ -653,9 +653,11 @@ export interface Attribute {
   type: ClaimType;
   valueType: ValueType;
   /**
-   * The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer. Absent when the caller asked for a metadata-only view, and absent when a credential-backed value could not be re-derived — a consumer MUST NOT conflate the two and MUST read `stale` to tell them apart.
+   * The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.
+   *
+   * OPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.
    */
-  value: {
+  value?: {
     [k: string]: unknown | undefined;
   };
   /**
