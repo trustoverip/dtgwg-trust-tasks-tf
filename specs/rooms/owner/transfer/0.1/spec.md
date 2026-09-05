@@ -44,7 +44,7 @@ errorCodes:
     meaning: "The presentation does not confer `admin` at this room's scope, or its chain does not reach the room."
     retryable: false
   - code: rooms/owner/transfer:notAMember
-    meaning: "The incoming owner is not a member of the room's group, and so could not renew what they are being given."
+    meaning: "The host could independently establish that the incoming owner is not a member, and so could not renew what they are being given. A host with no basis to judge does not raise this."
     retryable: false
 related:
   - rooms/owner/claim
@@ -80,15 +80,24 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ## Behaviour
 
-### The incoming owner must be a member
+### The incoming owner must be a member — and the host cannot check it
 
-A host **MUST** refuse a transfer whose `newOwnerDid` is not in the room's group, and answer
-`notAMember`.
+A transferring owner **MUST NOT** name a `newOwnerDid` that is not a member of the room's
+group. A room's owner is its sole committer, so an owner who cannot commit cannot renew the
+room; handing someone a room they cannot renew looks like a successful transfer and produces
+a room that lapses on schedule with nobody able to save it — a year later, and with no event
+to point at.
 
-The reason is the same one that constrains a claim: a room's owner is its sole committer, so
-an owner who cannot commit cannot renew the room. Handing someone a room they cannot renew
-looks like a successful transfer and produces a room that lapses on schedule with nobody able
-to save it — a year later, and with no event to point at.
+**The obligation is the owner's, not the host's, because only the owner can discharge it.**
+A host holds no roster and no group state: the incoming owner is not the party making this
+request, presents nothing, and may be someone the host has never seen. A host that *can*
+independently establish membership — because it holds a membership credential for that party
+from some other exchange — **MAY** refuse with `notAMember`; one that cannot **MUST NOT**
+invent a check it has no basis for, and **MUST NOT** treat its own ignorance as evidence.
+
+This is the same boundary every other room task draws, arriving from an unfamiliar
+direction: the host verifies what is presented to it, and a claim about a third party is not
+that. The outgoing owner *can* see the group, which is why the requirement sits with them.
 
 ### Every credential stays valid
 

@@ -47,7 +47,10 @@ errorCodes:
     meaning: "The room has not been dormant long enough to be claimed. The owner is renewing it."
     retryable: false
   - code: rooms/owner/claim:notAMember
-    meaning: "The claimant is not a member of the room's group, and so could not renew what they are claiming."
+    meaning: "The claimant presented no valid membership credential for this room, and so could not renew what they are claiming."
+    retryable: false
+  - code: rooms/owner/claim:notAuthorized
+    meaning: "The presentation does not verify against this room, or its chain does not reach it."
     retryable: false
 related:
   - rooms/owner/transfer
@@ -97,10 +100,18 @@ could become a takeover:
    epoch expired has also passed and the owner has had their notice. An epoch expiring is
    often somebody on holiday; a room still unrenewed after the grace window is a room whose
    owner has stopped.
-3. **The claimant is a member of the group.** A successor who is not in the MLS group cannot
-   commit, and so inherits a room they cannot renew — the one thing ownership exists to do.
-   Answering `notAMember` is kinder than handing someone a room that will lapse again in a
-   year with nobody able to save it.
+3. **The claimant holds a membership credential for the room.** A successor who is not a
+   member cannot commit, and so inherits a room they cannot renew — the one thing ownership
+   exists to do. Answering `notAMember` is kinder than handing someone a room that will
+   lapse again in a year with nobody able to save it.
+
+   **A host cannot see the MLS group**, and this is worth being exact about rather than
+   implying otherwise. It holds no roster and no group state; what it can check is the VMC
+   the room itself issued, which is the room's own statement that this party is a member.
+   That is a proxy, and a good one — it is the same membership every other room task
+   presents and the same one the room's authority chains are rooted beside — but a party
+   removed from the MLS group while still holding an unexpired VMC would pass this check.
+   Closing that gap is the room's job, by revoking the credential, not the host's.
 
 ### Renewing cancels a pending claim
 
@@ -147,7 +158,8 @@ open-ended.
 
 ### Data carried
 
-A room identifier, a nomination credential, and a reason. No content, on any tier.
+A room identifier, a nomination credential, the claimant's own presentation, and a reason.
+No content, on any tier.
 
 ### Correlation
 
