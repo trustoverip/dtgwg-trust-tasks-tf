@@ -11,6 +11,77 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.11 — 2026-09-05
+
+
+### Specifications
+
+- **persona**: Attribute.value is OPTIONAL, so the default listing is representable (#367)
+
+The schema required `value` while its own description said the member is
+  absent in two situations. That contradiction made the DEFAULT path of
+  persona/attribute/list unrepresentable: `includeValues` defaults to false
+  precisely so a picker can render the pool without decrypting every fact in it,
+  and a maintainer taking that path had to choose between disclosing every value
+  in bulk and emitting a non-conformant response.
+
+  The same contradiction blocked the other documented case — a credential-backed
+  value that could not be re-derived, which is returned carrying `stale` so the
+  holder learns a claim has stopped being presentable rather than seeing a pool
+  that looks smaller than it is.
+
+  Found by a conformance witness in verifiable-trust-infrastructure while wiring
+  the family: the witness for the default listing would not round-trip. Which is
+  what witnesses are for — the defect was in the schema, not the implementation,
+  and nothing else would have caught it before the first non-disclosing read
+  went out.
+
+  Both bindings regenerated; conformance checks 403 specs against 403 TypeScript
+  and 398 Rust modules.
+
+- **rooms**: The Consent/purpose section six specs shipped without (#365)
+
+The Security & Privacy lint landed 2026-08-26 (#273). These six specs landed
+  between 3 and 5 September, each carrying `Data carried`, `Correlation` and
+  `Retention` but not `Consent/purpose`. That is not the debt the allowlist is
+  for — its own message says it is "only for content predating this lint" — so
+  the fix is to write the sections, not to list the specs.
+
+  Each says what the disclosure is for, what records the basis, and where the
+  purpose stops. What the six have in common is that the interesting part is the
+  limit:
+
+  - `rooms/records/curate` — the `reason` is addressed to the room, not to the
+    record's author, who is neither asked nor notified; and no consent withdrawn
+    here reaches an export taken before the retraction.
+  - `rooms/owner/claim` — the consent authorizing a claim was given in advance by
+    the previous owner, and a nomination with no expiry cannot be withdrawn by an
+    owner who has stopped, which is definitionally what a dormant owner has done.
+    The room's other members are not party to it.
+  - `rooms/owner/transfer` — the outgoing owner's consent is contemporaneous; the
+    incoming owner's is not recorded at all, and the specification defines no
+    member through which they accept or decline a role that carries quota, abuse
+    and lifecycle obligations.
+  - `rooms/keys/commit` — there is no per-commit decision to make. A member who
+    does not apply one has declined nothing; consent operates at the boundaries
+    of membership, not on each epoch inside it.
+  - `rooms/keys/key-package` — minting is not joining, the expiry is a purpose
+    bound rather than housekeeping, and reuse across rooms is a disclosure the
+    party never made and cannot detect.
+  - `rooms/keys/welcome` — consent reaches the member's own key-holding agent and
+    no further, which is why a `private` room's Welcome is not routed through the
+    host: accepting an invitation is not consenting to the host learning you are
+    in the room.
+
+  Prose only. No front matter, schema, or generated code moves.
+
+  Also turns on TT_STRICT_SECURITY_PRIVACY in the CI build. With these six
+  written the non-allowlisted count is zero, so strict mode passes today and
+  fires only on a spec added without the section — the allowlist is closed to new
+  content by definition. It was six specs in three days that made the case: the
+  warning was invisible in a green build, and nothing else would have caught
+  them. Negative-tested by removing one section and confirming the build fails.
+
 ## 0.16.10 — 2026-09-05
 
 
