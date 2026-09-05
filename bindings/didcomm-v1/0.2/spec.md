@@ -24,7 +24,7 @@ A producer places the document in an `~attach` decorator on a message of this bi
 
 `0.1` remains published. A `0.2` *consumer* accepts both carriages; a `0.2` *producer* emits only this one. See [§7.1](#71-changes-from-01).
 
-Targets **framework `0.4`**.
+Targets **framework `0.5`**.
 
 ## 1. Binding URI
 
@@ -46,6 +46,8 @@ The message `@type` is a [RFC 0020](https://github.com/hyperledger/aries-rfcs/tr
 | Message type name | `task` |
 
 Two version numbers appear, and they answer to different audiences. The **document URI** carries the binding's own `MAJOR.MINOR` because [SPEC §9.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#93-binding-namespace) roots a binding's internal vocabulary under its versioned URI. The **protocol version** is the one Aries negotiates on, through [RFC 0031 discover-features](https://github.com/hyperledger/aries-rfcs/tree/main/features/0031-discover-features). The value above is minted at `0.2` and **pinned**: a later `MINOR` of this binding keeps it, exactly as `binding/didcomm/0.2` keeps `binding/didcomm/0.1/envelope`, so that two binding minors remain mutually intelligible on the wire.
+
+**The pin is normative, and it is the whole URI that is pinned — document URI included.** A later `MINOR` of this binding **MUST NOT** re-mint the `@type` at its own version: the value above travels forward unchanged. This is the only thing that keeps binding minors mutually intelligible, because [RFC 0020](https://github.com/hyperledger/aries-rfcs/tree/main/concepts/0020-message-types) routing keys on the whole document-URI/protocol-name/protocol-version triple, and a binding version sitting in the document URI makes every bump a distinct protocol identity: an agent registered for the `0.2` spelling receives nothing sent under a `0.3` spelling, and — DIDComm being one-way, with no unsupported-type signal to receive — the producer never learns. Changing the spelling at all costs reach that no version number recovers — the `0.1` → `0.2` carriage change was such a change, and [§7.1](#71-changes-from-01) records both the cost and why it was still a `MINOR` — so reach across one belongs to capability negotiation rather than to the version number ([§7.2](#72-reach-across-binding-versions)).
 
 Unlike `basic-message`, this type has **one** form. `0.1` had to treat `did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/basicmessage/1.0/message` and `https://didcomm.org/basicmessage/1.0/message` as equivalent, because both name the same Aries protocol and Credo emits the latter by default — a rule that silently dropped conforming peers wherever an implementation compared `@type` by string equality. Minting our own type removes that hazard rather than restating it: there is no second spelling to normalise.
 
@@ -107,6 +109,8 @@ Recorded from the Credo implementations (Credo 0.6.3 — the framework current A
 - **Register a message class and a handler.** A dedicated type is the ordinary Aries extension path: declare the message with its `@type`, register a handler, and dispatch through the message sender. This replaces `0.1`'s note that a producer had to reach past `basicMessages.sendMessage(connectionId, content)` because the chat API takes a display string and no attachment.
 - **The transport's message store is not the document's store.** `0.1` recorded that Credo's persisted basic-message record keeps `content` only, so the attachment was reachable solely on the in-flight event. A dedicated type removes the specific trap, but the rule stands on its own: a *consumer* **MUST** obtain the document from the received message, or persist the document itself, rather than relying on the transport's storage of it.
 - **Negotiate before sending.** Because an unaware peer drops an unknown type silently, a *producer* **SHOULD** establish that the peer speaks this binding — RFC 0031 discover-features, or the framework's own [§11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#11-discovery-and-capability-negotiation) discovery — rather than inferring it from a connection existing.
+- **Registering a handler advertises nothing.** In Credo, registering the message class and its handler makes an agent able to *receive* this binding's messages; it does not make the agent *discoverable* as speaking it. An agent that expects producers to find it by negotiation **MUST** register the [RFC 0031](https://github.com/hyperledger/aries-rfcs/tree/main/features/0031-discover-features) discover-features protocol explicitly, as a separate step. An agent that skips it answers nothing, and a producer following the bullet above then concludes — correctly, on the evidence available — that the peer does not speak this binding.
+- **Query by document-URI wildcard, not by exact `@type`.** Because the binding version sits in the document URI (§1), a discover-features query naming an exact protocol matches one binding version and no other. A producer asking whether a peer speaks this binding *at all* **SHOULD** query the document-URI wildcard `https://trusttasks.org/binding/didcomm-v1/*`, which is the only form that spans binding versions, and then send under a version the answer names.
 
 ### 2.3 Accepting `0.1` messages
 
@@ -136,6 +140,8 @@ Three outcomes follow, and a *consumer* **MUST** distinguish them:
 3. **Anoncrypt or plaintext.** No authenticated sender at all.
 
 Cases 2 and 3 are both unattributable and are treated the same by [§4](#4-error-mapping), but a *consumer* **SHOULD** distinguish them in logs: the first is a missing connection record on this side, the second is a message that was never authenticated. Collapsing them hides an operational fault behind what looks like a hostile message.
+
+**Where case 2 surfaces changed with this carriage, and the rules above are now the *consumer*'s to enforce.** Under `0.1`'s `basic-message` carriage, Credo rejected an envelope whose sender bound to no known DID inside its own `basic-message` module, before any application code ran. Under the dedicated type of [§2](#2-document-carriage) the same envelope is delivered to the registered application handler, **with no connection attached** (Credo 0.6.3). Nothing above changes, and this is arguably the better home for it — the three-way split is the *consumer*'s decision, not the transport's — but an implementer who assumes the transport still filters these will apply no mapping at all on precisely the messages that need one. A *consumer* **MUST** treat a message delivered with no connection as case 2 or case 3, dispose of it per [§4](#4-error-mapping), and **MUST NOT** fall back to the document's in-band `issuer` as an authenticated sender for want of a transport-derived one — [SPEC §4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity) precedence has no transport value to be preceded by here.
 
 Where the in-band member is absent, a *consumer* **MAY** treat the transport-derived value as if carried in-band — authcrypt provides authenticated identity end-to-end, so omitting `issuer`/`recipient` on a v1-only exchange is conformant per §4.8.1.
 
@@ -312,7 +318,7 @@ This binding follows the framework's `MAJOR.MINOR` versioning ([§5](https://git
 
 **The carriage moved from `basic-message` to a dedicated message type** ([§2](#2-document-carriage)), on the measurement recorded in [§2.1](#21-why-a-dedicated-message-type). The attachment is unchanged: same `~attach` decorator, same reserved `@id` `trust-task`, same `data.json`. `content` is gone with `basic-message`; an optional advisory `comment` replaces it.
 
-Also: the binding targets framework `0.4` rather than `0.3`, and `0.1`'s `@type`-equivalence rule survives only inside [§2.3](#23-accepting-01-messages), because this binding's own type has one spelling.
+Also: the binding targets framework `0.5` rather than `0.3`, and `0.1`'s `@type`-equivalence rule survives only inside [§2.3](#23-accepting-01-messages), because this binding's own type has one spelling.
 
 **On calling this a `MINOR`.** `0.1`'s §6 said a carriage change is breaking and requires a `MAJOR`, and in the general case it is right. Three things make `0.2` the honest number here rather than a convenience:
 
@@ -321,6 +327,10 @@ Also: the binding targets framework `0.4` rather than `0.3`, and `0.1`'s `@type`
 3. **[SPEC §5.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#52-compatibility-rules) permits it explicitly** while an artifact is `draft`: a breaking change **MAY** be released as a `MINOR` increment.
 
 What is **not** preserved, and should be stated plainly rather than implied: **forward compatibility**. A `0.1` consumer does not recognise a `0.2` producer's message and will drop it — silently, since an unknown `@type` is not an error condition it can report. Forward-minor compatibility is a `SHOULD` in §5.2, not a `MUST`, and it cannot be met across a carriage change by any versioning scheme. Deployments migrate receivers before senders ([§5.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#54-migrating-between-versions)), and negotiate capability before sending ([§2.2](#22-implementation-notes-aries-frameworks)).
+
+### 7.2 Reach across binding versions
+
+Reach across a change of message `@type` is not a property of the version number and **MUST NOT** be inferred from one. §1 pins the `@type` across this binding's `MINOR` revisions precisely so that no ordinary revision costs reach; where a future version does change it — a `MAJOR`, or another carriage change — no versioning scheme reaches across that, for the reason §7.1 already gives for `0.1`: the peer drops what it does not recognise, silently, and the producer has no signal to read. A *producer* therefore establishes what a peer speaks before sending, through capability negotiation — [RFC 0031](https://github.com/hyperledger/aries-rfcs/tree/main/features/0031-discover-features) discover-features queried by document-URI wildcard ([§2.2](#22-implementation-notes-aries-frameworks)), or the framework's own [§11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#11-discovery-and-capability-negotiation) discovery. [§2.3](#23-accepting-01-messages) is the same obligation discharged from the other side: receivers migrate first and keep accepting the older spelling for as long as producers may still emit it.
 
 ## 8. References
 
@@ -332,4 +342,4 @@ What is **not** preserved, and should be stated plainly rather than implied: **f
 - [Aries RFC 0095: Basic Message](https://github.com/hyperledger/aries-rfcs/tree/main/features/0095-basic-message) — the `0.1` carriage, still accepted per [§2.3](#23-accepting-01-messages)
 - [Trust Tasks framework specification](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md), §4.8.1, §4.9, §4.9.2, §5.2, §5.4, §7.2, §8, §9, §11
 - [`bindings/didcomm-v1/0.1`](../0.1/spec.md) — the superseded carriage
-- [`trust-tasks-didcomm-v1`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm-v1) — the reference implementation, which implements the `0.1` carriage and needs updating for this version
+- [`trust-tasks-didcomm-v1`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm-v1) — the reference implementation of this carriage; it accepts `0.1`'s `basic-message` carriage (§2.3) behind its `legacy-basic-message` feature
