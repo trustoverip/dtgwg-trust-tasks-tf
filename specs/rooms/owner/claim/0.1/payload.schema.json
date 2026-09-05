@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/claim/0.1",
+  "title": "Rooms Owner Claim — payload",
+  "description": "A nominated successor claims ownership of a room whose owner has stopped renewing it. A claim is an act, never an automatic promotion: an ownership change should be something somebody caused, not something that happened.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "nomination"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room being claimed."
+    },
+    "nomination": {
+      "type": "string",
+      "description": "The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. A claim is a takeover; it should say what prompted it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Claim — response payload",
+      "description": "Success response to rooms/owner/claim. Type https://trusttasks.org/spec/rooms/owner/claim/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "ownerDid"],
+      "properties": {
+        "roomId": { "type": "string" },
+        "ownerDid": {
+          "type": "string",
+          "description": "The owner after the claim — the claimant."
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
