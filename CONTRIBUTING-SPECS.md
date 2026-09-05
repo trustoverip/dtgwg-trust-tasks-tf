@@ -65,7 +65,7 @@ The folder structure mirrors the canonical *Type URI* (per [SPEC.md §6.1](SPEC.
 
 `trust-tasks-codegen` emits a `rejects_invalid_examples` test per spec from this file. That is the only thing in the toolchain that tests your schema's **negative** space: the `## Examples` in your prose prove valid documents validate, and nothing else proves invalid ones do not. A missing `additionalProperties: false`, an `enum` that should be a `pattern`, a `required` you forgot — all of them pass every other check. An absent file is not a failure; it is just an untested schema.
 
-Slugs may be single-segment (`kyc-handoff`) or hierarchical (`acl/grant`, `members/promote-to-admin`). In either case, the on-disk path matches the slug verbatim: a slug of `acl/grant` means `specs/acl/grant/<version>/`. Use hierarchical slugs to group related specifications under a namespace and keep the top of the `specs/` tree readable.
+Slugs may be single-segment (`trust-task-discovery`) or hierarchical (`acl/grant`, `acl/change-role`). In either case, the on-disk path matches the slug verbatim: a slug of `acl/grant` means `specs/acl/grant/<version>/`. Use hierarchical slugs to group related specifications under a namespace and keep the top of the `specs/` tree readable.
 
 Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/acl/grant/1.1/`, …). Each version is independently editable; you never overwrite a published version.
 

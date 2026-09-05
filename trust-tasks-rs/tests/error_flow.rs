@@ -17,20 +17,21 @@ use trust_tasks_rs::{
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-struct KycHandoff {
+#[serde(rename_all = "camelCase")]
+struct AclChangeRole {
     subject: String,
-    result: String,
-    level: String,
+    from_role: String,
+    to_role: String,
 }
 
-fn request(issuer: Option<&str>, recipient: Option<&str>) -> TrustTask<KycHandoff> {
+fn request(issuer: Option<&str>, recipient: Option<&str>) -> TrustTask<AclChangeRole> {
     let mut req = TrustTask::new(
         "req-1",
-        TypeUri::canonical("kyc-handoff", 1, 0).unwrap(),
-        KycHandoff {
-            subject: "did:key:z6Mk".into(),
-            result: "passed".into(),
-            level: "LOA2".into(),
+        TypeUri::canonical("acl/change-role", 0, 1).unwrap(),
+        AclChangeRole {
+            subject: "did:web:bob.example".into(),
+            from_role: "member".into(),
+            to_role: "moderator".into(),
         },
     );
     req.issuer = issuer.map(str::to_string);
@@ -340,7 +341,7 @@ fn error_response_names_the_document_it_reports_on() {
         .expect("inResponseTo must be populated");
     assert_eq!(
         about.type_uri,
-        "https://trusttasks.org/spec/kyc-handoff/1.0"
+        "https://trusttasks.org/spec/acl/change-role/0.1"
     );
     assert_eq!(about.id.as_deref(), Some("req-77"));
 }
@@ -364,7 +365,7 @@ fn identity_mismatch_withholds_the_originating_id() {
     let about = err.payload.in_response_to.as_ref().unwrap();
     assert_eq!(
         about.type_uri,
-        "https://trusttasks.org/spec/kyc-handoff/1.0"
+        "https://trusttasks.org/spec/acl/change-role/0.1"
     );
     assert_eq!(
         about.id, None,

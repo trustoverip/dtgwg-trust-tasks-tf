@@ -306,7 +306,7 @@ mod tests {
     #[test]
     fn star_matches_anything() {
         assert!(match_slug("*", "acl/grant"));
-        assert!(match_slug("*", "kyc-handoff"));
+        assert!(match_slug("*", "trust-task-discovery"));
         assert!(match_slug("*", "trust-task-discovery"));
     }
 
@@ -323,14 +323,17 @@ mod tests {
         // does not satisfy the pattern.
         assert!(!match_slug("acl/*", "acl"));
         assert!(!match_slug("acl/*", "aclx"));
-        assert!(!match_slug("acl/*", "kyc-handoff"));
+        assert!(!match_slug("acl/*", "trust-task-discovery"));
     }
 
     #[test]
     fn exact_pattern_matches_exact_slug_only() {
-        assert!(match_slug("kyc-handoff", "kyc-handoff"));
-        assert!(!match_slug("kyc-handoff", "kyc-handoff/v2"));
-        assert!(!match_slug("kyc-handoff", "kyc"));
+        assert!(match_slug("trust-task-discovery", "trust-task-discovery"));
+        assert!(!match_slug(
+            "trust-task-discovery",
+            "trust-task-discovery/v2"
+        ));
+        assert!(!match_slug("trust-task-discovery", "trust-task"));
     }
 
     #[test]
@@ -350,9 +353,9 @@ mod tests {
 
     #[test]
     fn or_semantics_across_patterns() {
-        let patterns = ["acl/*", "kyc-handoff"];
+        let patterns = ["acl/*", "trust-task-discovery"];
         assert!(query_matches(&patterns, "acl/grant"));
-        assert!(query_matches(&patterns, "kyc-handoff"));
+        assert!(query_matches(&patterns, "trust-task-discovery"));
         assert!(!query_matches(&patterns, "consent/give"));
     }
 

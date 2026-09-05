@@ -467,10 +467,11 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, PartialEq, Serialize, Deserialize)]
-    struct KycHandoff {
+    #[serde(rename_all = "camelCase")]
+    struct AclChangeRole {
         subject: String,
-        result: String,
-        level: String,
+        from_role: String,
+        to_role: String,
     }
 
     #[test]
@@ -478,25 +479,34 @@ mod tests {
         // SPEC.md §4.2 Example 1.
         let json = r#"{
             "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-            "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
-            "issuer": "did:web:verifier.example",
-            "recipient": "did:web:bank.example",
-            "issuedAt": "2026-04-12T09:31:00Z",
-            "expiresAt": "2027-04-12T09:31:00Z",
+            "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+            "issuer": "did:web:org.example",
+            "recipient": "did:web:maintainer.example",
+            "issuedAt": "2026-06-10T14:00:00Z",
+            "expiresAt": "2026-06-11T14:00:00Z",
             "payload": {
-                "subject": "did:key:z6Mk...",
-                "result": "passed",
-                "level": "LOA2"
+                "subject": "did:web:bob.example",
+                "fromRole": "member",
+                "toRole": "moderator"
+            },
+            "proof": {
+                "type": "DataIntegrityProof",
+                "cryptosuite": "eddsa-rdfc-2022",
+                "verificationMethod": "did:web:org.example#key-1",
+                "created": "2026-06-10T14:00:00Z",
+                "proofPurpose": "assertionMethod",
+                "proofValue": "z5xy..."
             }
         }"#;
 
-        let doc: TrustTask<KycHandoff> = serde_json::from_str(json).unwrap();
+        let doc: TrustTask<AclChangeRole> = serde_json::from_str(json).unwrap();
         assert_eq!(doc.id, "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2");
-        assert_eq!(doc.type_uri.slug(), "kyc-handoff");
-        assert_eq!(doc.issuer.as_deref(), Some("did:web:verifier.example"));
-        assert_eq!(doc.payload.level, "LOA2");
+        assert_eq!(doc.type_uri.slug(), "acl/change-role");
+        assert_eq!(doc.issuer.as_deref(), Some("did:web:org.example"));
+        assert_eq!(doc.payload.to_role, "moderator");
         assert!(doc.thread_id.is_none());
-        assert!(doc.proof.is_none());
+        // The specification declares `proof` REQUIRED, so the example carries one.
+        assert!(doc.proof.is_some());
         assert!(doc.extra.is_empty());
     }
 
@@ -560,11 +570,11 @@ mod tests {
     fn round_trips_minimum_document() {
         let doc = TrustTask::new(
             "abc",
-            TypeUri::canonical("kyc-handoff", 1, 0).unwrap(),
-            KycHandoff {
-                subject: "did:key:z6Mk".to_string(),
-                result: "passed".to_string(),
-                level: "LOA2".to_string(),
+            TypeUri::canonical("acl/change-role", 0, 1).unwrap(),
+            AclChangeRole {
+                subject: "did:web:bob.example".to_string(),
+                from_role: "member".to_string(),
+                to_role: "moderator".to_string(),
             },
         );
 
@@ -575,7 +585,7 @@ mod tests {
         assert!(json.get("@context").is_none());
         assert!(json.get("proof").is_none());
 
-        let back: TrustTask<KycHandoff> = serde_json::from_value(json).unwrap();
+        let back: TrustTask<AclChangeRole> = serde_json::from_value(json).unwrap();
         assert_eq!(back, doc);
     }
 
@@ -583,12 +593,12 @@ mod tests {
     fn preserves_unknown_top_level_members() {
         let json = r#"{
             "id": "x",
-            "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
-            "payload": {"subject":"s","result":"passed","level":"LOA1"},
+            "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+            "payload": {"subject":"s","fromRole":"member","toRole":"moderator"},
             "x-experimental": "kept"
         }"#;
 
-        let doc: TrustTask<KycHandoff> = serde_json::from_str(json).unwrap();
+        let doc: TrustTask<AclChangeRole> = serde_json::from_str(json).unwrap();
         assert_eq!(
             doc.extra.get("x-experimental").and_then(Value::as_str),
             Some("kept")
@@ -605,7 +615,7 @@ mod tests {
     fn detects_expiry() {
         let mut doc = TrustTask::new(
             "abc",
-            TypeUri::canonical("kyc-handoff", 1, 0).unwrap(),
+            TypeUri::canonical("acl/change-role", 0, 1).unwrap(),
             serde_json::json!({}),
         );
         let expiry: DateTime<Utc> = "2026-04-12T09:31:00Z".parse().unwrap();

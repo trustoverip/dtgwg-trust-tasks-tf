@@ -225,7 +225,7 @@ pub enum TrustTaskCode {
 
     /// A specification-extended code in the form `<slug>:<local>`.
     Extended {
-        /// The slug owning this extension, e.g. `"kyc-handoff"` or `"acl/grant"`.
+        /// The slug owning this extension, e.g. `"trust-task-control"` or `"acl/grant"`.
         slug: String,
         /// The local code identifier within the slug's namespace.
         local: String,
@@ -817,15 +817,15 @@ mod tests {
 
     #[test]
     fn parses_extension_code() {
-        let parsed: TrustTaskCode = "kyc-handoff:document_revoked".parse().unwrap();
+        let parsed: TrustTaskCode = "trust-task-control:already_cancelled".parse().unwrap();
         assert_eq!(
             parsed,
             TrustTaskCode::Extended {
-                slug: "kyc-handoff".to_string(),
-                local: "document_revoked".to_string(),
+                slug: "trust-task-control".to_string(),
+                local: "already_cancelled".to_string(),
             }
         );
-        assert_eq!(parsed.to_string(), "kyc-handoff:document_revoked");
+        assert_eq!(parsed.to_string(), "trust-task-control:already_cancelled");
     }
 
     #[test]
@@ -900,8 +900,8 @@ mod tests {
         // SPEC §8.5: unrecognized extension codes are treated as task_failed
         // by consumers that don't implement the originating spec.
         let payload = ErrorPayload::new(TrustTaskCode::Extended {
-            slug: "kyc-handoff".into(),
-            local: "document_revoked".into(),
+            slug: "trust-task-control".into(),
+            local: "alreadyCancelled".into(),
         });
         assert_eq!(payload.effective_code(), StandardCode::TaskFailed);
 

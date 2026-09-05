@@ -287,7 +287,7 @@ mod tests {
     ) -> TrustTask<serde_json::Value> {
         let mut doc = TrustTask::new(
             "req-1",
-            TypeUri::canonical("kyc-handoff", 1, 0).unwrap(),
+            TypeUri::canonical("acl/change-role", 0, 1).unwrap(),
             serde_json::json!({}),
         );
         doc.issued_at = issued_at;

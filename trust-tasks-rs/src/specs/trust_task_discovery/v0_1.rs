@@ -582,7 +582,7 @@ mod conformance {
     }
     #[test]
     fn request_example_3() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:8e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"issuer\": \"did:web:client.example\",\n  \"recipient\": \"did:web:server.example\",\n  \"issuedAt\": \"2026-06-20T10:00:00Z\",\n  \"payload\": {\n    \"patterns\": [\"acl/*\", \"kyc-handoff\"]\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.1\",\n  \"issuer\": \"did:web:client.example\",\n  \"recipient\": \"did:web:server.example\",\n  \"issuedAt\": \"2026-06-20T10:00:00Z\",\n  \"payload\": {\n    \"patterns\": [\"acl/*\", \"consent/request\"]\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
