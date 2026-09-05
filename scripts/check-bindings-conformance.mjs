@@ -531,7 +531,76 @@ for (const [uri, mod] of rsByUri) {
   }
 }
 
+/* ── The error Type URI both SDKs emit ──────────────────────────────────── */
+
+// `trust-task-error` is in SKIP_SLUGS: the Rust side is hand-modelled in
+// `error.rs` and the TypeScript side in `_runtime/document.ts`, so the version
+// each SDK emits is a hand-edited constant in two languages that nothing
+// compared. Adding a standard error code means publishing a new
+// `trust-task-error` version and pointing BOTH at it; updating one and not the
+// other leaves two libraries that disagree about the `type` of every error
+// document they emit — which no drift check can see, because regenerating
+// reproduces both constants exactly as written.
+{
+  const versions = fs
+    .readdirSync(path.join(SPECS_DIR, "trust-task-error"), { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name)
+    .sort((a, b) => {
+      const [am, an] = a.split(".").map(Number);
+      const [bm, bn] = b.split(".").map(Number);
+      return am - bm || an - bn;
+    });
+  const newest = versions[versions.length - 1];
+
+  const RS_DOC = path.join(ROOT, "trust-tasks-rs", "src", "document.rs");
+  const TS_DOC = path.join(ROOT, "trust-tasks-ts", "src", "_runtime", "document.ts");
+
+  const rsSrc = fs.readFileSync(RS_DOC, "utf8");
+  const tsSrc = fs.readFileSync(TS_DOC, "utf8");
+
+  const rsMatch = rsSrc.match(/TypeUri::canonical\("trust-task-error",\s*(\d+),\s*(\d+)\)/);
+  const tsMatch = tsSrc.match(
+    /TRUST_TASK_ERROR_TYPE_URI\s*=\s*"https:\/\/trusttasks\.org\/spec\/trust-task-error\/(\d+\.\d+)"/,
+  );
+
+  const rsVersion = rsMatch ? `${rsMatch[1]}.${rsMatch[2]}` : null;
+  const tsVersion = tsMatch ? tsMatch[1] : null;
+
+  if (!rsVersion) {
+    fail(path.relative(ROOT, RS_DOC), "no TypeUri::canonical(\"trust-task-error\", MAJOR, MINOR) found — trust_task_error_type_uri() is the crate's only statement of which error specification it emits");
+  }
+  if (!tsVersion) {
+    fail(path.relative(ROOT, TS_DOC), "no TRUST_TASK_ERROR_TYPE_URI found — it is the package's only statement of which error specification it emits");
+  }
+
+  if (rsVersion && tsVersion && rsVersion !== tsVersion) {
+    fail(
+      "trust-tasks-rs / trust-tasks-ts",
+      `the two SDKs emit different error documents: trust-tasks-rs sends trust-task-error/${rsVersion} ` +
+        `(document.rs, trust_task_error_type_uri) and @openvtc/trust-tasks sends trust-task-error/${tsVersion} ` +
+        `(_runtime/document.ts, TRUST_TASK_ERROR_TYPE_URI). A new error specification version must be adopted ` +
+        `in both or neither.`,
+    );
+  }
+
+  if (rsVersion && rsVersion === tsVersion && !fs.existsSync(path.join(SPECS_DIR, "trust-task-error", rsVersion))) {
+    fail(
+      "trust-tasks-rs / trust-tasks-ts",
+      `both SDKs emit trust-task-error/${rsVersion}, which does not exist under specs/trust-task-error/`,
+    );
+  } else if (rsVersion && rsVersion === tsVersion && rsVersion !== newest) {
+    // Lagging is a decision, not necessarily a defect — a published version may
+    // be deliberately unadopted — so this is a note, not a failure.
+    console.log(
+      `  note: both SDKs emit trust-task-error/${rsVersion}; specs/trust-task-error/${newest} is published. ` +
+        `Adopt it in trust_task_error_type_uri() and TRUST_TASK_ERROR_TYPE_URI together, or leave both.`,
+    );
+  }
+}
+
 /* ── Report ─────────────────────────────────────────────────────────────── */
+
 
 if (problems.length > 0) {
   console.error(`\nBindings do not agree with their specifications:\n`);
