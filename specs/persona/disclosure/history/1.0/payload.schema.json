@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/disclosure/history/1.0",
+  "title": "Persona Disclosure History — payload",
+  "description": "What the holder has shared, with whom, when, and — because the pool sits above the context boundary — which contexts a given attribute has reached.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1, "description": "Narrow to one context. Omit to query across all of them, which only the holder can do and which is the whole reason this task is holder-authorized." },
+    "verifierDid": { "type": "string", "maxLength": 2048, "description": "Narrow to one verifier — 'what does this site have of mine'." },
+    "attributeType": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType", "description": "Narrow to one claim type — 'where has my home address gone'. Answering this is the obligation the agent-scoped pool takes on: having put the holder's facts above the context boundary, it owes them an account of which contexts each fact has reached." },
+    "since": { "type": "string", "format": "date-time" },
+    "cursor": { "type": "string", "maxLength": 4096 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Disclosure History — response payload",
+      "description": "Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disclosures"],
+      "properties": {
+        "disclosures": {
+          "type": "array", "maxItems": 500,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["disclosureId", "contextId", "verifierDid", "personaDid", "claimTypes", "disclosedAt"],
+            "properties": {
+              "disclosureId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+              "contextId": { "type": "string", "minLength": 1 },
+              "verifierDid": { "type": "string", "minLength": 1 },
+              "personaDid": { "type": "string", "minLength": 1 },
+              "subject": { "type": "string", "description": "The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart." },
+              "claimTypes": { "type": "array", "maxItems": 128, "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" } },
+              "rungs": { "type": "array", "maxItems": 128, "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ProofRung" }, "description": "Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures." },
+              "purpose": { "type": "string", "maxLength": 512 },
+              "renderer": { "type": "string", "maxLength": 64 },
+              "durableCredentialId": { "type": "string", "description": "Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it." },
+              "disclosedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "nextCursor": { "type": "string", "maxLength": 4096 },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

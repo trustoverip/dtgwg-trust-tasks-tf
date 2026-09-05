@@ -3,7 +3,7 @@
  * Source: specs/vta/app-state/put-many/1.0/payload.schema.json
  */
 
-import type { Ext, Key, Namespace, Version, WriteResult } from "../../../../_shared/components.js";
+import type { Ext, Key, Namespace, Version_VtaV0_1 as Version, WriteResult } from "../../../../_shared/components.js";
 
 
 /**

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/get/1.0",
+  "title": "Persona Profile Get — payload",
+  "description": "Read one profile, either as composed (the entries the holder wrote) or as resolved (the claims it would actually present).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileId"],
+  "properties": {
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "resolve": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default) the profile is returned as composed — entries as written, references unresolved. When true the maintainer resolves every entry against the pool and returns the claims the profile would present, which is what a preview renders and what a holder is really asking when they ask what a profile says. The default is the cheap, non-disclosing one."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Get — response payload",
+      "description": "Success response to persona/profile/get. Type https://trusttasks.org/spec/persona/profile/get/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile"],
+      "properties": {
+        "profile": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Profile" },
+        "resolved": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Attribute" },
+          "description": "Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

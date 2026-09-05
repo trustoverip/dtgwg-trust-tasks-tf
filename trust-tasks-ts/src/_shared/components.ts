@@ -67,6 +67,14 @@ export type Capability_DeviceV0_2 =
   | "roomPresent"
   | "roomOpen";
 /**
+ * The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.
+ *
+ * The token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.
+ *
+ * The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.
+ */
+export type ClaimType = string;
+/**
  * Discriminator: is this consumer a user-driven Companion or a headless Service?
  */
 export type ConsumerKind_DeviceV0_1 = Companion_DeviceV0_1 | Service_DeviceV0_1;
@@ -117,9 +125,13 @@ export type DigestMultibase = string;
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";
 /**
+ * Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.
+ */
+export type ExpectedVersion_PersonaV0_1 = number;
+/**
  * Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means "create only" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read "absent", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.
  */
-export type ExpectedVersion = number;
+export type ExpectedVersion_VtaV0_1 = number;
 /**
  * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
  */
@@ -148,6 +160,95 @@ export type Kind = "dm" | "group" | "channel";
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
+/**
+ * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
+ *
+ * `{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.
+ *
+ * `{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.
+ *
+ * `{ref, override}` — the same fact, a different value here. ("In the gaming profile my display name is different.")
+ *
+ * `{inline}` — a value that never enters the pool, and so never leaks into another profile.
+ *
+ * Omission is exclusion; there is no removal marker.
+ */
+export type ProfileEntry =
+  | {
+      ref: Ulid;
+    }
+  | {
+      ref: Ulid;
+      pinVersion: Version_PersonaV0_1;
+    }
+  | {
+      ref: Ulid;
+      /**
+       * Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested.
+       */
+      override: {
+        value: unknown;
+        label?: string;
+      };
+    }
+  | {
+      inline: {
+        type: ClaimType;
+        valueType: ValueType;
+        value: unknown;
+        label?: string;
+        provenance: Provenance;
+      };
+    };
+/**
+ * How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.
+ *
+ * The distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.
+ */
+export type ProofRung = "predicate" | "derived" | "selectiveDisclosure" | "whole";
+/**
+ * Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.
+ *
+ * `selfAsserted` — the holder supplied it.
+ *
+ * `credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.
+ *
+ * `generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.
+ */
+export type Provenance =
+  | {
+      kind: "selfAsserted";
+    }
+  | {
+      kind: "credentialBacked";
+      /**
+       * Vault identifier of the backing credential.
+       */
+      credentialId: string;
+      /**
+       * RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.
+       */
+      claimPath: string;
+      /**
+       * Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.
+       */
+      issuerDid?: string;
+      /**
+       * The disclosure rung this claim was, or will be, presented at.
+       */
+      proof?: ProofRung;
+    }
+  | {
+      kind: "generated";
+      /**
+       * Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.
+       */
+      generator: string;
+      /**
+       * When true (the default and the only useful setting), a distinct value is minted for each verifier.
+       */
+      perVerifier?: boolean;
+    };
 /**
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
@@ -249,6 +350,14 @@ export type SyncEvent_SyncV0_2 =
   | AclChangedEvent_SyncV0_2
   | PolicyChangedEvent_SyncV0_2;
 /**
+ * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
+ */
+export type Ulid = string;
+/**
+ * The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
+ */
+export type ValueType = "string" | "number" | "boolean" | "date" | "object";
+/**
  * What the policy decided.
  *
  * `allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.
@@ -257,9 +366,13 @@ export type SyncEvent_SyncV0_2 =
  */
 export type VerdictEffect = "allow" | "deny" | "refer" | "requestMore";
 /**
+ * A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.
+ */
+export type Version_PersonaV0_1 = number;
+/**
  * A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
  */
-export type Version = number;
+export type Version_VtaV0_1 = number;
 /**
  * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
  */
@@ -435,7 +548,7 @@ export interface AppStateRecord {
   /**
    * The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
    */
-  version: Version;
+  version: Version_VtaV0_1;
   /**
    * The stored JSON, in whatever shape the owning application chose. Any JSON value, including `null`. The maintainer neither validates nor interprets it. Absent when this is a tombstone or a metadata-only view — see this definition's description for why that is not the same as a null value.
    */
@@ -531,6 +644,36 @@ export interface AttachmentRef_VaultV0_3 {
    * Optional MIME type hint for the consumer UI (e.g. "text/plain", "application/x-pem-file").
    */
   contentType?: string;
+}
+/**
+ * One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.
+ */
+export interface Attribute {
+  attributeId: Ulid;
+  type: ClaimType;
+  valueType: ValueType;
+  /**
+   * The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer. Absent when the caller asked for a metadata-only view, and absent when a credential-backed value could not be re-derived — a consumer MUST NOT conflate the two and MUST read `stale` to tell them apart.
+   */
+  value: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.
+   */
+  label?: string;
+  provenance: Provenance;
+  /**
+   * Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.
+   */
+  stale?: boolean;
+  /**
+   * Why re-derivation failed. Present only alongside `stale`.
+   */
+  staleReason?: "revoked" | "expired" | "archived" | "deleted" | "notFound";
+  version: Version_PersonaV0_1;
+  createdAt?: string;
+  updatedAt: string;
 }
 /**
  * One record in the mediator's privileged-change audit log: one change, by one actor, at one time.
@@ -997,6 +1140,46 @@ export interface Companion_DeviceV0_2 {
 export interface Service_DeviceV0_2 {
   kind: "service";
   serviceKind: "mediator" | "aiAgent" | "daemon";
+}
+/**
+ * What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.
+ */
+export interface ContactDocument {
+  /**
+   * The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.
+   */
+  publisher?: string;
+  /**
+   * The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else.
+   */
+  cardVersion?: number;
+  /**
+   * @maxItems 256
+   */
+  claims: {
+    type: ClaimType;
+    valueType: ValueType;
+    value: unknown;
+    /**
+     * As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.
+     */
+    provenance?: Provenance;
+  }[];
+}
+/**
+ * One received version of a contact's document. Revisions exist because an address book that silently replaces a payment address is a phishing surface, and one that says what changed and when is a defence.
+ */
+export interface ContactRevision {
+  /**
+   * Monotonic per contact, assigned by the recipient. Not the publisher's cardVersion — a recipient counts what it received, which is the only sequence it can vouch for.
+   */
+  rev: number;
+  receivedAt: string;
+  /**
+   * When a later revision replaced this one. Null for the current revision.
+   */
+  supersededAt?: string | null;
+  document?: ContactDocument;
 }
 /**
  * Per-context restrictions the VTA enforces. Every member is optional, and **absence means unrestricted, not empty** — a policy that omits `presentableTypes` permits every type, while one that sets it to `[]` permits none. The two are opposite instructions and a consumer MUST NOT collapse them.
@@ -2209,6 +2392,29 @@ export interface PolicyModule {
   ext?: Ext;
 }
 /**
+ * A named projection over the pool. Agent-scoped, like the pool it draws from. `entries` is ordered and the order is display order.
+ */
+export interface Profile {
+  profileId: Ulid;
+  /**
+   * The holder's name for this profile — "Work", "Gaming". Not disclosed.
+   */
+  name: string;
+  /**
+   * @maxItems 256
+   */
+  entries: ProfileEntry[];
+  /**
+   * Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other.
+   *
+   * @maxItems 256
+   */
+  credentialRefs?: string[];
+  version: Version_PersonaV0_1;
+  createdAt?: string;
+  updatedAt: string;
+}
+/**
  * Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.
  */
 export interface PublicKeyCredentialCreationOptions {
@@ -3256,7 +3462,7 @@ export interface WriteResult {
   /**
    * The new version, on `written`.
    */
-  version?: Version;
+  version?: Version_VtaV0_1;
   /**
    * On `written`: true when no live record existed at the address beforehand.
    */
@@ -3264,7 +3470,7 @@ export interface WriteResult {
   /**
    * On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).
    */
-  currentVersion?: Version;
+  currentVersion?: Version_VtaV0_1;
   /**
    * On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.
    */

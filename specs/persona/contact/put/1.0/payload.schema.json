@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/put/1.0",
+  "title": "Persona Contact Put — payload",
+  "description": "File what a peer disclosed. Appends a revision; never overwrites, so a changed value is visible as a change rather than arriving silently.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "subjectDid", "knownByPersona", "document"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "subjectDid": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The DID the document is about, as disclosed. Normally pairwise, so it names this relationship and not the person across all of theirs." },
+    "knownByPersona": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book." },
+    "document": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ContactDocument" },
+    "credentialRefs": { "type": "array", "maxItems": 256, "items": { "type": "string", "minLength": 1 }, "description": "Vault identifiers of credentials the peer presented alongside the document. The credentials themselves belong in the credential vault — two stores for credentials is the mistake this family's existence argues against — and the contact holds references." },
+    "notes": { "type": "string", "maxLength": 4096, "description": "The holder's private note about this contact. Never disclosed to anyone, including the contact." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Put — response payload",
+      "description": "Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contactId", "rev", "created"],
+      "properties": {
+        "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "rev": { "type": "integer", "minimum": 1 },
+        "created": { "type": "boolean", "description": "True when this is the first revision for the subject." },
+        "changedClaims": {
+          "type": "array", "maxItems": 256,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+          "description": "Claim types whose value differs from the previous revision. Present only on an update. This is the member that turns revisioning into a defence rather than an archive: a producer can tell the holder that a payment address changed four minutes ago, which is the moment the change matters."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

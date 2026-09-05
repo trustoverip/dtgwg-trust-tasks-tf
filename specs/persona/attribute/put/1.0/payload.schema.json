@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/attribute/put/1.0",
+  "title": "Persona Attribute Put — payload",
+  "description": "Create or replace one attribute in the holder's pool. Omit `attributeId` to create; supply it to replace. `expectedVersion` makes the write conditional.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "valueType", "value", "provenance"],
+  "properties": {
+    "attributeId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+      "description": "Omit to create — the maintainer assigns one and returns it. Supply to replace an existing attribute, or to make a create idempotent under retry; a supplied id that already exists is a replacement, and a producer that meant to create MUST pair it with `expectedVersion: 0`."
+    },
+    "type": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+    "valueType": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType" },
+    "value": {
+      "description": "The fact itself. MUST agree with `valueType`; a maintainer MUST refuse a document where it does not. For a `credentialBacked` provenance this is the initial display cache — the maintainer re-derives it from the credential and MAY overwrite what was supplied."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "The holder's own words, for their own picker. Never disclosed to a verifier."
+    },
+    "provenance": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Provenance" },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion",
+      "description": "Optional precondition. Omit for last-writer-wins. Supply the version a prior read returned to make the write conditional; supply 0 to create only."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Attribute Put — response payload",
+      "description": "Success response to persona/attribute/put. Type https://trusttasks.org/spec/persona/attribute/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/attribute/put:versionConflict, whose details carry the maintainer's current version and value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attributeId", "version", "created", "updatedAt"],
+      "properties": {
+        "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+        "created": {
+          "type": "boolean",
+          "description": "True when this write created the attribute, false when it replaced one. A producer that omitted `attributeId` can still be told which happened, because a retried create with a supplied id is a replacement."
+        },
+        "correlation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["severity"],
+          "description": "Advisory result of the correlation check the maintainer runs over the new value (see persona/correlation/analyze). Returned on the write so a producer's builder can warn at the moment of composition rather than requiring a second round trip. Advisory only: the write has already applied, and a maintainer MUST NOT refuse a write on correlation grounds — the holder decides.",
+          "properties": {
+            "severity": { "type": "string", "enum": ["none", "low", "high"] },
+            "sharedWithProfileCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies."
+            }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/attribute/delete/1.0",
+  "title": "Persona Attribute Delete — payload",
+  "description": "Remove one attribute from the holder's pool. Refused by default while any profile still references it, because a silent removal would change what those profiles present without the holder having said so.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attributeId"],
+  "properties": {
+    "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "cascade": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default) a referenced attribute is refused, and the error names the referring profiles so the holder can decide. When true the attribute is removed and every referring profile entry is removed with it. Cascade is the destructive option and is therefore never the default: deleting one fact and silently changing what three profiles disclose is exactly the surprise this family exists to prevent."
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion",
+      "description": "Optional precondition, so a delete cannot race a concurrent edit the holder has not seen."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Attribute Delete — response payload",
+      "description": "Success response to persona/attribute/delete. Type https://trusttasks.org/spec/persona/attribute/delete/1.0#response. Deleting an attribute that is already absent is a success carrying `existed: false`, which is what makes a repeated delete converge.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attributeId", "existed"],
+      "properties": {
+        "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "existed": {
+          "type": "boolean",
+          "description": "False when no live attribute was present. A repeat delete returns false and deliberately does NOT take a new counter value — had it done so, every consumer watching the store would see a change that did not happen, and delete could not be safely retried."
+        },
+        "removedFromProfiles": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+          "description": "Profiles whose entries were removed by a cascading delete. Present only when `cascade` was true and something was removed; a holder is owed the list of what their one action changed."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

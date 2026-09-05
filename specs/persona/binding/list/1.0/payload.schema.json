@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/binding/list/1.0",
+  "title": "Persona Binding List — payload",
+  "description": "Enumerate the personas present in one context. This context only — an application learns which identities operate where it does, and nothing about anywhere else the holder operates.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "cursor": { "type": "string", "maxLength": 4096 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Binding List — response payload",
+      "description": "Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["personas"],
+      "properties": {
+        "personas": {
+          "type": "array", "maxItems": 500,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["personaDid", "bound"],
+            "properties": {
+              "personaDid": { "type": "string", "minLength": 1 },
+              "bound": { "type": "boolean" },
+              "profileName": { "type": "string", "maxLength": 128, "description": "The holder's label for the bound profile. Names a composition; reveals none of it." },
+              "claimCount": { "type": "integer", "minimum": 0 },
+              "isLocal": { "type": "boolean", "description": "True when the bound profile is context-local rather than imported from the holder's pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down." }
+            }
+          }
+        },
+        "nextCursor": { "type": "string", "maxLength": 4096 },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

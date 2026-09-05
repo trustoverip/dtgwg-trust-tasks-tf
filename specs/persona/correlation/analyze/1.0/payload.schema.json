@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/correlation/analyze/1.0",
+  "title": "Persona Correlation Analyze — payload",
+  "description": "Report where the holder's identities link to one another, and what can be done about each link. The findings task behind the counts the write tasks return.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Analyse one attribute. Omit to analyse the whole pool." },
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Analyse one composition — what would this profile link if bound." },
+    "candidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "valueType", "value"],
+      "description": "Analyse a value the holder is CONSIDERING but has not written. This is what lets a builder warn before the mistake rather than after it, which is the difference between a guard and a report. A maintainer MUST NOT store a candidate.",
+      "properties": {
+        "type": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+        "valueType": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType" },
+        "value": {}
+      }
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Correlation Analyze — response payload",
+      "description": "Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["findings"],
+      "properties": {
+        "findings": {
+          "type": "array", "maxItems": 256,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["severity", "why", "remedies"],
+            "properties": {
+              "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+              "severity": { "type": "string", "enum": ["low", "high"] },
+              "sharedWith": {
+                "type": "array", "maxItems": 128,
+                "description": "Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.",
+                "items": {
+                  "type": "object", "additionalProperties": false,
+                  "properties": {
+                    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+                    "contextId": { "type": "string" },
+                    "personaDid": { "type": "string" },
+                    "disclosedTo": { "type": "array", "maxItems": 64, "items": { "type": "string" } }
+                  }
+                }
+              },
+              "why": { "type": "string", "maxLength": 1024, "description": "Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss." },
+              "remedies": {
+                "type": "array", "maxItems": 8,
+                "items": { "type": "string", "enum": ["useDifferentValue", "reissueCredentialToThisDid", "correlateDeliberately", "proceedAndRecord"] },
+                "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it."
+              }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

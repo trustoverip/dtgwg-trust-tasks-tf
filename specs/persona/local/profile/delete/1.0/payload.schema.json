@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/local/profile/delete/1.0",
+  "title": "Persona Local Profile Delete — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profileId": {
+      "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+    },
+    "unbind": {
+      "type": "boolean",
+      "default": false,
+      "description": "Clear any local binding to it. Refused without this while bound, for the same reason a pool profile is: a persona that silently stopped presenting anything is a failure discovered from the other side."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "required": [
+        "profileId",
+        "existed"
+      ],
+      "properties": {
+        "profileId": {
+          "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+        },
+        "existed": {
+          "type": "boolean"
+        },
+        "unboundPersonas": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "string"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "$anchor": "response",
+      "title": "Persona Local Profile Delete — response payload",
+      "description": "Success response to persona/local/profile/delete. Type https://trusttasks.org/spec/persona/local/profile/delete/1.0#response.",
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "description": "Remove one context-local profile.",
+  "required": [
+    "contextId",
+    "profileId"
+  ]
+}

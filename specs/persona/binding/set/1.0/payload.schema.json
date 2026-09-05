@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/binding/set/1.0",
+  "title": "Persona Binding Set — payload",
+  "description": "Assign a profile to a persona DID within a context, or clear the assignment. This is the step that pushes a composition across the context boundary: the maintainer materialises the profile into the context, and a context never reaches back the other way.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "personaDid"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1, "description": "The context the persona lives in. The binding is context-scoped even though the profile it names is not." },
+    "personaDid": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The persona being bound." },
+    "profileId": {
+      "oneOf": [
+        { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        { "type": "null" }
+      ],
+      "description": "The profile to bind, or null to clear. Null is a first-class value and not an omission: a persona with no profile is a legitimate, common state — a throwaway identity that presents nothing — and the schema says so rather than leaving a consumer to infer it from an absent member."
+    },
+    "publicEntries": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+      "description": "Attributes the holder opts into publishing on the persona's own DID document or equivalent public surface. Empty by default and MUST remain empty unless explicitly set: everything else is a per-verifier projection, and a published value is one document every relying party sees identically — a permanent correlation point the rest of this family exists to avoid."
+    },
+    "expectedVersion": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion" },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Binding Set — response payload",
+      "description": "Success response to persona/binding/set. Type https://trusttasks.org/spec/persona/binding/set/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "personaDid", "version", "boundAt"],
+      "properties": {
+        "contextId": { "type": "string", "minLength": 1 },
+        "personaDid": { "type": "string", "minLength": 1 },
+        "profileId": { "oneOf": [ { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" }, { "type": "null" } ] },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+        "materialisedClaimCount": { "type": "integer", "minimum": 0, "description": "How many claims were materialised into the context by this binding. A count, so the holder can see that a push happened and how large it was without the response restating the values." },
+        "correlation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["severity"],
+          "description": "Advisory. Correlation is scored HERE as well as at composition, because composing is hypothetical and binding is when a value actually crosses into a context. Binding one profile to a second persona is reported at `high` unconditionally: that act makes the two personas the same person by construction.",
+          "properties": {
+            "severity": { "type": "string", "enum": ["none", "low", "high"] },
+            "alsoBoundPersonaCount": { "type": "integer", "minimum": 0, "description": "How many other personas are bound to this same profile. A count, not identifiers." }
+          }
+        },
+        "boundAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

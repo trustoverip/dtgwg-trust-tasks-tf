@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/delete/1.0",
+  "title": "Persona Contact Delete — payload",
+  "description": "Remove a contact and every revision of it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "contactId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Delete — response payload",
+      "description": "Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contactId", "existed"],
+      "properties": {
+        "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "existed": { "type": "boolean" },
+        "revisionsRemoved": { "type": "integer", "minimum": 0, "description": "How many revisions went with it, so a holder deleting a long history is told the size of what they removed." },
+        "retainedForDisclosure": { "type": "integer", "minimum": 0, "description": "Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

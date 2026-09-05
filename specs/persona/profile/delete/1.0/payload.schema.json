@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/delete/1.0",
+  "title": "Persona Profile Delete — payload",
+  "description": "Remove one profile. Refused by default while a persona is still bound to it, because a bound persona whose profile vanished would present nothing without the holder having said so.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileId"],
+  "properties": {
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "unbind": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default) a bound profile is refused and the error names the bound personas. When true the profile is removed and every binding to it is cleared, leaving those personas with no profile — which is a legal state, and one the holder is told about rather than discovering. Never the default: a persona that silently stopped presenting anything is a failure a holder finds out about from the other side."
+    },
+    "expectedVersion": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion" },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Delete — response payload",
+      "description": "Success response to persona/profile/delete. Type https://trusttasks.org/spec/persona/profile/delete/1.0#response. Deleting an absent profile is a success carrying existed: false, which is what makes a repeated delete converge.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "existed"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "existed": { "type": "boolean", "description": "False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen." },
+        "unboundPersonas": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

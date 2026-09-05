@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/disclosure/preview/1.0",
+  "title": "Persona Disclosure Preview — payload",
+  "description": "Determine exactly what a disclosure would reveal, and to whom, without signing or sending anything. The first of two calls that cannot be collapsed: there is no path to a disclosure that did not first produce the summary a human can be shown.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "personaDid", "verifierDid"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "personaDid": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The persona that would present. Its binding supplies the profile." },
+    "verifierDid": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "Who would receive it. Required, and not optional, because half of what a preview says is who is asking — a preview that could not name the recipient would be a list of fields rather than a decision." },
+    "purpose": { "type": "string", "maxLength": 512, "description": "The verifier's stated reason, carried through to the preview and the disclosure record so a holder deciding later has the same context as one deciding now." },
+    "requestedClaims": {
+      "type": "array", "maxItems": 128,
+      "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+      "description": "Claim types the verifier asked for. Omit to preview everything the bound profile would present. A maintainer MUST NOT return a claim that was not requested when this member is present — narrowing is the caller's to ask for and the maintainer's to honour."
+    },
+    "renderer": { "type": "string", "maxLength": 64, "description": "Which output format to prepare for. Omit for the maintainer's canonical form. The choice matters to the preview because renderers differ in what they can carry, and a holder is owed that before deciding." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Disclosure Preview — response payload",
+      "description": "Success response to persona/disclosure/preview. Type https://trusttasks.org/spec/persona/disclosure/preview/1.0#response. Signs nothing and sends nothing. The `previewId` returned here is consumed by persona/disclosure/present, which is the mechanism by which the two calls cannot be collapsed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previewId", "subject", "claims", "expiresAt"],
+      "properties": {
+        "previewId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Consumed by present. Single-use and short-lived: a preview a holder approved an hour ago is not evidence they approve it now, and one that could be replayed would let a second disclosure ride an earlier decision." },
+        "subject": { "type": "string", "minLength": 1, "description": "The identifier that would appear as the subject of the disclosure. Pairwise by default — a fresh per-relationship DID rather than the persona DID — so that two verifiers cannot recognise the holder as the same party. The persona DID is the account; this is the face." },
+        "claims": {
+          "type": "array", "maxItems": 128,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["type", "provenance", "rung"],
+            "properties": {
+              "type": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+              "value": { "description": "What would be disclosed. Absent for a predicate claim, which discloses no value at all — that absence is the point and a consumer MUST NOT render it as missing data." },
+              "predicate": {
+                "type": "object", "additionalProperties": false,
+                "required": ["op", "arg"],
+                "description": "Present instead of `value` when the claim would be proven rather than shown, e.g. that a date of birth implies an age threshold. The underlying attribute stays in the pool; the predicate is a disclosure-time projection over it, which is what keeps the pool from filling with derived facts that are all the same fact asked differently.",
+                "properties": {
+                  "op": { "type": "string", "enum": ["gte", "gt", "lte", "lt", "eq", "ne", "memberOf"] },
+                  "arg": {},
+                  "over": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" }
+                }
+              },
+              "provenance": { "type": "string", "enum": ["selfAsserted", "credentialBacked", "generated"] },
+              "rung": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ProofRung" },
+              "newToThisVerifier": { "type": "boolean", "description": "True when this verifier has not previously received this claim type from this persona. What makes a preview rankable rather than a flat list — a holder needs the unusual ask to stand out from the routine one." },
+              "stale": { "type": "boolean", "description": "True when a credential-backed claim could not be re-derived. Such a claim MUST NOT be disclosed; it is shown in the preview so the holder learns why the disclosure will be short." }
+            }
+          }
+        },
+        "renderer": {
+          "type": "object", "additionalProperties": false,
+          "required": ["id", "drops"],
+          "description": "The output format and, crucially, what it cannot carry. Lossiness is DECLARED rather than discovered: a holder is owed 'this verifier will see your work number but not that your employer attested it' before deciding, not after.",
+          "properties": {
+            "id": { "type": "string", "maxLength": 64 },
+            "drops": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxLength": 64 }, "description": "What this renderer discards — commonly provenance. Empty for a lossless renderer." }
+          }
+        },
+        "correlation": {
+          "type": "object", "additionalProperties": false,
+          "required": ["severity"],
+          "description": "How much this disclosure would link the holder. Note the inversion that is easy to get backwards: a credential presented WHOLE correlates more than a self-asserted value, because the issuer signature is identical at every verifier — while a derived proof correlates LESS, because it differs on every presentation. Severity is therefore a function of value and rung together, not of provenance alone.",
+          "properties": {
+            "severity": { "type": "string", "enum": ["none", "low", "high"] },
+            "reason": { "type": "string", "maxLength": 512 }
+          }
+        },
+        "anomalous": { "type": "array", "maxItems": 128, "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" }, "description": "Claim types unusual for this verifier's stated purpose. A preview that lists fourteen fields with fourteen equal weights is a notice-and-consent dialog, which is the pattern that trains people to click through; ranking by what is out of place is what makes the surfaced line the one worth reading." },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

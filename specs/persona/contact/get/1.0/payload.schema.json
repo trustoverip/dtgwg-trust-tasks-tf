@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/get/1.0",
+  "title": "Persona Contact Get — payload",
+  "description": "Read one contact — the current revision by default, or a named earlier one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "contactId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "rev": { "type": "integer", "minimum": 1, "description": "A specific revision. Omit for the current one. Naming a reaped revision is an error rather than a silent fall back to the nearest survivor — a caller comparing against history must know when the history is gone." },
+    "includeHistory": { "type": "boolean", "default": false, "description": "When true, return the revision metadata (numbers and timestamps) without their documents, so a producer can render a timeline cheaply and fetch only the revision the holder opens." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Get — response payload",
+      "description": "Success response to persona/contact/get. Type https://trusttasks.org/spec/persona/contact/get/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contactId", "subjectDid", "knownByPersona", "rev", "document"],
+      "properties": {
+        "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "subjectDid": { "type": "string", "minLength": 1 },
+        "knownByPersona": { "type": "string", "minLength": 1 },
+        "rev": { "type": "integer", "minimum": 1 },
+        "document": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ContactDocument" },
+        "credentialRefs": { "type": "array", "maxItems": 256, "items": { "type": "string", "minLength": 1 } },
+        "notes": { "type": "string", "maxLength": 4096 },
+        "history": {
+          "type": "array", "maxItems": 256,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ContactRevision" },
+          "description": "Present only when `includeHistory` was true. Revision metadata without documents — a timeline is cheap and the documents behind it are not."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

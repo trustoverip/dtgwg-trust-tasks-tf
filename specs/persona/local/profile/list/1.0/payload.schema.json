@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/local/profile/list/1.0",
+  "title": "Persona Local Profile List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 4096
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 100
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "required": [
+        "profiles"
+      ],
+      "properties": {
+        "profiles": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "name",
+              "entryCount"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "entryCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "bound": {
+                "type": "boolean",
+                "description": "Whether a persona in this context is bound to it."
+              }
+            }
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "$anchor": "response",
+      "title": "Persona Local Profile List — response payload",
+      "description": "Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "description": "Enumerate this context's local profiles. A separate keyspace from the holder's pool, so the scan structurally cannot return a pool profile — the isolation is in the address, not in a filter that could be got wrong.",
+  "required": [
+    "contextId"
+  ]
+}
