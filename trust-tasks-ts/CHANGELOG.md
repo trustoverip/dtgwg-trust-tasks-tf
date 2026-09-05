@@ -11,6 +11,155 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.16.10 — 2026-09-05
+
+
+### Added
+
+- **persona**: A holder's own identity, composed once and disclosed under control (#360)
+
+* feat(persona): attribute pool — shared schema and attribute/put
+
+  First slice of the persona family: the holder's own identity attributes,
+  agent-scoped above the context boundary.
+
+  The shared schema carries the family's load-bearing definitions — the three
+  provenance kinds, the four profile-entry forms, the proof-rung ordering, and
+  the two-scope rule that keeps a context-scoped caller from reading the pool.
+
+  attribute/put establishes the pattern: holder-authorized and unscoped,
+  value validated against its declared type, credential-backed provenance
+  resolved at write time so an attribute cannot read back stale forever, and an
+  advisory correlation count returned on the write so a builder can warn while
+  the holder is still composing.
+
+- **rooms/owner**: Transfer and claim, so a room outlives one person (#359)
+
+§10 of the data-rooms design was the last part with no specification.
+  Ownership there is load-bearing for liveness, not just administration: a
+  room's owner is its sole committer, so a room with no reachable owner
+  cannot advance an epoch, cannot be renewed, and lapses to read-only. One
+  person becoming unreachable ends a shared space.
+
+  Two tasks, not one with a flag. They end the same way and differ in
+  everything else - who initiates, what authorizes, and whether the room
+  has to have lapsed. Collapsing them would mean either a transfer that
+  waits for a lapse or a claim that works while the owner is still
+  renewing, and both are wrong.
+
+  There is deliberately no nominate task. A nomination is a credential the
+  room issues and the claimant presents, the same shape as an invitation
+  and for the same reason: a host keeping a roster of successors would hold
+  part of the room's authority structure, and the room could no longer move
+  hosts without rebuilding it. The consequence is that 'no successor' and
+  'the successor has not claimed yet' are the same observation to a host -
+  which is fine, because both resolve identically when retention runs out.
+
+  A claim is an ACT, never an automatic promotion, and that is not
+  ceremony. An automatic one is an ownership change nobody performed: no
+  actor to audit, no moment to point at, and an owner who returns finds the
+  room changed hands with no event to examine.
+
+  Three conditions, all required, each closing a different route to a
+  takeover: a nomination the room itself issued naming this claimant; the
+  room dormant rather than merely lapsed, so the grace window has passed
+  and the owner has had their notice; and the claimant already a member,
+  because a successor who cannot commit inherits a room they cannot renew.
+
+  Renewing cancels a pending claim, and that is the property worth
+  noticing: the defence against a hostile claim is the same act as ordinary
+  use. An owner who was merely away fixes it by doing what they would have
+  done anyway - nothing revoked, no dispute raised.
+
+  Transfer requires the incoming owner to be a member for the same reason.
+  Handing someone a room they cannot renew looks like success and produces
+  a room that lapses on schedule a year later with nobody able to save it.
+
+  Three things the Security sections say plainly. A transfer does NOT
+  remove the outgoing owner - they keep whatever their credentials confer,
+  usually still admin, so handing over and leaving are two more acts. Every
+  credential stays valid because the room's identifier does not change,
+  which is the whole reason a room has an identifier of its own rather than
+  borrowing its owner's. And the host is not an arbiter: it records what an
+  authorized party told it, and ownership of an identifier is settled by
+  whoever controls that identifier, not by a service that stores
+  ciphertext.
+
+
+
+### Documentation
+
+- Base every example on the registered acl/change-role task (#356)
+
+SPEC.md, both READMEs, the loopback example and the framework unit tests
+  all illustrated themselves with `kyc-handoff/1.0`, a slug that has never
+  been registered. Three consequences, in increasing order of cost:
+
+  - `https://trusttasks.org/spec/kyc-handoff/1.0` is a live URL in the
+    Abstract and in five worked examples. It resolves — the registry site
+    serves the SPA for any /spec/ path — and rendered `acl/change-role`,
+    the alphabetically first entry, because SpecPage fell back to
+    `TT_TASKS[0]` for an unresolvable slug. A reader following the URL in
+    §1 got a complete, confident page for a different task.
+  - No example could be checked against anything. The build validates every
+    fenced JSON block against the framework envelope schema; a payload
+    naming a slug with no schema was structurally unverifiable.
+  - The `trust-task-error` extended-code example was non-conforming: it
+    answered an ACL request with a `kyc-handoff:`-namespaced code, which
+    §8.5 forbids in the same breath as it defines namespacing.
+
+  Everything now names `acl/change-role/0.1`, whose payloads validate
+  against its published schema, whose error codes are the two it declares,
+  and whose REQUIRED `proof` the examples honour. Appendix A is reproduced
+  from that registry entry rather than invented. The framework parser tests
+  that used the slug as an arbitrary string now use real ones —
+  `trust-task-discovery` and `trust-task-control` where a single-segment
+  slug is the point.
+
+  SpecPage is strict as a result: an unregistered slug, or a known slug at
+  an unknown version, renders a not-found page offering the versions that
+  do exist, the way BindingSpecPage and CeremonyPage already did. The
+  lookup moved into a hook-free wrapper so a route that stops resolving
+  unmounts the detail view rather than changing a mounted component's hook
+  count.
+
+  SPEC.md is also maintained canonically at trustoverip/dtgwg-trust-tasks-spec;
+  the matching change lands there in parallel.
+
+
+
+### Fixed
+
+- **rooms/owner**: A host cannot see the MLS group, so stop implying it can (#361)
+
+Both tasks required a host to check that a party is a member of the
+  room's group. A host holds no roster and no group state, so neither check
+  was implementable as written. Found while starting the implementation,
+  which is what implementation is for.
+
+  claim now carries a presentation. The host has exactly one membership
+  signal available - the VMC the room itself issued - and the claim payload
+  did not ask for it, so condition 3 was unimplementable and the claimant's
+  own standing went unverified. It is now required, and it is the same
+  presentation every other room task carries.
+
+  The spec is also exact about what that proxy is worth: a party removed
+  from the MLS group while still holding an unexpired VMC would pass. That
+  gap closes by revoking the credential, which is the room's job, not the
+  host's. Better said than implied.
+
+  transfer moves the obligation to the party who can discharge it. The
+  incoming owner is not the one making the request, presents nothing, and
+  may be someone the host has never seen - so 'MUST refuse if not a member'
+  asked a host to judge a third party from no evidence. The requirement is
+  now on the transferring owner, who can see the group; a host that can
+  independently establish non-membership MAY still refuse, and one that
+  cannot MUST NOT invent a check or treat its own ignorance as evidence.
+
+  That last point is the same boundary the rest of the family draws,
+  arriving from an unfamiliar direction: a host verifies what is presented
+  to it, and a claim about a third party is not that.
+
 ## 0.16.9 — 2026-09-04
 
 
