@@ -2658,6 +2658,48 @@ export interface RequestedCredential {
   claims: string[];
 }
 /**
+ * One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.
+ *
+ * Distinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.
+ *
+ * The three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.
+ */
+export interface ResolvedClaim {
+  /**
+   * The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws.
+   */
+  attributeId?: Ulid;
+  type: ClaimType;
+  valueType: ValueType;
+  /**
+   * What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be.
+   */
+  value?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.
+   */
+  label?: string;
+  provenance: Provenance;
+  /**
+   * Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.
+   */
+  stale?: boolean;
+  /**
+   * Why the entry cannot be presented. Present only alongside `stale`.
+   */
+  staleReason?: "revoked" | "expired" | "archived" | "deleted" | "notFound";
+  /**
+   * The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.
+   */
+  version?: Version_PersonaV0_1;
+  /**
+   * When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.
+   */
+  updatedAt?: string;
+}
+/**
  * The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish "I revoked it now" from "it was already gone".
  *
  * The counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.

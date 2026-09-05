@@ -3,7 +3,7 @@
  * Source: specs/persona/profile/get/1.0/payload.schema.json
  */
 
-import type { Attribute, ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
+import type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, ResolvedClaim, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**
@@ -25,14 +25,16 @@ export interface PersonaProfileGetResponsePayload {
   /**
    * Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.
    *
+   * Typed as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.
+   *
    * @maxItems 256
    */
-  resolved?: Attribute[];
+  resolved?: ResolvedClaim[];
   ext?: Ext;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Attribute, ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Ulid, ValueType, Version };
+export type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, ResolvedClaim, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/profile/get/1.0" as const;
@@ -96,9 +98,9 @@ export const PAYLOAD_SCHEMA = {
           "type": "array",
           "maxItems": 256,
           "items": {
-            "$ref": "#/$defs/Attribute"
+            "$ref": "#/$defs/ResolvedClaim"
           },
-          "description": "Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable."
+          "description": "Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\n\nTyped as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -115,22 +117,20 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Attribute": {
-      "title": "Attribute",
-      "description": "One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.",
+    "ResolvedClaim": {
+      "title": "ResolvedClaim",
+      "description": "One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.\n\nDistinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.\n\nThe three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "attributeId",
         "type",
         "valueType",
-        "provenance",
-        "version",
-        "updatedAt"
+        "provenance"
       ],
       "properties": {
         "attributeId": {
-          "$ref": "#/$defs/Ulid"
+          "$ref": "#/$defs/Ulid",
+          "description": "The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws."
         },
         "type": {
           "$ref": "#/$defs/ClaimType"
@@ -139,19 +139,19 @@ export const PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/ValueType"
         },
         "value": {
-          "description": "The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\n\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response."
+          "description": "What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be."
         },
         "label": {
           "type": "string",
           "maxLength": 128,
-          "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self."
+          "description": "The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier."
         },
         "provenance": {
           "$ref": "#/$defs/Provenance"
         },
         "stale": {
           "type": "boolean",
-          "description": "Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute."
+          "description": "Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short."
         },
         "staleReason": {
           "type": "string",
@@ -162,18 +162,16 @@ export const PAYLOAD_SCHEMA = {
             "deleted",
             "notFound"
           ],
-          "description": "Why re-derivation failed. Present only alongside `stale`."
+          "description": "Why the entry cannot be presented. Present only alongside `stale`."
         },
         "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
+          "$ref": "#/$defs/Version",
+          "description": "The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry."
         },
         "updatedAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "When the pool attribute behind this entry was last written. ABSENT for an `inline` entry."
         }
       }
     },
@@ -466,9 +464,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "array",
           "maxItems": 256,
           "items": {
-            "$ref": "#/$defs/Attribute"
+            "$ref": "#/$defs/ResolvedClaim"
           },
-          "description": "Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable."
+          "description": "Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\n\nTyped as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -485,22 +483,20 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "Attribute": {
-      "title": "Attribute",
-      "description": "One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.",
+    "ResolvedClaim": {
+      "title": "ResolvedClaim",
+      "description": "One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.\n\nDistinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.\n\nThe three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "attributeId",
         "type",
         "valueType",
-        "provenance",
-        "version",
-        "updatedAt"
+        "provenance"
       ],
       "properties": {
         "attributeId": {
-          "$ref": "#/$defs/Ulid"
+          "$ref": "#/$defs/Ulid",
+          "description": "The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws."
         },
         "type": {
           "$ref": "#/$defs/ClaimType"
@@ -509,19 +505,19 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/ValueType"
         },
         "value": {
-          "description": "The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\n\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response."
+          "description": "What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be."
         },
         "label": {
           "type": "string",
           "maxLength": 128,
-          "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self."
+          "description": "The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier."
         },
         "provenance": {
           "$ref": "#/$defs/Provenance"
         },
         "stale": {
           "type": "boolean",
-          "description": "Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute."
+          "description": "Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short."
         },
         "staleReason": {
           "type": "string",
@@ -532,18 +528,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "deleted",
             "notFound"
           ],
-          "description": "Why re-derivation failed. Present only alongside `stale`."
+          "description": "Why the entry cannot be presented. Present only alongside `stale`."
         },
         "version": {
-          "$ref": "#/$defs/Version"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
+          "$ref": "#/$defs/Version",
+          "description": "The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry."
         },
         "updatedAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "When the pool attribute behind this entry was last written. ABSENT for an `inline` entry."
         }
       }
     },
