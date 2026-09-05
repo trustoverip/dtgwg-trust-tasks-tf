@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/put/1.0",
+  "title": "Persona Profile Put — payload",
+  "description": "Create or replace one profile: a named, ordered projection over the holder's attribute pool. Entries reference pool attributes rather than copying them, so a fact edited once is edited everywhere it appears.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "entries"],
+  "properties": {
+    "profileId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+      "description": "Omit to create; supply to replace. A producer that means to create and wants the write to be safe under retry SHOULD supply a generated id together with `expectedVersion: 0`."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The holder's name for the profile — \"Work\", \"Gaming\". Never disclosed to a verifier; it is how the holder finds it again."
+    },
+    "entries": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ProfileEntry" },
+      "description": "Ordered; the order is display order. An empty array is legal and means a profile that discloses nothing — useful as a starting point, and not the same as no profile at all."
+    },
+    "credentialRefs": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Vault identifiers of credentials associated with this profile as inventory — what this persona can prove — as distinct from the evidence relationship a credentialBacked attribute expresses. The two answer different questions and a consumer MUST NOT read one as the other."
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion"
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Put — response payload",
+      "description": "Success response to persona/profile/put. Type https://trusttasks.org/spec/persona/profile/put/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "version", "created", "updatedAt"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+        "created": { "type": "boolean" },
+        "correlation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["severity"],
+          "description": "Advisory correlation result for the composition as a whole, returned on the write so a builder can warn while the holder is still composing. Advisory only: the write has applied, and a maintainer MUST NOT refuse a composition on correlation grounds.",
+          "properties": {
+            "severity": { "type": "string", "enum": ["none", "low", "high"] },
+            "sharedAttributeCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many of this profile's entries present a value that another profile also presents. A count rather than a list; identifiers come from persona/correlation/analyze."
+            }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
