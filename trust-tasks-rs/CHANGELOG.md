@@ -31,6 +31,36 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.17.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.9...trust-tasks-rs-v0.17.10) — 2026-09-05
+
+
+### Specifications
+
+- **persona**: Attribute.value is OPTIONAL, so the default listing is representable ([#367](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/367))
+
+The schema required `value` while its own description said the member is
+  absent in two situations. That contradiction made the DEFAULT path of
+  persona/attribute/list unrepresentable: `includeValues` defaults to false
+  precisely so a picker can render the pool without decrypting every fact in it,
+  and a maintainer taking that path had to choose between disclosing every value
+  in bulk and emitting a non-conformant response.
+
+  The same contradiction blocked the other documented case — a credential-backed
+  value that could not be re-derived, which is returned carrying `stale` so the
+  holder learns a claim has stopped being presentable rather than seeing a pool
+  that looks smaller than it is.
+
+  Found by a conformance witness in verifiable-trust-infrastructure while wiring
+  the family: the witness for the default listing would not round-trip. Which is
+  what witnesses are for — the defect was in the schema, not the implementation,
+  and nothing else would have caught it before the first non-disclosing read
+  went out.
+
+  Both bindings regenerated; conformance checks 403 specs against 403 TypeScript
+  and 398 Rust modules.
+
+
+
 ## [0.17.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.17.8...trust-tasks-rs-v0.17.9) — 2026-09-05
 
 
