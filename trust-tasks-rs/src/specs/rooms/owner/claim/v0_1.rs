@@ -29,6 +29,63 @@ pub mod error {
         }
     }
 }
+///What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "AuthorityPresentation",
+///  "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.",
+///  "type": "object",
+///  "required": [
+///    "authority",
+///    "membership"
+///  ],
+///  "properties": {
+///    "authority": {
+///      "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.",
+///      "type": "array",
+///      "items": {
+///        "type": "string"
+///      },
+///      "maxItems": 8,
+///      "minItems": 1
+///    },
+///    "membership": {
+///      "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.",
+///      "type": "string"
+///    },
+///    "subjectBinding": {
+///      "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.",
+///      "type": "string"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AuthorityPresentation {
+    ///The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.
+    pub authority: ::std::vec::Vec<::std::string::String>,
+    ///The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.
+    pub membership: ::std::string::String,
+    ///REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.
+    #[serde(
+        rename = "subjectBinding",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub subject_binding: ::std::option::Option<::std::string::String>,
+}
+impl AuthorityPresentation {
+    pub fn builder() -> builder::AuthorityPresentation {
+        Default::default()
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -149,6 +206,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "type": "object",
 ///  "required": [
 ///    "nomination",
+///    "presentation",
 ///    "roomId"
 ///  ],
 ///  "properties": {
@@ -159,6 +217,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "nomination": {
 ///      "description": "The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room.",
 ///      "type": "string"
+///    },
+///    "presentation": {
+///      "description": "The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents.",
+///      "$ref": "#/definitions/AuthorityPresentation"
 ///    },
 ///    "reason": {
 ///      "description": "Why, for the room's audit trail. A claim is a takeover; it should say what prompted it.",
@@ -183,6 +245,8 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room.
     pub nomination: ::std::string::String,
+    ///The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents.
+    pub presentation: AuthorityPresentation,
     ///Why, for the room's audit trail. A claim is a takeover; it should say what prompted it.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
@@ -314,9 +378,82 @@ impl Response {
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
+    pub struct AuthorityPresentation {
+        authority:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        membership: ::std::result::Result<::std::string::String, ::std::string::String>,
+        subject_binding: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AuthorityPresentation {
+        fn default() -> Self {
+            Self {
+                authority: Err("no value supplied for authority".to_string()),
+                membership: Err("no value supplied for membership".to_string()),
+                subject_binding: Ok(Default::default()),
+            }
+        }
+    }
+    impl AuthorityPresentation {
+        pub fn authority<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.authority = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for authority: {e}"));
+            self
+        }
+        pub fn membership<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.membership = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for membership: {e}"));
+            self
+        }
+        pub fn subject_binding<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject_binding = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject_binding: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AuthorityPresentation> for super::AuthorityPresentation {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AuthorityPresentation,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                authority: value.authority?,
+                membership: value.membership?,
+                subject_binding: value.subject_binding?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AuthorityPresentation> for AuthorityPresentation {
+        fn from(value: super::AuthorityPresentation) -> Self {
+            Self {
+                authority: Ok(value.authority),
+                membership: Ok(value.membership),
+                subject_binding: Ok(value.subject_binding),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         nomination: ::std::result::Result<::std::string::String, ::std::string::String>,
+        presentation: ::std::result::Result<super::AuthorityPresentation, ::std::string::String>,
         reason: ::std::result::Result<
             ::std::option::Option<super::PayloadReason>,
             ::std::string::String,
@@ -328,6 +465,7 @@ pub mod builder {
             Self {
                 ext: Ok(Default::default()),
                 nomination: Err("no value supplied for nomination".to_string()),
+                presentation: Err("no value supplied for presentation".to_string()),
                 reason: Ok(Default::default()),
                 room_id: Err("no value supplied for room_id".to_string()),
             }
@@ -352,6 +490,16 @@ pub mod builder {
             self.nomination = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for nomination: {e}"));
+            self
+        }
+        pub fn presentation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuthorityPresentation>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for presentation: {e}"));
             self
         }
         pub fn reason<T>(mut self, value: T) -> Self
@@ -381,6 +529,7 @@ pub mod builder {
             Ok(Self {
                 ext: value.ext?,
                 nomination: value.nomination?,
+                presentation: value.presentation?,
                 reason: value.reason?,
                 room_id: value.room_id?,
             })
@@ -391,6 +540,7 @@ pub mod builder {
             Self {
                 ext: Ok(value.ext),
                 nomination: Ok(value.nomination),
+                presentation: Ok(value.presentation),
                 reason: Ok(value.reason),
                 room_id: Ok(value.room_id),
             }
@@ -469,7 +619,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/claim. Type https://trusttasks.org/spec/rooms/owner/claim/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"ownerDid\": {\n          \"description\": \"The owner after the claim — the claimant.\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"ownerDid\"\n      ],\n      \"title\": \"Rooms Owner Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/owner/claim/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A nominated successor claims ownership of a room whose owner has stopped renewing it. A claim is an act, never an automatic promotion: an ownership change should be something somebody caused, not something that happened.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"nomination\": {\n      \"description\": \"The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room.\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Why, for the room's audit trail. A claim is a takeover; it should say what prompted it.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room being claimed.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"nomination\"\n  ],\n  \"title\": \"Rooms Owner Claim — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/claim. Type https://trusttasks.org/spec/rooms/owner/claim/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"ownerDid\": {\n          \"description\": \"The owner after the claim — the claimant.\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"ownerDid\"\n      ],\n      \"title\": \"Rooms Owner Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/owner/claim/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A nominated successor claims ownership of a room whose owner has stopped renewing it. A claim is an act, never an automatic promotion: an ownership change should be something somebody caused, not something that happened.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"nomination\": {\n      \"description\": \"The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room.\",\n      \"type\": \"string\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents.\"\n    },\n    \"reason\": {\n      \"description\": \"Why, for the room's audit trail. A claim is a takeover; it should say what prompted it.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room being claimed.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"nomination\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Owner Claim — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -478,7 +628,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/claim. Type https://trusttasks.org/spec/rooms/owner/claim/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"ownerDid\": {\n          \"description\": \"The owner after the claim — the claimant.\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"ownerDid\"\n      ],\n      \"title\": \"Rooms Owner Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/claim. Type https://trusttasks.org/spec/rooms/owner/claim/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"ownerDid\": {\n          \"description\": \"The owner after the claim — the claimant.\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"ownerDid\"\n      ],\n      \"title\": \"Rooms Owner Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

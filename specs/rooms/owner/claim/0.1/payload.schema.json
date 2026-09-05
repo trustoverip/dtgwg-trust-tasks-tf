@@ -5,7 +5,7 @@
   "description": "A nominated successor claims ownership of a room whose owner has stopped renewing it. A claim is an act, never an automatic promotion: an ownership change should be something somebody caused, not something that happened.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["roomId", "nomination"],
+  "required": ["roomId", "nomination", "presentation"],
   "properties": {
     "roomId": {
       "type": "string",
@@ -14,6 +14,10 @@
     "nomination": {
       "type": "string",
       "description": "The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents."
     },
     "reason": {
       "type": "string",

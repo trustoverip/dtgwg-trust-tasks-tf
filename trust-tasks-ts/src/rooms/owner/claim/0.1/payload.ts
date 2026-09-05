@@ -3,7 +3,7 @@
  * Source: specs/rooms/owner/claim/0.1/payload.schema.json
  */
 
-import type { Ext } from "../../../../_shared/components.js";
+import type { AuthorityPresentation, Ext } from "../../../../_shared/components.js";
 
 
 /**
@@ -18,6 +18,10 @@ export interface RoomsOwnerClaimPayload {
    * The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room.
    */
   nomination: string;
+  /**
+   * The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents.
+   */
+  presentation: AuthorityPresentation;
   /**
    * Why, for the room's audit trail. A claim is a takeover; it should say what prompted it.
    */
@@ -40,7 +44,7 @@ export interface RoomsOwnerClaimResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext };
+export type { AuthorityPresentation, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/owner/claim/0.1" as const;
@@ -72,7 +76,8 @@ export const PAYLOAD_SCHEMA = {
   "additionalProperties": false,
   "required": [
     "roomId",
-    "nomination"
+    "nomination",
+    "presentation"
   ],
   "properties": {
     "roomId": {
@@ -82,6 +87,10 @@ export const PAYLOAD_SCHEMA = {
     "nomination": {
       "type": "string",
       "description": "The succession credential the room issued to this claimant, serialized per the governing profile. Issued in advance by the owner themselves — a host verifies a decision the previous owner already made, and never makes one of its own about who should own a room."
+    },
+    "presentation": {
+      "$ref": "#/$defs/AuthorityPresentation",
+      "description": "The claimant's own membership and authority in the room. A host cannot see the MLS group, so this credential — the room's own statement that this party is a member — is the only membership it can check, and it is the same one every other room task presents."
     },
     "reason": {
       "type": "string",
@@ -126,6 +135,35 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "AuthorityPresentation": {
+      "title": "AuthorityPresentation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership",
+        "authority"
+      ],
+      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.",
+      "properties": {
+        "membership": {
+          "type": "string",
+          "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile."
+        },
+        "authority": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string"
+          },
+          "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent."
+        },
+        "subjectBinding": {
+          "type": "string",
+          "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this."
+        }
+      }
     }
   }
 } as const;
@@ -166,6 +204,35 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "AuthorityPresentation": {
+      "title": "AuthorityPresentation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership",
+        "authority"
+      ],
+      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.",
+      "properties": {
+        "membership": {
+          "type": "string",
+          "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile."
+        },
+        "authority": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string"
+          },
+          "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent."
+        },
+        "subjectBinding": {
+          "type": "string",
+          "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this."
+        }
       }
     }
   }
