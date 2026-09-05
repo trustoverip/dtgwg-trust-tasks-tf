@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/transfer/0.1",
+  "title": "Rooms Owner Transfer — payload",
+  "description": "A room's owner hands ownership to another member, deliberately and while still present. Distinct from `rooms/owner/claim`, which is what happens when they are not.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "newOwnerDid", "presentation"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room changing hands."
+    },
+    "newOwnerDid": {
+      "type": "string",
+      "description": "The member taking ownership. MUST already be a member of the room's group: an owner who cannot commit cannot renew the room, and renewal is the one thing ownership exists to do."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `admin` at this room's scope. Transferring is the most consequential thing an owner does, and it is the same grant that mints epochs."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. An ownership change with no stated reason is the one a member cannot interpret later."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Transfer — response payload",
+      "description": "Success response to rooms/owner/transfer. Type https://trusttasks.org/spec/rooms/owner/transfer/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "ownerDid"],
+      "properties": {
+        "roomId": { "type": "string" },
+        "ownerDid": {
+          "type": "string",
+          "description": "The owner after the transfer."
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

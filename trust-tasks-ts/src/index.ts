@@ -210,6 +210,8 @@ export * as RoomsKeysKeyPackage_v0_1 from "./rooms/keys/key-package/0.1/payload.
 export * as RoomsKeysOpen_v0_1 from "./rooms/keys/open/0.1/payload.js";
 export * as RoomsKeysPresent_v0_1 from "./rooms/keys/present/0.1/payload.js";
 export * as RoomsKeysWelcome_v0_1 from "./rooms/keys/welcome/0.1/payload.js";
+export * as RoomsOwnerClaim_v0_1 from "./rooms/owner/claim/0.1/payload.js";
+export * as RoomsOwnerTransfer_v0_1 from "./rooms/owner/transfer/0.1/payload.js";
 export * as RoomsRecordsCurate_v0_1 from "./rooms/records/curate/0.1/payload.js";
 export * as RoomsRecordsGet_v0_1 from "./rooms/records/get/0.1/payload.js";
 export * as RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
