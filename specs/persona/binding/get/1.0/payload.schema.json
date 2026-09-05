@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/binding/get/1.0",
+  "title": "Persona Binding Get — payload",
+  "description": "Read the binding for one persona in a context: whether a profile is bound, and its label — never its contents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "personaDid"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "personaDid": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Binding Get — response payload",
+      "description": "Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "personaDid", "bound"],
+      "properties": {
+        "contextId": { "type": "string", "minLength": 1 },
+        "personaDid": { "type": "string", "minLength": 1 },
+        "bound": { "type": "boolean", "description": "Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile." },
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized." },
+        "profileName": { "type": "string", "maxLength": 128, "description": "The holder's label for the bound profile, so an application can show which identity is in use. Names a composition; reveals none of it." },
+        "claimCount": { "type": "integer", "minimum": 0, "description": "How many claims the materialised projection holds. Lets an application render \"12 details available\" without obtaining any of them." },
+        "boundAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

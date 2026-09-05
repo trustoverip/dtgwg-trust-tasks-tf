@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/list/1.0",
+  "title": "Persona Profile List — payload",
+  "description": "Enumerate the holder's profiles. Compositions only — entries are returned, values are not.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": { "type": "string", "maxLength": 4096, "description": "Opaque continuation token from a prior response. A producer MUST NOT construct or parse one." },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile List — response payload",
+      "description": "Success response to persona/profile/list. Type https://trusttasks.org/spec/persona/profile/list/1.0#response. Profiles are returned as composed; there is no resolve option here, because resolving every profile in one call would decrypt the holder's entire pool to answer a question about names.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profiles"],
+      "properties": {
+        "profiles": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Profile" }
+        },
+        "nextCursor": { "type": "string", "maxLength": 4096, "description": "Present when more remain. Its absence is the only exhaustion signal." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
