@@ -1,8 +1,8 @@
 ---
-slug: persona/persona/list
+slug: persona/binding/list
 version: "1.0"
-title: Persona — List
-summary: An application learns which of the holder's personas operate in its own context, and nothing about anywhere else the holder operates.
+title: Persona Binding — List
+summary: An application enumerates the bindings in its own context — which personas operate here and what each presents — and learns nothing about anywhere else the holder operates.
 status: draft
 targetFrameworkVersion: "0.5"
 category: identity
@@ -30,19 +30,18 @@ exposure:
   ingests: none
   actsAsSubject: false
 errorCodes:
-  - code: persona/persona/list:cursorInvalid
+  - code: persona/binding/list:cursorInvalid
     meaning: The supplied cursor is unrecognised or expired. A producer restarts the enumeration.
     retryable: false
 ---
 
 ## Abstract
 
-**Persona — List** is the other half of what an application inside a context is
-permitted to know: which identities operate here.
+**Persona Binding — List** is the other half of what an application inside a
+context is permitted to know: which identities operate here.
 
-It carries the same thin summary as
-[`persona/binding/get`](/specs/persona/binding/get/1.0/spec.md) and for the same
-reason — an application needs to know *which identity is in use*, not what it
+It is [`persona/binding/get`](/specs/persona/binding/get/1.0/spec.md) in the
+plural, and carries the same thin summary for the same reason — an application needs to know *which identity is in use*, not what it
 contains. Whether a profile is bound, the holder's label for it, a claim count,
 and nothing more.
 
@@ -67,7 +66,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
 
 A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is
-`https://trusttasks.org/spec/persona/persona/list/1.0`, populate
+`https://trusttasks.org/spec/persona/binding/list/1.0`, populate
 `payload.contextId`, and include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 
 A conforming **maintainer** **MUST** confine the enumeration to the caller's own

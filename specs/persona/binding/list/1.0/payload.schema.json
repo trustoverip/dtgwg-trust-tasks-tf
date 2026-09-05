@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/persona/persona/list/1.0",
-  "title": "Persona List — payload",
+  "$id": "https://trusttasks.org/spec/persona/binding/list/1.0",
+  "title": "Persona Binding List — payload",
   "description": "Enumerate the personas present in one context. This context only — an application learns which identities operate where it does, and nothing about anywhere else the holder operates.",
   "type": "object",
   "additionalProperties": false,
@@ -15,8 +15,8 @@
   "$defs": {
     "Response": {
       "$anchor": "response",
-      "title": "Persona List — response payload",
-      "description": "Success response to persona/persona/list. Type https://trusttasks.org/spec/persona/persona/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.",
+      "title": "Persona Binding List — response payload",
+      "description": "Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.",
       "type": "object",
       "additionalProperties": false,
       "required": ["personas"],

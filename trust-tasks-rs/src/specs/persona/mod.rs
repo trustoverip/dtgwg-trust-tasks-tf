@@ -6,6 +6,5 @@ pub mod contact;
 pub mod correlation;
 pub mod disclosure;
 pub mod local;
-pub mod persona;
 pub mod profile;
 pub mod renderers;

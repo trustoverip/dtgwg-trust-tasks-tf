@@ -565,6 +565,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/binding/get/1.0#response" => <crate::specs::persona::binding::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/list/1.0" => <crate::specs::persona::binding::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/list/1.0#response" => <crate::specs::persona::binding::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/binding/set/1.0" => <crate::specs::persona::binding::set::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/binding/set/1.0#response" => <crate::specs::persona::binding::set::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -620,10 +624,6 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/persona/local/profile/put/1.0" => <crate::specs::persona::local::profile::put::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/local/profile/put/1.0#response" => <crate::specs::persona::local::profile::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
-        #[cfg(feature = "persona")]
-        "https://trusttasks.org/spec/persona/persona/list/1.0" => <crate::specs::persona::persona::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
-        #[cfg(feature = "persona")]
-        "https://trusttasks.org/spec/persona/persona/list/1.0#response" => <crate::specs::persona::persona::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/profile/delete/1.0" => <crate::specs::persona::profile::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
@@ -2301,6 +2301,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::persona::binding::get::v1_0::Payload,
         >()),
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::binding::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/binding/set/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::binding::set::v1_0::Payload,
         >()),
@@ -2374,10 +2378,6 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::persona::local::profile::put::v1_0::Payload,
             >())
         }
-        #[cfg(feature = "persona")]
-        "https://trusttasks.org/spec/persona/persona/list/1.0" => Some(crate::SpecPolicy::of::<
-            crate::specs::persona::persona::list::v1_0::Payload,
-        >()),
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/profile/delete/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::profile::delete::v1_0::Payload,

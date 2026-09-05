@@ -173,6 +173,7 @@ export * as PersonaAttributeDelete_v1_0 from "./persona/attribute/delete/1.0/pay
 export * as PersonaAttributeList_v1_0 from "./persona/attribute/list/1.0/payload.js";
 export * as PersonaAttributePut_v1_0 from "./persona/attribute/put/1.0/payload.js";
 export * as PersonaBindingGet_v1_0 from "./persona/binding/get/1.0/payload.js";
+export * as PersonaBindingList_v1_0 from "./persona/binding/list/1.0/payload.js";
 export * as PersonaBindingSet_v1_0 from "./persona/binding/set/1.0/payload.js";
 export * as PersonaContactDelete_v1_0 from "./persona/contact/delete/1.0/payload.js";
 export * as PersonaContactGet_v1_0 from "./persona/contact/get/1.0/payload.js";
@@ -187,7 +188,6 @@ export * as PersonaLocalProfileDelete_v1_0 from "./persona/local/profile/delete/
 export * as PersonaLocalProfileGet_v1_0 from "./persona/local/profile/get/1.0/payload.js";
 export * as PersonaLocalProfileList_v1_0 from "./persona/local/profile/list/1.0/payload.js";
 export * as PersonaLocalProfilePut_v1_0 from "./persona/local/profile/put/1.0/payload.js";
-export * as PersonaPersonaList_v1_0 from "./persona/persona/list/1.0/payload.js";
 export * as PersonaProfileDelete_v1_0 from "./persona/profile/delete/1.0/payload.js";
 export * as PersonaProfileGet_v1_0 from "./persona/profile/get/1.0/payload.js";
 export * as PersonaProfileList_v1_0 from "./persona/profile/list/1.0/payload.js";
