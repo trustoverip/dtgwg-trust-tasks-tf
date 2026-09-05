@@ -548,6 +548,102 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/messaging/ping/0.1" => <crate::specs::messaging::ping::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/ping/0.1#response" => <crate::specs::messaging::ping::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/delete/1.0" => <crate::specs::persona::attribute::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/delete/1.0#response" => <crate::specs::persona::attribute::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/list/1.0" => <crate::specs::persona::attribute::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/list/1.0#response" => <crate::specs::persona::attribute::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/put/1.0" => <crate::specs::persona::attribute::put::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/put/1.0#response" => <crate::specs::persona::attribute::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/get/1.0" => <crate::specs::persona::binding::get::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/get/1.0#response" => <crate::specs::persona::binding::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/set/1.0" => <crate::specs::persona::binding::set::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/set/1.0#response" => <crate::specs::persona::binding::set::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/delete/1.0" => <crate::specs::persona::contact::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/delete/1.0#response" => <crate::specs::persona::contact::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/get/1.0" => <crate::specs::persona::contact::get::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/get/1.0#response" => <crate::specs::persona::contact::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/list/1.0" => <crate::specs::persona::contact::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/list/1.0#response" => <crate::specs::persona::contact::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/put/1.0" => <crate::specs::persona::contact::put::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/put/1.0#response" => <crate::specs::persona::contact::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.0" => <crate::specs::persona::correlation::analyze::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.0#response" => <crate::specs::persona::correlation::analyze::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/history/1.0" => <crate::specs::persona::disclosure::history::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/history/1.0#response" => <crate::specs::persona::disclosure::history::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/present/1.0" => <crate::specs::persona::disclosure::present::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/present/1.0#response" => <crate::specs::persona::disclosure::present::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/preview/1.0" => <crate::specs::persona::disclosure::preview::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/preview/1.0#response" => <crate::specs::persona::disclosure::preview::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/binding/set/1.0" => <crate::specs::persona::local::binding::set::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/binding/set/1.0#response" => <crate::specs::persona::local::binding::set::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/delete/1.0" => <crate::specs::persona::local::profile::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/delete/1.0#response" => <crate::specs::persona::local::profile::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/get/1.0" => <crate::specs::persona::local::profile::get::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/get/1.0#response" => <crate::specs::persona::local::profile::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/list/1.0" => <crate::specs::persona::local::profile::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/list/1.0#response" => <crate::specs::persona::local::profile::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/put/1.0" => <crate::specs::persona::local::profile::put::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/put/1.0#response" => <crate::specs::persona::local::profile::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/persona/list/1.0" => <crate::specs::persona::persona::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/persona/list/1.0#response" => <crate::specs::persona::persona::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/delete/1.0" => <crate::specs::persona::profile::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/delete/1.0#response" => <crate::specs::persona::profile::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/get/1.0" => <crate::specs::persona::profile::get::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/get/1.0#response" => <crate::specs::persona::profile::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/list/1.0" => <crate::specs::persona::profile::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/list/1.0#response" => <crate::specs::persona::profile::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/put/1.0" => <crate::specs::persona::profile::put::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/put/1.0#response" => <crate::specs::persona::profile::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/renderers/list/1.0" => <crate::specs::persona::renderers::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/renderers/list/1.0#response" => <crate::specs::persona::renderers::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/activate/0.1" => <crate::specs::policy::activate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "policy")]
@@ -2185,6 +2281,122 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/ping/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::ping::v0_1::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/delete/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::attribute::delete::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::attribute::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/put/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::attribute::put::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/get/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::binding::get::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/set/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::binding::set::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/delete/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::contact::delete::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/get/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::contact::get::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::contact::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/put/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::contact::put::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::correlation::analyze::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/history/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::disclosure::history::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/present/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::disclosure::present::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/preview/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::disclosure::preview::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/binding/set/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::local::binding::set::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/delete/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::local::profile::delete::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/get/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::local::profile::get::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/list/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::local::profile::list::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/put/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::local::profile::put::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/persona/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::persona::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/delete/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::profile::delete::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/get/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::profile::get::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::profile::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/put/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::profile::put::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/renderers/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::renderers::list::v1_0::Payload,
         >()),
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/activate/0.1" => Some(crate::SpecPolicy::of::<

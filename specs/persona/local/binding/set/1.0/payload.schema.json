@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/local/binding/set/1.0",
+  "title": "Persona Local Binding Set — payload",
+  "description": "Bind a context-local profile to a persona in the same context. Safely context-callable — unlike persona/binding/set — precisely because both objects it names live below the boundary and neither reaches the holder's pool.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "personaDid"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "personaDid": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "profileId": { "oneOf": [ { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" }, { "type": "null" } ], "description": "A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the whole boundary exists to prevent." },
+    "expectedVersion": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion" },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Local Binding Set — response payload",
+      "description": "Success response to persona/local/binding/set. Type https://trusttasks.org/spec/persona/local/binding/set/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "personaDid", "version"],
+      "properties": {
+        "contextId": { "type": "string", "minLength": 1 },
+        "personaDid": { "type": "string", "minLength": 1 },
+        "profileId": { "oneOf": [ { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" }, { "type": "null" } ] },
+        "version": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

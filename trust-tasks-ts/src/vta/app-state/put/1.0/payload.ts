@@ -3,7 +3,7 @@
  * Source: specs/vta/app-state/put/1.0/payload.schema.json
  */
 
-import type { ExpectedVersion, Ext, Key, Namespace, Version } from "../../../../_shared/components.js";
+import type { ExpectedVersion_VtaV0_1 as ExpectedVersion, Ext, Key, Namespace, Version_VtaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**

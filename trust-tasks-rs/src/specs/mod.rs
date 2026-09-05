@@ -84,6 +84,8 @@ pub mod governance;
 pub mod keys;
 #[cfg(feature = "messaging")]
 pub mod messaging;
+#[cfg(feature = "persona")]
+pub mod persona;
 #[cfg(feature = "policy")]
 pub mod policy;
 #[cfg(feature = "provision")]
