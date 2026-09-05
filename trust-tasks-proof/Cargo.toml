@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-proof"
-version = "0.17.8"
+version = "0.17.9"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
