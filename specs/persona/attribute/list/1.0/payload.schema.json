@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/attribute/list/1.0",
+  "title": "Persona Attribute List — payload",
+  "description": "Enumerate the holder's attribute pool, optionally narrowed to a vocabulary prefix. Cursor-paginated. Values are omitted unless asked for, so a picker can render the pool without decrypting every fact in it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "typePrefix": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "Narrows the result to attributes whose `type` begins with this string, compared over the UTF-8 encoding. Because the vocabulary is dotted most-general-segment-first, `phone` selects every phone number and `name` every name — which is the access pattern a builder actually has. The maintainer MUST NOT interpret the value further; a prefix that ends mid-segment is a byte comparison like any other."
+    },
+    "includeValues": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default), each returned attribute carries its metadata and no `value`. A pool listing is the common case and it does not need plaintext: a picker renders `type` and `label`. Defaulting to false means the expensive, sensitive path is the one a producer has to ask for."
+    },
+    "includeStale": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true (the default), credential-backed attributes whose backing could not be re-derived are returned carrying `stale` and `staleReason`. Set false to omit them. The default is true because a holder needs to SEE that a credential-backed fact has gone stale — silently dropping it would present a pool that looks smaller than it is, and the holder would not know a claim had stopped being presentable."
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "Opaque continuation token from a prior response's `nextCursor`. A producer MUST NOT construct or parse one."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 100,
+      "description": "Maximum attributes to return. The maintainer MAY return fewer for reasons of its own and a producer MUST NOT infer exhaustion from a short page — only an absent `nextCursor` means the end."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Attribute List — response payload",
+      "description": "Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attributes"],
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Attribute" }
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -31,8 +31,10 @@ sideEffects:
   level: mutating
   rationale: "Creates or replaces one attribute. Recoverable — the prior value is overwritten but the address remains, and a conditional write cannot clobber a version it did not see."
 exposure:
-  discloses: none
+  discloses: metadata
+  ingests: personal
   actsAsSubject: false
+  rationale: The request carries one personal fact about the holder — the value itself, plus a label in their own words — into the agent's durable store. The response returns only identifiers, a version, and an advisory count of how many other profiles already present the same value; it returns no value and names no other profile.
 errorCodes:
   - code: persona/attribute/put:versionConflict
     meaning: The `expectedVersion` precondition failed. The details carry the maintainer's current version and value, so the caller can resolve without a re-read.
