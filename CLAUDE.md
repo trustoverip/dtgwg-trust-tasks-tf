@@ -98,6 +98,17 @@ defects three times.
 | `npm run smoke` | the built npm package imports as a consumer imports it | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
+| `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
+| the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()` and `TRUST_TASK_ERROR_TYPE_URI` name the same version | whether that version is the right one to have adopted |
+
+The fourth instance of the hand-maintained-list failure mode was binding *prose*:
+#308 moved `targetFrameworkVersion` to `0.5` in five bindings and updated none of
+their "Targets **framework `X`**" lines, and three current bindings still named
+`trust-task-error/0.2` after that spec reached `0.5` — one of them instructing an
+implementer to emit a `0.2` document carrying `inResponseTo`, a member `0.2` does
+not define. Both are guarded now (the table above). **A binding does not pin the
+error specification's version** — SPEC §8.1 routes to the current one — and a
+binding's prose target must match its front matter.
 
 `scripts/check-bindings-conformance.mjs` deliberately **re-implements** the
 front-matter → policy derivation rather than importing the generator's. Do not
