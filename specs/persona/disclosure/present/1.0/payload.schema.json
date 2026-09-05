@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/disclosure/present/1.0",
+  "title": "Persona Disclosure Present — payload",
+  "description": "Produce the signed disclosure a preview described. Consumes a previewId, which is what makes the two calls uncollapsible.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "previewId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "previewId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "From a prior preview. Single-use: presenting consumes it. A producer that wants to disclose twice previews twice, which is correct — the second disclosure is a second decision." },
+    "challenge": { "type": "string", "maxLength": 512, "description": "The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time." },
+    "mint": {
+      "type": "object", "additionalProperties": false,
+      "description": "Optionally mint a durable, revocable self-issued credential instead of an ephemeral artifact. Off by default: a presented disclosure is read once and revoking it afterwards is meaningless, so status machinery would be maintenance with no benefit. A holder who wants a counterparty to be able to re-verify — and themselves to be able to revoke — asks for it here and takes on a credential they must now maintain.",
+      "properties": {
+        "durable": { "type": "boolean", "default": false },
+        "validUntil": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Disclosure Present — response payload",
+      "description": "Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disclosureId", "artifact", "subject", "disclosedAt"],
+      "properties": {
+        "disclosureId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Names the append-only record this disclosure wrote, so the holder can find it again in their history." },
+        "artifact": { "type": "string", "description": "The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed." },
+        "subject": { "type": "string", "minLength": 1, "description": "The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone." },
+        "credentialId": { "type": "string", "minLength": 1, "description": "Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it." },
+        "disclosedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
