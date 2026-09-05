@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/list/1.0",
+  "title": "Persona Contact List — payload",
+  "description": "Enumerate contacts in a context, optionally narrowed to those known by one persona. Summaries only; documents are fetched one at a time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "knownByPersona": { "type": "string", "maxLength": 2048, "description": "Narrow to contacts known by this persona. Omitting it lists the context's contacts across every persona in it, which a producer SHOULD offer deliberately rather than by default — the unfiltered view is the one that shows the holder's personas side by side." },
+    "changedSince": { "type": "string", "format": "date-time", "description": "Return only contacts whose current revision was received after this instant. The cheap way to answer \"what changed while I was away\", which is the question the revision history exists to make answerable." },
+    "cursor": { "type": "string", "maxLength": 4096 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact List — response payload",
+      "description": "Success response to persona/contact/list. Type https://trusttasks.org/spec/persona/contact/list/1.0#response. Summaries carry no claim values: a list is for finding a contact, and finding one does not require disclosing every contact's details.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contacts"],
+      "properties": {
+        "contacts": {
+          "type": "array", "maxItems": 500,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["contactId", "subjectDid", "knownByPersona", "rev", "receivedAt"],
+            "properties": {
+              "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+              "subjectDid": { "type": "string", "minLength": 1 },
+              "knownByPersona": { "type": "string", "minLength": 1 },
+              "rev": { "type": "integer", "minimum": 1 },
+              "displayName": { "type": "string", "maxLength": 256, "description": "A rendering hint drawn from the contact's own disclosed display-name claim, so a list is legible. Absent when they disclosed none; a producer MUST NOT substitute the DID silently as though it were a name." },
+              "claimCount": { "type": "integer", "minimum": 0 },
+              "receivedAt": { "type": "string", "format": "date-time" },
+              "hasUnreviewedChange": { "type": "boolean", "description": "True when the current revision superseded another and the holder has not yet acknowledged the difference. This is what lets a producer badge a contact whose payment address moved — the whole point of keeping revisions." }
+            }
+          }
+        },
+        "nextCursor": { "type": "string", "maxLength": 4096 },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

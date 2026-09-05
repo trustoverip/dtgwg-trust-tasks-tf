@@ -22,26 +22,44 @@
       "title": "ValueType",
       "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
       "type": "string",
-      "enum": ["string", "number", "boolean", "date", "object"]
+      "enum": [
+        "string",
+        "number",
+        "boolean",
+        "date",
+        "object"
+      ]
     },
     "Provenance": {
       "title": "Provenance",
       "description": "Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\n\n`selfAsserted` — the holder supplied it.\n\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\n\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.",
       "type": "object",
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "oneOf": [
         {
           "additionalProperties": false,
-          "required": ["kind"],
+          "required": [
+            "kind"
+          ],
           "properties": {
-            "kind": { "const": "selfAsserted" }
+            "kind": {
+              "const": "selfAsserted"
+            }
           }
         },
         {
           "additionalProperties": false,
-          "required": ["kind", "credentialId", "claimPath"],
+          "required": [
+            "kind",
+            "credentialId",
+            "claimPath"
+          ],
           "properties": {
-            "kind": { "const": "credentialBacked" },
+            "kind": {
+              "const": "credentialBacked"
+            },
             "credentialId": {
               "type": "string",
               "minLength": 1,
@@ -65,9 +83,14 @@
         },
         {
           "additionalProperties": false,
-          "required": ["kind", "generator"],
+          "required": [
+            "kind",
+            "generator"
+          ],
           "properties": {
-            "kind": { "const": "generated" },
+            "kind": {
+              "const": "generated"
+            },
             "generator": {
               "type": "string",
               "minLength": 1,
@@ -87,18 +110,37 @@
       "title": "ProofRung",
       "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
       "type": "string",
-      "enum": ["predicate", "derived", "selectiveDisclosure", "whole"]
+      "enum": [
+        "predicate",
+        "derived",
+        "selectiveDisclosure",
+        "whole"
+      ]
     },
     "Attribute": {
       "title": "Attribute",
       "description": "One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["attributeId", "type", "valueType", "value", "provenance", "version", "updatedAt"],
+      "required": [
+        "attributeId",
+        "type",
+        "valueType",
+        "value",
+        "provenance",
+        "version",
+        "updatedAt"
+      ],
       "properties": {
-        "attributeId": { "$ref": "#/$defs/Ulid" },
-        "type": { "$ref": "#/$defs/ClaimType" },
-        "valueType": { "$ref": "#/$defs/ValueType" },
+        "attributeId": {
+          "$ref": "#/$defs/Ulid"
+        },
+        "type": {
+          "$ref": "#/$defs/ClaimType"
+        },
+        "valueType": {
+          "$ref": "#/$defs/ValueType"
+        },
         "value": {
           "description": "The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer. Absent when the caller asked for a metadata-only view, and absent when a credential-backed value could not be re-derived — a consumer MUST NOT conflate the two and MUST read `stale` to tell them apart."
         },
@@ -107,19 +149,35 @@
           "maxLength": 128,
           "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self."
         },
-        "provenance": { "$ref": "#/$defs/Provenance" },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
         "stale": {
           "type": "boolean",
           "description": "Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute."
         },
         "staleReason": {
           "type": "string",
-          "enum": ["revoked", "expired", "archived", "deleted", "notFound"],
+          "enum": [
+            "revoked",
+            "expired",
+            "archived",
+            "deleted",
+            "notFound"
+          ],
           "description": "Why re-derivation failed. Present only alongside `stale`."
         },
-        "version": { "$ref": "#/$defs/Version" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
+        "version": {
+          "$ref": "#/$defs/Version"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       }
     },
     "ProfileEntry": {
@@ -129,29 +187,52 @@
       "oneOf": [
         {
           "additionalProperties": false,
-          "required": ["ref"],
-          "properties": { "ref": { "$ref": "#/$defs/Ulid" } }
-        },
-        {
-          "additionalProperties": false,
-          "required": ["ref", "pinVersion"],
+          "required": [
+            "ref"
+          ],
           "properties": {
-            "ref": { "$ref": "#/$defs/Ulid" },
-            "pinVersion": { "$ref": "#/$defs/Version" }
+            "ref": {
+              "$ref": "#/$defs/Ulid"
+            }
           }
         },
         {
           "additionalProperties": false,
-          "required": ["ref", "override"],
+          "required": [
+            "ref",
+            "pinVersion"
+          ],
           "properties": {
-            "ref": { "$ref": "#/$defs/Ulid" },
+            "ref": {
+              "$ref": "#/$defs/Ulid"
+            },
+            "pinVersion": {
+              "$ref": "#/$defs/Version"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "override"
+          ],
+          "properties": {
+            "ref": {
+              "$ref": "#/$defs/Ulid"
+            },
             "override": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["value"],
+              "required": [
+                "value"
+              ],
               "properties": {
                 "value": {},
-                "label": { "type": "string", "maxLength": 128 }
+                "label": {
+                  "type": "string",
+                  "maxLength": 128
+                }
               },
               "description": "Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested."
             }
@@ -159,18 +240,34 @@
         },
         {
           "additionalProperties": false,
-          "required": ["inline"],
+          "required": [
+            "inline"
+          ],
           "properties": {
             "inline": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["type", "valueType", "value", "provenance"],
+              "required": [
+                "type",
+                "valueType",
+                "value",
+                "provenance"
+              ],
               "properties": {
-                "type": { "$ref": "#/$defs/ClaimType" },
-                "valueType": { "$ref": "#/$defs/ValueType" },
+                "type": {
+                  "$ref": "#/$defs/ClaimType"
+                },
+                "valueType": {
+                  "$ref": "#/$defs/ValueType"
+                },
                 "value": {},
-                "label": { "type": "string", "maxLength": 128 },
-                "provenance": { "$ref": "#/$defs/Provenance" }
+                "label": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "provenance": {
+                  "$ref": "#/$defs/Provenance"
+                }
               }
             }
           }
@@ -182,9 +279,17 @@
       "description": "A named projection over the pool. Agent-scoped, like the pool it draws from. `entries` is ordered and the order is display order.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["profileId", "name", "entries", "version", "updatedAt"],
+      "required": [
+        "profileId",
+        "name",
+        "entries",
+        "version",
+        "updatedAt"
+      ],
       "properties": {
-        "profileId": { "$ref": "#/$defs/Ulid" },
+        "profileId": {
+          "$ref": "#/$defs/Ulid"
+        },
         "name": {
           "type": "string",
           "minLength": 1,
@@ -194,17 +299,30 @@
         "entries": {
           "type": "array",
           "maxItems": 256,
-          "items": { "$ref": "#/$defs/ProfileEntry" }
+          "items": {
+            "$ref": "#/$defs/ProfileEntry"
+          }
         },
         "credentialRefs": {
           "type": "array",
           "maxItems": 256,
-          "items": { "type": "string", "minLength": 1 },
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "description": "Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other."
         },
-        "version": { "$ref": "#/$defs/Version" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
+        "version": {
+          "$ref": "#/$defs/Version"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       }
     },
     "Version": {
@@ -218,6 +336,85 @@
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "ContactDocument": {
+      "title": "ContactDocument",
+      "description": "What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claims"
+      ],
+      "properties": {
+        "publisher": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person."
+        },
+        "cardVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else."
+        },
+        "claims": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "valueType",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "$ref": "#/$defs/ClaimType"
+              },
+              "valueType": {
+                "$ref": "#/$defs/ValueType"
+              },
+              "value": {},
+              "provenance": {
+                "$ref": "#/$defs/Provenance",
+                "description": "As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself."
+              }
+            }
+          }
+        }
+      }
+    },
+    "ContactRevision": {
+      "title": "ContactRevision",
+      "description": "One received version of a contact's document. Revisions exist because an address book that silently replaces a payment address is a phishing surface, and one that says what changed and when is a defence.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rev",
+        "receivedAt"
+      ],
+      "properties": {
+        "rev": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Monotonic per contact, assigned by the recipient. Not the publisher's cardVersion — a recipient counts what it received, which is the only sequence it can vouch for."
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "supersededAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When a later revision replaced this one. Null for the current revision."
+        },
+        "document": {
+          "$ref": "#/$defs/ContactDocument"
+        }
+      }
     }
   }
 }
