@@ -53,6 +53,19 @@ A resolved claim whose credential backing could not be re-derived comes back
 carrying `stale`. A holder inspecting a profile before presenting it needs to see
 that it has quietly stopped being fully presentable.
 
+A resolved entry is a `ResolvedClaim`, not an `Attribute`, and the distinction
+is load-bearing. A profile is a *projection*, and an `inline` entry is a value
+the holder keeps in that one profile and nowhere else — it has no pool record,
+so it has no `attributeId`, no `version` and no `updatedAt`. Describing a
+resolved profile with the pool record's shape, which requires all three, cannot
+represent such an entry at all; it leaves a maintainer choosing between
+synthesising an `attributeId` — a false claim about where a value lives — and
+omitting the entry, which returns a profile that appears to present less than it
+does. So those three members are OPTIONAL here, and their absence says "this
+value is inline". Their presence carries information too: `version` beside a
+pinned entry is what lets a holder see that a profile is frozen at v3 while the
+pool has moved on.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
@@ -71,6 +84,7 @@ A conforming **maintainer** **MUST**:
 2. Return `resolved` only when asked, and in entry order.
 3. Re-derive credential-backed values during resolution, marking those it cannot as `stale` rather than returning a cached value whose backing has gone.
 4. Emit `persona/profile/get:notFound` rather than an empty success for an unknown identifier — a caller that cannot tell "absent" from "empty" will treat a typo as a profile that discloses nothing.
+5. Return every entry of the profile in `resolved`, including `inline` entries, omitting `attributeId`, `version` and `updatedAt` for those. A maintainer **MUST NOT** omit an entry it cannot fully describe, and **MUST NOT** synthesise an identifier for a value that has none.
 
 ## Authorization
 
