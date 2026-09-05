@@ -1521,6 +1521,114 @@ function checkBindingRegistry() {
   }
 }
 
+// A binding states its target framework version twice: `targetFrameworkVersion`
+// in front matter, which the registry site reads, and a "Targets **framework
+// `X`**" line in prose, which is what an implementer actually reads. #308 moved
+// the front matter of five bindings and left every prose line behind, so all
+// five advertised one target and described another for a month — the same
+// shape as the category and binding-registry traps above, and invisible for the
+// same reason: nothing compared the two. This compares them.
+function checkBindingFrameworkTarget() {
+  if (!fs.existsSync(BINDINGS_DIR)) return;
+
+  // Deliberately only the **bold** form. Prose comparing versions in passing
+  // ("targets framework `0.5` rather than `0.3`") is history, not a claim about
+  // this binding's current target, and must not be swept into the check.
+  const CLAIM = /[Tt]argets \*\*framework `([0-9]+\.[0-9]+)`\*\*/g;
+
+  for (const slug of fs.readdirSync(BINDINGS_DIR, { withFileTypes: true })) {
+    if (!slug.isDirectory() || slug.name.startsWith('_') || slug.name.startsWith('.')) continue;
+    const slugDir = path.join(BINDINGS_DIR, slug.name);
+    for (const version of fs.readdirSync(slugDir, { withFileTypes: true })) {
+      if (!version.isDirectory()) continue;
+      const specPath = path.join(slugDir, version.name, 'spec.md');
+      if (!fs.existsSync(specPath)) continue;
+
+      const rel = path.relative(ROOT, specPath);
+      const { data, body } = splitFrontMatter(fs.readFileSync(specPath, 'utf8'));
+      const declared = data && data.targetFrameworkVersion;
+      if (!declared) {
+        fail(rel, 'no targetFrameworkVersion in front matter — SPEC §9.1 requires a binding to state the framework version it targets');
+        continue;
+      }
+
+      const claims = [...body.matchAll(CLAIM)].map((m) => m[1]);
+      if (claims.length === 0) {
+        warn(`${rel}: front matter targets framework ${declared} but the prose never states it — an implementer reading the specification cannot see which framework version it was written against`);
+        continue;
+      }
+      for (const claimed of claims) {
+        if (claimed !== String(declared)) {
+          fail(
+            rel,
+            `prose says "Targets **framework \`${claimed}\`**" but front matter declares targetFrameworkVersion: "${declared}". ` +
+            `The registry publishes the front-matter value and implementers read the prose one, so the two must agree — ` +
+            `update the prose, or the front matter if ${claimed} is the intended target.`
+          );
+        }
+      }
+    }
+  }
+}
+
+// A binding naming a specific `trust-task-error/<MAJOR.MINOR>` pins a version it
+// does not own. SPEC §8.1 routes an error response to the current error
+// specification, so the pin is never what a consumer emits — it only rots, and
+// it rots invisibly because nothing dereferences prose. It had: three current
+// bindings still said `trust-task-error/0.2` after the error spec reached 0.5,
+// and one of them told an implementer to emit a 0.2 document "which names the
+// reported-on document by `inResponseTo`" — a member 0.2's payload schema does
+// not define, so following the sentence produces a document that fails
+// validation. The house style, set by didcomm-v1/0.2, is to name the
+// specification without a version.
+//
+// A superseded binding (one with a higher MINOR of the same slug on disk) is
+// exempt: its pin described the era it was written in and is frozen history,
+// exactly as §5.3 exempts retired specifications elsewhere in this build.
+function checkBindingErrorSpecPin() {
+  if (!fs.existsSync(BINDINGS_DIR)) return;
+
+  const PIN = /`trust-task-error\/([0-9]+\.[0-9]+)`/g;
+  let exempt = 0;
+
+  for (const slug of fs.readdirSync(BINDINGS_DIR, { withFileTypes: true })) {
+    if (!slug.isDirectory() || slug.name.startsWith('_') || slug.name.startsWith('.')) continue;
+    const slugDir = path.join(BINDINGS_DIR, slug.name);
+    const versions = fs.readdirSync(slugDir, { withFileTypes: true })
+      .filter((v) => v.isDirectory() && fs.existsSync(path.join(slugDir, v.name, 'spec.md')))
+      .map((v) => v.name);
+    // Numeric, not lexical: "0.10" sorts before "0.9" as a string.
+    const rank = (v) => v.split('.').map(Number);
+    const newest = versions.slice().sort((a, b) => {
+      const [am, an] = rank(a), [bm, bn] = rank(b);
+      return am - bm || an - bn;
+    }).pop();
+
+    for (const version of versions) {
+      const specPath = path.join(slugDir, version, 'spec.md');
+      const rel = path.relative(ROOT, specPath);
+      const pins = [...fs.readFileSync(specPath, 'utf8').matchAll(PIN)].map((m) => m[1]);
+      if (pins.length === 0) continue;
+      if (version !== newest) {
+        exempt += pins.length;
+        continue;
+      }
+      const distinct = [...new Set(pins)].join(', ');
+      fail(
+        rel,
+        `names trust-task-error/${distinct} (${pins.length} reference(s)). A binding does not pin the error ` +
+        `specification's version: SPEC §8.1 routes an error response to the current one, so a pinned version ` +
+        `only goes stale — and a consumer following prose that pins a version older than the members it also ` +
+        `describes emits a document that fails payload validation. Name it \`trust-task-error\` unversioned, as ` +
+        `bindings/didcomm-v1/0.2 does.`
+      );
+    }
+  }
+  if (exempt) {
+    console.log(`  Error spec pins: ${exempt} frozen in superseded binding(s) (exempt, not debt); 0 in current bindings`);
+  }
+}
+
 function main() {
   console.log(`Trust Tasks build${validateOnly ? ' (validate-only)' : ''}`);
 
@@ -1535,6 +1643,8 @@ function main() {
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
   checkBindingRegistry();
+  checkBindingFrameworkTarget();
+  checkBindingErrorSpecPin();
   checkExampleDocuments();
   const entries = discoverSpecs();
   if (entries.length === 0) {

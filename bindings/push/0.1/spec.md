@@ -32,7 +32,7 @@ The credential reality drives the split. APNs and FCM credentials are bound to t
 
 ## Status of This Document
 
-`0.1` draft. Targets **framework `0.2`** and depends on the [DIDComm binding `0.1`](../../didcomm/0.1/spec.md). The wake-handle conveyance from device to VTA is the [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md) Trust Task; the handle and allowlist shapes are [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy).
+`0.1` draft. Targets **framework `0.5`** and depends on the [DIDComm binding `0.1`](../../didcomm/0.1/spec.md). The wake-handle conveyance from device to VTA is the [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md) Trust Task; the handle and allowlist shapes are [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy).
 
 ## 1. Binding URI
 
@@ -178,7 +178,7 @@ The push channel provides **no** integrity, confidentiality, or authentication g
 
 ## 7. Error and response delivery
 
-Push is fire-and-forget and carries no Trust Task, so it has no *error response* of its own. Failures are handled at the layer that owns them: a push-service delivery failure is the gateway's concern (the [§3.2](#32-device-registration-with-the-gateway) dead-token rule); an allowlist refusal is reported to the *trigger* over whatever transport it used (REST status / DIDComm problem-report), never to the device; a malformed or unverifiable document discovered after pickup produces a `trust-task-error/0.2` returned over the DIDComm binding, exactly as if the document had arrived without a push. Conveyance failures of the handle from device to VTA surface as `device/set-wake` error codes.
+Push is fire-and-forget and carries no Trust Task, so it has no *error response* of its own. Failures are handled at the layer that owns them: a push-service delivery failure is the gateway's concern (the [§3.2](#32-device-registration-with-the-gateway) dead-token rule); an allowlist refusal is reported to the *trigger* over whatever transport it used (REST status / DIDComm problem-report), never to the device; a malformed or unverifiable document discovered after pickup produces a `trust-task-error` returned over the DIDComm binding, exactly as if the document had arrived without a push. Conveyance failures of the handle from device to VTA surface as `device/set-wake` error codes.
 
 ### 7.1 Lifecycle mapping
 
