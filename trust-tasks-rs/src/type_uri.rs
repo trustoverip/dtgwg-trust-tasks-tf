@@ -109,7 +109,7 @@ impl TypeUri {
         })
     }
 
-    /// The slug, e.g. `"acl/grant"` or `"kyc-handoff"`.
+    /// The slug, e.g. `"acl/grant"` or `"trust-task-control"`.
     pub fn slug(&self) -> &str {
         &self.slug
     }
@@ -436,16 +436,17 @@ mod tests {
 
     #[test]
     fn parses_canonical_form() {
-        let uri: TypeUri = "https://trusttasks.org/spec/kyc-handoff/1.0"
+        // A single-segment slug; the hierarchical case is covered below.
+        let uri: TypeUri = "https://trusttasks.org/spec/trust-task-error/0.5"
             .parse()
             .unwrap();
-        assert_eq!(uri.slug(), "kyc-handoff");
-        assert_eq!(uri.major(), 1);
-        assert_eq!(uri.minor(), 0);
+        assert_eq!(uri.slug(), "trust-task-error");
+        assert_eq!(uri.major(), 0);
+        assert_eq!(uri.minor(), 5);
         assert_eq!(uri.variant(), None);
         assert_eq!(
             uri.to_string(),
-            "https://trusttasks.org/spec/kyc-handoff/1.0"
+            "https://trusttasks.org/spec/trust-task-error/0.5"
         );
     }
 
@@ -551,13 +552,13 @@ mod tests {
 
     #[test]
     fn round_trips_via_serde() {
-        let uri: TypeUri = "https://trusttasks.org/spec/kyc-handoff/1.0#response"
+        let uri: TypeUri = "https://trusttasks.org/spec/acl/change-role/0.1#response"
             .parse()
             .unwrap();
         let json = serde_json::to_string(&uri).unwrap();
         assert_eq!(
             json,
-            "\"https://trusttasks.org/spec/kyc-handoff/1.0#response\""
+            "\"https://trusttasks.org/spec/acl/change-role/0.1#response\""
         );
         let back: TypeUri = serde_json::from_str(&json).unwrap();
         assert_eq!(back, uri);

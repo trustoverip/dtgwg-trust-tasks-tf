@@ -189,29 +189,28 @@ The consumer is temporarily unable to process the task and asks the producer to 
 
 ### Task-specific extended code with `details`
 
-A KYC-related ACL grant fails because a breeder document used in the underlying verification was revoked after the fact. The maintainer reports this with a slug-namespaced extended code and a `details` object whose shape is defined by the originating specification:
+An `acl/change-role` request is refused because the subject's current role does not match the `fromRole` the changing authority declared — the change was built on stale state. The maintainer reports this with a slug-namespaced extended code and a `details` object whose shape is defined by the originating specification:
 
 ```json
 {
   "id": "c4d2f713-9a8e-4d04-b29c-2f1b0b4cbe71",
   "type": "https://trusttasks.org/spec/trust-task-error/0.3",
   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "issuer": "did:web:bank.example",
-  "recipient": "did:web:verifier.example",
-  "issuedAt": "2026-05-16T14:30:00Z",
+  "issuer": "did:web:maintainer.example",
+  "recipient": "did:web:org.example",
+  "issuedAt": "2026-06-11T09:00:01Z",
   "payload": {
-    "code": "kyc-handoff:documentRevoked",
-    "message": "Passport used in verification was revoked by the issuing authority on 2026-05-10.",
-    "retryable": false,
+    "code": "acl/change-role:stateMismatch",
+    "message": "Subject's current role is 'moderator', not 'member'.",
+    "retryable": true,
     "details": {
-      "documentRef": "urn:passport:NL:XYZ123456",
-      "revokedAt": "2026-05-10T08:00:00Z"
+      "currentRole": "moderator"
     }
   }
 }
 ```
 
-A consumer that does not implement `kyc-handoff` would treat this as `taskFailed` and still honor `retryable: false`.
+A consumer that does not implement `acl/change-role` would treat this as `taskFailed` and still honor `retryable: true`.
 
 ### Carrying a proof for retention
 

@@ -27,7 +27,7 @@
 
 ## Abstract
 
-This document defines the **Trust Tasks** framework: a specification for the verifiable work that occurs between two or more parties. A Trust Task is a self-contained, transport-agnostic, JSON-based description of an outcome that two parties agree to achieve. This framework specification defines the document structure, version scheme, namespace, and conformance requirements that every individual Trust Task specification — published under the registry at `https://trusttasks.org/` — is expected to satisfy. Individual Trust Task specifications (for example, the `kyc-handoff` specification at `https://trusttasks.org/spec/kyc-handoff/1.0`) are conforming refinements of this framework.
+This document defines the **Trust Tasks** framework: a specification for the verifiable work that occurs between two or more parties. A Trust Task is a self-contained, transport-agnostic, JSON-based description of an outcome that two parties agree to achieve. This framework specification defines the document structure, version scheme, namespace, and conformance requirements that every individual Trust Task specification — published under the registry at `https://trusttasks.org/` — is expected to satisfy. Individual Trust Task specifications (for example, the `acl/change-role` specification at `https://trusttasks.org/spec/acl/change-role/0.1`) are conforming refinements of this framework.
 
 ## Status of This Document
 
@@ -162,20 +162,28 @@ A *Trust Task document* **MAY** contain additional top-level members beyond thos
 > ```json
 > {
 >   "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
->   "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
->   "issuer": "did:web:verifier.example",
->   "recipient": "did:web:bank.example",
->   "issuedAt": "2026-04-12T09:31:00Z",
->   "expiresAt": "2027-04-12T09:31:00Z",
+>   "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+>   "issuer": "did:web:org.example",
+>   "recipient": "did:web:maintainer.example",
+>   "issuedAt": "2026-06-10T14:00:00Z",
+>   "expiresAt": "2026-06-11T14:00:00Z",
 >   "payload": {
->     "subject": "did:key:z6Mk...",
->     "result": "passed",
->     "level": "LOA2"
+>     "subject": "did:web:bob.example",
+>     "fromRole": "member",
+>     "toRole": "moderator"
+>   },
+>   "proof": {
+>     "type": "DataIntegrityProof",
+>     "cryptosuite": "eddsa-rdfc-2022",
+>     "verificationMethod": "did:web:org.example#key-1",
+>     "created": "2026-06-10T14:00:00Z",
+>     "proofPurpose": "assertionMethod",
+>     "proofValue": "z5xy..."
 >   }
 > }
 > ```
 >
-> The `payload` member is the only part whose internal shape is defined by the per-task specification; everything else is framework-defined. This example carries no `proof` member; it therefore assumes delivery over a transport that provides end-to-end integrity and authentication between *producer* and *consumer*. A document delivered over a less protective transport, or one expected to be relied upon by third parties beyond the original *consumer*, would carry a `proof` member (see [§4.7.1](#471-when-to-include-a-proof)).
+> The `payload` member is the only part whose internal shape is defined by the per-task specification; everything else is framework-defined. This example carries a `proof` member because the *Trust Task specification* it names declares `proof` **REQUIRED** — a role change is retained as the evidentiary record of how privilege was acquired, and is relied upon after delivery. The framework itself leaves `proof` **OPTIONAL**: a document of a specification that does not require one is conforming without it, provided it is delivered over a transport that supplies end-to-end integrity and authentication between *producer* and *consumer* (see [§4.7.1](#471-when-to-include-a-proof)).
 
 ### 4.3 The `id` member
 
@@ -272,22 +280,22 @@ A *consumer* that does not implement JSON-LD processing **MUST** ignore the `@co
 > {
 >   "@context": [
 >     "https://www.w3.org/ns/credentials/v2",
->     "https://trusttasks.org/spec/kyc-handoff/1.0"
+>     "https://trusttasks.org/spec/acl/change-role/0.1"
 >   ],
 >   "id": "urn:uuid:7d8b1e3a-9a72-4f86-9d04-2a4b6c2c5e10",
->   "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
->   "issuer": "did:web:verifier.example",
->   "recipient": "did:web:bank.example",
->   "issuedAt": "2026-04-12T09:31:00Z",
+>   "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+>   "issuer": "did:web:org.example",
+>   "recipient": "did:web:maintainer.example",
+>   "issuedAt": "2026-06-10T14:00:00Z",
 >   "payload": {
->     "subject": "did:key:z6Mk...",
->     "result": "passed",
->     "level": "LOA2"
+>     "subject": "did:web:bob.example",
+>     "fromRole": "member",
+>     "toRole": "moderator"
 >   }
 > }
 > ```
 >
-> A *consumer* that implements JSON-LD processes the document accordingly; a *consumer* that does not implement JSON-LD ignores `@context` and processes the same document as plain JSON. The two interpretations validate against the same payload schema.
+> A *consumer* that implements JSON-LD processes the document accordingly; a *consumer* that does not implement JSON-LD ignores `@context` and processes the same document as plain JSON. The two interpretations validate against the same payload schema. The second `@context` entry shows where a specification's own context appears; the registered `acl/change-role` 0.1 does not publish one, and a *Trust Task specification* that wishes to declare a canonical context publishes it at its *Type URI* under content negotiation for `application/ld+json` as this section requires. The `proof` the specification requires is omitted throughout this example, which turns on `@context` alone.
 
 ### 4.7 Proof
 
@@ -340,19 +348,19 @@ An individual *Trust Task specification* **MAY** require either or both members 
 > ```json
 > {
 >   "id": "urn:uuid:0e9d4c2b-5f81-4d3e-9b51-7a3c89e3d1f2",
->   "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
->   "issuer": "x509:CN=Verifier,O=Example Verifier Ltd,C=NL",
->   "recipient": "x509:CN=Bank,O=Example Bank,C=NL",
->   "issuedAt": "2026-04-12T09:31:00Z",
+>   "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+>   "issuer": "x509:CN=Operations,O=Example Org,C=NL",
+>   "recipient": "x509:CN=Directory,O=Example Org,C=NL",
+>   "issuedAt": "2026-06-10T14:00:00Z",
 >   "payload": {
 >     "subject": "oidc:https://issuer.example/sub#user-94217",
->     "result": "passed",
->     "level": "LOA2"
+>     "fromRole": "member",
+>     "toRole": "moderator"
 >   }
 > }
 > ```
 >
-> Here `issuer` and `recipient` are X.509 subject distinguished names and `payload.subject` is an OIDC subject identifier. The framework treats any string identifier whose controller is verifiable under the *consumer*'s trust framework as a valid *VID*; DIDs are one realization among several.
+> Here `issuer` and `recipient` are X.509 subject distinguished names and `payload.subject` is an OIDC subject identifier. The framework treats any string identifier whose controller is verifiable under the *consumer*'s trust framework as a valid *VID*; DIDs are one realization among several. The `proof` the named specification requires is omitted for brevity; it plays no part in the point this example makes.
 
 #### 4.8.2 Audience binding
 
@@ -444,24 +452,24 @@ Where the transport carries its own parent-thread concept, the two **MUST** agre
 > ```json
 > {
 >   "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
->   "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
->   "issuer": "did:web:verifier.example",
->   "recipient": "did:web:bank.example",
->   "issuedAt": "2026-04-12T09:31:00Z",
->   "payload": { "subject": "did:key:z6Mk...", "result": "passed", "level": "LOA2" }
+>   "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+>   "issuer": "did:web:org.example",
+>   "recipient": "did:web:maintainer.example",
+>   "issuedAt": "2026-06-10T14:00:00Z",
+>   "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "moderator" }
 > }
 > ```
 >
-> The original document carried no `threadId`, so the responding *party* sets `threadId` to the originating document's `id`:
+> It carries no `proof`, and the specification it names declares one **REQUIRED**, so the *consumer* refuses it. The original document carried no `threadId`, so the responding *party* sets `threadId` to the originating document's `id`:
 >
 > ```json
 > {
 >   "id": "8a91c7b3-2e62-4a91-a3a4-9d61b75e2f01",
 >   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
->   "issuer": "did:web:bank.example",
->   "recipient": "did:web:verifier.example",
->   "issuedAt": "2026-04-12T09:33:00Z",
+>   "issuer": "did:web:maintainer.example",
+>   "recipient": "did:web:org.example",
+>   "issuedAt": "2026-06-10T14:00:02Z",
 >   "payload": { "code": "proofRequired", "retryable": false }
 > }
 > ```
@@ -705,7 +713,7 @@ The form above is the canonical, public-registry form. *Trust Task specification
 For both forms, the path components below carry identical meaning:
 
 * The URI scheme **MUST** be `https`. Other schemes (including `http`) are non-conformant: every representation served at a *Type URI* depends on transport-layer authentication and integrity, and permitting `http` would normalize a transport-downgrade path for any *consumer* that dereferences the URI.
-* `<slug>` is a lowercase, hyphen-separated short name assigned to the specification, optionally organized into one or more path segments (e.g. `kyc-handoff`, or `acl/grant`). The slug **MUST** match the regular expression `^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$`. Each `/`-delimited segment **MUST** individually satisfy the single-segment grammar (`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`); consecutive hyphens are not permitted within a segment, and consecutive slashes are not permitted between segments. Segments group related specifications under a shared namespace and are reflected in the *Type URI* path verbatim — `https://trusttasks.org/spec/acl/grant/0.1` is the *Type URI* of a specification whose slug is `acl/grant`.
+* `<slug>` is a lowercase, hyphen-separated short name assigned to the specification, optionally organized into one or more path segments (e.g. `trust-task-discovery`, or `acl/grant`). The slug **MUST** match the regular expression `^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$`. Each `/`-delimited segment **MUST** individually satisfy the single-segment grammar (`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`); consecutive hyphens are not permitted within a segment, and consecutive slashes are not permitted between segments. Segments group related specifications under a shared namespace and are reflected in the *Type URI* path verbatim — `https://trusttasks.org/spec/acl/grant/0.1` is the *Type URI* of a specification whose slug is `acl/grant`.
 * `<MAJOR.MINOR>` is the specification version as defined in [§5.1](#51-scheme). When resolving a *Type URI*, a *consumer* identifies the version as the final path segment (which always matches the version grammar) and the slug as the segments between `/spec/` and the version.
 
 A *Type URI* used as the value of a *Trust Task document*'s `type` member **MAY** additionally carry the fragment `#request` or `#response`, with the meanings defined in [§4.4.1](#441-request-and-response-variants). The fragments `#request` and `#response` are **RESERVED**; no other fragment values are defined by this framework, and individual *Trust Task specifications* **MUST NOT** define their own.
@@ -1033,19 +1041,19 @@ Under `identityMismatch` a *consumer* **SHOULD** omit `inResponseTo.id`: per [§
 >   "id": "9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2",
 >   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
 >   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
->   "issuer": "did:web:bank.example",
->   "recipient": "did:web:verifier.example",
->   "issuedAt": "2026-05-16T14:22:00Z",
+>   "issuer": "did:web:maintainer.example",
+>   "recipient": "did:web:org.example",
+>   "issuedAt": "2026-06-11T14:05:00Z",
 >   "payload": {
 >     "code": "expired",
->     "message": "Task expired at 2026-04-12T09:31:00Z.",
+>     "message": "Task expired at 2026-06-11T14:00:00Z.",
 >     "retryable": false
 >   },
 >   "proof": {
 >     "type": "DataIntegrityProof",
 >     "cryptosuite": "eddsa-rdfc-2022",
->     "verificationMethod": "did:web:bank.example#key-1",
->     "created": "2026-05-16T14:22:00Z",
+>     "verificationMethod": "did:web:maintainer.example#key-1",
+>     "created": "2026-06-11T14:05:00Z",
 >     "proofPurpose": "assertionMethod",
 >     "proofValue": "z58D..."
 >   }
@@ -1130,7 +1138,7 @@ A `false` value of `retryable` represents a hard failure for that specific docum
 
 ### 8.5 Extension by individual Trust Task specifications
 
-An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced, separated from the local code by a colon, e.g. `kyc-handoff:documentRevoked`. The namespace **MUST** be one of exactly two things:
+An individual *Trust Task specification* **MAY** define additional error codes specific to its task. Extended codes **MUST** be namespaced, separated from the local code by a colon, e.g. `acl/change-role:stateMismatch`. The namespace **MUST** be one of exactly two things:
 
 1. **The emitting specification's own `<slug>`** — that is, the slug of the *request* the *error response* refers to. This is the default and covers any code the specification defines for itself.
 2. **A *family namespace*** — a proper path prefix of that slug, formed of one or more of its leading `/`-separated segments (for `did-management/did/delete`, the permitted prefixes are `did-management/did` and `did-management`). A family namespace **MUST** be used only for a code whose meaning is defined once for the whole family — in a shared convention that the family's specifications reference — and never to give a specification-specific code a broader name than it has earned.
@@ -1153,23 +1161,23 @@ The `details` member defined here is distinct from the `ext` extension member de
 > {
 >   "id": "c4d2f713-9a8e-4d04-b29c-2f1b0b4cbe71",
 >   "type": "https://trusttasks.org/spec/trust-task-error/0.2",
->   "threadId": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
->   "issuer": "did:web:bank.example",
->   "recipient": "did:web:verifier.example",
->   "issuedAt": "2026-05-16T14:22:00Z",
+>   "threadId": "7b1e4d09-3c62-4a17-9f2d-51c8ab3e7d40",
+>   "issuer": "did:web:maintainer.example",
+>   "recipient": "did:web:org.example",
+>   "issuedAt": "2026-06-12T11:04:00Z",
 >   "payload": {
->     "code": "kyc-handoff:documentRevoked",
->     "message": "Passport used in verification was revoked by the issuing authority on 2026-05-10.",
+>     "code": "acl/change-role:roleNotRecognized",
+>     "message": "Role 'principal' is not part of this ACL's role vocabulary.",
 >     "retryable": false,
 >     "details": {
->       "documentRef": "urn:passport:NL:XYZ123456",
->       "revokedAt": "2026-05-10T08:00:00Z"
+>       "offendingRole": "principal",
+>       "knownRoles": ["member", "moderator", "admin"]
 >     }
 >   }
 > }
 > ```
 >
-> A *consumer* implementing the `kyc-handoff` *Trust Task specification* interprets the extended `code` per that specification's declarations (see [§7.3](#73-specification-requirements), item 9). A *consumer* that does not implement `kyc-handoff` treats the error as if `code = taskFailed`, retains `retryable = false`, and ignores the contents of `details`.
+> A *consumer* implementing the `acl/change-role` *Trust Task specification* interprets the extended `code` per that specification's declarations (see [§7.3](#73-specification-requirements), item 9). A *consumer* that does not implement `acl/change-role` treats the error as if `code = taskFailed`, retains `retryable = false`, and ignores the contents of `details`.
 
 ### 8.6 Reserved response-type slugs
 
@@ -1330,7 +1338,7 @@ A *discovery request* is a *Trust Task document* whose `type` is `https://trustt
 
 ```json
 {
-  "patterns": ["acl/*", "kyc-handoff"]
+  "patterns": ["acl/*", "consent/request"]
 }
 ```
 
@@ -1359,7 +1367,7 @@ A *discovery response* is a *Trust Task document* whose `type` is `https://trust
   "supportedTypes": [
     "https://trusttasks.org/spec/acl/grant/0.1",
     "https://trusttasks.org/spec/acl/revoke/0.1",
-    "https://trusttasks.org/spec/kyc-handoff/1.0"
+    "https://trusttasks.org/spec/consent/request/1.0"
   ]
 }
 ```
@@ -1490,46 +1498,82 @@ The editor thanks the members of the Trust Over IP Foundation Decentralized Trus
 
 *This appendix is non-normative.*
 
-This appendix shows the elements an individual *Trust Task specification* declares in order to satisfy [§7.3](#73-specification-requirements). The example below is illustrative; the slug `kyc-handoff` and its contents are used purely for demonstration and are not a reference to any actual specification registered under [§6.1](#61-type-uri).
+This appendix shows the elements an individual *Trust Task specification* declares in order to satisfy [§7.3](#73-specification-requirements). The declarations below are reproduced from the registered `acl/change-role` 0.1 specification, so every element has a live counterpart that can be dereferenced; that registry entry, not this appendix, is normative for the task itself.
 
 ### A.1 Front matter
 
 | Declaration | Value |
 |---|---|
-| Slug | `kyc-handoff` |
-| Version | `1.0` |
-| *Type URI* | `https://trusttasks.org/spec/kyc-handoff/1.0` |
-| Target framework version | `0.1` |
+| Slug | `acl/change-role` |
+| Version | `0.1` |
+| *Type URI* | `https://trusttasks.org/spec/acl/change-role/0.1` |
+| Target framework version | `0.5` |
 | Maturity level | `draft` |
-| `issuer` party | The KYC verifier. **REQUIRED**. Accepted *VID* schemes: `did:web`, `did:key`, `x509`. |
-| `recipient` party | The relying party (typically a bank). **REQUIRED**. Accepted *VID* schemes: `did:web`, `x509`. |
-| Outcome | The *issuer* attests to the *recipient* the result and assurance level of a KYC verification performed against an identified subject. |
-| Proof requirement | **REQUIRED**. Rationale: the recipient retains the verification result for compliance reporting and may rely upon it after delivery; a transport-bound integrity guarantee alone is insufficient (see [§4.7.1](#471-when-to-include-a-proof)). |
+| `issuer` party | The changing authority. **REQUIRED**. No *VID* scheme restriction is declared. |
+| `recipient` party | The ACL maintainer. **REQUIRED**. No *VID* scheme restriction is declared. |
+| Outcome | The *issuer* records to the *recipient* the transition of a subject's role within an access-control list, subject to an optimistic concurrency check against the subject's prior role. |
+| Proof requirement | **REQUIRED**. Rationale: role changes are the highest-impact ACL operation — a promotion extends privilege, a demotion withdraws it — so a non-repudiable, transport-independent record is necessary for audit, dispute resolution, and downstream parties that retained the prior grant (see [§4.7.1](#471-when-to-include-a-proof)). |
+| `issuedAt` requirement | **REQUIRED**. Rationale: a role change overwrites the entry rather than incrementing it, so a stale copy applied out of order silently reinstates a role an operator has already moved the subject off; the issue time is what lets the maintainer order two changes to the same entry and refuse the older one ([§7.3](#73-specification-requirements) item 17). |
+| Side effects | `mutating` — reassigns a subject's role in the ACL; recoverable by changing it back. |
+| Exposure | `discloses: none`. The specification does not act as the subject. |
+| Subject path | `/subject` |
 | JSON-LD `@context` | Not published at this version. |
 
 ### A.2 Payload JSON Schema
 
-Served at the *Type URI* under content negotiation for `application/schema+json`:
+Served at the *Type URI* under content negotiation for `application/schema+json`. The `$defs.Response` sub-schema is the payload of the `#response` variant defined in [§4.4.1](#441-request-and-response-variants); `$ref` values are relative to the schema's own position in the registry.
 
 ```json
 {
-  "$id": "https://trusttasks.org/spec/kyc-handoff/1.0",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl/change-role/0.1",
+  "title": "ACL Change Role — payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["subject", "result", "level"],
+  "required": ["subject", "fromRole", "toRole"],
   "properties": {
     "subject": {
       "type": "string",
-      "description": "Verifiable Identifier of the verified subject."
+      "description": "VID of the party whose role is changing."
     },
-    "result": {
+    "fromRole": {
       "type": "string",
-      "enum": ["passed", "failed"]
+      "minLength": 1,
+      "description": "The subject's prior role. Used by the maintainer for the optimistic concurrency check."
     },
-    "level": {
+    "toRole": {
       "type": "string",
-      "enum": ["LOA1", "LOA2", "LOA3"]
+      "minLength": 1,
+      "description": "The role to transition the subject to."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Optional human-readable rationale."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Change Role — response payload",
+      "description": "The success response to an acl/change-role request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "The AclEntry the maintainer now holds for the subject. entry.role MUST equal the request's payload.toRole.",
+          "$ref": "../../_shared/0.1/acl-entry.schema.json#/$defs/AclEntry"
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
     }
   }
 }
@@ -1539,18 +1583,21 @@ Served at the *Type URI* under content negotiation for `application/schema+json`
 
 | Code | Meaning | Default `retryable` | `details` shape |
 |---|---|---|---|
-| `kyc-handoff:documentRevoked` | A breeder document used in the verification was revoked by its issuing authority after the verification completed. | `false` | `{ "documentRef": <string>, "revokedAt": <RFC3339 date-time> }` |
+| `acl/change-role:roleNotRecognized` | The `fromRole` or `toRole` string is not part of the ACL maintainer's role vocabulary. | `false` | `{ "offendingRole": <string>, "knownRoles": <array of string> }` |
+| `acl/change-role:stateMismatch` | The subject's current role does not match `payload.fromRole`; the change was based on stale state. | `true` | `{ "currentRole": <string> }` |
 
-The `details` JSON Schema fragment for this code is:
+Both codes are namespaced under the emitting specification's own slug, per rule 1 of [§8.5](#85-extension-by-individual-trust-task-specifications). The `details` JSON Schema fragment for `acl/change-role:roleNotRecognized` is:
 
 ```json
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["documentRef"],
   "properties": {
-    "documentRef": { "type": "string" },
-    "revokedAt":   { "type": "string", "format": "date-time" }
+    "offendingRole": { "type": "string" },
+    "knownRoles": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
   }
 }
 ```
@@ -1559,34 +1606,35 @@ The `details` JSON Schema fragment for this code is:
 
 ```json
 {
-  "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-  "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
-  "issuer": "did:web:verifier.example",
-  "recipient": "did:web:bank.example",
-  "issuedAt": "2026-04-12T09:31:00Z",
-  "expiresAt": "2027-04-12T09:31:00Z",
+  "id": "1b3c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
+  "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+  "issuer": "did:web:org.example",
+  "recipient": "did:web:maintainer.example",
+  "issuedAt": "2026-06-10T14:00:00Z",
   "payload": {
-    "subject": "did:key:z6Mk...",
-    "result": "passed",
-    "level": "LOA2"
+    "subject": "did:web:bob.example",
+    "fromRole": "member",
+    "toRole": "moderator",
+    "reason": "Promoted after six months of community contributions."
   },
   "proof": {
     "type": "DataIntegrityProof",
     "cryptosuite": "eddsa-rdfc-2022",
-    "verificationMethod": "did:web:verifier.example#key-1",
-    "created": "2026-04-12T09:31:00Z",
+    "verificationMethod": "did:web:org.example#key-1",
+    "created": "2026-06-10T14:00:00Z",
     "proofPurpose": "assertionMethod",
-    "proofValue": "z3kg..."
+    "proofValue": "z5xy..."
   }
 }
 ```
 
 This document carries a `proof` member because the specification declares `proof` as **REQUIRED** in §A.1. A *consumer*:
 
-1. Resolves the document's `type` URI to learn the *target framework version* (`0.1`) and fetches the framework schema at `https://trusttasks.org/spec/trust-task/0.1`. The outer document structure is validated against it.
+1. Resolves the document's `type` URI to learn the *target framework version* (`0.5`) and fetches the framework schema at `https://trusttasks.org/spec/trust-task/0.5`. The outer document structure is validated against it.
 2. Fetches the payload schema at the same `type` URI under content negotiation for `application/schema+json`. The `payload` is validated against it.
 3. Verifies the `proof` per [§4.7](#47-proof) against the *VID* in `issuer`.
-4. Confirms `expiresAt` is in the future and `recipient` matches the consumer's own *VID*.
+4. Confirms `recipient` matches the consumer's own *VID*, and that `issuedAt` does not lie in the consumer's own future beyond its skew tolerance ([§7.2](#72-consumer-requirements) item 13). This document declares no `expiresAt`; where one is present it is checked here too.
+5. Applies the checks the specification adds on top of the framework's — for `acl/change-role`, that the subject's current role equals `payload.fromRole`, failing which the *consumer* answers `acl/change-role:stateMismatch` (§A.3). The framework knows nothing of this check; it is the part [§7.3](#73-specification-requirements) obliges each specification to state for itself.
 
 If any step fails, the *consumer* returns an *error response* per [§8](#8-error-responses).
 

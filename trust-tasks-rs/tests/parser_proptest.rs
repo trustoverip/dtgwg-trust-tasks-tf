@@ -60,9 +60,9 @@ proptest! {
 #[test]
 fn camel_and_snake_extended_locals_parse() {
     for raw in [
-        "acl/change-role:lastAuthorityProtected", // 0.2 camelCase
-        "kyc-handoff:documentRevoked",            // 0.2 camelCase
-        "acl/grant:permission_denied",            // 0.1 snake_case (frozen)
+        "acl/revoke:lastAuthorityProtected", // 0.2 camelCase, hierarchical
+        "trust-task-control:alreadyCancelled", // 0.2 camelCase, single-segment
+        "acl/grant:permission_denied",       // 0.1 snake_case (frozen)
     ] {
         let code: TrustTaskCode = raw.parse().unwrap_or_else(|e| panic!("parse {raw}: {e}"));
         assert!(matches!(code, TrustTaskCode::Extended { .. }));

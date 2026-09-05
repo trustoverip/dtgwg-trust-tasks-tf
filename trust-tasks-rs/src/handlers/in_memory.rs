@@ -85,7 +85,7 @@ mod tests {
     fn doc(issuer: Option<&str>, recipient: Option<&str>) -> TrustTask<serde_json::Value> {
         let mut d = TrustTask::new(
             "id-1",
-            TypeUri::canonical("kyc-handoff", 1, 0).unwrap(),
+            TypeUri::canonical("acl/change-role", 0, 1).unwrap(),
             serde_json::json!({}),
         );
         d.issuer = issuer.map(str::to_string);

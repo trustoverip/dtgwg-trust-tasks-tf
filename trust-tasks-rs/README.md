@@ -39,23 +39,24 @@ use trust_tasks_rs::{TrustTask, TypeUri};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-struct KycHandoff {
+#[serde(rename_all = "camelCase")]
+struct AclChangeRole {
     subject: String,
-    result: String,
-    level: String,
+    from_role: String,
+    to_role: String,
 }
 
-let doc: TrustTask<KycHandoff> = serde_json::from_str(r#"{
+let doc: TrustTask<AclChangeRole> = serde_json::from_str(r#"{
     "id": "4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
-    "type": "https://trusttasks.org/spec/kyc-handoff/1.0",
-    "issuer": "did:web:verifier.example",
-    "recipient": "did:web:bank.example",
-    "issuedAt": "2026-04-12T09:31:00Z",
-    "payload": { "subject": "did:key:z6Mk...", "result": "passed", "level": "LOA2" }
+    "type": "https://trusttasks.org/spec/acl/change-role/0.1",
+    "issuer": "did:web:org.example",
+    "recipient": "did:web:maintainer.example",
+    "issuedAt": "2026-06-10T14:00:00Z",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "moderator" }
 }"#)?;
 
-assert_eq!(doc.type_uri.slug(), "kyc-handoff");
-assert_eq!(doc.type_uri.major(), 1);
+assert_eq!(doc.type_uri.slug(), "acl/change-role");
+assert_eq!(doc.type_uri.minor(), 1);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -142,14 +143,15 @@ let outcome = consume_inbound(
     ProofPolicy::Verify(verifier),         // or RejectIfPresent / AcceptUnverified
     PayloadPolicy::Validate(validator),    // or ::<NoValidator>::AcceptUnvalidated
     ConsumeChecks::consequential(&*GUARD), // or ::not_consequential()
-    inbound,                                // TrustTask<KycHandoff>
+    inbound,                                // TrustTask<AclChangeRole>
     MY_VID,
     Utc::now(),
     || format!("urn:uuid:{}", Uuid::new_v4()),
     |req, parties| async move {
         // parties carries the SPEC §4.8.1-resolved issuer/recipient.
-        let receipt = run_kyc(&req.payload).map_err(|e| req.reject_with(new_id(), e.into()))?;
-        Ok(req.respond_with(new_id(), receipt))
+        let entry = apply_role_change(&req.payload)
+            .map_err(|e| req.reject_with(new_id(), e.into()))?;
+        Ok(req.respond_with(new_id(), entry))
     },
 ).await;
 

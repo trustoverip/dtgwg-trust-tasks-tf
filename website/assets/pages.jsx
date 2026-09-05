@@ -1354,20 +1354,73 @@ function SchemasIndexPage({ setRoute }) {
 /* ============================================================
    SPEC PAGE
    ============================================================ */
+/* Resolve the route to a registered task, or say so.
+
+   Strict lookup, for the reason BindingSpecPage gives. The previous
+   `|| window.TT_TASKS[0]` fallback rendered the first entry in the registry —
+   `acl/change-role`, since the build sorts by slug — under whatever was asked
+   for, and did so silently: an unregistered slug (`/spec/kyc-handoff/1.0`, the
+   illustrative slug SPEC.md used to carry) or a known slug at a version that
+   does not exist both returned a complete, confident page for a task the
+   reader never asked for, down to a Type URI box naming it.
+
+   The lookup lives in this wrapper, which uses no hooks, so a route that stops
+   resolving — back/forward onto a stale URL — unmounts SpecDetail instead of
+   changing the hook count of a mounted one. */
 function SpecPage({ slug, version, id, setRoute }) {
-  const task = (slug && window.TT_TASKS.find(t => t.slug === slug && (!version || t.version === version)))
-            || (id && window.TT_TASKS.find(t => t.id === id))
-            || window.TT_TASKS[0];
+  const all = window.TT_TASKS || [];
+  // A versionless /spec/<slug> resolves to the latest registered version: the
+  // registry build sorts each slug's versions newest-first.
+  const task = (slug && all.find(t => t.slug === slug && (!version || t.version === version)))
+            || (id && all.find(t => t.id === id));
   if (!task) {
-    return (
-      <section className="container">
-        <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
-          <b>No specifications are currently registered.</b><br />
-          Add one under <code>specs/&lt;slug&gt;/&lt;version&gt;/</code> and run <code>npm run build</code>.
-        </div>
-      </section>
-    );
+    return <SpecNotFound slug={slug} version={version} id={id} registered={all} setRoute={setRoute} />;
   }
+  return <SpecDetail task={task} setRoute={setRoute} />;
+}
+
+/* Uses no hooks — see the note on SpecPage. */
+function SpecNotFound({ slug, version, id, registered, setRoute }) {
+  const asked = `${slug || id || "(missing slug)"}${version ? `/${version}` : ""}`;
+  // A known slug at an unknown version is the likelier typo of the two, and the
+  // registry already knows which versions do exist — so offer them.
+  const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pb[0] - pa[0]) || (pb[1] - pa[1]); };
+  const siblings = slug ? registered.filter(t => t.slug === slug).sort((a, b) => cmpVer(a.version, b.version)) : [];
+  return (
+    <section className="container">
+      <div className="tt-empty" style={{ padding: "var(--tt-space-6)" }}>
+        {registered.length === 0 ? (
+          <>
+            <b>No specifications are currently registered.</b><br />
+            Add one under <code>specs/&lt;slug&gt;/&lt;version&gt;/</code> and run <code>npm run build</code>.
+          </>
+        ) : (
+          <>
+            <b>No Trust Task registered for <code>{asked}</code>.</b><br />
+            {siblings.length > 0 && (
+              <span>
+                Registered {siblings.length === 1 ? "version" : "versions"} of <code>{slug}</code>:{" "}
+                {siblings.map((t, i) => (
+                  <React.Fragment key={t.version}>
+                    {i > 0 && ", "}
+                    <a href={`/spec/${t.slug}/${t.version}`}
+                       onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: t.slug, version: t.version }); }}>v{t.version}</a>
+                  </React.Fragment>
+                ))}
+                .<br />
+              </span>
+            )}
+            <a href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }}>
+              See the Trust Task registry &rarr;
+            </a>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SpecDetail({ task, setRoute }) {
   const typeURI = `https://trusttasks.org/spec/${task.slug}/${task.version}`;
   const [copied, setCopied] = useS(false);
   const [proseHtml, setProseHtml] = useS("");
@@ -1894,7 +1947,7 @@ function ContributingPage() {
           <h2>The lifecycle.</h2>
           <ol style={{ paddingLeft: "1.2em", lineHeight: 1.9, color: "var(--tt-text-muted)" }}>
             <li><b style={{ color: "var(--tt-text)" }}>Propose.</b> Open an issue on the <a href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues" target="_blank" rel="noreferrer">repository</a> describing the task: parties, motivation, prior art. The task force triages within two weeks.</li>
-            <li><b style={{ color: "var(--tt-text)" }}>Draft.</b> Once accepted, fork the spec template and submit a pull request. The task is assigned a slug (e.g. <code>kyc-handoff</code>) and lands in the registry as <i>draft</i>.</li>
+            <li><b style={{ color: "var(--tt-text)" }}>Draft.</b> Once accepted, fork the spec template and submit a pull request. The task is assigned a slug (e.g. <code>acl/change-role</code>) and lands in the registry as <i>draft</i>.</li>
             <li><b style={{ color: "var(--tt-text)" }}>Review.</b> Public review during DTGWG meetings. Two implementations from independent parties are required before promotion.</li>
             <li><b style={{ color: "var(--tt-text)" }}>Candidate.</b> Once implementations are demonstrated, the spec moves to <i>candidate</i> status. The schema is frozen except for clarifications.</li>
             <li><b style={{ color: "var(--tt-text)" }}>Standard.</b> After a 90-day stability window with no breaking changes, the candidate is promoted to <i>standard</i>. Future revisions follow a <code style={{ fontFamily: "var(--tt-font-mono)" }}>major.minor</code> version scheme: minor bumps are backwards-compatible additions, major bumps indicate breaking changes.</li>
@@ -2156,32 +2209,32 @@ use trust_tasks_rs::{
     handlers::InMemoryHandler, RejectReason, TransportHandler, TrustTask, TypeUri,
 };
 
-const VERIFIER: &str = "did:web:verifier.example";
-const BANK: &str = "did:web:bank.example";
+const AUTHORITY:  &str = "did:web:org.example";
+const MAINTAINER: &str = "did:web:maintainer.example";
 
 // Both ends know who they are; the in-memory handler conveys this as
 // transport-authenticated identity.
-let producer = InMemoryHandler::new().with_local(VERIFIER).with_peer(BANK);
-let consumer = InMemoryHandler::new().with_local(BANK).with_peer(VERIFIER);
+let producer = InMemoryHandler::new().with_local(AUTHORITY).with_peer(MAINTAINER);
+let consumer = InMemoryHandler::new().with_local(MAINTAINER).with_peer(AUTHORITY);
 
-// Producer issues a kyc-handoff/1.0 request.
+// Producer issues an acl/change-role/0.1 request.
 let mut request = TrustTask::new(
     "req-001",
-    TypeUri::canonical("kyc-handoff", 1, 0)?,
-    KycHandoff { /* payload */ },
+    TypeUri::canonical("acl/change-role", 0, 1)?,
+    AclChangeRole { /* payload */ },
 );
-request.issuer    = Some(VERIFIER.into());
-request.recipient = Some(BANK.into());
+request.issuer    = Some(AUTHORITY.into());
+request.recipient = Some(MAINTAINER.into());
 request.issued_at = Some(Utc::now());
 producer.prepare_outbound(&mut request);
 
 // Consumer applies §4.8.1 + §7.2 and either responds or rejects.
 let resolved = consumer.resolve_parties(&request)
     .map_err(|e| request.reject_with("err-001", RejectReason::from(e)))?;
-request.validate_basic(Utc::now(), BANK)
+request.validate_basic(Utc::now(), MAINTAINER)
     .map_err(|reason| request.reject_with("err-001", reason))?;
 
-let response = request.respond_with("resp-001", KycReceipt { /* ... */ });`;
+let response = request.respond_with("resp-001", ChangeRoleResponse { /* ... */ });`;
 
   const httpsServerSnippet = `use trust_tasks_https::{BearerAuth, HttpsServer};
 use trust_tasks_rs::specs::acl::{grant, revoke};

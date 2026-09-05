@@ -162,7 +162,7 @@ A *request* document carries `type: https://trusttasks.org/spec/trust-task-disco
   "recipient": "did:web:server.example",
   "issuedAt": "2026-06-20T10:00:00Z",
   "payload": {
-    "patterns": ["acl/*", "kyc-handoff"]
+    "patterns": ["acl/*", "consent/request"]
   }
 }
 ```
