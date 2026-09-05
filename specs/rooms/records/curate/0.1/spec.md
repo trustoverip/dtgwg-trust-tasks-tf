@@ -157,3 +157,23 @@ rare and deliberate.
 The `reason` is recorded in the host's audit trail where the tier permits, and is
 member-authored free text — a host **MUST** treat it as untrusted for both rendering and
 any agent that reads it back.
+
+### Consent/purpose
+
+The purpose is judgement, not correction. `curate` changes what a record *counts for* in the
+room and leaves what it says alone, which is why it is a separate grant from `write`: the
+basis for demoting a record is that someone the room trusted with that judgement exercised
+it, and a member who can write is not thereby a member who can decide what the room stands
+behind.
+
+The `reason` is that basis written down, and it is addressed to the room rather than to the
+record's author. Nothing here notifies the author, asks them, or gives them a way to answer —
+this specification defines no member through which an author consents to a curation or
+contests one, and a deployment that needs that has to carry it outside this payload.
+
+What a contributor consented to is the room's curation regime as it stood when they wrote,
+and the tombstone is what keeps that honest: a retraction that erased the record would let
+the room's history be edited by whoever holds the grant, where one that leaves a tombstone
+records that judgement was exercised, and on the tiers that attribute at all, by whom.
+Neither the grant nor the tombstone reaches an export. Anything a member took before the
+retraction is outside the room's control, and no consent withdrawn here reaches it.

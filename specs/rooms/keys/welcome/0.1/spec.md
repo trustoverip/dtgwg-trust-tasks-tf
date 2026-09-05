@@ -140,3 +140,21 @@ the host from the path entirely rather than relying on it not to look.
 The recipient retains group key material for as long as the membership lasts. It **MUST**
 discard it on removal from the group, or it retains the ability to open everything sealed up
 to the epoch it was removed at — which is exactly what the removal was for.
+
+### Consent/purpose
+
+The invitation is the basis, and it is what makes this the completion of a two-party act
+rather than an imposition: the room offered, the party answered by minting a KeyPackage, and
+the Welcome is the owner acting on that answer. A Welcome carrying no invitation the room
+actually issued is not a join, which is what the authorization check settles.
+
+Consent extends to the recipient and no further. The addressee is the member's own
+key-holding agent, inside their trusted computing base, which is why this task is never
+addressed to a host and why on a `private` room it **MUST NOT** be routed through one. A
+member who accepted an invitation consented to their own infrastructure holding the group's
+keys. They did not thereby consent to the room's host learning that they are in it, and
+routing a join through the host discloses precisely that, one member at a time.
+
+Holding the keys is not permission to act. The purpose here is decryption capability,
+standing comes from the room's authority credentials, and an implementation that conflated
+them would have granted by delivery what it meant to grant by credential.

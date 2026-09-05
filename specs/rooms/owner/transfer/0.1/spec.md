@@ -151,3 +151,22 @@ party on every tier, so this discloses a change to something already disclosed.
 
 The recorded owner persists. The `reason` is member-authored free text and a host **MUST**
 treat it as untrusted for rendering and for any agent that reads it back.
+
+### Consent/purpose
+
+This is the one act in the ownership family where the party giving up authority is the party
+performing the task, so the basis is contemporaneous and needs no credential to evidence it:
+the owner said so, under a proof the host verified, while still present to mean it.
+
+The other side of the handover is not recorded at all. Nothing in this payload evidences that
+the incoming owner agreed to receive the room, and ownership carries real obligations —
+quota, abuse, lifecycle, and being the one party a host addresses about them. This
+specification defines no member through which the recipient accepts and no response through
+which they decline, so a deployment that needs their assent has to obtain it before the
+transfer. Afterwards the only correction is another transfer, which only they can now
+perform.
+
+What the outgoing owner gives up is also narrower than the word suggests. Handing over the
+role surrenders neither the authority their credentials confer nor their place in the group,
+and a surface that presented transfer as leaving would be describing an intention the
+protocol did not carry out.

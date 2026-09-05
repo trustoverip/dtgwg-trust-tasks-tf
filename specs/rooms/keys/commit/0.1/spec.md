@@ -140,3 +140,19 @@ that is one more reason the host is not on the path.
 Once applied, the commit message itself need not be retained — the advanced group state is
 what matters. A recipient **MUST** discard its group state entirely on removal from the
 group.
+
+### Consent/purpose
+
+The purpose is mechanical: advance one key-holder's group state by one epoch. Nothing
+personal is disclosed to anyone, and the recipient is the member's own agent, so there is
+nothing here to consent to that was not already consented to at the Welcome.
+
+That is worth stating because it means there is no per-commit decision to make. A member does
+not accept or refuse a commit — every member applies every commit in order or falls out of
+the room's key schedule, and one who does not apply has declined nothing, they have stopped
+being able to open what comes next. Consent operates at the boundaries of membership, not on
+each epoch inside it.
+
+The purpose limit is the one the room family draws everywhere: this advances key material and
+confers no standing. A recipient that read an applied commit as evidence a member may act
+would be substituting a key check for the credential check the room's authority rests on.
