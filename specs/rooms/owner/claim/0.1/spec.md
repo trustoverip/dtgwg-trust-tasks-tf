@@ -171,3 +171,22 @@ lifecycle — so a claim moves a visible role rather than revealing a hidden one
 
 The recorded owner persists. The `reason` is member-authored free text and a host **MUST**
 treat it as untrusted for rendering and for any agent that reads it back.
+
+### Consent/purpose
+
+The consent that authorizes a claim was given by the *previous* owner, in advance, in the
+nomination — the claimant exercises it rather than requests it. That is the purpose in full:
+a room that outlives one person's availability, on a basis its owner set while they were
+still there to set it.
+
+Consent given in advance decays, which is why the specification presses on validity windows.
+A nomination with no expiry is a standing right to take the room that its issuer cannot
+withdraw by simply stopping, and stopping is definitionally what a dormant owner has done.
+The three conditions bound the power; none of them re-establishes consent at the moment it is
+used.
+
+The room's other members are not party to any of this. They did not nominate, they are not
+asked, and this specification defines no member through which they could object — what they
+consented to was a room whose owner can name a successor. A surface that presented a claim as
+a decision of the room would be describing something that did not happen: the host recorded
+what an authorized party told it, and it is not an arbiter of whether the room wanted it.

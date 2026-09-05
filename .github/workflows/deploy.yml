@@ -26,6 +26,14 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Build registry (validate + generate)
+        # Strict Security & Privacy: fail on a spec that carries neither the
+        # §10/§7.3 section nor an allowlist entry. The allowlist is closed to new
+        # content by definition — it exists for specs predating the lint — so this
+        # only ever fires on a spec added without the section. It was six specs
+        # merged in three days that made the case: the warning was invisible in a
+        # green build, and nothing else would have caught them.
+        env:
+          TT_STRICT_SECURITY_PRIVACY: '1'
         run: npm run build
 
       # The CloudFront function that serves schemas at their Type URIs (SPEC

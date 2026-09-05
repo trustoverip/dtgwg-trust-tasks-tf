@@ -123,3 +123,22 @@ Welcome path avoids the host.
 The private half is retained until the KeyPackage is used or expires, and **MUST** be
 discarded at whichever comes first. Retaining it past expiry keeps a key alive for a join
 that will never happen.
+
+### Consent/purpose
+
+Minting is not joining, and the separation is the point. The purpose here is to produce
+something the owner can add; a party that mints has agreed to nothing beyond being addable.
+Consent to be in the room is the invitation, and it becomes load-bearing at the Welcome — an
+implementation that treated a mint as acceptance would collapse a two-party act into a
+one-party one.
+
+The expiry is a purpose bound rather than housekeeping. A KeyPackage minted so one room's
+owner can add one member is spent when that happens or when the window closes, and the
+private half goes with it. Keeping it alive past that keeps a key usable for a join nobody is
+still expecting.
+
+Reuse is the failure this section exists to name. Because a KeyPackage identifies its holder
+to anyone who sees it twice, offering the same one to a second room joins those two rooms'
+observers into a single view of the same party — a disclosure the party never made and cannot
+detect. Per-room minting is the whole of the defence available here: nothing in this task can
+tell whether a KeyPackage it issued is later presented elsewhere.
