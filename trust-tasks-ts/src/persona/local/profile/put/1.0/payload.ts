@@ -17,6 +17,15 @@ export interface PersonaLocalProfilePutPayload {
    * @maxItems 64
    */
   entries: {
+    /**
+     * A value the holder keeps in this context and nowhere else.
+     *
+     * Deliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.
+     *
+     * That is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.
+     *
+     * Adding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.
+     */
     inline: {
       type: ClaimType;
       valueType: ValueType;
@@ -108,6 +117,7 @@ export const PAYLOAD_SCHEMA = {
         "description": "Inline entries only. The `ref`, pinned and override forms of a pool profile are absent from this schema deliberately — a context-local profile that could reference the pool would be a context-authored object acquiring pool reach, which is exactly what the boundary exists to prevent.",
         "properties": {
           "inline": {
+            "description": "A value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
             "type": "object",
             "additionalProperties": false,
             "required": [
