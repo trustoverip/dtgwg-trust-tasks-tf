@@ -11,6 +11,44 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.1 — 2026-09-06
+
+
+### Documentation
+
+- **persona**: Say why a context-local value carries no provenance (#374)
+
+`persona/local/profile/put/1.0`'s inline entry is `{type, valueType, value,
+  label?}` — narrower than a pool profile's inline entry, which also carries
+  `provenance` and requires it. The spec explains the missing `ref`, pinned
+  and override forms at length and says nothing about this one, so the reader
+  is left to decide whether it is a rule or an oversight.
+
+  It is a rule, and a load-bearing one. A `credentialBacked` provenance names
+  a `credentialId` and a `claimPath`, and a value authored inside a context
+  has nowhere to put either — so a context-local value is self-asserted by
+  construction, and that is what a maintainer must present it as. It is the
+  same boundary the missing reference forms enforce, one member along: those
+  stop a context-authored object acquiring pool *reach*, this stops it
+  acquiring an issuer's *authority*, asserting that a value is attested when
+  no credential was ever checked, over a value the issuer never saw.
+
+  Written down because the absence is doing work that only its author can
+  currently see. An implementer meeting a required `provenance` in the
+  disclosure response and no way to supply one from a local profile has to
+  invent an answer; and the next reader, finding a member here that its
+  sibling has, could reasonably conclude it was forgotten and add it — which
+  would be a privilege escalation dressed as a convenience.
+
+  Prompted by implementing it: OpenVTC/verifiable-trust-infrastructure#1268
+  had to supply `SelfAsserted` at the mapping boundary with the reasoning in
+  a code comment, which is the wrong place for a rule every implementation
+  needs.
+
+  No schema change — a description, one normative sentence, and the
+  regenerated doc comments. Bindings conformance: 403 specs against 403 TS and
+  398 Rust modules, all agree.
+
 ## 0.17.0 — 2026-09-06
 
 
