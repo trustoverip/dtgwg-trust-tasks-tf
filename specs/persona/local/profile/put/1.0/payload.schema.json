@@ -5,33 +5,67 @@
   "description": "Compose a throwaway profile inside a context, from values supplied here rather than drawn from the holder's pool. Inline entries only: a reference is refused, and that refusal is what keeps the local surface pool-free.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contextId", "name", "entries"],
+  "required": [
+    "contextId",
+    "name",
+    "entries"
+  ],
   "properties": {
-    "contextId": { "type": "string", "minLength": 1 },
-    "profileId": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
-    "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "contextId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profileId": {
+      "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
     "entries": {
-      "type": "array", "maxItems": 64,
+      "type": "array",
+      "maxItems": 64,
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["inline"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "inline"
+        ],
         "description": "Inline entries only. The `ref`, pinned and override forms of a pool profile are absent from this schema deliberately — a context-local profile that could reference the pool would be a context-authored object acquiring pool reach, which is exactly what the boundary exists to prevent.",
         "properties": {
           "inline": {
-            "type": "object", "additionalProperties": false,
-            "required": ["type", "valueType", "value"],
+            "description": "A value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "valueType",
+              "value"
+            ],
             "properties": {
-              "type": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
-              "valueType": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType" },
+              "type": {
+                "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType"
+              },
+              "valueType": {
+                "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType"
+              },
               "value": {},
-              "label": { "type": "string", "maxLength": 128 }
+              "label": {
+                "type": "string",
+                "maxLength": 128
+              }
             }
           }
         }
       }
     },
-    "expectedVersion": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion" },
-    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+    "expectedVersion": {
+      "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
@@ -40,21 +74,46 @@
       "description": "Success response to persona/local/profile/put. Type https://trusttasks.org/spec/persona/local/profile/put/1.0#response.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["profileId", "version", "created"],
+      "required": [
+        "profileId",
+        "version",
+        "created"
+      ],
       "properties": {
-        "profileId": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
-        "version": { "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
-        "created": { "type": "boolean" },
+        "profileId": {
+          "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+        },
+        "version": {
+          "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Version"
+        },
+        "created": {
+          "type": "boolean"
+        },
         "correlation": {
-          "type": "object", "additionalProperties": false,
-          "required": ["severity"],
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "severity"
+          ],
           "description": "Local profiles ARE correlation-indexed, and the naive implementation that skips them loses the guard exactly where a human most needs it: a throwaway identity is precisely where somebody reuses a real value. Indexing them is not a leak — the index is above the boundary, is keyed by a hash, and only the holder can query it.",
           "properties": {
-            "severity": { "type": "string", "enum": ["none", "low", "high"] },
-            "matchesPoolValue": { "type": "boolean", "description": "True when a value here also appears in the holder's pool. The signal that a throwaway is not throwaway." }
+            "severity": {
+              "type": "string",
+              "enum": [
+                "none",
+                "low",
+                "high"
+              ]
+            },
+            "matchesPoolValue": {
+              "type": "boolean",
+              "description": "True when a value here also appears in the holder's pool. The signal that a throwaway is not throwaway."
+            }
           }
         },
-        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

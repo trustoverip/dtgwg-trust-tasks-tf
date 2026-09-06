@@ -50,6 +50,23 @@ own address space, so a context-scoped enumeration scans somewhere that cannot
 contain a pool profile — and the schema admits only inline entries, so a reference
 is not a rejected input but an unrepresentable one.
 
+A local entry also carries no `provenance`, and that absence is a rule rather
+than an oversight. The inline object here is `{type, valueType, value, label?}`
+— narrower than a pool profile's inline entry, which requires `provenance` —
+because a `credentialBacked` provenance names a `credentialId` and a
+`claimPath`, and a value authored inside a context has nowhere to put either. A
+context-local value is therefore **self-asserted by construction**, and that is
+what a maintainer presents it as.
+
+This is the same boundary the missing `ref`, pinned and override forms enforce,
+one member along. Those stop a context-authored object acquiring pool *reach*;
+this stops it acquiring an issuer's *authority* — asserting that a value is
+attested when no credential was ever checked, over a value the issuer never saw.
+A holder who needs a context to present an attested claim binds a pool profile,
+which is holder-authorized, rather than authoring one here. Adding a
+`provenance` member to this object would be a privilege escalation dressed as a
+convenience.
+
 The one thing that must not be inferred from "local" is "unimportant". These
 profiles are correlation-indexed like any other, because a throwaway identity is
 exactly where somebody reuses a real value.
@@ -68,8 +85,10 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is
 
 A conforming **maintainer** **MUST** confine the caller to its own context;
 **MUST** store local profiles in an address space distinct from the holder's
-pool; **MUST** refuse any entry that references a pool attribute; and **MUST**
-include local values in the holder's correlation index.
+pool; **MUST** refuse any entry that references a pool attribute; **MUST**
+include local values in the holder's correlation index; and **MUST** treat every
+local value as `selfAsserted`, presenting it as such wherever a provenance is
+required.
 
 ## Authorization
 
