@@ -29,278 +29,6 @@ pub mod error {
         }
     }
 }
-///One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Attribute",
-///  "description": "One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.",
-///  "type": "object",
-///  "required": [
-///    "attributeId",
-///    "provenance",
-///    "type",
-///    "updatedAt",
-///    "valueType",
-///    "version"
-///  ],
-///  "properties": {
-///    "attributeId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "label": {
-///      "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.",
-///      "type": "string",
-///      "maxLength": 128
-///    },
-///    "provenance": {
-///      "$ref": "#/definitions/Provenance"
-///    },
-///    "stale": {
-///      "description": "Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.",
-///      "type": "boolean"
-///    },
-///    "staleReason": {
-///      "description": "Why re-derivation failed. Present only alongside `stale`.",
-///      "type": "string",
-///      "enum": [
-///        "revoked",
-///        "expired",
-///        "archived",
-///        "deleted",
-///        "notFound"
-///      ]
-///    },
-///    "type": {
-///      "$ref": "#/definitions/ClaimType"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "value": {
-///      "description": "\nThe fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\n\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response."
-///    },
-///    "valueType": {
-///      "$ref": "#/definitions/ValueType"
-///    },
-///    "version": {
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct Attribute {
-    #[serde(rename = "attributeId")]
-    pub attribute_id: Ulid,
-    #[serde(
-        rename = "createdAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    ///The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<AttributeLabel>,
-    pub provenance: Provenance,
-    ///Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub stale: ::std::option::Option<bool>,
-    ///Why re-derivation failed. Present only alongside `stale`.
-    #[serde(
-        rename = "staleReason",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub stale_reason: ::std::option::Option<AttributeStaleReason>,
-    #[serde(rename = "type")]
-    pub type_: ClaimType,
-    #[serde(rename = "updatedAt")]
-    pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    /**
-    The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.
-
-    OPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.*/
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub value: ::std::option::Option<::serde_json::Value>,
-    #[serde(rename = "valueType")]
-    pub value_type: ValueType,
-    pub version: Version,
-}
-impl Attribute {
-    pub fn builder() -> builder::Attribute {
-        Default::default()
-    }
-}
-///The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.",
-///  "type": "string",
-///  "maxLength": 128
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AttributeLabel(::std::string::String);
-impl ::std::ops::Deref for AttributeLabel {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AttributeLabel> for ::std::string::String {
-    fn from(value: AttributeLabel) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AttributeLabel {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 128usize {
-            return Err("longer than 128 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AttributeLabel {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AttributeLabel {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AttributeLabel {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AttributeLabel {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Why re-derivation failed. Present only alongside `stale`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why re-derivation failed. Present only alongside `stale`.",
-///  "type": "string",
-///  "enum": [
-///    "revoked",
-///    "expired",
-///    "archived",
-///    "deleted",
-///    "notFound"
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum AttributeStaleReason {
-    #[serde(rename = "revoked")]
-    Revoked,
-    #[serde(rename = "expired")]
-    Expired,
-    #[serde(rename = "archived")]
-    Archived,
-    #[serde(rename = "deleted")]
-    Deleted,
-    #[serde(rename = "notFound")]
-    NotFound,
-}
-impl ::std::fmt::Display for AttributeStaleReason {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Revoked => f.write_str("revoked"),
-            Self::Expired => f.write_str("expired"),
-            Self::Archived => f.write_str("archived"),
-            Self::Deleted => f.write_str("deleted"),
-            Self::NotFound => f.write_str("notFound"),
-        }
-    }
-}
-impl ::std::str::FromStr for AttributeStaleReason {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "revoked" => Ok(Self::Revoked),
-            "expired" => Ok(Self::Expired),
-            "archived" => Ok(Self::Archived),
-            "deleted" => Ok(Self::Deleted),
-            "notFound" => Ok(Self::NotFound),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for AttributeStaleReason {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AttributeStaleReason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AttributeStaleReason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 /**
 The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.
 
@@ -1630,6 +1358,282 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant2Generator {
             })
     }
 }
+/**
+One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.
+
+Distinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.
+
+The three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "ResolvedClaim",
+///  "description": "\nOne line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.\n\nDistinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.\n\nThe three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.",
+///  "type": "object",
+///  "required": [
+///    "provenance",
+///    "type",
+///    "valueType"
+///  ],
+///  "properties": {
+///    "attributeId": {
+///      "description": "The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws.",
+///      "$ref": "#/definitions/Ulid"
+///    },
+///    "label": {
+///      "description": "The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.",
+///      "type": "string",
+///      "maxLength": 128
+///    },
+///    "provenance": {
+///      "$ref": "#/definitions/Provenance"
+///    },
+///    "stale": {
+///      "description": "Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.",
+///      "type": "boolean"
+///    },
+///    "staleReason": {
+///      "description": "Why the entry cannot be presented. Present only alongside `stale`.",
+///      "type": "string",
+///      "enum": [
+///        "revoked",
+///        "expired",
+///        "archived",
+///        "deleted",
+///        "notFound"
+///      ]
+///    },
+///    "type": {
+///      "$ref": "#/definitions/ClaimType"
+///    },
+///    "updatedAt": {
+///      "description": "When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.",
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "value": {
+///      "description": "What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be."
+///    },
+///    "valueType": {
+///      "$ref": "#/definitions/ValueType"
+///    },
+///    "version": {
+///      "description": "The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.",
+///      "$ref": "#/definitions/Version"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ResolvedClaim {
+    ///The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws.
+    #[serde(
+        rename = "attributeId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub attribute_id: ::std::option::Option<Ulid>,
+    ///The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<ResolvedClaimLabel>,
+    pub provenance: Provenance,
+    ///Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub stale: ::std::option::Option<bool>,
+    ///Why the entry cannot be presented. Present only alongside `stale`.
+    #[serde(
+        rename = "staleReason",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub stale_reason: ::std::option::Option<ResolvedClaimStaleReason>,
+    #[serde(rename = "type")]
+    pub type_: ClaimType,
+    ///When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.
+    #[serde(
+        rename = "updatedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub value: ::std::option::Option<::serde_json::Value>,
+    #[serde(rename = "valueType")]
+    pub value_type: ValueType,
+    ///The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub version: ::std::option::Option<Version>,
+}
+impl ResolvedClaim {
+    pub fn builder() -> builder::ResolvedClaim {
+        Default::default()
+    }
+}
+///The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.",
+///  "type": "string",
+///  "maxLength": 128
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResolvedClaimLabel(::std::string::String);
+impl ::std::ops::Deref for ResolvedClaimLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResolvedClaimLabel> for ::std::string::String {
+    fn from(value: ResolvedClaimLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResolvedClaimLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResolvedClaimLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResolvedClaimLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResolvedClaimLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResolvedClaimLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Why the entry cannot be presented. Present only alongside `stale`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Why the entry cannot be presented. Present only alongside `stale`.",
+///  "type": "string",
+///  "enum": [
+///    "revoked",
+///    "expired",
+///    "archived",
+///    "deleted",
+///    "notFound"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ResolvedClaimStaleReason {
+    #[serde(rename = "revoked")]
+    Revoked,
+    #[serde(rename = "expired")]
+    Expired,
+    #[serde(rename = "archived")]
+    Archived,
+    #[serde(rename = "deleted")]
+    Deleted,
+    #[serde(rename = "notFound")]
+    NotFound,
+}
+impl ::std::fmt::Display for ResolvedClaimStaleReason {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Revoked => f.write_str("revoked"),
+            Self::Expired => f.write_str("expired"),
+            Self::Archived => f.write_str("archived"),
+            Self::Deleted => f.write_str("deleted"),
+            Self::NotFound => f.write_str("notFound"),
+        }
+    }
+}
+impl ::std::str::FromStr for ResolvedClaimStaleReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "revoked" => Ok(Self::Revoked),
+            "expired" => Ok(Self::Expired),
+            "archived" => Ok(Self::Archived),
+            "deleted" => Ok(Self::Deleted),
+            "notFound" => Ok(Self::NotFound),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResolvedClaimStaleReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResolvedClaimStaleReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResolvedClaimStaleReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 ///Success response to persona/profile/get. Type https://trusttasks.org/spec/persona/profile/get/1.0#response.
 ///
 /// <details><summary>JSON schema</summary>
@@ -1650,10 +1654,10 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant2Generator {
 ///      "$ref": "#/definitions/Profile"
 ///    },
 ///    "resolved": {
-///      "description": "Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.",
+///      "description": "\nPresent only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\n\nTyped as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.",
 ///      "type": "array",
 ///      "items": {
-///        "$ref": "#/definitions/Attribute"
+///        "$ref": "#/definitions/ResolvedClaim"
 ///      },
 ///      "maxItems": 256
 ///    }
@@ -1670,9 +1674,12 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub profile: Profile,
-    ///Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.
+    /**
+    Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.
+
+    Typed as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.*/
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub resolved: ::std::vec::Vec<Attribute>,
+    pub resolved: ::std::vec::Vec<ResolvedClaim>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -1900,201 +1907,6 @@ impl ::std::fmt::Display for Version {
 }
 /// Types for composing complex structures.
 pub mod builder {
-    #[derive(Clone, Debug)]
-    pub struct Attribute {
-        attribute_id: ::std::result::Result<super::Ulid, ::std::string::String>,
-        created_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        label: ::std::result::Result<
-            ::std::option::Option<super::AttributeLabel>,
-            ::std::string::String,
-        >,
-        provenance: ::std::result::Result<super::Provenance, ::std::string::String>,
-        stale: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        stale_reason: ::std::result::Result<
-            ::std::option::Option<super::AttributeStaleReason>,
-            ::std::string::String,
-        >,
-        type_: ::std::result::Result<super::ClaimType, ::std::string::String>,
-        updated_at:
-            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
-        value: ::std::result::Result<
-            ::std::option::Option<::serde_json::Value>,
-            ::std::string::String,
-        >,
-        value_type: ::std::result::Result<super::ValueType, ::std::string::String>,
-        version: ::std::result::Result<super::Version, ::std::string::String>,
-    }
-    impl ::std::default::Default for Attribute {
-        fn default() -> Self {
-            Self {
-                attribute_id: Err("no value supplied for attribute_id".to_string()),
-                created_at: Ok(Default::default()),
-                label: Ok(Default::default()),
-                provenance: Err("no value supplied for provenance".to_string()),
-                stale: Ok(Default::default()),
-                stale_reason: Ok(Default::default()),
-                type_: Err("no value supplied for type_".to_string()),
-                updated_at: Err("no value supplied for updated_at".to_string()),
-                value: Ok(Default::default()),
-                value_type: Err("no value supplied for value_type".to_string()),
-                version: Err("no value supplied for version".to_string()),
-            }
-        }
-    }
-    impl Attribute {
-        pub fn attribute_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Ulid>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.attribute_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for attribute_id: {e}"));
-            self
-        }
-        pub fn created_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.created_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for created_at: {e}"));
-            self
-        }
-        pub fn label<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AttributeLabel>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.label = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for label: {e}"));
-            self
-        }
-        pub fn provenance<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Provenance>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.provenance = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for provenance: {e}"));
-            self
-        }
-        pub fn stale<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.stale = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for stale: {e}"));
-            self
-        }
-        pub fn stale_reason<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::AttributeStaleReason>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.stale_reason = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for stale_reason: {e}"));
-            self
-        }
-        pub fn type_<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ClaimType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.type_ = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for type_: {e}"));
-            self
-        }
-        pub fn updated_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.updated_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
-            self
-        }
-        pub fn value<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.value = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for value: {e}"));
-            self
-        }
-        pub fn value_type<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ValueType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.value_type = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for value_type: {e}"));
-            self
-        }
-        pub fn version<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::Version>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.version = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for version: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<Attribute> for super::Attribute {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: Attribute,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                attribute_id: value.attribute_id?,
-                created_at: value.created_at?,
-                label: value.label?,
-                provenance: value.provenance?,
-                stale: value.stale?,
-                stale_reason: value.stale_reason?,
-                type_: value.type_?,
-                updated_at: value.updated_at?,
-                value: value.value?,
-                value_type: value.value_type?,
-                version: value.version?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::Attribute> for Attribute {
-        fn from(value: super::Attribute) -> Self {
-            Self {
-                attribute_id: Ok(value.attribute_id),
-                created_at: Ok(value.created_at),
-                label: Ok(value.label),
-                provenance: Ok(value.provenance),
-                stale: Ok(value.stale),
-                stale_reason: Ok(value.stale_reason),
-                type_: Ok(value.type_),
-                updated_at: Ok(value.updated_at),
-                value: Ok(value.value),
-                value_type: Ok(value.value_type),
-                version: Ok(value.version),
-            }
-        }
-    }
     #[derive(Clone, Debug)]
     pub struct Payload {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -2453,10 +2265,193 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct ResolvedClaim {
+        attribute_id:
+            ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::ResolvedClaimLabel>,
+            ::std::string::String,
+        >,
+        provenance: ::std::result::Result<super::Provenance, ::std::string::String>,
+        stale: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        stale_reason: ::std::result::Result<
+            ::std::option::Option<super::ResolvedClaimStaleReason>,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<super::ClaimType, ::std::string::String>,
+        updated_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        value: ::std::result::Result<
+            ::std::option::Option<::serde_json::Value>,
+            ::std::string::String,
+        >,
+        value_type: ::std::result::Result<super::ValueType, ::std::string::String>,
+        version:
+            ::std::result::Result<::std::option::Option<super::Version>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResolvedClaim {
+        fn default() -> Self {
+            Self {
+                attribute_id: Ok(Default::default()),
+                label: Ok(Default::default()),
+                provenance: Err("no value supplied for provenance".to_string()),
+                stale: Ok(Default::default()),
+                stale_reason: Ok(Default::default()),
+                type_: Err("no value supplied for type_".to_string()),
+                updated_at: Ok(Default::default()),
+                value: Ok(Default::default()),
+                value_type: Err("no value supplied for value_type".to_string()),
+                version: Ok(Default::default()),
+            }
+        }
+    }
+    impl ResolvedClaim {
+        pub fn attribute_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ulid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attribute_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attribute_id: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResolvedClaimLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn provenance<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Provenance>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.provenance = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for provenance: {e}"));
+            self
+        }
+        pub fn stale<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.stale = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for stale: {e}"));
+            self
+        }
+        pub fn stale_reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResolvedClaimStaleReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.stale_reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for stale_reason: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ClaimType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
+            self
+        }
+        pub fn value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::serde_json::Value>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value: {e}"));
+            self
+        }
+        pub fn value_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ValueType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value_type: {e}"));
+            self
+        }
+        pub fn version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Version>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for version: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResolvedClaim> for super::ResolvedClaim {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResolvedClaim,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                attribute_id: value.attribute_id?,
+                label: value.label?,
+                provenance: value.provenance?,
+                stale: value.stale?,
+                stale_reason: value.stale_reason?,
+                type_: value.type_?,
+                updated_at: value.updated_at?,
+                value: value.value?,
+                value_type: value.value_type?,
+                version: value.version?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResolvedClaim> for ResolvedClaim {
+        fn from(value: super::ResolvedClaim) -> Self {
+            Self {
+                attribute_id: Ok(value.attribute_id),
+                label: Ok(value.label),
+                provenance: Ok(value.provenance),
+                stale: Ok(value.stale),
+                stale_reason: Ok(value.stale_reason),
+                type_: Ok(value.type_),
+                updated_at: Ok(value.updated_at),
+                value: Ok(value.value),
+                value_type: Ok(value.value_type),
+                version: Ok(value.version),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         profile: ::std::result::Result<super::Profile, ::std::string::String>,
-        resolved: ::std::result::Result<::std::vec::Vec<super::Attribute>, ::std::string::String>,
+        resolved:
+            ::std::result::Result<::std::vec::Vec<super::ResolvedClaim>, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -2490,7 +2485,7 @@ pub mod builder {
         }
         pub fn resolved<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::Attribute>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResolvedClaim>>,
             T::Error: ::std::fmt::Display,
         {
             self.resolved = value
@@ -2530,7 +2525,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Attribute\": {\n      \"additionalProperties\": false,\n      \"description\": \"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"provenance\": {\n          \"$ref\": \"#/$defs/Provenance\"\n        },\n        \"stale\": {\n          \"description\": \"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\n          \"type\": \"boolean\"\n        },\n        \"staleReason\": {\n          \"description\": \"Why re-derivation failed. Present only alongside `stale`.\",\n          \"enum\": [\n            \"revoked\",\n            \"expired\",\n            \"archived\",\n            \"deleted\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"\n        },\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"type\",\n        \"valueType\",\n        \"provenance\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Attribute\",\n      \"type\": \"object\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Profile\": {\n      \"additionalProperties\": false,\n      \"description\": \"A named projection over the pool. Agent-scoped, like the pool it draws from. `entries` is ordered and the order is display order.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"credentialRefs\": {\n          \"description\": \"Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"entries\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProfileEntry\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"description\": \"The holder's name for this profile — \\\"Work\\\", \\\"Gaming\\\". Not disclosed.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"name\",\n        \"entries\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Profile\",\n      \"type\": \"object\"\n    },\n    \"ProfileEntry\": {\n      \"description\": \"One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\\n\\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\\n\\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\\n\\n`{ref, override}` — the same fact, a different value here. (\\\"In the gaming profile my display name is different.\\\")\\n\\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\\n\\nOmission is exclusion; there is no removal marker.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"pinVersion\": {\n              \"$ref\": \"#/$defs/Version\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"pinVersion\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"override\": {\n              \"additionalProperties\": false,\n              \"description\": \"Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested.\",\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"value\": {}\n              },\n              \"required\": [\n                \"value\"\n              ],\n              \"type\": \"object\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"override\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"inline\": {\n              \"additionalProperties\": false,\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"provenance\": {\n                  \"$ref\": \"#/$defs/Provenance\"\n                },\n                \"type\": {\n                  \"$ref\": \"#/$defs/ClaimType\"\n                },\n                \"value\": {},\n                \"valueType\": {\n                  \"$ref\": \"#/$defs/ValueType\"\n                }\n              },\n              \"required\": [\n                \"type\",\n                \"valueType\",\n                \"value\",\n                \"provenance\"\n              ],\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"inline\"\n          ]\n        }\n      ],\n      \"title\": \"ProfileEntry\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/get. Type https://trusttasks.org/spec/persona/profile/get/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/Profile\"\n        },\n        \"resolved\": {\n          \"description\": \"Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Attribute\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"Persona Profile Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/profile/get/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read one profile, either as composed (the entries the holder wrote) or as resolved (the claims it would actually present).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    },\n    \"resolve\": {\n      \"default\": false,\n      \"description\": \"When false (the default) the profile is returned as composed — entries as written, references unresolved. When true the maintainer resolves every entry against the pool and returns the claims the profile would present, which is what a preview renders and what a holder is really asking when they ask what a profile says. The default is the cheap, non-disclosing one.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"profileId\"\n  ],\n  \"title\": \"Persona Profile Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Profile\": {\n      \"additionalProperties\": false,\n      \"description\": \"A named projection over the pool. Agent-scoped, like the pool it draws from. `entries` is ordered and the order is display order.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"credentialRefs\": {\n          \"description\": \"Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"entries\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProfileEntry\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"description\": \"The holder's name for this profile — \\\"Work\\\", \\\"Gaming\\\". Not disclosed.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"name\",\n        \"entries\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Profile\",\n      \"type\": \"object\"\n    },\n    \"ProfileEntry\": {\n      \"description\": \"One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\\n\\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\\n\\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\\n\\n`{ref, override}` — the same fact, a different value here. (\\\"In the gaming profile my display name is different.\\\")\\n\\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\\n\\nOmission is exclusion; there is no removal marker.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"pinVersion\": {\n              \"$ref\": \"#/$defs/Version\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"pinVersion\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"override\": {\n              \"additionalProperties\": false,\n              \"description\": \"Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested.\",\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"value\": {}\n              },\n              \"required\": [\n                \"value\"\n              ],\n              \"type\": \"object\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"override\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"inline\": {\n              \"additionalProperties\": false,\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"provenance\": {\n                  \"$ref\": \"#/$defs/Provenance\"\n                },\n                \"type\": {\n                  \"$ref\": \"#/$defs/ClaimType\"\n                },\n                \"value\": {},\n                \"valueType\": {\n                  \"$ref\": \"#/$defs/ValueType\"\n                }\n              },\n              \"required\": [\n                \"type\",\n                \"valueType\",\n                \"value\",\n                \"provenance\"\n              ],\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"inline\"\n          ]\n        }\n      ],\n      \"title\": \"ProfileEntry\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ResolvedClaim\": {\n      \"additionalProperties\": false,\n      \"description\": \"One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.\\n\\nDistinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.\\n\\nThe three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws.\"\n        },\n        \"label\": {\n          \"description\": \"The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"provenance\": {\n          \"$ref\": \"#/$defs/Provenance\"\n        },\n        \"stale\": {\n          \"description\": \"Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.\",\n          \"type\": \"boolean\"\n        },\n        \"staleReason\": {\n          \"description\": \"Why the entry cannot be presented. Present only alongside `stale`.\",\n          \"enum\": [\n            \"revoked\",\n            \"expired\",\n            \"archived\",\n            \"deleted\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be.\"\n        },\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"valueType\",\n        \"provenance\"\n      ],\n      \"title\": \"ResolvedClaim\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/get. Type https://trusttasks.org/spec/persona/profile/get/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/Profile\"\n        },\n        \"resolved\": {\n          \"description\": \"Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\\n\\nTyped as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ResolvedClaim\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"Persona Profile Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/profile/get/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read one profile, either as composed (the entries the holder wrote) or as resolved (the claims it would actually present).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    },\n    \"resolve\": {\n      \"default\": false,\n      \"description\": \"When false (the default) the profile is returned as composed — entries as written, references unresolved. When true the maintainer resolves every entry against the pool and returns the claims the profile would present, which is what a preview renders and what a holder is really asking when they ask what a profile says. The default is the cheap, non-disclosing one.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"profileId\"\n  ],\n  \"title\": \"Persona Profile Get — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2538,7 +2533,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Attribute\": {\n      \"additionalProperties\": false,\n      \"description\": \"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"provenance\": {\n          \"$ref\": \"#/$defs/Provenance\"\n        },\n        \"stale\": {\n          \"description\": \"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\n          \"type\": \"boolean\"\n        },\n        \"staleReason\": {\n          \"description\": \"Why re-derivation failed. Present only alongside `stale`.\",\n          \"enum\": [\n            \"revoked\",\n            \"expired\",\n            \"archived\",\n            \"deleted\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"\n        },\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"type\",\n        \"valueType\",\n        \"provenance\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Attribute\",\n      \"type\": \"object\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Profile\": {\n      \"additionalProperties\": false,\n      \"description\": \"A named projection over the pool. Agent-scoped, like the pool it draws from. `entries` is ordered and the order is display order.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"credentialRefs\": {\n          \"description\": \"Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"entries\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProfileEntry\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"description\": \"The holder's name for this profile — \\\"Work\\\", \\\"Gaming\\\". Not disclosed.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"name\",\n        \"entries\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Profile\",\n      \"type\": \"object\"\n    },\n    \"ProfileEntry\": {\n      \"description\": \"One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\\n\\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\\n\\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\\n\\n`{ref, override}` — the same fact, a different value here. (\\\"In the gaming profile my display name is different.\\\")\\n\\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\\n\\nOmission is exclusion; there is no removal marker.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"pinVersion\": {\n              \"$ref\": \"#/$defs/Version\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"pinVersion\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"override\": {\n              \"additionalProperties\": false,\n              \"description\": \"Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested.\",\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"value\": {}\n              },\n              \"required\": [\n                \"value\"\n              ],\n              \"type\": \"object\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"override\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"inline\": {\n              \"additionalProperties\": false,\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"provenance\": {\n                  \"$ref\": \"#/$defs/Provenance\"\n                },\n                \"type\": {\n                  \"$ref\": \"#/$defs/ClaimType\"\n                },\n                \"value\": {},\n                \"valueType\": {\n                  \"$ref\": \"#/$defs/ValueType\"\n                }\n              },\n              \"required\": [\n                \"type\",\n                \"valueType\",\n                \"value\",\n                \"provenance\"\n              ],\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"inline\"\n          ]\n        }\n      ],\n      \"title\": \"ProfileEntry\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/get. Type https://trusttasks.org/spec/persona/profile/get/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/Profile\"\n        },\n        \"resolved\": {\n          \"description\": \"Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Attribute\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"Persona Profile Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Profile\": {\n      \"additionalProperties\": false,\n      \"description\": \"A named projection over the pool. Agent-scoped, like the pool it draws from. `entries` is ordered and the order is display order.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"credentialRefs\": {\n          \"description\": \"Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"entries\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProfileEntry\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"description\": \"The holder's name for this profile — \\\"Work\\\", \\\"Gaming\\\". Not disclosed.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"name\",\n        \"entries\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Profile\",\n      \"type\": \"object\"\n    },\n    \"ProfileEntry\": {\n      \"description\": \"One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\\n\\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\\n\\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\\n\\n`{ref, override}` — the same fact, a different value here. (\\\"In the gaming profile my display name is different.\\\")\\n\\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\\n\\nOmission is exclusion; there is no removal marker.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"pinVersion\": {\n              \"$ref\": \"#/$defs/Version\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"pinVersion\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"override\": {\n              \"additionalProperties\": false,\n              \"description\": \"Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested.\",\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"value\": {}\n              },\n              \"required\": [\n                \"value\"\n              ],\n              \"type\": \"object\"\n            },\n            \"ref\": {\n              \"$ref\": \"#/$defs/Ulid\"\n            }\n          },\n          \"required\": [\n            \"ref\",\n            \"override\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"inline\": {\n              \"additionalProperties\": false,\n              \"properties\": {\n                \"label\": {\n                  \"maxLength\": 128,\n                  \"type\": \"string\"\n                },\n                \"provenance\": {\n                  \"$ref\": \"#/$defs/Provenance\"\n                },\n                \"type\": {\n                  \"$ref\": \"#/$defs/ClaimType\"\n                },\n                \"value\": {},\n                \"valueType\": {\n                  \"$ref\": \"#/$defs/ValueType\"\n                }\n              },\n              \"required\": [\n                \"type\",\n                \"valueType\",\n                \"value\",\n                \"provenance\"\n              ],\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"inline\"\n          ]\n        }\n      ],\n      \"title\": \"ProfileEntry\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ResolvedClaim\": {\n      \"additionalProperties\": false,\n      \"description\": \"One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.\\n\\nDistinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.\\n\\nThe three pool members are consequently OPTIONAL and their absence is meaningful: it says this value is inline. Their PRESENCE is equally informative — `version` alongside a pinned entry is what lets a holder see that a profile is frozen at v3 while the pool has moved on.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"The pool attribute this entry resolves against. ABSENT for an `inline` entry, which is the whole distinction this member draws.\"\n        },\n        \"label\": {\n          \"description\": \"The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"provenance\": {\n          \"$ref\": \"#/$defs/Provenance\"\n        },\n        \"stale\": {\n          \"description\": \"Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.\",\n          \"type\": \"boolean\"\n        },\n        \"staleReason\": {\n          \"description\": \"Why the entry cannot be presented. Present only alongside `stale`.\",\n          \"enum\": [\n            \"revoked\",\n            \"expired\",\n            \"archived\",\n            \"deleted\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the pool attribute behind this entry was last written. ABSENT for an `inline` entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"What this entry would present, with any override applied. Absent when `stale`, because a claim that could not be re-derived MUST NOT be disclosed and MUST NOT be shown as though it would be.\"\n        },\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The pool attribute's version this entry resolved to — the pinned one for a pinned entry, the current one otherwise. ABSENT for an `inline` entry.\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"valueType\",\n        \"provenance\"\n      ],\n      \"title\": \"ResolvedClaim\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/get. Type https://trusttasks.org/spec/persona/profile/get/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profile\": {\n          \"$ref\": \"#/$defs/Profile\"\n        },\n        \"resolved\": {\n          \"description\": \"Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.\\n\\nTyped as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ResolvedClaim\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profile\"\n      ],\n      \"title\": \"Persona Profile Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

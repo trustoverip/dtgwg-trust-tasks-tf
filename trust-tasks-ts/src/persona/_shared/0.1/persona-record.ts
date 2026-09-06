@@ -20,4 +20,4 @@ export interface PersonaRecordSharedDefinitionsForThePersonaSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Attribute, ClaimType, ContactDocument, ContactRevision, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Profile, ProfileEntry, ProofRung, Provenance, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../_shared/components.js";
+export type { Attribute, ClaimType, ContactDocument, ContactRevision, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Profile, ProfileEntry, ProofRung, Provenance, ResolvedClaim, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../_shared/components.js";
