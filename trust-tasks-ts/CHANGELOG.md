@@ -11,6 +11,46 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.0 — 2026-09-06
+
+
+### Fixed
+
+- **persona**: A resolved profile entry is not a pool record (#370)
+
+* fix(persona)!: a resolved profile entry is not a pool record
+
+  `persona/profile/get/1.0` types each entry of its `resolved` array as the
+  shared `Attribute` — the pool record shape, which requires `attributeId`,
+  `version` and `updatedAt`.
+
+  An `inline` profile entry has none of the three. It is a value the holder
+  keeps in one profile and nowhere else, so there is no pool attribute to
+  have an id, a version or a last-write time; that is the entire reason
+  inline exists. The response therefore cannot describe a profile containing
+  one, and a maintainer implementing it is left choosing between two
+  dishonest answers: synthesise an `attributeId`, which is a false claim
+  about where a value lives, or omit the entry, which returns a profile that
+  appears to present less than it does — the failure this family is built to
+  prevent.
+
+  Found by an implementation driving `profile/get` end to end. It is the
+  second defect of this shape in the persona family, after #367, and both
+  have the same cause: a *projection* borrowing the shape of the *record* it
+  projects from. They are not the same thing, and the difference shows up
+  exactly where the projection carries something the record cannot.
+
+  So `resolved` gets its own definition. `ResolvedClaim` requires `type`,
+  `valueType` and `provenance` — everything a projection always has — and
+  makes the three pool members optional, where their absence now says "this
+  value is inline". Their presence stays informative: `version` beside a
+  pinned entry is what lets a holder see that a profile is frozen at v3
+  while the pool has moved on.
+
+  A new normative requirement says the rest out loud: return every entry
+  including inline ones, never omit an entry you cannot fully describe, and
+  never synthesise an identifier for a value that has none.
+
 ## 0.16.11 — 2026-09-05
 
 
