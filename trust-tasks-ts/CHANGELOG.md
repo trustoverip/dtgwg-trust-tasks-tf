@@ -11,6 +11,99 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.2 — 2026-09-07
+
+
+### Specifications
+
+- **persona**: A claim-type registry, and the two axes that key on it (#377)
+
+* feat(persona): a claim-type registry, and the two axes that key on it
+
+  A holder's attributes carry a type, a value and a provenance, and nothing that
+  says how carefully to handle either. Every consumer therefore decides for
+  itself whether a card number is shown in the clear — which is to say, nobody
+  decides.
+
+  Four mechanisms wanted somewhere stable to attach to: a mask format, a
+  sensitivity default, a release requirement, and any mapping to an external
+  vocabulary. All four key on the claim type, and the claim type had a *pattern*
+  but no *registry* — nothing distinguished `phone.mobile` from `mobile.phone`,
+  and both validated.
+
+  ## The registry
+
+  `claim-types.json` names 26 core tokens with, for each, the expected
+  `valueType`, a sensitivity, a release requirement, a mask style, whether it is
+  in the minimum set, and the OIDC standard claims it answers.
+  `CLAIM-TYPES.md` carries the reasoning.
+
+  It does not change the decision `ClaimType` already records — the token stays
+  ours, and external vocabularies are mappings applied at presentation. It
+  *records* those mappings rather than adopting one, and keeps the two properties
+  no flat vocabulary has: a hierarchy (so `payment.*` classifies a family without
+  enumerating it) and an open `x:` namespace.
+
+  ## Three axes, kept apart
+
+  - **sensitivity** — how carefully a value is shown *to its own holder*
+  - **release** — what it takes to let it *leave*
+  - **linkability** — what it *costs* once gone (already computed, by
+    `correlation/analyze`)
+
+  A payment card is highly sensitive, release-gated and barely linkable — every
+  card number is unique, so knowing one tells a second verifier nothing about the
+  first. A passport number is all three. Reading any one as a proxy for another
+  builds a consumer that hides the wrong things and warns about the wrong things.
+
+  ## Store the override; derive the default
+
+  `Attribute.sensitivity` and `Attribute.release` are optional, and their absence
+  means *the holder did not decide* — not `normal`. A consumer resolves absence
+  from the registry, and `attribute/put` MUST NOT persist a resolved default in
+  its place: an attribute that recorded one would keep it after the registry
+  tightened, so a reclassification would protect new attributes and leave the
+  existing ones exposed.
+
+  An unregistered or `x:` token resolves to the conservative answer. That is where
+  "absence is most restrictive" belongs — applied to a vocabulary nobody has
+  reasoned about, not to an unset field on a known type, where it would mask every
+  legal name and teach holders to reveal reflexively.
+
+  ## The half that is not cosmetic
+
+  `attribute/list` gains `includeSensitive`. A listing that asked for values still
+  omits the plaintext of a `high` attribute unless it also asks for those.
+  Separate from `includeValues` because the two escalations answer different
+  callers: a picker wants every name and no card number.
+
+  Masking a value already received defends a screen. It is no defence at all
+  against a log, a crash dump, or the memory of the process holding it — the
+  control that matters is the one deciding whether the plaintext is sent.
+
+  ## Release, enforced where it can be
+
+  `disclosure/present` MUST refuse a `stepUp` claim without a fresh approval bound
+  to **that `previewId`** — `stepUpRequired`, retryable, and the preview is not
+  consumed, since refusing for want of an approval must not cost the holder the
+  decision they already made. Binding to the session instead would turn "each
+  time" into "once per login", which is the whole of what the requirement asks
+  for.
+
+  ## Also: whoami reports capabilities
+
+  Effective, not stored — the question is "what may I do", and an entry that
+  narrows nothing means everything its role implies.
+
+  Without it a client seeing only roles and scopes cannot tell whether a caller
+  holds a capability its role does not imply, so it must either refuse a caller
+  the service would honour or offer every action and let the service refuse.
+  Both are live problems: the console does the former today.
+
+  The persona conventions state the rule this sits under — **a response may name
+  identity; it may not carry identity.** whoami answers what a producer may do,
+  never who they are made of.
+
 ## 0.17.1 — 2026-09-06
 
 
