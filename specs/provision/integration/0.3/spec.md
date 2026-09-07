@@ -182,7 +182,8 @@ A conforming **producer** (the integration holder or its relayer) **MUST**:
 4. **MAY** include `payload.assertion` to request a non-default sealed-bundle assertion mode. The wire enum is `"didSigned"` (default — Ed25519 signature over the bundle's domain-bound digest, verified by the holder out-of-band against the producer's published key) and `"pinnedOnly"` (the holder pins the bundle's digest as the sole integrity anchor; for dev/test only).
 5. **MAY** include `payload.vcValiditySeconds` to request a non-default validity window for the issued authorization VC. The maintainer's policy decides the floor and ceiling; values outside that range MAY be silently clamped or rejected with `provision/integration:invalidBootstrapRequest` (`reason: "shape"`).
 6. **MAY** include `payload.createContext: true` to provision the target context inline if it does not exist. The maintainer accepts this **only** when the caller has super-admin role; context-admin callers MUST receive `provision/integration:forbidden` against a missing context.
-7. Persist the holder's Ed25519 seed in operator-private storage (RECOMMENDED file mode `0600` on POSIX, ACL-restricted on Windows). The same seed derives the X25519 receiver key the sealed bundle is opened with.
+7. **MAY** include `payload.adminScope: "unrestricted"` to ask that the minted admin be bound to no context at all rather than to `context`. See ["Admin scope"](#admin-scope). A producer that asks for it MUST read `summary.adminScope` back before acting as though it holds it.
+8. Persist the holder's Ed25519 seed in operator-private storage (RECOMMENDED file mode `0600` on POSIX, ACL-restricted on Windows). The same seed derives the X25519 receiver key the sealed bundle is opened with.
 
 A conforming **consumer** (the provisioning maintainer) **MUST**:
 
@@ -201,9 +202,9 @@ A conforming **consumer** (the provisioning maintainer) **MUST**:
    * for `templateBootstrap`: render the integration template; mint Ed25519 (signing) and X25519 (key-agreement) keypairs for every verification method the template declares; persist private halves in the maintainer's keystore; allocate a DID identifier per the template's method (`did:webvh` writes a `did.jsonl` log; `did:key` derives from the signing pubkey). When `adminTemplate` is present, additionally mint the admin DID + keys.
    * for `adminRotation`: render the admin template only.
 7. Issue a `VtaAuthorizationCredential` (W3C VC, JSON-LD, signed with the maintainer's assertionMethod key) whose `credentialSubject` is the long-term admin DID (when `adminTemplate` was used) or the ephemeral `holder` (when `templateBootstrap` had no `adminTemplate` — the "no admin rollover" path). The VC's `validFrom` is `now`; `validUntil` is `now + vcValiditySeconds` capped to the maintainer's policy. The VC has no `credentialStatus` — revocation is ACL removal, not status change.
-8. Bind an `AclEntry` for the long-term admin DID (admin role) in `context`, in the same transaction as bundle assembly. When `adminTemplate` was used the entry is created against the freshly-minted admin DID; the maintainer MUST NOT leave the ephemeral `holder` with admin role after a successful provisioning — see [`acl/swap-key/0.1`](../../../acl/swap-key/0.1/) for the equivalent ad-hoc rotation.
+8. Bind an `AclEntry` for the long-term admin DID (admin role) in `context` — or, when `payload.adminScope` is `"unrestricted"` and the relayer is itself a super-admin, with an empty context list — in the same transaction as bundle assembly. An `unrestricted` ask from a relayer that is not a super-admin MUST be refused with `provision/integration:forbidden` rather than quietly narrowed, because a producer that asked for authority and received a success has no other way to learn it did not get it. When `adminTemplate` was used the entry is created against the freshly-minted admin DID; the maintainer MUST NOT leave the ephemeral `holder` with admin role after a successful provisioning — see [`acl/swap-key/0.1`](../../../acl/swap-key/0.1/) for the equivalent ad-hoc rotation.
 9. Assemble the sealed payload per [§"Sealed bundle"](#sealed-bundle). HPKE-encrypt to the X25519 derivation of `holder`'s Ed25519 pubkey. Wrap in OpenPGP-style ASCII armor with `Bundle-Id` and `Digest-Algo` headers. Digest the *armored ciphertext* and emit the result as `summary.digestMultibase` — a multibase-encoded multihash, so the algorithm travels with the value rather than being fixed by this specification.
-10. Emit `payload.summary` with audit-grade metadata: `clientDid`, `adminDid`, `adminRolledOver`, optional `integrationDid` / `templateName` / `templateKind` / `adminTemplateName`, `bundleIdHex` (the VP nonce as hex — MUST match the `bundleId` armor header), `secretCount`, `outputCount`, `webvhServerId` when the integration's DID was published to a registered hosting server, and `contextCreated` when `createContext: true` actually provisioned the context.
+10. Emit `payload.summary` with audit-grade metadata: `clientDid`, `adminDid`, `adminRolledOver`, optional `integrationDid` / `templateName` / `templateKind` / `adminTemplateName`, `bundleIdHex` (the VP nonce as hex — MUST match the `bundleId` armor header), `secretCount`, `outputCount`, `webvhServerId` when the integration's DID was published to a registered hosting server, `contextCreated` when `createContext: true` actually provisioned the context, `context` (the resolved target context, whether it was sent or inferred), and `adminScope` naming the scope of the ACL entry that was actually written.
 11. Audit-log the provisioning with `{ relayer, holder, context, templateName, adminTemplateName, adminDid, bundleIdHex, outcome }`. The log entry MUST persist even if the response delivery later fails — the keys have been minted and the ACL bound; that's an audit event regardless of whether the relayer received the bundle.
 12. **MUST NOT** include any private key material outside the sealed `bundle`. The wire `summary` is non-secret metadata only.
 
@@ -269,6 +270,41 @@ The inference is opportunistic, not authoritative — when the producer DOES sen
 
 Maintainers that wish to expose a configured "primary" context (e.g. TEE deployments that pin `admin_context_id` at boot) MAY treat that as a fallback for case (2) above when multiple contexts are registered — the produced wire-shape is identical from the consumer's perspective. This MUST be documented in the maintainer's operator guide; the spec does not pin which approach the maintainer takes.
 
+## Admin scope
+
+`payload.context` and `payload.adminScope` answer two different questions, and a
+consumer that collapses them into one gets the wrong answer to both.
+
+**`context` is where the admin lives.** The admin DID is minted under it, the
+authorization VC is issued in it, and it is the home a wallet-class producer
+stores its own configuration under. It is resolved on every request — sent or
+inferred — and there is no request for which it is absent.
+
+**`adminScope` is how far the admin reaches.** `context` (the default) writes an
+ACL entry naming that one context: the integration acts where it was
+provisioned and nowhere else. `unrestricted` writes an entry naming no context,
+which an ACL reads as authority over every context the maintainer holds —
+including contexts created after this provisioning ran.
+
+The pairing that motivates the split is an **operator console**: a surface whose
+whole job is administering the maintainer needs `unrestricted`, and *still* has
+to keep its own configuration somewhere, which is a single ordinary context. A
+schema that expressed scope by making `context` optional would leave that
+producer with nowhere to put it — and would make "provision me everywhere" and
+"provision me wherever you like" the same document.
+
+Two constraints follow, and both are `MUST`s rather than guidance:
+
+* **A relayer may not confer what it does not hold.** `unrestricted` is
+  refused with `provision/integration:forbidden` unless the relayer is itself a
+  super-admin. This is the same rule an ACL applies to a direct grant; routing
+  the request through a provisioning maintainer does not launder it.
+* **The outcome is echoed, not assumed.** A maintainer that predates this
+  member ignores an unknown `adminScope` and writes a `context`-scoped entry,
+  and a success response is otherwise indistinguishable from one that honoured
+  the ask. `summary.adminScope` is what tells them apart; absent, a producer
+  MUST read the outcome as `context`.
+
 ## Payload
 
 `payload.request` (REQUIRED) — VP-framed bootstrap request. Full shape under `$defs.BootstrapRequest` of [`payload.schema.json`](payload.schema.json).
@@ -280,6 +316,8 @@ Maintainers that wish to expose a configured "primary" context (e.g. TEE deploym
 `payload.vcValiditySeconds` (OPTIONAL) — caller-preferred VC validity window. Capped server-side.
 
 `payload.createContext` (OPTIONAL, super-admin only) — provision the target context inline if it does not exist.
+
+`payload.adminScope` (OPTIONAL, super-admin only for `"unrestricted"`) — `"context"` (default) or `"unrestricted"`. See ["Admin scope"](#admin-scope).
 
 `payload.ext` (OPTIONAL) — extension slot per [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member).
 

@@ -203,5 +203,28 @@
       },
       "context": "default"
     }
+  },
+  {
+    "note": "adminScope outside the enum. `superAdmin` is the word an operator says; the wire names the shape of the ACL entry (`unrestricted` \u2014 no context list) rather than the informal name of the role that shape produces.",
+    "payload": {
+      "request": {
+        "@context": ["https://www.w3.org/ns/credentials/v2", "https://openvtc.org/contexts/bootstrap-v1"],
+        "type": ["VerifiablePresentation", "BootstrapRequest"],
+        "id": "urn:uuid:0e1f2a-1111-2222-3333-444455556666",
+        "holder": "did:key:z6MkpTH1234567890123456789012345678901234567890",
+        "nonce": "RmFrZU5vbmNlVmFsdWVYWFg",
+        "validUntil": "2026-05-26T13:15:00Z",
+        "ask": { "type": "adminRotation", "adminTemplate": { "name": "vta-admin" } },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:key:z6MkpTH1234567890123456789012345678901234567890#z6MkpTH1234567890123456789012345678901234567890",
+          "proofPurpose": "authentication",
+          "proofValue": "z3kg"
+        }
+      },
+      "context": "default",
+      "adminScope": "superAdmin"
+    }
   }
 ]

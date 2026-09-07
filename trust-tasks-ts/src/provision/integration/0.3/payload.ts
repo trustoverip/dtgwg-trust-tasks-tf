@@ -33,6 +33,10 @@ export interface ProvisionIntegrationPayload {
    */
   createContext?: boolean;
   /**
+   * How wide the ACL entry the maintainer writes for the minted admin is. `context` (the default, and what every integration-class consumer wants) binds the admin to `context` alone. `unrestricted` binds it to no context at all — the shape an ACL reads as a super-admin, able to act in every context the maintainer holds today and in every one created later — and is what an operator console asks for. `context` is resolved and authoritative in BOTH cases: it is where the admin DID is minted and the home a consumer stores its own configuration under, so `unrestricted` widens the grant without making the target context optional. A maintainer MUST refuse `unrestricted` with `provision/integration:forbidden` unless the relayer is itself a super-admin, because no admin may confer authority it does not hold. A maintainer that does not implement this member ignores it and writes a `context`-scoped entry; that is why the outcome is echoed as `summary.adminScope` rather than assumed from the ask.
+   */
+  adminScope?: "context" | "unrestricted";
+  /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
   ext?: Ext;
@@ -240,6 +244,14 @@ export interface ProvisionSummary {
    * True when `payload.createContext` was honoured and the maintainer provisioned the target context inline. False when the context already existed (or when `createContext` was omitted / false).
    */
   contextCreated?: boolean;
+  /**
+   * The context the integration was provisioned into — `payload.context` verbatim when it was sent, otherwise the one "Context inference" resolved. Present so a producer that omitted `context` learns where it landed, rather than re-deriving it from its own view of the maintainer's layout and being wrong in exactly the deployments the inference rules exist for. Absent from maintainers that predate this member.
+   */
+  context?: string;
+  /**
+   * The scope of the ACL entry the maintainer actually wrote for `adminDid`. Echoed rather than assumed: a maintainer that does not implement `payload.adminScope` ignores an `unrestricted` ask and writes a `context`-scoped entry, and a producer that read its own request back would record authority it does not have. Absent from maintainers that predate this member, which a producer MUST read as `context`.
+   */
+  adminScope?: "context" | "unrestricted";
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
@@ -305,6 +317,15 @@ export const PAYLOAD_SCHEMA = {
       "type": "boolean",
       "default": false,
       "description": "When `true`, the maintainer provisions the target context inline if it does not already exist. Requires super-admin role on the maintainer; context-admin callers MUST receive `provision/integration:forbidden` against a missing context. Idempotent when the context already exists."
+    },
+    "adminScope": {
+      "type": "string",
+      "enum": [
+        "context",
+        "unrestricted"
+      ],
+      "default": "context",
+      "description": "How wide the ACL entry the maintainer writes for the minted admin is. `context` (the default, and what every integration-class consumer wants) binds the admin to `context` alone. `unrestricted` binds it to no context at all — the shape an ACL reads as a super-admin, able to act in every context the maintainer holds today and in every one created later — and is what an operator console asks for. `context` is resolved and authoritative in BOTH cases: it is where the admin DID is minted and the home a consumer stores its own configuration under, so `unrestricted` widens the grant without making the target context optional. A maintainer MUST refuse `unrestricted` with `provision/integration:forbidden` unless the relayer is itself a super-admin, because no admin may confer authority it does not hold. A maintainer that does not implement this member ignores it and writes a `context`-scoped entry; that is why the outcome is echoed as `summary.adminScope` rather than assumed from the ask."
     },
     "ext": {
       "$ref": "#/$defs/Ext",
@@ -629,6 +650,19 @@ export const PAYLOAD_SCHEMA = {
           "type": "boolean",
           "default": false,
           "description": "True when `payload.createContext` was honoured and the maintainer provisioned the target context inline. False when the context already existed (or when `createContext` was omitted / false)."
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The context the integration was provisioned into — `payload.context` verbatim when it was sent, otherwise the one \"Context inference\" resolved. Present so a producer that omitted `context` learns where it landed, rather than re-deriving it from its own view of the maintainer's layout and being wrong in exactly the deployments the inference rules exist for. Absent from maintainers that predate this member."
+        },
+        "adminScope": {
+          "type": "string",
+          "enum": [
+            "context",
+            "unrestricted"
+          ],
+          "description": "The scope of the ACL entry the maintainer actually wrote for `adminDid`. Echoed rather than assumed: a maintainer that does not implement `payload.adminScope` ignores an `unrestricted` ask and writes a `context`-scoped entry, and a producer that read its own request back would record authority it does not have. Absent from maintainers that predate this member, which a producer MUST read as `context`."
         }
       }
     },
@@ -977,6 +1011,19 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "boolean",
           "default": false,
           "description": "True when `payload.createContext` was honoured and the maintainer provisioned the target context inline. False when the context already existed (or when `createContext` was omitted / false)."
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The context the integration was provisioned into — `payload.context` verbatim when it was sent, otherwise the one \"Context inference\" resolved. Present so a producer that omitted `context` learns where it landed, rather than re-deriving it from its own view of the maintainer's layout and being wrong in exactly the deployments the inference rules exist for. Absent from maintainers that predate this member."
+        },
+        "adminScope": {
+          "type": "string",
+          "enum": [
+            "context",
+            "unrestricted"
+          ],
+          "description": "The scope of the ACL entry the maintainer actually wrote for `adminDid`. Echoed rather than assumed: a maintainer that does not implement `payload.adminScope` ignores an `unrestricted` ask and writes a `context`-scoped entry, and a producer that read its own request back would record authority it does not have. Absent from maintainers that predate this member, which a producer MUST read as `context`."
         }
       }
     },
