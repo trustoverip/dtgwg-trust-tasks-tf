@@ -38,7 +38,7 @@ errorCodes:
     meaning: A claim in the preview could not be re-derived at signing time. The disclosure is refused whole rather than issued short, because a verifier receiving fewer claims than were approved cannot tell that from a holder who approved fewer.
     retryable: false
   - code: persona/disclosure/present:stepUpRequired
-    meaning: "A claim in the preview requires a fresh step-up approval (`release` is `stepUp`) and none bound to this previewId accompanied the request. Retryable once such an approval is obtained — the preview is not consumed, since refusing for want of an approval must not cost the holder the decision they already made."
+    meaning: "A claim in the preview requires a fresh step-up approval (`release` is `stepUp`) and the maintainer holds none bound to this previewId. Retryable once such an approval is obtained — the preview is not consumed, since refusing for want of an approval must not cost the holder the decision they already made."
     retryable: true
 ---
 
@@ -82,7 +82,7 @@ A conforming **maintainer** **MUST**:
 3. Refuse an expired preview rather than re-deriving the disclosure from current state — the holder was shown one thing and re-deriving could disclose another.
 4. Disclose exactly the claims the preview reported, at exactly the rungs it reported, through exactly the renderer it named.
 5. Refuse the whole disclosure with `persona/disclosure/present:staleClaim` if any claim has ceased to be derivable since the preview, rather than issuing a shorter one. A verifier receiving fewer claims than were approved cannot distinguish that from a holder who approved fewer.
-6. Refuse with `persona/disclosure/present:stepUpRequired` when any claim in the preview resolves to `release: stepUp` and no fresh approval bound to **that `previewId`** accompanies the request. An approval bound to the session instead would make "each time" mean "once per login", which is the whole of what the requirement asks for.
+6. Refuse with `persona/disclosure/present:stepUpRequired` when any claim in the preview resolves to `release: stepUp` and the maintainer holds no approval **bound to that `previewId`**. The approval is the maintainer's own state, not a member of this request: an approval a producer carried would be a bearer token, and a bearer token for a disclosure is replayable by whoever holds it. An approval bound to the *session* instead would make "each time" mean "once per login", which is the whole of what the requirement asks for. The refusal MUST NOT consume the preview.
 7. Bind the verifier's `challenge` into the artifact when supplied.
 8. Append a disclosure record naming the verifier, the persona, the claim types, the purpose and the time — **before** returning the artifact, so a crash cannot release data that was never recorded.
 
