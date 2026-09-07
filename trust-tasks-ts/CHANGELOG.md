@@ -11,6 +11,91 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.4 — 2026-09-07
+
+
+### Specifications
+
+- **provision**: Separate where an admin lives from how far it reaches (#385)
+
+`provision/integration` writes the minted admin's ACL entry naming the
+  target context, and there is no way to ask for any other shape. That is
+  right for every integration-class consumer — a mediator acts where it was
+  provisioned — and it makes one consumer unrepresentable: an operator
+  console, whose whole job is administering the maintainer, needs an entry
+  with no context list at all.
+
+  The obvious spelling, making `context` optional to mean "everywhere", is
+  the wrong one. A console still has to keep its own configuration
+  somewhere, and that somewhere is one ordinary context; dropping `context`
+  would leave it with nowhere to put it, and would collapse "provision me
+  everywhere" and "provision me wherever you like" into the same document.
+
+  So `adminScope` is a second axis beside `context`, not a replacement for
+  it: `context` says where the admin DID is minted and where its owner
+  keeps its configuration, `adminScope` says whether the ACL entry names
+  that context or nothing at all. `context` is resolved on every request
+  either way.
+
+  Two MUSTs come with it. `unrestricted` is refused with `forbidden` unless
+  the relayer is itself a super-admin, because routing a grant through a
+  provisioning maintainer does not launder authority the caller does not
+  hold. And the outcome is echoed as `summary.adminScope` rather than
+  inferred from the ask — a maintainer that predates the member ignores it
+  and writes a context-scoped entry, which is otherwise indistinguishable
+  from success. `summary.context` is echoed for the same reason: a producer
+  that omitted `context` and let inference run currently has no way to learn
+  where it landed except by guessing at the maintainer's layout, which is
+  precisely the thing the inference rules exist because it cannot do.
+
+- **persona**: The step-up approval is the maintainer's state, not the request's (#384)
+
+#377 said `present` must refuse a `stepUp` claim when "no fresh approval bound
+  to that previewId **accompanies the request**". The request has no member to put
+  one in — `present` carries `contextId`, `previewId`, `challenge`, `mint` and
+  `ext` — so the rule as written was unimplementable, and the implementation found
+  it immediately.
+
+  The fix is not a new member. **An approval a producer carried would be a bearer
+  token**, and a bearer token authorising a disclosure is replayable by whoever
+  holds it — the property the single-use `previewId` exists to deny. So the rule
+  now says what it should have said: the maintainer holds the approval, bound to
+  the preview, sharing that preview's lifetime. Consumed with it, expired with it,
+  and unable to outlive the decision it belongs to.
+
+  Also stated explicitly, because it is what makes the error retryable and was
+  previously only implied by the error's own description: the refusal MUST NOT
+  consume the preview.
+
+- **persona**: Say what kind of prefix rule 3 means (#382)
+
+The VTA implementation asked, and the answer was not written down: is the
+  "longest registered prefix" matched over bytes or over dot segments?
+
+  It matters because **the same task answers the same question differently a few
+  lines away.** `attribute/list`'s `typePrefix` is explicitly a byte comparison
+  over UTF-8 and says so — "a prefix that ends mid-segment is a byte comparison
+  like any other" — so an implementer meeting that first would reasonably carry it
+  into §4, and `paymentology.card` would join the `payment` family.
+
+  Rule 3 can only tighten, so that reading yields spurious strictness rather than
+  a leak: an unrelated token gated behind a step-up nobody asked for. Wrong, and
+  worth stating, without pretending it was a hole.
+
+  Also stated: a proper prefix, so a token is not its own prefix — rule 2 has
+  already answered for an exact match, and a token compared against the floor
+  would contradict "an exact entry is used as written".
+
+  And a note for whoever extends the table: **"longest" is not currently
+  observable.** No two nested families disagree on any axis, and the floor is
+  already maximal on `sensitivity` and `mask`, so rule 3 can only move `release`
+  today — a shortest-prefix implementation passes every outcome these entries can
+  express. The rule is written for the table that adds `payment.crypto` with a
+  treatment of its own, and an implementation should be tested on the mechanism
+  rather than on a result the current entries make unobservable.
+
+  Third round of gaps found by implementing this table rather than reading it.
+
 ## 0.17.3 — 2026-09-07
 
 
