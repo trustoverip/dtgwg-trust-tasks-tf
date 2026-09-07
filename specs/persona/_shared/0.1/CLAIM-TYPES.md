@@ -150,6 +150,20 @@ Per axis, independently:
 3. Otherwise, take the **longest registered prefix** of the token and the
    `defaults.unregistered` value, and use whichever is **more protective**
    (`strictness` in `claim-types.json` orders each axis).
+
+   A prefix here is matched on **dot-segment boundaries**, and is a **proper**
+   prefix — `payment` is a prefix of `payment.card`, `paymentology.card` is not
+   a member of anything, and a token is not its own prefix (rule 2 has already
+   answered for an exact match).
+
+   Stated because the same task carries a *different* notion of prefix a few
+   lines away: `attribute/list`'s `typePrefix` is explicitly a byte comparison
+   over UTF-8, and says so — "a prefix that ends mid-segment is a byte
+   comparison like any other". An implementer meeting that first would
+   reasonably carry it here, and `paymentology.card` would join the `payment`
+   family. Because rule 3 can only tighten, the consequence of that reading is
+   spurious strictness rather than a leak — an unrelated token gated behind a
+   step-up — but it is still not the rule.
 4. Otherwise — no entry, no registered prefix, anything under `x:` — the
    conservative default: `high` / `consent` / `full`.
 
@@ -158,6 +172,14 @@ appealing, and it was missing from the first draft of this document. Without
 it, `payment.somethingNew` resolved to the unregistered default, whose
 `release` is `consent` — **weaker than every registered member of the family it
 plainly belongs to.** A gated family must not be leavable by inventing a token.
+
+**"Longest" is not currently observable, and is still the rule.** No two nested
+families in the shipped table disagree on any axis, and the floor is already
+maximal on `sensitivity` and `mask`, so today rule 3 can only change `release` —
+a shortest-prefix implementation passes every outcome this table can express.
+The rule is written for the table that adds `payment.crypto` with a treatment of
+its own, and an implementation should be tested on the mechanism rather than on
+a result the current entries happen to make unobservable.
 
 "More protective" rather than "the prefix wins" so a family entry can only ever
 tighten. `name` as a prefix does not make an unregistered `name.somethingNew`
