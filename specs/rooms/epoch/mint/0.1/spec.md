@@ -72,6 +72,37 @@ with no server-side check possible on a room whose membership the host cannot se
 this to `admin`, which the room confers, is what makes the restriction enforceable by a
 host that knows nothing about the membership.
 
+### The epoch link, and what an advance costs without one
+
+Minting is the only moment at which one party holds both the outgoing epoch's key and the
+incoming one, so it is the only moment at which the bridge between them can be made. That
+bridge is the optional `link`: the outgoing key, sealed under the incoming one.
+
+**A room that advances without producing one loses its past.** A record is sealed under the
+epoch current when it was written, and a key schedule offers no way to derive an earlier
+epoch's key from a later one — the property this whole task depends on for removal to mean
+anything. Run forward without a link and the first advance makes every record already in
+the room unopenable by *everyone*, the writer included. That is not forward secrecy; it is
+a library deleting itself.
+
+The rungs accumulate into the room's **epoch key chain**, which a member fetches with
+[`rooms/epoch/chain`](../../chain/0.1/spec.md) and walks backwards. Backwards only: a
+member holding an earlier key still derives nothing later, so removal stays exactly as
+forward-only as the paragraphs above describe.
+
+A host stores rungs and cannot read them — the key that opens one is a storage key no host
+ever holds. What it **MUST** do is refuse to be made a laundry for someone else's key
+material: a `link` whose `epoch` is not the `epoch` being minted **MUST** be rejected, and
+a rung a host already holds for an epoch **MUST NOT** be replaced. A second rung is either
+a replay or a re-pointing of the room's history at key material of somebody else's
+choosing, and the members who already walked the original would never see the difference.
+
+Omitting `link` is a choice, not an oversight, and rooms are entitled to make it: a room
+that is a message stream rather than a library wants exactly the behaviour the paragraph
+above calls losing its past. It is optional in the schema for the additional reason that
+this member was added to an already-published version, where requiring it would break every
+conforming producer.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
@@ -88,6 +119,12 @@ A conforming **consumer** (the host) **MUST** reject a non-sequential epoch, **M
 the chain rules of [`rooms/records/put`](../../../records/put/0.1/spec.md), and **MUST NOT**
 accept a record sealed under a superseded epoch once the new one is in force. A host
 **never learns the key** — only the number.
+
+Where `link` is present, a conforming consumer **MUST** reject the request unless
+`link.epoch` equals `epoch`, and **MUST NOT** replace a link it already holds for that
+epoch. Where it is absent, a host **MUST** advance the epoch anyway: an absent link is a
+room's stated choice, and a host that refused would be enforcing a policy it was never
+told.
 
 ## Security & Privacy
 

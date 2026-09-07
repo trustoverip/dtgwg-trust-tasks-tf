@@ -769,6 +769,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/create/0.1#response" => <crate::specs::rooms::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => <crate::specs::rooms::epoch::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.1#response" => <crate::specs::rooms::epoch::chain::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/epoch/mint/0.1" => <crate::specs::rooms::epoch::mint::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/epoch/mint/0.1#response" => <crate::specs::rooms::epoch::mint::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2521,6 +2525,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/create/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::epoch::chain::v0_1::Payload,
         >()),
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/epoch/mint/0.1" => Some(crate::SpecPolicy::of::<

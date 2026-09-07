@@ -23,6 +23,11 @@
       "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
       "description": "Must confer the `admin` action at this room's scope. Restricting epoch minting matters: if any key-holder could mint one, any member could evict any other by declining to seal the new key to them \u2014 silently, and with no server-side check possible on a room whose membership the host cannot see."
     },
+    "link": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochLink",
+      "description": "The rung of the epoch key chain that this advance produces: the outgoing epoch's storage key sealed under the incoming one. Carried here because minting is the only moment at which one party holds both keys, and a room that advances without producing it silently loses the ability to read everything written before — for every member, including whoever wrote it. Its `epoch` MUST equal `epoch`, and a host MUST reject the request otherwise; a host MUST NOT replace a link it already holds for an epoch, because a second one is either a replay or a re-pointing of the room's history at key material of somebody else's choosing, and the members who already walked the original would never see the difference. Absent where the room does not keep its history readable, and necessarily absent for a room's first epoch, which has no predecessor.",
+      "$comment": "Optional rather than required: this member was added to an already-published version, and requiring it would break every conforming producer. A room that omits it is making the choice the description names, not failing to make one."
+    },
     "reason": {
       "type": "string",
       "maxLength": 1024,

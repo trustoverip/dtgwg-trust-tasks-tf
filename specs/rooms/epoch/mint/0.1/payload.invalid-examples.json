@@ -1,0 +1,66 @@
+[
+  {
+    "note": "An epoch link claiming epoch 1. A room's first epoch has no predecessor, so a rung 1 wraps something that is not an earlier epoch's key; the floor of 2 on EpochLink.epoch is what refuses it. (The stronger rule — that a link's epoch must equal the epoch being minted — is a MUST in prose, because a schema cannot compare two of its own members.)",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "epoch": 2,
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.owner-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.admin-vac"]
+      },
+      "link": { "epoch": 1, "wrapped": "9jK2_QhV1sVvR0m5xAqZ7A", "nonce": "b0Zt8Qm2Yq1sVvR0" }
+    }
+  },
+  {
+    "note": "An epoch link with no nonce. Every rung is AEAD ciphertext and a nonce is not optional for one; a link missing it cannot be opened by anybody, and would be stored as a rung that silently severs the chain at that point.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "epoch": 3,
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.owner-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.admin-vac"]
+      },
+      "link": { "epoch": 3, "wrapped": "9jK2_QhV1sVvR0m5xAqZ7A" }
+    }
+  },
+  {
+    "note": "Unknown member inside the link — additionalProperties: false on EpochLink. A rung carries wrapped key material and nothing descriptive; an extra member is the obvious place to leak what the sealing exists to hide.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "epoch": 3,
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.owner-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.admin-vac"]
+      },
+      "link": {
+        "epoch": 3,
+        "wrapped": "9jK2_QhV1sVvR0m5xAqZ7A",
+        "nonce": "b0Zt8Qm2Yq1sVvR0",
+        "removedMember": "did:example:bob"
+      }
+    }
+  },
+  {
+    "note": "Minting epoch 1. An epoch advances by exactly one from an existing room, whose first epoch is 1 already; a request to mint it is either a re-registration or an off-by-one, and both would reset a room rather than advance it.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "epoch": 1,
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.owner-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.admin-vac"]
+      }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "epoch": 2,
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.owner-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.admin-vac"]
+      },
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  }
+]

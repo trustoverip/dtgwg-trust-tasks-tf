@@ -1,0 +1,52 @@
+[
+  {
+    "note": "No presentation. This is the member that carries the room-issued `read` grant, so a payload without it is a request to enumerate a room's key chain with no authority at all — the one omission that must never validate.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "note": "fromEpoch below the minimum. Epoch 1 is a room's first and has no predecessor, so there is no rung 1 to return; a request for one is asking for a link that wraps something which is not an earlier epoch's key.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.member-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.read-vac"]
+      },
+      "fromEpoch": 1
+    }
+  },
+  {
+    "note": "limit of zero. A request that can only ever return nothing is a request whose author meant something else; the floor of 1 makes it say so rather than silently succeeding with an empty chain that reads like a severed history.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.member-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.read-vac"]
+      },
+      "limit": 0
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `sinceEpoch`. Worth a fixture because it is the plausible wrong guess: the sibling rooms/records/list pages forward with `sinceVersion`, and this task walks backwards with `fromEpoch`.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.member-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.read-vac"]
+      },
+      "sinceEpoch": 3
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.member-vmc",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.read-vac"]
+      },
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  }
+]

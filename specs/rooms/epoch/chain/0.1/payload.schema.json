@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/epoch/chain/0.1",
+  "title": "Rooms Epoch Chain — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose epoch key chain is being fetched."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `read` action at this room's scope. Reading the room and reading the parts of it written earlier are the same act, so they take the same grant; a separate one would be a grant nobody could explain."
+    },
+    "fromEpoch": {
+      "type": "integer",
+      "minimum": 2,
+      "description": "Return only links whose `epoch` is at or below this. The chain is walked downwards, so this is how a member who already holds the top of it asks for the rest. Absent means from the room's current epoch down."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Maximum links to return, highest `epoch` first. A host MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Epoch Chain — response payload",
+      "description": "Success response to rooms/epoch/chain. Type https://trusttasks.org/spec/rooms/epoch/chain/0.1#response. Carries ciphertext a host cannot read: the key that opens a link is a storage key no host ever holds, so a response served to a party holding no epoch key discloses nothing but the number of epochs, which the room's epoch number already told them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "links"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "links": {
+          "type": "array",
+          "description": "The links, highest `epoch` first. Contiguous within the range returned: a host MUST NOT omit a rung it holds while returning a lower one, because a member cannot walk past a gap and would read the omission as history that had been severed.",
+          "items": {
+            "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochLink"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

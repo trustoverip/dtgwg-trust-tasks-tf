@@ -1778,6 +1778,23 @@ export interface EndorsementType {
   createdByDid?: string;
 }
 /**
+ * One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.
+ */
+export interface EpochLink {
+  /**
+   * The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.
+   */
+  epoch: number;
+  /**
+   * The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.
+   */
+  wrapped: string;
+  /**
+   * AEAD nonce, base64url.
+   */
+  nonce: string;
+}
+/**
  * The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
  */
 export interface Exposure {
