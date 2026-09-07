@@ -11,6 +11,33 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.3 — 2026-09-07
+
+
+### Specifications
+
+- **persona**: Say what a mask does at its two edges (#380)
+
+Two clients implemented this table independently and both met the same two
+  questions, neither of which `maskStyles` answered.
+
+  **A value shorter than the tail a style keeps.** `last4` of a four-character
+  value is the value — a four-digit card number printed whole is not a masked card
+  number. Both clients masked in full. Now stated.
+
+  **Whether a mask tracks the value's length.** Both drew a fixed run, and the
+  reasoning is worth keeping rather than rediscovering: a run of one character per
+  character hidden publishes the length of a passport number, a date of birth or a
+  card, which is what the mask was drawn to withhold and is often enough to
+  identify the format on its own. The exact width is the client's; that it does
+  not vary with the value is not.
+
+  They guessed alike, which is luck rather than a specification — and the third
+  implementation is the one that would have differed.
+
+  Also stated for `emailLocal`: a value with no local part or no `@` is masked in
+  full rather than guessed at.
+
 ## 0.17.2 — 2026-09-07
 
 
