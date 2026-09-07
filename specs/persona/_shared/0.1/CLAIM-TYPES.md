@@ -126,6 +126,20 @@ email address, none of a display name.
 A mask applies to a **rendering**, never to what is stored or sent. It only
 becomes ambiguous for `valueType: object`, every one of which is `full` today.
 
+Two edge cases are specified rather than left to a client, because the first two
+implementations of this table both met them and both had to guess:
+
+- **A value no longer than the tail a style keeps is masked in full.** `last4`
+  of a four-character value is the value, and a four-digit card number printed
+  whole is not a masked card number.
+- **A mask is drawn at a fixed width, not one character per character hidden.**
+  A run that tracks the length publishes the length — of a passport number, a
+  date of birth, a card — which is information the mask was drawn to withhold,
+  and is often enough to identify the format on its own. The exact width is the
+  client's; that it does not vary with the value is not.
+
+They guessed alike, which is luck rather than a specification.
+
 ## 4. How a default resolves
 
 Per axis, independently:

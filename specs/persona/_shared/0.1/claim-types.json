@@ -2,11 +2,13 @@
   "$comment": "The core claim-type registry. Prose, reasoning and the rules for resolving a default live in CLAIM-TYPES.md beside this file; this is the machine-readable half an agent ships and a client reads.",
   "registryVersion": "0.1",
   "maskStyles": {
+    "$comment": "Two edge cases are stated because two clients implementing this table independently both hit them and both had to guess. They guessed alike, which is luck rather than a specification: a value SHORTER than the tail a style keeps is masked in full, and a mask is drawn at a FIXED width rather than one character per hidden character.",
     "none": "Shown in full. The value is not one a shoulder can steal.",
-    "last2": "Final two characters shown; everything before them replaced.",
-    "last4": "Final four characters shown; everything before them replaced.",
-    "emailLocal": "First character of the local part, then the domain in full — a@example.com. The domain is what makes an address recognisable to its owner; the local part is what makes it usable to anyone else.",
-    "full": "No characters shown."
+    "last2": "Final two characters shown; everything before them replaced — unless the value is no longer than two, which is masked in full. `last2` of a two-character value is the value.",
+    "last4": "Final four characters shown; everything before them replaced — unless the value is no longer than four, which is masked in full. A four-digit card number printed whole is not a masked card number.",
+    "emailLocal": "First character of the local part, then the domain in full — a@example.com. The domain is what makes an address recognisable to its owner; the local part is what makes it usable to anyone else. A value with no local part, or no `@`, is masked in full rather than guessed at.",
+    "full": "No characters shown.",
+    "$widthComment": "A mask is drawn at a fixed width, NOT one character per character hidden. A run that tracks the length publishes the length — of a passport number, a date of birth, a card — which is information the mask was drawn to withhold, and is often enough to identify the format. The exact width is the client's; that it does not vary with the value is not."
   },
   "defaults": {
     "$comment": "What a token resolves to when neither an exact entry nor a registered prefix supplies an axis. Deliberately the conservative answer: a vocabulary this registry has never seen is exactly the one nothing has reasoned about, and an unknown value rendered in the clear is a decision nobody made. `x:` tokens are unregistered by construction and land here too — they were two identical entries until it was pointed out that nothing said which applied.",
