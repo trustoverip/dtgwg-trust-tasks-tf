@@ -3,7 +3,7 @@
  * Source: specs/persona/attribute/list/1.0/payload.schema.json
  */
 
-import type { Attribute, ClaimType, Ext, ProofRung, Provenance, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
+import type { Attribute, ClaimType, Ext, ProofRung, Provenance, ReleaseRequirement, Sensitivity, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**
@@ -18,6 +18,16 @@ export interface PersonaAttributeListPayload {
    * When false (the default), each returned attribute carries its metadata and no `value`. A pool listing is the common case and it does not need plaintext: a picker renders `type` and `label`. Defaulting to false means the expensive, sensitive path is the one a producer has to ask for.
    */
   includeValues?: boolean;
+  /**
+   * When false (the default), a listing that asked for values still omits the value of any attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for those too.
+   *
+   * This is the half of sensitivity that is not cosmetic. A consumer that masks a value it has already received defends a screen; it does not keep a card number out of a log, a crash dump or a process's memory. Ignoring this member and masking client-side is a conforming implementation of nothing.
+   *
+   * Separate from `includeValues` rather than a third state of it, because the two escalations are answerable by different callers: a picker wants every name and no card, and should not have to choose between plaintext for everything and plaintext for nothing.
+   *
+   * Has no effect unless `includeValues` is also set: it widens that request, and can never be the thing that introduces plaintext on its own.
+   */
+  includeSensitive?: boolean;
   /**
    * When true (the default), credential-backed attributes whose backing could not be re-derived are returned carrying `stale` and `staleReason`. Set false to omit them. The default is true because a holder needs to SEE that a credential-backed fact has gone stale — silently dropping it would present a pool that looks smaller than it is, and the holder would not know a claim had stopped being presentable.
    */
@@ -48,7 +58,7 @@ export interface PersonaAttributeListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Attribute, ClaimType, Ext, ProofRung, Provenance, Ulid, ValueType, Version };
+export type { Attribute, ClaimType, Ext, ProofRung, Provenance, ReleaseRequirement, Sensitivity, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/attribute/list/1.0" as const;
@@ -88,6 +98,11 @@ export const PAYLOAD_SCHEMA = {
       "type": "boolean",
       "default": false,
       "description": "When false (the default), each returned attribute carries its metadata and no `value`. A pool listing is the common case and it does not need plaintext: a picker renders `type` and `label`. Defaulting to false means the expensive, sensitive path is the one a producer has to ask for."
+    },
+    "includeSensitive": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default), a listing that asked for values still omits the value of any attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for those too.\n\nThis is the half of sensitivity that is not cosmetic. A consumer that masks a value it has already received defends a screen; it does not keep a card number out of a log, a crash dump or a process's memory. Ignoring this member and masking client-side is a conforming implementation of nothing.\n\nSeparate from `includeValues` rather than a third state of it, because the two escalations are answerable by different callers: a picker wants every name and no card, and should not have to choose between plaintext for everything and plaintext for nothing.\n\nHas no effect unless `includeValues` is also set: it widens that request, and can never be the thing that introduces plaintext on its own."
     },
     "includeStale": {
       "type": "boolean",
@@ -197,6 +212,14 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "Why re-derivation failed. Present only alongside `stale`."
         },
+        "sensitivity": {
+          "$ref": "#/$defs/Sensitivity",
+          "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'."
+        },
+        "release": {
+          "$ref": "#/$defs/ReleaseRequirement",
+          "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry."
+        },
         "version": {
           "$ref": "#/$defs/Version"
         },
@@ -215,6 +238,24 @@ export const PAYLOAD_SCHEMA = {
       "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
       "type": "integer",
       "minimum": 1
+    },
+    "ReleaseRequirement": {
+      "title": "ReleaseRequirement",
+      "description": "What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\n\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\n\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \"each time\" degrades into \"once per login\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\n\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.",
+      "type": "string",
+      "enum": [
+        "consent",
+        "stepUp"
+      ]
+    },
+    "Sensitivity": {
+      "title": "Sensitivity",
+      "description": "How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\n\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\n\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.",
+      "type": "string",
+      "enum": [
+        "normal",
+        "high"
+      ]
     },
     "Provenance": {
       "title": "Provenance",
@@ -423,6 +464,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           ],
           "description": "Why re-derivation failed. Present only alongside `stale`."
         },
+        "sensitivity": {
+          "$ref": "#/$defs/Sensitivity",
+          "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'."
+        },
+        "release": {
+          "$ref": "#/$defs/ReleaseRequirement",
+          "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry."
+        },
         "version": {
           "$ref": "#/$defs/Version"
         },
@@ -441,6 +490,24 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
       "type": "integer",
       "minimum": 1
+    },
+    "ReleaseRequirement": {
+      "title": "ReleaseRequirement",
+      "description": "What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\n\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\n\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \"each time\" degrades into \"once per login\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\n\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.",
+      "type": "string",
+      "enum": [
+        "consent",
+        "stepUp"
+      ]
+    },
+    "Sensitivity": {
+      "title": "Sensitivity",
+      "description": "How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\n\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\n\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.",
+      "type": "string",
+      "enum": [
+        "normal",
+        "high"
+      ]
     },
     "Provenance": {
       "title": "Provenance",

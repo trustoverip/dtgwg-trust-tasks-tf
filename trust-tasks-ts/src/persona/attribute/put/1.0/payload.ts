@@ -3,7 +3,7 @@
  * Source: specs/persona/attribute/put/1.0/payload.schema.json
  */
 
-import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, ProofRung, Provenance, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
+import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, ProofRung, Provenance, ReleaseRequirement, Sensitivity, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**
@@ -27,6 +27,14 @@ export interface PersonaAttributePutPayload {
    */
   label?: string;
   provenance: Provenance;
+  /**
+   * How carefully this value is shown to the holder. OPTIONAL, and its absence is meaningful: it records that the holder made no explicit decision, so a consumer resolves it from the claim-type registry. Sending the resolved value back would freeze it — a later tightening of the registry would then protect new attributes and leave this one exposed.
+   */
+  sensitivity?: Sensitivity;
+  /**
+   * What it takes to disclose this value. OPTIONAL, with the same meaning for absence as `sensitivity`.
+   */
+  release?: ReleaseRequirement;
   /**
    * Optional precondition. Omit for last-writer-wins. Supply the version a prior read returned to make the write conditional; supply 0 to create only.
    */
@@ -62,7 +70,7 @@ export interface PersonaAttributePutResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, ExpectedVersion, Ext, ProofRung, Provenance, Ulid, ValueType, Version };
+export type { ClaimType, ExpectedVersion, Ext, ProofRung, Provenance, ReleaseRequirement, Sensitivity, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/attribute/put/1.0" as const;
@@ -119,6 +127,14 @@ export const PAYLOAD_SCHEMA = {
     },
     "provenance": {
       "$ref": "#/$defs/Provenance"
+    },
+    "sensitivity": {
+      "$ref": "#/$defs/Sensitivity",
+      "description": "How carefully this value is shown to the holder. OPTIONAL, and its absence is meaningful: it records that the holder made no explicit decision, so a consumer resolves it from the claim-type registry. Sending the resolved value back would freeze it — a later tightening of the registry would then protect new attributes and leave this one exposed."
+    },
+    "release": {
+      "$ref": "#/$defs/ReleaseRequirement",
+      "description": "What it takes to disclose this value. OPTIONAL, with the same meaning for absence as `sensitivity`."
     },
     "expectedVersion": {
       "$ref": "#/$defs/ExpectedVersion",
@@ -216,6 +232,24 @@ export const PAYLOAD_SCHEMA = {
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "ReleaseRequirement": {
+      "title": "ReleaseRequirement",
+      "description": "What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\n\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\n\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \"each time\" degrades into \"once per login\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\n\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.",
+      "type": "string",
+      "enum": [
+        "consent",
+        "stepUp"
+      ]
+    },
+    "Sensitivity": {
+      "title": "Sensitivity",
+      "description": "How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\n\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\n\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.",
+      "type": "string",
+      "enum": [
+        "normal",
+        "high"
+      ]
     },
     "Provenance": {
       "title": "Provenance",
@@ -418,6 +452,24 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "ReleaseRequirement": {
+      "title": "ReleaseRequirement",
+      "description": "What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\n\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\n\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \"each time\" degrades into \"once per login\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\n\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.",
+      "type": "string",
+      "enum": [
+        "consent",
+        "stepUp"
+      ]
+    },
+    "Sensitivity": {
+      "title": "Sensitivity",
+      "description": "How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\n\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\n\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.",
+      "type": "string",
+      "enum": [
+        "normal",
+        "high"
+      ]
     },
     "Provenance": {
       "title": "Provenance",

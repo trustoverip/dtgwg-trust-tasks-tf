@@ -111,7 +111,8 @@ A conforming **maintainer** (the agent) **MUST**:
 3. For a `credentialBacked` provenance, resolve the named credential and the `claimPath` within it at write time, and emit `persona/attribute/put:credentialNotFound` when it cannot.
 4. Assign an `attributeId` when the producer omitted one, and return it.
 5. Encrypt `value` at rest.
-6. Apply `expectedVersion` as a precondition when supplied, and on failure emit `persona/attribute/put:versionConflict` carrying the current version and value.
+6. Persist `sensitivity` and `release` **only when the producer supplied them**, and never store a value resolved from the claim-type registry in their place. An attribute that recorded its resolved default would keep that answer after the registry tightened, so a later reclassification would protect new attributes and leave the existing ones exposed — the opposite of what a reclassification is for.
+7. Apply `expectedVersion` as a precondition when supplied, and on failure emit `persona/attribute/put:versionConflict` carrying the current version and value.
 
 A conforming maintainer **MUST NOT** refuse a write because of its correlation
 result. The check is advisory and the holder decides; a store that refused would

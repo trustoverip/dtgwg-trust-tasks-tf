@@ -43,13 +43,25 @@ errorCodes:
 
 **Persona Attribute — List** enumerates the holder's attribute pool.
 
-Two choices in it are worth the reader's attention, and both are about giving
-away less by default.
+Three choices in it are worth the reader's attention, and all three are about
+giving away less by default.
 
 **Values are withheld unless asked for.** The common case — rendering a picker
 so a holder can choose what goes into a profile — needs `type` and `label`, not
 plaintext. Making `includeValues` opt-in means the expensive, sensitive path is
 the one a producer has to ask for, rather than the one it gets by forgetting.
+
+**Sensitive values are withheld even then.** A listing that asked for values
+still omits the plaintext of anything resolving to `sensitivity: high` unless
+`includeSensitive` is also set. The two are separate escalations because they
+answer different callers: a picker wants every name and no card number, and
+should not have to choose between plaintext for everything and plaintext for
+nothing.
+
+This is the half of sensitivity that is not cosmetic. A consumer that masks a
+value it has already received defends a screen — worth doing, and no defence at
+all against a log, a crash dump or the memory of the process holding it. The
+control that matters is the one that decides whether the plaintext is sent.
 
 **Stale attributes are returned, not hidden.** A credential-backed fact whose
 backing has been revoked or has expired comes back carrying `stale` and a reason.
@@ -79,8 +91,9 @@ A conforming **maintainer** **MUST**:
 1. Reject the document unless the caller is **holder-authorized and unscoped** — see [Authorization](#authorization).
 2. Return attributes in a stable order across the pages of one enumeration, so that a record is neither skipped nor repeated as the caller pages.
 3. Omit `value` from every returned attribute unless `includeValues` is true.
-4. Re-derive credential-backed values before returning them, and mark those it cannot as `stale` with a `staleReason` rather than returning a cached value whose backing has gone.
-5. Emit `persona/attribute/list:cursorInvalid` for a token it cannot honour, rather than silently restarting the enumeration — a caller that believes it is continuing and is in fact restarting will process records twice.
+4. Omit `value` from every returned attribute resolving to `sensitivity: high` unless `includeSensitive` is *also* true — resolving absence from the claim-type registry, never treating it as `normal`. `includeSensitive` alone, without `includeValues`, introduces no plaintext: it widens that request and is not a request of its own.
+5. Re-derive credential-backed values before returning them, and mark those it cannot as `stale` with a `staleReason` rather than returning a cached value whose backing has gone.
+6. Emit `persona/attribute/list:cursorInvalid` for a token it cannot honour, rather than silently restarting the enumeration — a caller that believes it is continuing and is in fact restarting will process records twice.
 
 ## Authorization
 

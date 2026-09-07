@@ -2,7 +2,7 @@
 slug: auth/whoami
 version: "0.1"
 title: Auth — Whoami
-summary: A subject asks an auth service to introspect the current session — returning the Session object, role assignments, and effective scopes — so the client can reconcile state with the server's view.
+summary: A subject asks an auth service to introspect the current session — returning the Session object, role assignments, effective scopes and effective capabilities — so the client can reconcile state with the server's view.
 status: draft
 targetFrameworkVersion: "0.5"
 category: authentication
@@ -42,7 +42,7 @@ related:
 
 ## Abstract
 
-The **Auth — Whoami** Trust Task asks an auth service "what do you know about me right now?". The framework `proof` identifies the producer; the response is the auth service's current view: the active `Session`, role assignments, and effective scopes.
+The **Auth — Whoami** Trust Task asks an auth service "what do you know about me right now?". The framework `proof` identifies the producer; the response is the auth service's current view: the active `Session`, role assignments, effective scopes and effective capabilities.
 
 This task replaces ad-hoc `/me` REST endpoints. It serves three concrete needs:
 
@@ -68,7 +68,8 @@ A conforming **consumer** (the auth service) **MUST**:
 
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) and verify the `proof`.
 2. Look up the most recently-issued active session whose `subject` equals the document `issuer`. If none, respond with `auth/whoami:noSession`.
-3. Return a `#response` document carrying `{ session, roles?, scopes? }`. Consumers MAY omit `roles` / `scopes` when their model has no concept of either; the `session` field is REQUIRED.
+3. Return a `#response` document carrying `{ session, roles?, scopes?, capabilities? }`. Consumers MAY omit `roles` / `scopes` / `capabilities` when their model has no concept of them; the `session` field is REQUIRED.
+4. Report `capabilities` **as they would be enforced** — the role's own set, narrowed by whatever the entry narrows, plus any capability granted to the entry by name — rather than the stored list. The question a client is asking is "what may I do", and an entry that narrows nothing means everything its role implies; returning the stored list would answer a different question and read as empty in the commonest case.
 
 A consumer **MAY** return information about a session distinct from the *most recently-issued* one when its policy is more specific (e.g. tying the introspection to whichever access token was used at the transport layer). The framework deliberately does not pin a multi-session selection policy.
 
@@ -76,7 +77,9 @@ A consumer **MAY** return information about a session distinct from the *most re
 
 * **Subject.** The party introspecting; identified by `issuer` and verified via `proof`.
 * **Session.** The `Session` object the consumer holds for the producer.
-* **Roles, scopes.** Consumer-defined vocabularies surfaced for client reconciliation.
+* **Roles, scopes, capabilities.** Consumer-defined vocabularies surfaced for client reconciliation. `capabilities` exists because roles and scopes cannot express a capability granted to one entry that its role does not imply: a client seeing only the first two must either refuse a caller the service would honour, or offer every action and let the service refuse. Neither is a good answer to a question the service can answer directly.
+
+  This task reports what the producer **may do**. It carries no identity content — no attribute, no value, not a display name. An authority endpoint that grew one would become an identity endpoint, and every consumer already logging its response would begin logging identity.
 
 ## Payload
 
@@ -102,7 +105,7 @@ The payload carries no required members. The `proof` is the entire request.
 
 ## Response
 
-A success *response* document carries `type: https://trusttasks.org/spec/auth/whoami/0.1#response`. Payload: `{ session, roles?, scopes? }`.
+A success *response* document carries `type: https://trusttasks.org/spec/auth/whoami/0.1#response`. Payload: `{ session, roles?, scopes?, capabilities? }`.
 
 ### Successful whoami
 

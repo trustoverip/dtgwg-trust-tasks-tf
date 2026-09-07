@@ -258,6 +258,16 @@ export type PushRegistration = Apns | Fcm | WebPush;
  */
 export type RecordType = "authorization" | "recognition";
 /**
+ * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
+ *
+ * `consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.
+ *
+ * `stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, "each time" degrades into "once per login", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.
+ *
+ * Absent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.
+ */
+export type ReleaseRequirement = "consent" | "stepUp";
+/**
  * How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
  */
 export type Route = "wake" | "bridge-relay";
@@ -323,6 +333,14 @@ export type SecretKind_VaultV0_2 =
   | "bearerToken"
   | "sshKey"
   | "custom";
+/**
+ * How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.
+ *
+ * Absent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.
+ *
+ * Distinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.
+ */
+export type Sensitivity = "normal" | "high";
 /**
  * Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
  */
@@ -673,6 +691,14 @@ export interface Attribute {
    * Why re-derivation failed. Present only alongside `stale`.
    */
   staleReason?: "revoked" | "expired" | "archived" | "deleted" | "notFound";
+  /**
+   * Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.
+   */
+  sensitivity?: Sensitivity;
+  /**
+   * Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.
+   */
+  release?: ReleaseRequirement;
   version: Version_PersonaV0_1;
   createdAt?: string;
   updatedAt: string;

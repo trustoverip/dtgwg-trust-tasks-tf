@@ -32,6 +32,16 @@ export interface AuthWhoamiResponsePayload {
    */
   scopes?: string[];
   /**
+   * The capabilities the auth service holds for the producer, resolved as they would be enforced — a role's own set, narrowed by anything the entry narrows, plus any capability granted to the entry by name.
+   *
+   * Effective rather than stored, because the question a consumer is asking is "what may I do", and an entry that narrows nothing means everything its role implies. Returning the stored list would answer a different question and read as empty for the commonest case.
+   *
+   * Why it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.
+   *
+   * This member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it.
+   */
+  capabilities?: string[];
+  /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
   ext?: Ext;
@@ -104,6 +114,14 @@ export const PAYLOAD_SCHEMA = {
             "minLength": 1
           },
           "description": "Capability tags effective on the producer's current session. Mirrors the issued TokenBundle.scope; included here so a producer can reconcile after policy edits without re-issuing tokens."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The capabilities the auth service holds for the producer, resolved as they would be enforced — a role's own set, narrowed by anything the entry narrows, plus any capability granted to the entry by name.\n\nEffective rather than stored, because the question a consumer is asking is \"what may I do\", and an entry that narrows nothing means everything its role implies. Returning the stored list would answer a different question and read as empty for the commonest case.\n\nWhy it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.\n\nThis member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it."
         },
         "ext": {
           "$ref": "#/$defs/Ext",
@@ -210,6 +228,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "minLength": 1
           },
           "description": "Capability tags effective on the producer's current session. Mirrors the issued TokenBundle.scope; included here so a producer can reconcile after policy edits without re-issuing tokens."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The capabilities the auth service holds for the producer, resolved as they would be enforced — a role's own set, narrowed by anything the entry narrows, plus any capability granted to the entry by name.\n\nEffective rather than stored, because the question a consumer is asking is \"what may I do\", and an entry that narrows nothing means everything its role implies. Returning the stored list would answer a different question and read as empty for the commonest case.\n\nWhy it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.\n\nThis member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it."
         },
         "ext": {
           "$ref": "#/$defs/Ext",
