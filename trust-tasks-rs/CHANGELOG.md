@@ -31,6 +31,45 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.18.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.2...trust-tasks-rs-v0.18.3) — 2026-09-07
+
+
+### Specifications
+
+- **provision**: Separate where an admin lives from how far it reaches ([#385](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/385))
+
+`provision/integration` writes the minted admin's ACL entry naming the
+  target context, and there is no way to ask for any other shape. That is
+  right for every integration-class consumer — a mediator acts where it was
+  provisioned — and it makes one consumer unrepresentable: an operator
+  console, whose whole job is administering the maintainer, needs an entry
+  with no context list at all.
+
+  The obvious spelling, making `context` optional to mean "everywhere", is
+  the wrong one. A console still has to keep its own configuration
+  somewhere, and that somewhere is one ordinary context; dropping `context`
+  would leave it with nowhere to put it, and would collapse "provision me
+  everywhere" and "provision me wherever you like" into the same document.
+
+  So `adminScope` is a second axis beside `context`, not a replacement for
+  it: `context` says where the admin DID is minted and where its owner
+  keeps its configuration, `adminScope` says whether the ACL entry names
+  that context or nothing at all. `context` is resolved on every request
+  either way.
+
+  Two MUSTs come with it. `unrestricted` is refused with `forbidden` unless
+  the relayer is itself a super-admin, because routing a grant through a
+  provisioning maintainer does not launder authority the caller does not
+  hold. And the outcome is echoed as `summary.adminScope` rather than
+  inferred from the ask — a maintainer that predates the member ignores it
+  and writes a context-scoped entry, which is otherwise indistinguishable
+  from success. `summary.context` is echoed for the same reason: a producer
+  that omitted `context` and let inference run currently has no way to learn
+  where it landed except by guessing at the maintainer's layout, which is
+  precisely the thing the inference rules exist because it cannot do.
+
+
+
 ## [0.18.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.1...trust-tasks-rs-v0.18.2) — 2026-09-07
 
 
