@@ -1,7 +1,6 @@
 {
   "$comment": "The core claim-type registry. Prose, reasoning and the rules for resolving a default live in CLAIM-TYPES.md beside this file; this is the machine-readable half an agent ships and a client reads.",
   "registryVersion": "0.1",
-
   "maskStyles": {
     "none": "Shown in full. The value is not one a shoulder can steal.",
     "last2": "Final two characters shown; everything before them replaced.",
@@ -9,51 +8,327 @@
     "emailLocal": "First character of the local part, then the domain in full — a@example.com. The domain is what makes an address recognisable to its owner; the local part is what makes it usable to anyone else.",
     "full": "No characters shown."
   },
-
   "defaults": {
-    "$comment": "What an unregistered or extension token resolves to. Deliberately the conservative answer: a vocabulary this registry has never seen is exactly the one nothing has reasoned about, and an unknown value rendered in the clear is a decision nobody made.",
-    "unregistered": { "sensitivity": "high", "release": "consent", "mask": "full" },
-    "extension": { "sensitivity": "high", "release": "consent", "mask": "full" }
+    "$comment": "What a token resolves to when neither an exact entry nor a registered prefix supplies an axis. Deliberately the conservative answer: a vocabulary this registry has never seen is exactly the one nothing has reasoned about, and an unknown value rendered in the clear is a decision nobody made. `x:` tokens are unregistered by construction and land here too — they were two identical entries until it was pointed out that nothing said which applied.",
+    "unregistered": {
+      "sensitivity": "high",
+      "release": "consent",
+      "mask": "full"
+    }
   },
-
   "types": [
-    { "type": "name.legal", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": ["name"] },
-    { "type": "name.given", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": true, "oidc": ["given_name"] },
-    { "type": "name.family", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": true, "oidc": ["family_name"] },
-    { "type": "name.display", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": true, "oidc": ["preferred_username", "nickname"] },
-    { "type": "name.previous", "valueType": "string", "sensitivity": "high", "release": "consent", "mask": "full", "minimumSet": false, "oidc": [],
-      "$comment": "A former name is not a lesser name. It is the one a holder most often keeps in order to answer a question once and never show again, and the one whose casual display does the most harm." },
-
-    { "type": "person.birthDate", "valueType": "date", "sensitivity": "high", "release": "consent", "mask": "full", "minimumSet": false, "oidc": ["birthdate"],
-      "$comment": "Almost always askable as a predicate instead — see the proof rungs. A verifier wanting `over18` and receiving a birth date has taken a lifelong identifier to answer a boolean." },
-    { "type": "person.pronouns", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": [] },
-    { "type": "person.locale", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": ["locale"] },
-
-    { "type": "email.personal", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "emailLocal", "minimumSet": false, "oidc": ["email"] },
-    { "type": "email.work", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "emailLocal", "minimumSet": false, "oidc": ["email"] },
-
-    { "type": "phone.mobile", "valueType": "string", "sensitivity": "high", "release": "consent", "mask": "last2", "minimumSet": false, "oidc": ["phone_number"],
-      "$comment": "High because a mobile number is both a strong join key and an authentication factor at a great many services. Its harm is not embarrassment; it is account takeover." },
-    { "type": "phone.landline", "valueType": "string", "sensitivity": "high", "release": "consent", "mask": "last2", "minimumSet": false, "oidc": ["phone_number"] },
-
-    { "type": "address.postal", "valueType": "object", "sensitivity": "high", "release": "consent", "mask": "full", "minimumSet": false, "oidc": ["address"] },
-    { "type": "address.country", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": [],
-      "$comment": "Separate from the full address on purpose: country alone answers most jurisdiction questions and identifies almost nobody." },
-
-    { "type": "gov.id.passport", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-    { "type": "gov.id.driverLicence", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-    { "type": "gov.id.national", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-    { "type": "gov.taxId", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-
-    { "type": "payment.card", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-    { "type": "payment.cardExpiry", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "full", "minimumSet": false, "oidc": [] },
-    { "type": "payment.iban", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-    { "type": "payment.accountNumber", "valueType": "string", "sensitivity": "high", "release": "stepUp", "mask": "last4", "minimumSet": false, "oidc": [] },
-
-    { "type": "account.handle", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": [] },
-    { "type": "url.homepage", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": ["website"] },
-
-    { "type": "org.name", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": [] },
-    { "type": "org.role", "valueType": "string", "sensitivity": "normal", "release": "consent", "mask": "none", "minimumSet": false, "oidc": [] }
-  ]
+    {
+      "type": "payment",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "full",
+      "minimumSet": false,
+      "oidc": [],
+      "$comment": "A FAMILY entry, matched as a prefix. Without it `payment.somethingNew` resolves to the unregistered default, whose `release` is `consent` — weaker than every registered member of the family. A gated family must not be leavable by inventing a token."
+    },
+    {
+      "type": "gov",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "full",
+      "minimumSet": false,
+      "oidc": [],
+      "$comment": "A family entry, for the reason given on `payment`."
+    },
+    {
+      "type": "name",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": true,
+      "oidc": [
+        "name"
+      ],
+      "$comment": "An exact token, not only a family prefix: a pool that keeps one undifferentiated name is using `name`, and without an entry it would mask it in full. As a prefix it makes an unknown `name.*` no *looser* than the default — a family entry can only tighten."
+    },
+    {
+      "type": "name.legal",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": [
+        "name"
+      ]
+    },
+    {
+      "type": "name.given",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": true,
+      "oidc": [
+        "given_name"
+      ]
+    },
+    {
+      "type": "name.family",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": true,
+      "oidc": [
+        "family_name"
+      ]
+    },
+    {
+      "type": "name.display",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": true,
+      "oidc": [
+        "preferred_username",
+        "nickname"
+      ]
+    },
+    {
+      "type": "name.previous",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "consent",
+      "mask": "full",
+      "minimumSet": false,
+      "oidc": [],
+      "$comment": "A former name is not a lesser name. It is the one a holder most often keeps in order to answer a question once and never show again, and the one whose casual display does the most harm."
+    },
+    {
+      "type": "person.birthDate",
+      "valueType": "date",
+      "sensitivity": "high",
+      "release": "consent",
+      "mask": "full",
+      "minimumSet": false,
+      "oidc": [
+        "birthdate"
+      ],
+      "$comment": "Almost always askable as a predicate instead — see the proof rungs. A verifier wanting `over18` and receiving a birth date has taken a lifelong identifier to answer a boolean."
+    },
+    {
+      "type": "person.pronouns",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "person.locale",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": [
+        "locale"
+      ]
+    },
+    {
+      "type": "email.personal",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "emailLocal",
+      "minimumSet": false,
+      "oidc": [
+        "email"
+      ]
+    },
+    {
+      "type": "email.work",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "emailLocal",
+      "minimumSet": false,
+      "oidc": [
+        "email"
+      ]
+    },
+    {
+      "type": "phone.mobile",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "consent",
+      "mask": "last2",
+      "minimumSet": false,
+      "oidc": [
+        "phone_number"
+      ],
+      "$comment": "High because a mobile number is both a strong join key and an authentication factor at a great many services. Its harm is not embarrassment; it is account takeover."
+    },
+    {
+      "type": "phone.landline",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "consent",
+      "mask": "last2",
+      "minimumSet": false,
+      "oidc": [
+        "phone_number"
+      ]
+    },
+    {
+      "type": "address.postal",
+      "valueType": "object",
+      "sensitivity": "high",
+      "release": "consent",
+      "mask": "full",
+      "minimumSet": false,
+      "oidc": [
+        "address"
+      ]
+    },
+    {
+      "type": "address.country",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": [],
+      "$comment": "Separate from the full address on purpose: country alone answers most jurisdiction questions and identifies almost nobody."
+    },
+    {
+      "type": "gov.id.passport",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "gov.id.driverLicence",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "gov.id.national",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "gov.taxId",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "payment.card",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "payment.cardExpiry",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "full",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "payment.iban",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "payment.accountNumber",
+      "valueType": "string",
+      "sensitivity": "high",
+      "release": "stepUp",
+      "mask": "last4",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "account.handle",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "url.homepage",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": [
+        "website"
+      ]
+    },
+    {
+      "type": "org.name",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": []
+    },
+    {
+      "type": "org.role",
+      "valueType": "string",
+      "sensitivity": "normal",
+      "release": "consent",
+      "mask": "none",
+      "minimumSet": false,
+      "oidc": []
+    }
+  ],
+  "strictness": {
+    "$comment": "Ordering per axis, most protective first. A fallback takes the most protective of what a registered prefix says and what `defaults.unregistered` says — see CLAIM-TYPES.md §4. An EXACT entry is used as written and is not compared against anything.",
+    "sensitivity": [
+      "high",
+      "normal"
+    ],
+    "release": [
+      "stepUp",
+      "consent"
+    ],
+    "mask": [
+      "full",
+      "last2",
+      "last4",
+      "emailLocal",
+      "none"
+    ]
+  }
 }

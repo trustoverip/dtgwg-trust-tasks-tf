@@ -75,13 +75,15 @@ wrong things and warns about the wrong things.
 
 ### 3.1 `sensitivity`
 
-`normal` | `high`. Governs how a value is shown to its own holder: `high`
-means masked by default, revealed one attribute at a time by a deliberate act,
-and — the half that is not cosmetic — **withheld from a listing that did not
-explicitly ask for sensitive values.**
+`normal` | `high`. `high` means the value is **withheld from a listing that did
+not explicitly ask for sensitive values** — and, being withheld, masked when a
+consumer holds it anyway.
 
-Masking a value already fetched is theatre. The control that matters is on the
-read path; the mask is what makes the control visible.
+That withholding is the half that is not cosmetic. Masking a value already
+fetched defends a screen; it is no defence against a log, a crash dump, or the
+memory of the process holding it. The control that matters is on the read path.
+
+**Masking is not the same decision, and does not require `high`.** See §3.3.
 
 ### 3.2 `release`
 
@@ -99,17 +101,54 @@ preview already mints is the natural thing to bind to.
 
 ### 3.3 `mask`
 
-One of the styles enumerated in `claim-types.json`. The style is a property of
-the type because only the type knows which characters are the recognisable
-ones: the last four of a card, the domain of an email address, none of a
-display name.
+One of the styles enumerated in `claim-types.json`, and **independent of
+`sensitivity`**: any type whose style is not `none` is masked on screen,
+whatever its sensitivity.
+
+The two were tangled in the first draft — masking was defined as something
+`high` meant — which left `email.*` carrying `emailLocal` that no rule could
+ever apply, while §1 used `a•••@example.com` to motivate the registry. An email
+address is worth hiding from the person behind you without being worth
+withholding from every listing, and there was no way to say so.
+
+So there are three strengths, not two:
+
+| | shown | masked | withheld from a listing |
+|---|---|---|---|
+| `normal`, `mask: none` | ✓ | | |
+| `normal`, `mask: …` | | ✓ | |
+| `high` | | ✓ | ✓ |
+
+The style is a property of the type because only the type knows which
+characters are the recognisable ones: the last four of a card, the domain of an
+email address, none of a display name.
+
+A mask applies to a **rendering**, never to what is stored or sent. It only
+becomes ambiguous for `valueType: object`, every one of which is `full` today.
 
 ## 4. How a default resolves
 
+Per axis, independently:
+
 1. If the holder set the value explicitly on the attribute, that wins.
-2. Otherwise, if the token is in this registry, its entry supplies it.
-3. Otherwise — an unregistered token, or anything under `x:` — the
-   conservative defaults apply: `high` / `consent` / `full`.
+2. Otherwise, if the token has an **exact** entry here, its entry supplies it,
+   as written.
+3. Otherwise, take the **longest registered prefix** of the token and the
+   `defaults.unregistered` value, and use whichever is **more protective**
+   (`strictness` in `claim-types.json` orders each axis).
+4. Otherwise — no entry, no registered prefix, anything under `x:` — the
+   conservative default: `high` / `consent` / `full`.
+
+Rule 3 is what makes §2's claim about the hierarchy true rather than merely
+appealing, and it was missing from the first draft of this document. Without
+it, `payment.somethingNew` resolved to the unregistered default, whose
+`release` is `consent` — **weaker than every registered member of the family it
+plainly belongs to.** A gated family must not be leavable by inventing a token.
+
+"More protective" rather than "the prefix wins" so a family entry can only ever
+tighten. `name` as a prefix does not make an unregistered `name.somethingNew`
+visible; it cannot make anything looser than the floor, only stricter. That
+keeps one direction of surprise available and closes the other.
 
 **Store the override; derive the default.** Only a holder's deliberate choice is
 persisted. A resolved default is computed at read, so tightening this registry
