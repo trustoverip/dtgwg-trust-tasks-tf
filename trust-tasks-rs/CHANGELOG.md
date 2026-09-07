@@ -31,6 +31,67 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.18.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.3...trust-tasks-rs-v0.18.4) — 2026-09-07
+
+
+### Specifications
+
+- **rooms**: An epoch key chain, so joining a room means being able to read it ([#387](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/387))
+
+A record is sealed under the storage key of the epoch current when it was
+  written, and a group key schedule offers no way to derive an earlier epoch's key
+  from a later one. That property is what makes removing a member mean something.
+  It also means that, left alone, the first membership change makes every record
+  already in the room unopenable by everyone — the writer included.
+
+  A room is a library rather than a message stream. What was written is supposed
+  to stay readable to whoever is in the room, and a new member joining an
+  apparently empty room is the same defect seen from the other side.
+
+  ## The chain
+
+  `rooms/epoch/mint` gains an optional `link`: the outgoing epoch's storage key
+  sealed under the incoming one. Minting is the only moment at which one party
+  holds both, so it is the only moment the bridge can be made.
+
+  `rooms/epoch/chain` is new — a member fetches the accumulated rungs from the
+  host and walks them backwards. Backwards only: a member holding an earlier key
+  still derives nothing later, so removal stays exactly as forward-only as
+  `rooms/epoch/mint` already describes.
+
+  Rungs are ciphertext under keys no host holds. A host stores them and learns the
+  number of epochs a room has had, which the room's epoch number told it already
+  — which is why this is a host-served read rather than something the room's owner
+  must be online to answer.
+
+  ## Why epoch/ and not keys/
+
+  Every `rooms/keys/*` task terminates at a KeyHolder or an Oracle — a member's
+  own agent, in the family that exists so keys never travel. Every host-served
+  task is under `create`, `epoch`, `owner` or `records`. This one is
+  Member → Host and is epoch bookkeeping, so it belongs beside `epoch/mint`.
+
+  ## What it costs, and where that is chosen
+
+  A chain means a member's current key reaches every retained epoch, so
+  compromising one member's current key exposes the room's retained history rather
+  than only what came after. That is the cost of a library and it is real. It is
+  not chosen by this task: a room that made the other choice produces no rungs, and
+  `chain` returns an empty array for it. `link` is optional for that reason as
+  well as the mechanical one — it was added to an already-published version, where
+  requiring it would break every conforming producer.
+
+  ## Additive, and the struct literals
+
+  `link` on `MintEpochPayload` and the new `EpochLink` shared type are additive
+  on the wire, but generated Rust types are plain structs with public fields, so
+  existing `MintEpochPayload { .. }` literals need the new member.
+
+  Negative-space fixtures accompany both specs — the rooms family had none, and
+  nothing else tests a schema's rejections.
+
+
+
 ## [0.18.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.2...trust-tasks-rs-v0.18.3) — 2026-09-07
 
 
