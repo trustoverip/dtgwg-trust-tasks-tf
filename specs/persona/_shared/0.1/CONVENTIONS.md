@@ -93,6 +93,14 @@ That token is also what a `release: stepUp` attribute binds a fresh approval to.
 Binding to the session instead would turn "each time" into "once per login",
 which is the failure the requirement exists to prevent.
 
+**The approval is the maintainer's state, not a member of the request.** A
+producer that carried its own approval would be carrying a bearer token, and a
+bearer token authorising a disclosure is replayable by whoever holds it — the
+same property that makes the `previewId` single-use. So a maintainer records an
+approval against the preview it approves, where it shares that preview's
+lifetime: consumed with it, expired with it, and incapable of outliving the
+decision it belongs to.
+
 ## 6. Recipient party
 
 Every `persona/` task is addressed to the holder's **agent** — the party tagged
