@@ -11,6 +11,33 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.6 — 2026-09-08
+
+
+### Added
+
+- **auth/step-up/approve-response**: Add a recorded status for a bound approval (#391)
+- **persona/claim-types/list**: Serve the claim-type registry (#390)
+
+CLAIM-TYPES.md §6 deferred this until "the first extension type ships". The
+  reasoning has not survived contact with the copies: both implementations
+  vendored the table, between them they found four holes in it, and each fix
+  became a pull request against two repositories that do not own the data. The
+  cost being deferred is paid per change, not once.
+
+  The response carries `unregistered` and `strictness` as REQUIRED, not just the
+  entries. §4 rule 3 takes the longest registered prefix and the floor and keeps
+  whichever is more protective — a client cannot compute that from entries alone,
+  and one that hard-codes the floor or the ordering cannot be tightened by a
+  maintainer that raises it.
+
+  Exact tokens and family prefixes appear undistinguished, because marking them
+  would invite a client to walk only one kind — the hole that let a gated family
+  be escaped by inventing a member.
+
+  Authorization is any authenticated caller: the response is a constant, and both
+  of the usual answers refuse a caller that legitimately needs it.
+
 ## 0.17.5 — 2026-09-07
 
 
