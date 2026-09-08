@@ -31,6 +31,90 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.18.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.5...trust-tasks-rs-v0.18.6) — 2026-09-08
+
+
+### Added
+
+- **rooms/create**: Let a room choose whether it keeps its past readable ([#397](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/397))
+
+`RetentionPolicy` has been enforceable since OpenVTC/verifiable-trust-infrastructure#1318
+  and unchoosable the whole time: hosts refuse an epoch link for a room that does
+  not chain, and no room could say it did not. This is the member that makes the
+  choice reachable.
+
+  Two values, because that is the whole of the question. `chained`: each advance
+  seals the outgoing epoch's key under the incoming one, so every member reads the
+  room's whole retained history however long they have been in it — a library.
+  `fromJoin`: no rungs, so a member reads only from the epoch their group state is
+  at — a stream, or a room under a strict forward-secrecy obligation.
+
+  **Absent means `chained`**, stated in prose and deliberately NOT as a JSON Schema
+  `default`: a declared default is materialised by the generated bindings, so an
+  absent member would reappear as an explicit one on re-serialisation and break
+  round-trip idempotence for every room document written before this existed.
+
+  Immutable for the life of the room, like `visibility` and for the same reason —
+  the rungs either exist for an epoch or they do not, and no later change of mind
+  can seal key material that was never sealed or unseal what was already severed.
+
+  The cost of `chained` is stated where the choice is made rather than left to be
+  discovered: a member's current key reaches every retained epoch, so compromising
+  one reaches the room's whole retained history rather than only what came after.
+
+  Six negative-space fixtures. `rooms/create` had none, and it carries two closed
+  enums — including `from_join`, which is the plausible wrong spelling of a
+  camelCase value.
+
+- **rooms/keys/chain**: Deliver the epoch key chain to a member's own key holder ([#394](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/394))
+
+The last leg of a joining member's backfill, and the half that decides whether
+  their *agent* can read the room.
+
+  `rooms/epoch/chain` ([#387](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/387)) gets the rungs from the room's host to the member.
+  This gets them from the member to the party that will actually use them. The two
+  cannot be collapsed: a host is not permitted to speak to a member's key holder,
+  and a key holder does not present the member's credentials to a host.
+
+  Without it, a member who joins reads the room's history in their own client and
+  their agent does not — an agent recalling from a room it is plainly a member of,
+  finding nothing older than the day it arrived.
+
+  ## Why rooms/keys/ this time
+
+  Every `rooms/keys/*` task terminates at a KeyHolder or an Oracle, and this one
+  does too: Member → KeyHolder, their own. That is exactly why the *host*-served
+  fetch went to `rooms/epoch/` instead. Same word, two deliveries, two families,
+  and the parties block is what tells them apart.
+
+  ## The response answers a question the request cannot
+
+  `earliestReadableEpoch` is not a restatement of what was sent. A rung extends
+  reach only if every rung above it is present, so a caller who supplied a set
+  with a gap learns so here rather than at the first record that will not open —
+  which reads like corruption.
+
+  It is also why a recipient MUST NOT reject rungs it cannot currently use: a rung
+  below a gap is early, not wrong, and refusing it would make the natural repair
+  (fetch more, send again) fail on the attempt that was about to succeed.
+
+  Worth noting what this recipient can honestly claim and a host could not. A host
+  can say how many rungs it holds and nothing about whether they work. The key
+  holder is the party that walks them, so this number is computed from keys it
+  actually derived.
+
+  ## Authorization
+
+  The entitlement is being the recipient's own principal — not a room credential.
+  Fetching the rungs takes a `read` chain the room issued; handing them onward
+  takes none, because the recipient is not being asked to believe anything about
+  the room. It is being handed material it will verify by trying to use it.
+
+  Six negative-space fixtures, including the empty `links` array: a delivery that
+  carries no rungs would otherwise be a success that changed no state.
+
+
+
 ## [0.18.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.4...trust-tasks-rs-v0.18.5) — 2026-09-08
 
 
