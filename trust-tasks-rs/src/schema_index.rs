@@ -145,6 +145,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.2#response" => <crate::specs::auth::step_up::approve_response::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.3" => <crate::specs::auth::step_up::approve_response::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.3#response" => <crate::specs::auth::step_up::approve_response::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.1" => <crate::specs::auth::step_up::policy::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.1#response" => <crate::specs::auth::step_up::policy::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1754,6 +1758,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.2" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::step_up::approve_response::v0_2::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.3" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::step_up::approve_response::v0_3::Payload,
             >())
         }
         #[cfg(feature = "auth")]
