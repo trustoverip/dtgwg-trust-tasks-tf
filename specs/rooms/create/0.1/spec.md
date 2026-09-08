@@ -70,6 +70,23 @@ cleartext, and an upgrade would protect only what came after while presenting as
 protected everything. To change the visibility of some material, make another room and move
 it deliberately.
 
+`retentionPolicy` is fixed at creation and immutable for the same reason, and answers a
+different question: not what the *host* can see, but whether the room keeps its own past
+readable. A room's records are sealed under the key of the epoch current when they were
+written, and a group key schedule offers no way to derive an earlier epoch's key from a
+later one — which is what makes removing a member mean something. `chained` bridges that
+deliberately, by having each advance seal the outgoing epoch's key under the incoming one
+(see [`rooms/epoch/mint`](../../epoch/mint/0.1/spec.md)); `fromJoin` does not.
+
+**Absent means `chained`, and that is the choice a room wants unless it has a reason not
+to.** Joining a room should mean being able to read it, and a room that advances without
+producing rungs silently loses the ability to read everything written before — for every
+member, including whoever wrote it. `fromJoin` is for the room that wants exactly that: a
+stream rather than a library, or one under a strict forward-secrecy obligation. The cost of
+`chained` is real and belongs in the same breath: a member's current key then reaches every
+retained epoch, so compromising one reaches the room's whole retained history rather than
+only what came after.
+
 `ownerDid` is visible at **every** visibility, including `private`. A room has a party
 answerable for it: the controller of its identifier, the issuer of its credentials, and the
 party a host addresses about quota, abuse, or lifecycle. A room whose contents no one can
@@ -87,9 +104,15 @@ A conforming **producer** (the owner) **MUST** mint the room's identifier before
 and **MUST** be able to demonstrate control of it.
 
 A conforming **consumer** (the host) **MUST** refuse a visibility its governance does not
-permit, **MUST** treat `visibility` as immutable for the life of the room, and **MUST**
-state its retention behaviour at creation rather than applying one discovered later. A host
-**MUST NOT** require a member list, at creation or afterwards.
+permit, **MUST** treat `visibility` and `retentionPolicy` as immutable for the life of the
+room, and **MUST** state its retention behaviour at creation rather than applying one
+discovered later. A host **MUST NOT** require a member list, at creation or afterwards.
+
+A host **MUST** treat an absent `retentionPolicy` as `chained`, and **MUST** reject an
+epoch link presented for a room whose policy is `fromJoin` rather than storing one the room
+declared it would not have. Silently discarding it instead would let a producer believe the
+room's history was being retained when it was not, which is the failure this member exists
+to make explicit.
 
 ## Security & Privacy
 

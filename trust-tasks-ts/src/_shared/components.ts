@@ -268,6 +268,10 @@ export type RecordType = "authorization" | "recognition";
  */
 export type ReleaseRequirement = "consent" | "stepUp";
 /**
+ * Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.
+ */
+export type RetentionPolicy = "chained" | "fromJoin";
+/**
  * How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
  */
 export type Route = "wake" | "bridge-relay";

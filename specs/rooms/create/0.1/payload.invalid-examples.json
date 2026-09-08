@@ -1,0 +1,53 @@
+[
+  {
+    "note": "An unrecognised retentionPolicy. The enum is closed because the two values are the whole of the choice — whether the room keeps its past readable — and a host that accepted a third would have to invent what it meant. `chained` and `fromJoin` are the spellings; note the camelCase, since `from_join` is the plausible wrong guess.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "visibility": "attributed",
+      "ownerDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "retentionPolicy": "from_join"
+    }
+  },
+  {
+    "note": "retentionPolicy as a boolean. It is a named choice rather than a flag on purpose: `true` says nothing about which side it is on, and a reader of a stored room should not have to remember which way round it was defined.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "visibility": "attributed",
+      "ownerDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "retentionPolicy": true
+    }
+  },
+  {
+    "note": "An unrecognised visibility — the sibling closed enum, and the one a producer is most likely to guess at. `sealed` is not a tier; the tiers are named for what the host can see.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "visibility": "sealed",
+      "ownerDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "retentionDays of zero. A room reclaimable the instant its epoch lapses has no retention at all, and the floor of 1 makes a producer say so rather than express it as a number that reads like a policy.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "visibility": "open",
+      "ownerDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "retentionDays": 0
+    }
+  },
+  {
+    "note": "No ownerDid. Every tier discloses the owner, including `private`: a room whose contents nobody can read still has a party answerable for it existing, so this is the one member no visibility makes optional.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "visibility": "private"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "visibility": "open",
+      "ownerDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  }
+]

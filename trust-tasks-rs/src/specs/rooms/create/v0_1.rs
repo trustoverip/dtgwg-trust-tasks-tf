@@ -165,6 +165,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "type": "integer",
 ///      "minimum": 1.0
 ///    },
+///    "retentionPolicy": {
+///      "description": "Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have.",
+///      "$ref": "#/definitions/RetentionPolicy"
+///    },
 ///    "roomId": {
 ///      "description": "The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.",
 ///      "type": "string"
@@ -194,6 +198,13 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub retention_days: ::std::option::Option<::std::num::NonZeroU64>,
+    ///Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have.
+    #[serde(
+        rename = "retentionPolicy",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub retention_policy: ::std::option::Option<RetentionPolicy>,
     ///The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.
     #[serde(rename = "roomId")]
     pub room_id: ::std::string::String,
@@ -249,6 +260,82 @@ pub struct Response {
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "RetentionPolicy",
+///  "description": "Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.",
+///  "type": "string",
+///  "enum": [
+///    "chained",
+///    "fromJoin"
+///  ],
+///  "$comment": "Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it."
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum RetentionPolicy {
+    #[serde(rename = "chained")]
+    Chained,
+    #[serde(rename = "fromJoin")]
+    FromJoin,
+}
+impl ::std::fmt::Display for RetentionPolicy {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Chained => f.write_str("chained"),
+            Self::FromJoin => f.write_str("fromJoin"),
+        }
+    }
+}
+impl ::std::str::FromStr for RetentionPolicy {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "chained" => Ok(Self::Chained),
+            "fromJoin" => Ok(Self::FromJoin),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for RetentionPolicy {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for RetentionPolicy {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for RetentionPolicy {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
@@ -341,6 +428,10 @@ pub mod builder {
             ::std::option::Option<::std::num::NonZeroU64>,
             ::std::string::String,
         >,
+        retention_policy: ::std::result::Result<
+            ::std::option::Option<super::RetentionPolicy>,
+            ::std::string::String,
+        >,
         room_id: ::std::result::Result<::std::string::String, ::std::string::String>,
         visibility: ::std::result::Result<super::Visibility, ::std::string::String>,
     }
@@ -350,6 +441,7 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 owner_did: Err("no value supplied for owner_did".to_string()),
                 retention_days: Ok(Default::default()),
+                retention_policy: Ok(Default::default()),
                 room_id: Err("no value supplied for room_id".to_string()),
                 visibility: Err("no value supplied for visibility".to_string()),
             }
@@ -386,6 +478,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for retention_days: {e}"));
             self
         }
+        pub fn retention_policy<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RetentionPolicy>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.retention_policy = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for retention_policy: {e}"));
+            self
+        }
         pub fn room_id<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::string::String>,
@@ -414,6 +516,7 @@ pub mod builder {
                 ext: value.ext?,
                 owner_did: value.owner_did?,
                 retention_days: value.retention_days?,
+                retention_policy: value.retention_policy?,
                 room_id: value.room_id?,
                 visibility: value.visibility?,
             })
@@ -425,6 +528,7 @@ pub mod builder {
                 ext: Ok(value.ext),
                 owner_did: Ok(value.owner_did),
                 retention_days: Ok(value.retention_days),
+                retention_policy: Ok(value.retention_policy),
                 room_id: Ok(value.room_id),
                 visibility: Ok(value.visibility),
             }
@@ -503,7 +607,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"ownerDid\": {\n      \"description\": \"The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.\",\n      \"type\": \"string\"\n    },\n    \"retentionDays\": {\n      \"description\": \"How long the host will hold the room after its epoch lapses without renewal, before storage may be reclaimed. Stated at creation rather than discovered: reclamation that surprises a member is a failure of the design, not of the member.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.\",\n      \"type\": \"string\"\n    },\n    \"visibility\": {\n      \"$ref\": \"#/$defs/Visibility\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"visibility\",\n    \"ownerDid\"\n  ],\n  \"title\": \"Rooms Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"ownerDid\": {\n      \"description\": \"The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.\",\n      \"type\": \"string\"\n    },\n    \"retentionDays\": {\n      \"description\": \"How long the host will hold the room after its epoch lapses without renewal, before storage may be reclaimed. Stated at creation rather than discovered: reclamation that surprises a member is a failure of the design, not of the member.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"retentionPolicy\": {\n      \"$ref\": \"#/$defs/RetentionPolicy\",\n      \"description\": \"Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.\",\n      \"type\": \"string\"\n    },\n    \"visibility\": {\n      \"$ref\": \"#/$defs/Visibility\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"visibility\",\n    \"ownerDid\"\n  ],\n  \"title\": \"Rooms Create — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -512,9 +616,67 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
     type Response = Response;
+}
+#[cfg(test)]
+mod conformance {
+    //! Round-trip tests harvested from the spec's `spec.md`,
+    //! plus a `rejects_invalid_examples` test for any fixtures
+    //! in `payload.invalid-examples.json` (validate feature).
+    /// Each fixture in `payload.invalid-examples.json` MUST be
+    /// rejected by at least one of: serde deserialization, or
+    /// JSON-Schema validation under the `validate` feature. The
+    /// fixture file documents the producer-side bug class that
+    /// each payload exemplifies; this generated test pins it.
+    #[cfg(feature = "validate")]
+    #[test]
+    fn rejects_invalid_examples() {
+        use crate::validate::ValidatedPayload;
+        let fixtures: &[(&str, &str)] = &[
+            (
+                "An unrecognised retentionPolicy. The enum is closed because the two values are the whole of the choice — whether the room keeps its past readable — and a host that accepted a third would have to invent what it meant. `chained` and `fromJoin` are the spellings; note the camelCase, since `from_join` is the plausible wrong guess.",
+                "{\n  \"ownerDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"retentionPolicy\": \"from_join\",\n  \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n  \"visibility\": \"attributed\"\n}",
+            ),
+            (
+                "retentionPolicy as a boolean. It is a named choice rather than a flag on purpose: `true` says nothing about which side it is on, and a reader of a stored room should not have to remember which way round it was defined.",
+                "{\n  \"ownerDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"retentionPolicy\": true,\n  \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n  \"visibility\": \"attributed\"\n}",
+            ),
+            (
+                "An unrecognised visibility — the sibling closed enum, and the one a producer is most likely to guess at. `sealed` is not a tier; the tiers are named for what the host can see.",
+                "{\n  \"ownerDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n  \"visibility\": \"sealed\"\n}",
+            ),
+            (
+                "retentionDays of zero. A room reclaimable the instant its epoch lapses has no retention at all, and the floor of 1 makes a producer say so rather than express it as a number that reads like a policy.",
+                "{\n  \"ownerDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"retentionDays\": 0,\n  \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n  \"visibility\": \"open\"\n}",
+            ),
+            (
+                "No ownerDid. Every tier discloses the owner, including `private`: a room whose contents nobody can read still has a party answerable for it existing, so this is the one member no visibility makes optional.",
+                "{\n  \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n  \"visibility\": \"private\"\n}",
+            ),
+            (
+                "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+                "{\n  \"ext\": {\n    \"bare-key\": {\n      \"anything\": \"here\"\n    }\n  },\n  \"ownerDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n  \"visibility\": \"open\"\n}",
+            ),
+        ];
+        for (i, (note, raw)) in fixtures.iter().enumerate() {
+            let value: serde_json::Value = match serde_json::from_str(raw) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
+            let schema_ok = super::Payload::validate_value(&value).is_ok();
+            assert!(
+                !(serde_ok && schema_ok),
+                "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                i + 1,
+                note,
+                raw
+            );
+        }
+    }
 }

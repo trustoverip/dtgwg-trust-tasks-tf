@@ -21,6 +21,10 @@
       "type": "string",
       "description": "The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` \u2014 a room has someone answerable for it."
     },
+    "retentionPolicy": {
+      "$ref": "../../_shared/0.1/room.schema.json#/$defs/RetentionPolicy",
+      "description": "Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have."
+    },
     "retentionDays": {
       "type": "integer",
       "minimum": 1,

@@ -3,7 +3,7 @@
  * Source: specs/rooms/create/0.1/payload.schema.json
  */
 
-import type { Ext, Visibility } from "../../../_shared/components.js";
+import type { Ext, RetentionPolicy, Visibility } from "../../../_shared/components.js";
 
 
 export interface RoomsCreatePayload {
@@ -16,6 +16,10 @@ export interface RoomsCreatePayload {
    * The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.
    */
   ownerDid: string;
+  /**
+   * Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have.
+   */
+  retentionPolicy?: RetentionPolicy;
   /**
    * How long the host will hold the room after its epoch lapses without renewal, before storage may be reclaimed. Stated at creation rather than discovered: reclamation that surprises a member is a failure of the design, not of the member.
    */
@@ -38,7 +42,7 @@ export interface RoomsCreateResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext, Visibility };
+export type { Ext, RetentionPolicy, Visibility };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/create/0.1" as const;
@@ -84,6 +88,10 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "description": "The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it."
     },
+    "retentionPolicy": {
+      "$ref": "#/$defs/RetentionPolicy",
+      "description": "Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have."
+    },
     "retentionDays": {
       "type": "integer",
       "minimum": 1,
@@ -128,6 +136,16 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "RetentionPolicy": {
+      "title": "RetentionPolicy",
+      "type": "string",
+      "enum": [
+        "chained",
+        "fromJoin"
+      ],
+      "description": "Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.",
+      "$comment": "Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it."
     },
     "Visibility": {
       "title": "Visibility",
@@ -180,6 +198,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "RetentionPolicy": {
+      "title": "RetentionPolicy",
+      "type": "string",
+      "enum": [
+        "chained",
+        "fromJoin"
+      ],
+      "description": "Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.",
+      "$comment": "Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it."
     },
     "Visibility": {
       "title": "Visibility",
