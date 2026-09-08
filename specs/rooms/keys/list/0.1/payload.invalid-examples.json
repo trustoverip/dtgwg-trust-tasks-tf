@@ -1,0 +1,18 @@
+[
+  {
+    "note": "A roomId filter. The request deliberately carries nothing: a filter would turn this into \"is my principal in THAT room\", which is a different question with a different answer and no authorization story of its own. `additionalProperties: false` is what keeps the two apart.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind" }
+  },
+  {
+    "note": "A subject. A recipient answers for its own principal and for nobody else; a member naming whose rooms to list is the shape of a task this one is not.",
+    "payload": { "subject": "did:example:someone-else" }
+  },
+  {
+    "note": "Paging members. Rooms are bounded by how many a person is in, so there is no cursor to issue and none to accept — a caller that sent one would be relying on behaviour no recipient implements.",
+    "payload": { "limit": 50, "cursor": "eyJhZnRlciI6MX0" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  }
+]

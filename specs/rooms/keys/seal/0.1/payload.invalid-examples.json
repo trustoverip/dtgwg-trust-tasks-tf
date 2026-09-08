@@ -1,0 +1,47 @@
+[
+  {
+    "note": "No version. The version is bound into the ciphertext, so a request without one is asking for a record that cannot be bound to where it will live — and there is no defaulting that would be honest, because only the caller knows which write shape it is about to use.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "plaintext": "IyBOb3J0aHdpbmQ"
+    }
+  },
+  {
+    "note": "A negative version. Versions are assigned from a monotonic counter that starts at 1, and `0` is the create-only precondition — nothing below that names a record that can exist.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "version": -1,
+      "plaintext": "IyBOb3J0aHdpbmQ"
+    }
+  },
+  {
+    "note": "No plaintext. Sealing nothing is not a coherent request; the member is the whole input.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "version": 1
+    }
+  },
+  {
+    "note": "The record's parts sent separately. Splitting title/body/tags would let a host read the shape of the material from ciphertext lengths — the sealed tiers seal one blob for exactly this reason, so the structure belongs inside `plaintext`, not beside it.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "version": 1,
+      "plaintext": "IyBOb3J0aHdpbmQ",
+      "title": "Northwind"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "version": 1,
+      "plaintext": "IyBOb3J0aHdpbmQ",
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  }
+]

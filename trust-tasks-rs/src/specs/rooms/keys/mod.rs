@@ -3,6 +3,8 @@
 pub mod chain;
 pub mod commit;
 pub mod key_package;
+pub mod list;
 pub mod open;
 pub mod present;
+pub mod seal;
 pub mod welcome;
