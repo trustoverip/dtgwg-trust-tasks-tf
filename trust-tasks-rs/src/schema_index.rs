@@ -785,6 +785,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/epoch/mint/0.1#response" => <crate::specs::rooms::epoch::mint::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.1" => <crate::specs::rooms::keys::backfill::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.1#response" => <crate::specs::rooms::keys::backfill::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => <crate::specs::rooms::keys::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1#response" => <crate::specs::rooms::keys::chain::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -832,6 +836,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1" => <crate::specs::rooms::owner::issue_membership::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response" => <crate::specs::rooms::owner::issue_membership::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/register/0.1" => <crate::specs::rooms::owner::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/register/0.1#response" => <crate::specs::rooms::owner::register::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/owner/transfer/0.1" => <crate::specs::rooms::owner::transfer::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
@@ -2579,6 +2587,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::rooms::epoch::mint::v0_1::Payload,
         >()),
         #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::backfill::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::chain::v0_1::Payload,
         >()),
@@ -2630,6 +2642,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::rooms::owner::issue_membership::v0_1::Payload,
             >())
         }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/register/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::owner::register::v0_1::Payload,
+        >()),
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/owner/transfer/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::owner::transfer::v0_1::Payload,

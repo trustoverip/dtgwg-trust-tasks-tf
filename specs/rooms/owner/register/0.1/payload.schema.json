@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/register/0.1",
+  "title": "Rooms Owner Register — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host",
+    "visibility"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room being registered. Its identity exists already — this asks a host to store it, not to name it."
+    },
+    "host": {
+      "type": "string",
+      "description": "The host to register with, as a DID. Named by the caller because a room has no host until this call succeeds, and because a room may be registered with more than one (a mirror serves reads while its primary takes writes)."
+    },
+    "visibility": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/Visibility",
+      "description": "The tier to create the room at. Passed through to `rooms/create`, whose description of the choice governs."
+    },
+    "ownerDid": {
+      "type": "string",
+      "description": "The accountable party. Absent means the caller — a registration is normally made by the owner it names, and defaulting saves a surface repeating the DID it just authenticated as. Present and different is legitimate: an operator registering on behalf of the party who will answer for the room."
+    },
+    "retentionPolicy": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RetentionPolicy",
+      "description": "Whether the room keeps its history readable across a membership change. Immutable once set, so a caller that omits it is taking the host's default for the life of the room."
+    },
+    "retentionDays": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How long the host is asked to hold the room after it lapses."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Register — response payload",
+      "description": "Success response to rooms/owner/register. Type https://trusttasks.org/spec/rooms/owner/register/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "host",
+        "epoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string",
+          "description": "The host that accepted it, echoed so a caller recording where its room lives records what the recipient actually reached rather than what it asked for."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The epoch the room now stands at, as the host reports it. `1` for a room registered for the first time."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

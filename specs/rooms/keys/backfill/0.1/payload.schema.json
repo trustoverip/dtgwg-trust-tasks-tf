@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/backfill/0.1",
+  "title": "Rooms Keys Backfill — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to backfill. The recipient MUST already hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so fetching them for a room one is not in would retain key material for nothing."
+    },
+    "host": {
+      "type": "string",
+      "description": "The host to fetch from, as a DID. Named by the caller because nothing maps a room to its host: a room is portable — re-point it and it has moved — so a remembered host is a value that goes stale, and the recipient holds key custody rather than a hosting record. A caller who names the wrong host learns so as a refusal from a party that does not serve this room, which is loud and immediate."
+    },
+    "fromEpoch": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Fetch only rungs at or below this epoch. Absent means from the room's current epoch down. A recipient that already reads to some epoch SHOULD pass it, so a host serves the part that is missing rather than the whole chain."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum rungs to request in one pass, highest `epoch` first. A host MAY return fewer. A caller walking a long history calls again with `fromEpoch` set below what it has."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Backfill — response payload",
+      "description": "Success response to rooms/keys/backfill. Type https://trusttasks.org/spec/rooms/keys/backfill/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "earliestReadableEpoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "earliestReadableEpoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The earliest epoch the recipient can now derive a key for, having walked what it holds. **This is the answer worth having**, and it is not derivable from `fetched`: a rung extends reach only if every rung above it is present, so a chain served with a gap in it moves this number not at all. `1` means the room's whole retained history is readable."
+        },
+        "fetched": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many rungs the host served. Reported separately from `stored` and from the reach so a caller can tell the three ways this ends: nothing served (the host has no more), served and stored but the reach did not move (a gap), or served and the reach moved."
+        },
+        "stored": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many of them the recipient did not already hold. Zero alongside a positive `fetched` means the chain was already delivered, which is what a retry looks like."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
