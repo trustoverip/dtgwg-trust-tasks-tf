@@ -2,6 +2,7 @@
 
 pub mod attribute;
 pub mod binding;
+pub mod claim_types;
 pub mod contact;
 pub mod correlation;
 pub mod disclosure;

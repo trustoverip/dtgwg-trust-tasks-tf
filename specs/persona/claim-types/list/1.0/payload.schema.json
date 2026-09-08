@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/claim-types/list/1.0",
+  "title": "Persona Claim Types List — payload",
+  "description": "Serve the claim-type registry this agent resolves against. A client that cannot read the table has to ship a copy of it, and a copy is a re-sync obligation on every change.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": { "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Claim Types List — response payload",
+      "description": "Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registryVersion", "entries", "unregistered", "strictness"],
+      "properties": {
+        "registryVersion": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this."
+        },
+        "entries": {
+          "type": "array",
+          "maxItems": 512,
+          "description": "The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "sensitivity", "release", "mask"],
+            "properties": {
+              "type": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+              "sensitivity": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Sensitivity" },
+              "release": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ReleaseRequirement" },
+              "mask": {
+                "type": "string",
+                "maxLength": 32,
+                "description": "Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`."
+              },
+              "minimumSet": {
+                "type": "boolean",
+                "description": "Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence."
+              },
+              "oidc": {
+                "type": "array",
+                "maxItems": 16,
+                "items": { "type": "string", "maxLength": 64 },
+                "description": "OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary."
+              }
+            }
+          }
+        },
+        "unregistered": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sensitivity", "release", "mask"],
+          "description": "The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.",
+          "properties": {
+            "sensitivity": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Sensitivity" },
+            "release": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ReleaseRequirement" },
+            "mask": { "type": "string", "maxLength": 32 }
+          }
+        },
+        "strictness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sensitivity", "release", "mask"],
+          "description": "Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.",
+          "properties": {
+            "sensitivity": { "type": "array", "maxItems": 8, "items": { "type": "string", "maxLength": 32 } },
+            "release": { "type": "array", "maxItems": 8, "items": { "type": "string", "maxLength": 32 } },
+            "mask": { "type": "array", "maxItems": 16, "items": { "type": "string", "maxLength": 32 } }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

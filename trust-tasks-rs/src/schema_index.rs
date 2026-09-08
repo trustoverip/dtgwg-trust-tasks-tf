@@ -577,6 +577,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/binding/set/1.0#response" => <crate::specs::persona::binding::set::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/claim-types/list/1.0" => <crate::specs::persona::claim_types::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/claim-types/list/1.0#response" => <crate::specs::persona::claim_types::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/contact/delete/1.0" => <crate::specs::persona::contact::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/contact/delete/1.0#response" => <crate::specs::persona::contact::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2322,6 +2326,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/persona/binding/set/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::binding::set::v1_0::Payload,
         >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/claim-types/list/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::claim_types::list::v1_0::Payload,
+            >())
+        }
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/contact/delete/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::contact::delete::v1_0::Payload,
