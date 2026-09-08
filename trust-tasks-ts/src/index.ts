@@ -175,6 +175,7 @@ export * as PersonaAttributePut_v1_0 from "./persona/attribute/put/1.0/payload.j
 export * as PersonaBindingGet_v1_0 from "./persona/binding/get/1.0/payload.js";
 export * as PersonaBindingList_v1_0 from "./persona/binding/list/1.0/payload.js";
 export * as PersonaBindingSet_v1_0 from "./persona/binding/set/1.0/payload.js";
+export * as PersonaClaimTypesList_v1_0 from "./persona/claim-types/list/1.0/payload.js";
 export * as PersonaContactDelete_v1_0 from "./persona/contact/delete/1.0/payload.js";
 export * as PersonaContactGet_v1_0 from "./persona/contact/get/1.0/payload.js";
 export * as PersonaContactList_v1_0 from "./persona/contact/list/1.0/payload.js";
