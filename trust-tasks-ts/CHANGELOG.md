@@ -11,6 +11,50 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.8 — 2026-09-08
+
+
+### Added
+
+- **rooms**: Let a member's own agent reach a room's host for them (#402)
+
+Two tasks, one reason: **the surfaces people actually use cannot reach a
+  room's host.** A browser extension or a phone holds a channel to its own
+  agent and to no third party, so every host-served room verb is unreachable
+  from them — not refused, not degraded, simply unaddressable.
+
+  `rooms/keys/backfill` collapses present → `rooms/epoch/chain` → store into
+  one act performed by the party that can perform all three. The member's key
+  holder already has the credentials, already mints the presentation, and
+  already holds the group state the rungs extend; the only hop it was missing
+  was the one the member could not make either. It presents `read` and no
+  more — reading a room and reading the parts written earlier are the same
+  act — bound to the named host as audience, which is what makes a
+  caller-supplied host safe: the presentation is useless anywhere else, and
+  the caller is already a member.
+
+  The response carries three numbers because there are three ways it ends,
+  and they are not restatements of each other. Nothing served means the
+  history begins there or was severed before this member joined. Rungs served
+  with the reach unmoved means they sit below a gap — early rather than
+  wrong, and a consumer MUST NOT discard them. A consumer reporting only what
+  arrived would say "12 rungs stored" over a room that still cannot open a
+  word of its history.
+
+  `rooms/owner/register` is `rooms/create` performed by the agent, and it
+  closes a half-finished state that is worse than a failure: minting the
+  room's identity is the agent's own work and succeeds, so a surface that
+  cannot then register it leaves an owner holding a DID and a signing key for
+  a room that exists nowhere — real, unrecoverable, and now theirs to keep
+  safe by hand. The order is unchanged and still forced: identity first, then
+  a host is told about a room that already exists, because a host that named
+  the room would be a host the room could not leave.
+
+  Both echo what the recipient actually reached rather than what the caller
+  asked for, and both store nothing: a key holder holds custody, not a
+  hosting register, and a remembered host is a value that goes stale the
+  moment a portable room moves.
+
 ## 0.17.7 — 2026-09-08
 
 
