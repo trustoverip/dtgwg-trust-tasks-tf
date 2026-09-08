@@ -233,6 +233,7 @@ export * as RoomShared_v0_1 from "./rooms/_shared/0.1/room.js";
 export * as RoomsCreate_v0_1 from "./rooms/create/0.1/payload.js";
 export * as RoomsEpochChain_v0_1 from "./rooms/epoch/chain/0.1/payload.js";
 export * as RoomsEpochMint_v0_1 from "./rooms/epoch/mint/0.1/payload.js";
+export * as RoomsKeysChain_v0_1 from "./rooms/keys/chain/0.1/payload.js";
 export * as RoomsKeysCommit_v0_1 from "./rooms/keys/commit/0.1/payload.js";
 export * as RoomsKeysKeyPackage_v0_1 from "./rooms/keys/key-package/0.1/payload.js";
 export * as RoomsKeysOpen_v0_1 from "./rooms/keys/open/0.1/payload.js";

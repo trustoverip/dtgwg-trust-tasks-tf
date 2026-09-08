@@ -1,0 +1,55 @@
+[
+  {
+    "note": "An empty links array. A delivery that carries no rungs asks the recipient to retain nothing and report on nothing; `minItems: 1` makes the caller say what they meant rather than receive a success that changed no state.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": []
+    }
+  },
+  {
+    "note": "No links member at all. The rungs are the entire payload — a request without them is a request to do nothing, and there is no defaulting that would be honest.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "note": "A rung claiming epoch 1. A room's first epoch has no predecessor, so rung 1 wraps something that is not an earlier epoch's key; EpochLink's floor of 2 refuses it before it can be stored as a rung that silently ends the walk.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [
+        { "epoch": 1, "wrapped": "9jK2_QhV1sVvR0m5xAqZ7A", "nonce": "b0Zt8Qm2Yq1sVvR0" }
+      ]
+    }
+  },
+  {
+    "note": "A rung with no wrapped key. The nonce alone is not a rung; storing one would extend the chain's length without extending its reach, which is the shape of a gap that looks like a delivery.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [{ "epoch": 3, "nonce": "b0Zt8Qm2Yq1sVvR0" }]
+    }
+  },
+  {
+    "note": "An unknown member inside a rung — additionalProperties: false on EpochLink. A rung carries wrapped key material and nothing descriptive; an extra member is the obvious place to leak what the sealing exists to hide.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [
+        {
+          "epoch": 3,
+          "wrapped": "9jK2_QhV1sVvR0m5xAqZ7A",
+          "nonce": "b0Zt8Qm2Yq1sVvR0",
+          "joinedAt": "2026-01-01T00:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [
+        { "epoch": 2, "wrapped": "9jK2_QhV1sVvR0m5xAqZ7A", "nonce": "b0Zt8Qm2Yq1sVvR0" }
+      ],
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  }
+]
