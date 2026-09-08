@@ -9,6 +9,14 @@ It is **descriptive of the core set, not exhaustive of what may exist.** The
 `x:` namespace stays open, and an unregistered token is a valid token — it
 simply resolves to the conservative defaults in §4.
 
+**A maintainer serves its own copy of this table**, through
+[`persona/claim-types/list`](../../claim-types/list/1.0/spec.md) — the rows, the
+unregistered floor, and the per-axis strictness ordering §4 rule 3 needs. A
+client SHOULD read it rather than compile one in. This document remains the
+normative account of what the table *means*; the task is how a client learns
+what one particular agent's table *says*, including extension types its own
+build predates.
+
 ## 1. Why a registry, when the pattern is already enforced
 
 `ClaimType` constrains the *shape* of a token and says nothing about which
@@ -213,10 +221,6 @@ it does not belong there.
 - **Should `release: "never"` exist?** A value the holder keeps for their own
   reference and can never disclose. Useful and honest, but it makes the pool
   partly a password manager, and that is easier to add later than to remove.
-- **Should the agent serve this table?** Clients can ship it statically today.
-  A `persona/claim-types/list` task — the shape `persona/renderers/list`
-  already has — would let a client learn types its build predates. Worth doing
-  when the first extension type ships, not before.
 - **Which external vocabularies after OIDC?** vCard is the obvious second for
   contact-shaped types; schema.org is broad enough to map loosely and is
   probably not worth normative mappings.
