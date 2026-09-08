@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/invite/0.1",
+  "title": "Rooms Owner Invite \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "signingKeyId",
+    "subject"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose identity issues this credential. The recipient MUST hold a signing key for it \u2014 it is signing AS the room, not as itself."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document \u2014 loud, and at the first use rather than later."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    },
+    "subject": {
+      "type": "string",
+      "description": "The party being invited. Named in the credential, which is why a VIC is single-use and why it is not presented on every access: presenting one would disclose the member."
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the invitation expires. An invitation that never expires is a standing right to enter, held by whoever ends up with the bytes."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Invite \u2014 response payload",
+      "description": "Success response to rooms/owner/invite. Type https://trusttasks.org/spec/rooms/owner/invite/0.1#response. The signed VIC, for delivery to the invitee.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credential",
+        "credentialId"
+      ],
+      "properties": {
+        "credential": {
+          "type": "string",
+          "description": "The signed Verifiable Invitation Credential, serialised."
+        },
+        "credentialId": {
+          "type": "string",
+          "description": "Its `id`. The owner tracks consumption by this on a `private` room, where a host-side invitation store would hand the host the membership at invite time."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

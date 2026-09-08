@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1",
+  "title": "Rooms Owner Issue Membership \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "signingKeyId",
+    "subject"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose identity issues this credential. The recipient MUST hold a signing key for it \u2014 it is signing AS the room, not as itself."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document \u2014 loud, and at the first use rather than later."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    },
+    "subject": {
+      "type": "string",
+      "description": "The member this admits. Membership is an explicit set of parties, never a role \u2014 a room that admitted a role would be a room whose membership its host could compute."
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When membership lapses. Absent means it does not, and removal is then an epoch advance rather than an expiry \u2014 see `rooms/epoch/mint`."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Issue Membership \u2014 response payload",
+      "description": "Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credential",
+        "credentialId"
+      ],
+      "properties": {
+        "credential": {
+          "type": "string",
+          "description": "The signed Verifiable Membership Credential, serialised, for delivery to the member."
+        },
+        "credentialId": {
+          "type": "string",
+          "description": "Its `id`, which is how a re-send is told from a renewal."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

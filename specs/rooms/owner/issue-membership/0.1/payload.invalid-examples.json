@@ -1,0 +1,46 @@
+[
+  {
+    "note": "No signingKeyId. The recipient signs AS the room, and which key does that is the entire authorization story — a request that omits it is asking the recipient to choose, which is the one decision it must never make on the caller's behalf.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "No subject. Every credential here names who it is for; one without a subject confers on nobody, and a schema that allowed it would let a producer mint a credential it could not explain.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "A role instead of a party. Membership is an explicit set of parties, never a role — a room that admitted a role would be a room whose membership its host could compute, and the host is the party the design keeps membership away from.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "role": "engineering"
+    }
+  },
+  {
+    "note": "validUntil as a date rather than a date-time.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "validUntil": "2027-01-01"
+    }
+  }
+]

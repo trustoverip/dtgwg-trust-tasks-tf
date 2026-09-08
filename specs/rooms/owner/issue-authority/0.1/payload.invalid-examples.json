@@ -1,0 +1,70 @@
+[
+  {
+    "note": "No signingKeyId. The recipient signs AS the room, and which key does that is the entire authorization story — a request that omits it is asking the recipient to choose, which is the one decision it must never make on the caller's behalf.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "No subject. Every credential here names who it is for; one without a subject confers on nobody, and a schema that allowed it would let a producer mint a credential it could not explain.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": [
+        "read"
+      ],
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "An empty actions list. It confers nothing rather than everything — but those are exactly the two readings a careless consumer might choose between, so the input is refused rather than the choice left open.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": []
+    }
+  },
+  {
+    "note": "No actions at all. Same reasoning as the empty list, and the more likely typo.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "An action outside the enum. `delete` is not a room verb — retraction is a curation judgement (`curate`) and purging is a host operation, so a grant naming it would confer something no host implements.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": [
+        "read",
+        "delete"
+      ]
+    }
+  },
+  {
+    "note": "actions as a bare string. One verb is still a list; accepting a string would make `\"read\"` and `[\"read\"]` two spellings of one grant, and a verifier that normalised only one of them would disagree with its peers.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": "read"
+    }
+  }
+]

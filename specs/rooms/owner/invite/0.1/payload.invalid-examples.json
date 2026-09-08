@@ -1,0 +1,47 @@
+[
+  {
+    "note": "No signingKeyId. The recipient signs AS the room, and which key does that is the entire authorization story — a request that omits it is asking the recipient to choose, which is the one decision it must never make on the caller's behalf.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "No subject. Every credential here names who it is for; one without a subject confers on nobody, and a schema that allowed it would let a producer mint a credential it could not explain.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "An unknown member — additionalProperties: false catches `reason`. Whatever is placed beside the credential travels with it to the invitee, so a free-form note here is a note the room's host may end up reading.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "reason": "joining the pricing group"
+    }
+  },
+  {
+    "note": "validUntil as a date rather than a date-time. An invitation's window is the whole of its safety, and a value that cannot be ordered against an issuedAt is not a window.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "validUntil": "2026-02-01"
+    }
+  }
+]
