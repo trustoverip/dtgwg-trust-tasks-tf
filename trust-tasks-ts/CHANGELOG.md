@@ -11,6 +11,120 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.7 — 2026-09-08
+
+
+### Added
+
+- **rooms/owner**: Mint the credentials that make a room joinable (#401)
+
+The piece the design note calls "Library only": nothing served "issue this
+  member a VMC and a VAC", so an owner minted them by hand with dtg-credentials
+  and no surface could create a room and add people to it.
+
+  Three tasks, each signing AS the room with a key the owner's key holder holds:
+
+    invite            a VIC — joining is consent, and this is the artefact
+    issue-membership  the VMC a member presents on every operation
+    issue-authority   a VAC chain root: read / write / curate / admin
+
+  ## Two design calls worth recording
+
+  **The key is named, not looked up.** Nothing maps a DID to the key it was minted
+  with, and inventing that mapping would add a lifecycle to get wrong — one that
+  can go stale, be rebuilt incorrectly, or disagree with the DID document after a
+  rotation. A wrong key produces a credential that fails to verify against the
+  room's DID document, which is loud and at first use. It also matches the grain:
+  did:webvh creation already takes an explicit signing_key_id.
+
+  **Three tasks, not four.** A DTG membership credential is half of a pair, and the
+  member issues the other half. Room authorization verifies only the grant half —
+  `vti_rooms_dtg` compares the presented membership's subject against the chain
+  root and never looks for an acknowledgement — so a room is joinable without one.
+  Stated in issue-membership rather than left for someone to discover.
+
+  ## Authorization is the key gate and nothing else
+
+  These tasks do not check that the caller is the room's owner. "Owner" is a fact
+  about the room's DID controller, and a key holder is not a DID resolver.
+  Controlling the signing key and controlling the DID are the same thing while the
+  key is the one the document names — and when they have come apart, the credential
+  minted here simply fails to verify. The VTA already gates key naming by context,
+  with a resource-bound policy limit that binds super-admins too.
+
+  ## The recipient keeps nothing
+
+  No roster, no issuance log. A room's membership and authority live in the
+  credentials themselves, so the owner is the only party who knows what they
+  issued — which is invariant I1 working, not a gap.
+
+  Seventeen negative-space fixtures. The sharpest is issue-membership refusing a
+  `role` in place of a subject: a room that admitted a role would be a room whose
+  membership its host could compute.
+
+- **rooms/keys**: Seal and list, so a client can write a sealed room and find one (#399)
+
+Two gaps that between them make a room UI impossible, both in the family that
+  exists so keys never leave the key holder.
+
+  ## seal — the mirror of open
+
+  A client can read a sealed room and cannot write to one. Sealing needs the
+  epoch's storage key, the key never leaves the key holder by design, and nothing
+  asked the key holder to seal on a caller's behalf — so every writing surface for
+  an `attributed` or `private` room had to *be* the key holder. `pnm rooms put`
+  says so in its own help: "open rooms only".
+
+  Plaintext in, ciphertext out, key stays put. It does not write: the caller takes
+  the result to a host and presents its own authority there. Sealing and being
+  allowed to store are different questions asked of different parties — the key
+  holder knows the key and nothing about the room's ACL; the host knows the
+  credentials and cannot read a byte.
+
+  `version` is an input because the associated data commits to it. The host
+  assigns versions, so a writer does not know it at sealing time; this takes the
+  version the writer INTENDS, and a caller that lets the host assign a different
+  one finds the record does not open. That is the correct failure — accepting
+  whatever came back would mean the binding commits to nothing.
+
+  ## list — where a roomId comes from
+
+  Every other room task takes a `roomId` the caller already knows, and nothing
+  said where. A surface could act in a room it was told about out of band and
+  could not show a principal their own rooms.
+
+  It reports two epochs per room, and neither alone is enough: `epoch` behind the
+  room's own means a commit was not delivered; `earliestReadableEpoch` equal to it
+  means the chain has not arrived. Different repairs, and without both a member
+  reads "less than I expected" as loss rather than as delivery.
+
+  **Key custody, not membership.** A principal may hold a good VMC for a room whose
+  Welcome never came — absent here, correctly. And a key holder not yet told of a
+  removal still opens what it already had, which is what removal has always meant.
+  A consumer MUST NOT present this as authority to act.
+
+  Nine negative-space fixtures. The sharpest is `list` refusing a `roomId` filter:
+  that would turn it into "is my principal in THAT room", a different question
+  with no authorization story of its own.
+
+
+
+### Specifications
+
+- **persona/_shared**: The agent serves this table now (#398)
+
+§6 still asked "Should the agent serve this table? … worth doing when the first
+  extension type ships, not before" — and `persona/claim-types/list/1.0` shipped
+  in #390, with the agent serving it since VTI #1315. A reader arriving here today
+  would conclude the task does not exist and compile in a copy, which is the thing
+  it was built to stop.
+
+  The answer moves to the top, where a reader looking for the table will be,
+  rather than living only in a resolved-questions list: a client SHOULD read the
+  maintainer's own copy. This document stays the normative account of what the
+  table means; the task is how a client learns what one agent's table says,
+  including extension types its build predates.
+
 ## 0.17.6 — 2026-09-08
 
 
