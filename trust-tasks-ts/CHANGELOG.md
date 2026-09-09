@@ -11,6 +11,66 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.18.3 — 2026-09-09
+
+
+### Added
+
+- **rooms/keys**: Read and browse — a member's agent fetches, checks, and opens (#426)
+
+The last unbuilt piece of the rooms surface, and the missing half of verified
+  reads. Both were the same piece, as `data-rooms-read-through.md` works out: the
+  console cannot address a host (its carrier drops the recipient, deliberately),
+  and a `dataCommitment` is inert without a party that keeps the last root. The
+  member's own agent is the answer to both.
+
+  `rooms/keys/read` is four acts that today belong to three parties — mint the
+  presentation, ask the host, check what came back, open it. The fourth decides
+  where the other three go: the epoch key never leaves the key holder, so a member
+  doing the middle two themselves holds a half-verified record in between and
+  still makes two more round trips.
+
+  What the recipient checks, and each is stated because each has a way of being
+  skipped:
+
+  1. the reply is signed by the host that was ADDRESSED — the proof verifies and
+     the proven signer binds to the `host` named, or it is a reply from somebody
+     else;
+  2. the trace reaches the commitment served BESIDE IT, with the leaf preimage
+     reassembled from the response itself — never a root kept from an earlier read;
+  3. the root against what the agent has seen at this `headVersion`, which is the
+     comparison no other party on the member's side can make.
+
+  **A verdict is never an error**, and `ReadVerification` says so in the shared
+  schema rather than in two places. A member's own agent refusing a record because
+  the HOST misbehaved punishes the member for somebody else's act, and locks them
+  out of the room holding the records that would show what happened. The
+  consequence belongs on the write path. `priorRoots` is REQUIRED so an agent that
+  keeps no history has to answer `notChecked` rather than omit the question —
+  which is not a synonym for `noneHeld`: one says nothing was found, the other
+  says nothing was looked for.
+
+  `rooms/keys/browse` carries the check that only a listing can do. A reader
+  cannot recompute a root from a listing — a leaf commits to a whole record and a
+  listing returns a projection — but it can COUNT, and a host that omits a record
+  while committing to a tree holding it contradicts itself inside one exchange,
+  with no second party and no anchor. The condition is narrow and stated: no
+  prefix, no `sinceVersion`, and `complete: true`. `complete` exists because a
+  page bound and a withheld record produce the same shorter array, and a consumer
+  that could not tell them apart would either cry wolf on every paged listing or
+  learn to ignore the one that mattered.
+
+  Both specs say the part that decides whether any of this works: *serve reads,
+  refuse writes* is a rule nobody would guess, so an adverse verdict MUST be
+  surfaced in words naming what was observed rather than as a status colour. A
+  member who dismisses an icon here is a member who later reads a refused write as
+  their own agent malfunctioning, and a detection attributed to the wrong party is
+  worse than no detection.
+
+  Scaffolded with `npm run new-spec`. Both generators re-run: 421 specifications
+  against 421 TypeScript and 416 Rust modules, all agreeing; `cargo test
+  --workspace` green.
+
 ## 0.18.2 — 2026-09-09
 
 
