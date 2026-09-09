@@ -11,6 +11,87 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.18.2 — 2026-09-09
+
+
+### Specifications
+
+- **rooms/records/list**: A root names no state, so give it a tree head (#422)
+
+`dataCommitment` shipped as a bare root, and the section explaining what it is
+  worth ended:
+
+      A host that shows two members two different roots for the same room has
+      been caught, and cannot claim a transient.
+
+  That is false. A room moves — every put, curate and retraction changes the tree —
+  so two roots taken at two moments differ for the most ordinary reason there is. A
+  host shown to have served two different ones answers *there was a write between
+  your reads*, and with a bare root nothing contradicts it. The comparison this
+  member exists for could not be performed by anybody.
+
+  The error came from taking half of the analogy the same paragraph draws.
+  Certificate Transparency does not have this problem because **an STH is a root
+  and a tree size**; this family shipped the root and dropped the rest.
+
+  So two members travel with it, both from the snapshot the root was taken over:
+
+  - `headVersion` — the room's highest assigned record version. A version advances
+    on exactly the mutations that change the tree, so it names the *state* the root
+    describes. Two roots at the same `headVersion` that differ is a host caught,
+    with no write to attribute the difference to; two at different ones are two
+    moments and a reader must draw nothing from them.
+  - `recordCount` — how many records the room held, tombstones included. A reader
+    cannot recompute the root from a listing (a leaf commits to a whole record and
+    a listing returns a projection), but it can **count**: a host that omits a
+    record from a complete unfiltered listing while committing to a tree holding it
+    contradicts itself inside one response, with no second party and no anchor.
+
+  Both OPTIONAL in exactly the sense the root is — a host maintaining no tree
+  asserts none of it. A host serving `dataCommitment` SHOULD serve both, and a
+  reader receiving a root without them MUST NOT compare it against another root.
+  Such a root is still usable against a witnessed anchor, where the epoch pins the
+  state, which is why it is not simply refused.
+
+  A host can understate both together. That is the point rather than a hole: the
+  omission stops being silence and becomes a specific claim about how many records
+  the room holds and how far it has been written — which any other member's view,
+  and any writer's signed put acknowledgement (vti #1334/#1335), contradicts
+  directly. Making an omission attributable is the whole of what this machinery
+  buys; it never claimed to make one impossible.
+
+  Not a timestamp: a time is host-asserted and unverifiable, and two roots a second
+  apart are not evidence of anything while two roots at one version are.
+
+  `checkCommittedRecordMirror` — added last change — caught both new members on the
+  first build and named the two ways to resolve it. That is the guard doing the job
+  it was written for, on a question nobody would have got from reading two files.
+
+
+
+  Amended after checking how a host would actually compute it: `headVersion` is
+  the highest version among the records the root **covers**, derived from the same
+  set, and NOT read from the room's own `next_version` counter.
+
+  The two agree for any host that has never erased a record. They are not
+  interchangeable, because a root and a counter are *two reads*, and two reads are
+  not a snapshot. A write landing between them labels a root with a version from a
+  different moment — so two honest members end up holding roots over different
+  trees under one version, which reads as equivocation and is not. **A false
+  accusation discredits the mechanism rather than the host**, which is the worst
+  outcome available here, and it is the same reasoning that put the root and its
+  trace in one scan.
+
+  Ordering the two reads does not help, in either direction: whichever is taken
+  first, a write in the gap admits a pair that is individually correct and jointly
+  false. Only deriving both from one read closes it.
+
+  Stated corollary: a host that **erases** a record — as distinct from retracting
+  it, which leaves a tombstone in the tree — moves the root without necessarily
+  moving this value. `vti_rooms::storage::purge_record` exists and today has no
+  caller outside its own tests, so nothing exposes it; a family that exposes one
+  owes this definition another look.
+
 ## 0.18.1 — 2026-09-09
 
 
