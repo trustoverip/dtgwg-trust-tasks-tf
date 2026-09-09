@@ -66,7 +66,7 @@ A room's owner grants a party the authority to act in the room — `read`, `writ
 
 Authority is separate from membership on purpose. A [membership credential](../../issue-membership/0.1/spec.md) says *you are in this room*; this says *what you may do*, so changing someone's access reissues one small credential and leaves the membership edge alone.
 
-**A chain root is the grant the room itself made**, and it is the thing everything else descends from. A holder who wants to give an agent less than they hold does not come back here: they **attenuate** their own grant — fewer verbs, shorter expiry, a named audience — which needs no issuer and is what makes a leaked agent capability not a leaked member capability.
+**A chain root is the grant the room itself made**, and it is the thing everything else descends from. A holder who wants to give an agent less than they hold does not come back here: they **attenuate** their own grant — fewer verbs, shorter expiry, a different subject — which needs no issuer and is what makes a leaked agent capability not a leaked member capability.
 
 ## Status of this Document
 
@@ -171,7 +171,7 @@ A room, a key, a grantee and a list of verbs — and a signed credential conferr
 
 The recipient learns who its principal is granting what. It already mints every credential the room issues.
 
-Downstream, an attenuated derivative names its audience, which is what makes an agent's capability traceable to the agent rather than to its principal. That is a property of attenuation rather than of this task, but it is the reason this task does not need to know about agents at all: the member equips their own.
+Downstream, an attenuated derivative names the agent as its subject, and only its subject may present it — which is what makes an agent's capability traceable to the agent rather than to its principal. That is a property of attenuation rather than of this task, but it is the reason this task does not need to know about agents at all: the member equips their own.
 
 ### Retention
 

@@ -3,7 +3,8 @@ slug: rooms/keys/present
 version: "0.1"
 title: Rooms Keys — Present
 summary: "An agent asks the party holding its principal's room credentials to produce a presentation for one room operation, scoped to that action and audience."
-status: draft
+status: retired
+supersededBy: rooms/keys/present/0.2
 targetFrameworkVersion: "0.5"
 category: ai-agents
 keywords:

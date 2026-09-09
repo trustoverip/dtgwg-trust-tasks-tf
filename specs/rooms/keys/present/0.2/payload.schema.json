@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/present/0.2",
+  "title": "Rooms Keys Present — payload",
+  "description": "An agent asks the party holding its principal's room credentials to produce a presentation for one room operation. The credentials never cross to the agent; only the presentation does, and it is bound to the operation it was asked for and to the agent that asked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "action"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to present for."
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write",
+        "curate",
+        "admin"
+      ],
+      "description": "The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Present — response payload",
+      "description": "Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "presentation"
+      ],
+      "properties": {
+        "presentation": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+          "description": "The presentation to send to the host. Its authority chain grants to the CALLER, who is the only party that can present it — see the task's Security & Privacy section."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the presentation stops being accepted, so a caller can avoid presenting a stale one."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

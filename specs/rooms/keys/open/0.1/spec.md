@@ -99,16 +99,15 @@ working afterwards, the oracle has leaked.
 infrastructure, which is already in their trusted computing base; a host is not, which is
 why the host sees only ciphertext.
 
-**Scope every presentation.** A presentation minted for one action and one audience cannot
-be replayed for another. An implementation that mints one covering every action has handed
+**Scope every presentation.** A presentation minted for one action cannot be replayed for
+another, and one granted to one caller cannot be used by a second. An implementation that mints one covering every action has handed
 the caller its principal's whole standing, which is the outcome attenuation exists to
 prevent.
 
 ### Data carried
 
 `open` carries one sealed record and its location; the response carries its plaintext.
-`present` carries a room, an action, an audience and a nonce; the response carries a
-presentation. Neither carries key material in either direction.
+`present` carries a room and an action; the response carries a presentation. Neither carries key material in either direction.
 
 ### Correlation
 

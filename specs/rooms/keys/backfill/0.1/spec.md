@@ -82,9 +82,9 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 ### What the recipient presents, and to whom
 
-The recipient **MUST** present a `read` grant scoped to this room, bound to `host` as its audience — the same presentation [`rooms/keys/present`](../../present/0.1/spec.md) would produce for that pair. It **MUST NOT** present a grant conferring more than `read`: reading the room and reading the parts of it written earlier are the same act, and a backfill that presented `write` would hand a host authority the operation never needed.
+The recipient **MUST** present a `read` grant scoped to this room and granted to the recipient itself — the same presentation [`rooms/keys/present`](../../present/0.2/spec.md) would produce. It **MUST NOT** present a grant conferring more than `read`: reading the room and reading the parts of it written earlier are the same act, and a backfill that presented `write` would hand a host authority the operation never needed.
 
-**The audience binding is what makes a caller-named host safe.** A presentation minted for one host is not accepted by another, so a caller who names a host of their choosing obtains a presentation usable only there — and they are already a member of the room, so they could have obtained the same thing directly. What the caller gains is a network request they could not otherwise make; what they do not gain is any standing they did not have.
+**Presenter binding is what makes a caller-named host safe, and it bounds this differently than an audience would.** A presentation is granted to the recipient and usable by nobody else, so a host of the caller's choosing receives something it cannot act with: naming a host transfers no standing. What such a host does gain is **sight** of the presentation — the principal's membership credential and authority chain — which on a room that discloses its subjects names the principal. So a caller cannot borrow authority by naming a host, but they can point a disclosure at one. The caller is already a member and could have disclosed the same thing directly, which is why this widens correlation rather than access; a recipient that treats `host` as untrusted input is nonetheless right to.
 
 A consumer **SHOULD** nonetheless bound this: it is an outbound request to a caller-supplied party, and an unbounded one is a request-forgery primitive pointed at whatever the agent's network can reach. Resolving `host` as a DID and speaking only the transports its document advertises is the bound the rest of this framework already provides — an agent that would connect to an arbitrary URL here has widened its own attack surface, not this task's.
 
@@ -179,7 +179,7 @@ The shape is informative: this is sent about **once**, on joining or after resto
 
 ### Retention
 
-The rungs are kept for the life of the room. The presentation the recipient minted for the fetch is single-purpose and **SHOULD NOT** be retained past the request it was made for — it is bound to one audience and one action, so keeping it buys nothing and widens what a compromise of the recipient yields.
+The rungs are kept for the life of the room. The presentation the recipient minted for the fetch is single-purpose and **SHOULD NOT** be retained past the request it was made for — it is bound to one presenter and one action, so keeping it buys nothing and widens what a compromise of the recipient yields.
 
 ### Consent/purpose
 

@@ -231,7 +231,7 @@ export const PAYLOAD_SCHEMA = {
         "membership",
         "authority"
       ],
-      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.",
+      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.",
       "properties": {
         "membership": {
           "type": "string",
@@ -334,7 +334,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "membership",
         "authority"
       ],
-      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.",
+      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.",
       "properties": {
         "membership": {
           "type": "string",
