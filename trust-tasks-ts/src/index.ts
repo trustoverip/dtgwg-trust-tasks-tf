@@ -249,6 +249,7 @@ export * as RoomsKeysWelcome_v0_1 from "./rooms/keys/welcome/0.1/payload.js";
 export * as RoomsOwnerClaim_v0_1 from "./rooms/owner/claim/0.1/payload.js";
 export * as RoomsOwnerInvite_v0_1 from "./rooms/owner/invite/0.1/payload.js";
 export * as RoomsOwnerIssueAuthority_v0_1 from "./rooms/owner/issue-authority/0.1/payload.js";
+export * as RoomsOwnerIssueAuthority_v0_2 from "./rooms/owner/issue-authority/0.2/payload.js";
 export * as RoomsOwnerIssueMembership_v0_1 from "./rooms/owner/issue-membership/0.1/payload.js";
 export * as RoomsOwnerRegister_v0_1 from "./rooms/owner/register/0.1/payload.js";
 export * as RoomsOwnerTransfer_v0_1 from "./rooms/owner/transfer/0.1/payload.js";

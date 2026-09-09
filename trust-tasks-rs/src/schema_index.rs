@@ -849,6 +849,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/owner/issue-authority/0.1#response" => <crate::specs::rooms::owner::issue_authority::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2" => <crate::specs::rooms::owner::issue_authority::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response" => <crate::specs::rooms::owner::issue_authority::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1" => <crate::specs::rooms::owner::issue_membership::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response" => <crate::specs::rooms::owner::issue_membership::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2666,6 +2670,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/rooms/owner/issue-authority/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::rooms::owner::issue_authority::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::rooms::owner::issue_authority::v0_2::Payload,
             >())
         }
         #[cfg(feature = "rooms")]

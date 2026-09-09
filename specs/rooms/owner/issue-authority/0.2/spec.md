@@ -1,10 +1,9 @@
 ---
 slug: rooms/owner/issue-authority
-version: "0.1"
+version: "0.2"
 title: "Rooms Owner — Issue Authority"
 summary: "A room's owner grants a party the authority to read, write, curate or administer the room — a chain root at the room's own scope."
-status: retired
-supersededBy: rooms/owner/issue-authority/0.2
+status: draft
 targetFrameworkVersion: "0.5.0"
 category: ai-agents
 # keywords and authors are OPTIONAL, and omitted here on purpose: the build derives
@@ -73,6 +72,12 @@ Authority is separate from membership on purpose. A [membership credential](../.
 
 This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
+### What changed from 0.1
+
+`validUntil` is **REQUIRED**. `0.1` made it optional, which let a caller ask this task for a grant that never lapses — and DTG Core Credentials requires the property on every authority credential, for a reason stated below. So `0.1` described a request no conforming implementation could honour: an issuer refuses to build the credential, and a verifier refuses a chain link that carries no expiry, so a grant minted without one could never have been used.
+
+`0.2` is a breaking change to a `draft` specification and is therefore a `MINOR` increment per [SPEC §5.2](/SPEC.md#52-compatibility-rules). A caller upgrading supplies a `validUntil` it was previously free to omit. There is no default to fall back on: see [Every grant expires](#every-grant-expires).
+
 ## Conformance
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
@@ -97,7 +102,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 **`actions`** — what they may do. One or more of `read`, `write`, `curate`, `admin`.
 
-**`validUntil`** — when the grant lapses.
+**`validUntil`** — when the grant lapses. REQUIRED; see [Every grant expires](#every-grant-expires).
 
 **`credential`**, **`credentialId`** (response) — the signed VAC and its `id`.
 
@@ -108,6 +113,20 @@ Pinning, deprecating and retracting are judgements over shared knowledge, not wr
 ### An empty grant is refused, not interpreted
 
 `actions` **MUST** carry at least one verb. An empty list confers nothing rather than everything — but "confers nothing" and "confers everything" are exactly the two readings a careless consumer might pick between, so the schema refuses the input rather than leaving the choice open.
+
+### Every grant expires
+
+`validUntil` **MUST** be present, and a consumer **MUST** reject a request that omits it.
+
+This is not this task being strict. It is [DTG Core Credentials](https://github.com/trustoverip/dtgwg-cred-spec) requiring it of the credential being minted — *"Unlike the base structure, `validUntil` is REQUIRED for a VAC … nothing about the subject's current standing is consulted when a VAC is verified, so authority that does not expire is authority nobody can withdraw by waiting."*
+
+The reasoning is worth restating here, because it is what makes the constraint load-bearing rather than tidy. This task mints a **chain root**, and roots are the grants nothing else can withdraw. There is no status list consulted at verification and no membership check behind it: a verifier presented with a chain asks whether it reaches the room and whether every link is live, and nothing else. Expiry is therefore not one of several ways a grant ends — for a root it is the only one that works without the room reissuing or revoking, and a root minted without it is authority the room cannot take back at all.
+
+It is also unusable in practice, which is what makes the `0.1` shape a defect rather than a laxity: a verifier refuses a chain link carrying no expiry outright. A grant minted without one would have failed at its first use, at a host, for a reason the holder could not act on.
+
+**There is deliberately no default.** A consumer **MUST NOT** substitute one for an absent value. How long a room's authority should last is the owner's judgement about their own room, and a recipient that picked a lifetime would be making that judgement silently, in the one place the owner cannot see it. Refusing the request puts the choice back where it belongs, and a caller with no view on it should say so explicitly with a short value rather than by omission.
+
+Note that a **shorter** value is always safe and often right: a holder who needs a longer-lived capability than the root's cannot obtain one by attenuation — attenuation may only narrow — so the root's lifetime is the ceiling on everything derived from it.
 
 ### Why this mints roots and not links
 
@@ -124,7 +143,7 @@ An **Owner** sends this to their **KeyHolder**. The payload is the top-level sch
 ```json
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000001",
-  "type": "https://trusttasks.org/spec/rooms/owner/issue-authority/0.1#request",
+  "type": "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#request",
   "issuer": "did:example:owner",
   "recipient": "did:example:keyholder",
   "issuedAt": "2026-01-01T00:00:00Z",
@@ -148,7 +167,7 @@ The **KeyHolder** returns the signed credential, using the sub-schema reachable 
 ```json
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000002",
-  "type": "https://trusttasks.org/spec/rooms/owner/issue-authority/0.1#response",
+  "type": "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response",
   "issuer": "did:example:keyholder",
   "recipient": "did:example:owner",
   "issuedAt": "2026-01-01T00:00:01Z",
