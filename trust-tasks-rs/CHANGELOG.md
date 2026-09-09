@@ -31,6 +31,53 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.18.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.10...trust-tasks-rs-v0.18.11) — 2026-09-09
+
+
+### Specifications
+
+- **rooms/records**: A data commitment on the read responses ([#411](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/411))
+
+Second of the verified-reads pieces (#1343's order: the store — merged as
+  vti#1346 — then the commitment on read responses, then traces).
+
+  A listing has no completeness property of its own. Records are signed and
+  room-bound, so a host cannot forge, alter or relocate one; omitting one from
+  a response costs nothing and looks like a room that never held it.
+  `dataCommitment` turns that silence into something checkable.
+
+  **The construction is normative**, in the shared schema, because two hosts
+  computing different roots over the same room make every comparison
+  meaningless. Sorted by key in unsigned byte order; leaf
+  `SHA-256(0x00 || JCS(record))`; node `SHA-256(0x01 || left || right)`; an
+  odd node promoted and never duplicated — duplicating makes a tree of n
+  leaves collide with one of n+1 whose last is repeated; an empty room commits
+  to `SHA-256("")` rather than zeroes, since zeroes are what an uninitialised
+  buffer looks like.
+
+  The leaf covers the whole record, not its body: a host that could flip
+  `status` to retracted, move `pinned`, or rewrite `author` on an attributed
+  room rewrites what the room means without touching a byte of ciphertext. The
+  plaintext is never involved — a sealed-tier host commits to the ciphertext
+  it actually stores.
+
+  Three things the prose says out loud because each has a plausible wrong
+  reading. **A commitment read once proves nothing** — it is the host's own
+  assertion, and becomes evidence only compared against a root the host did
+  not choose for the reader: one given another member, one given earlier, or a
+  witnessed anchor. **It is OPTIONAL**, because a host maintaining no tree
+  cannot honestly assert a root and its absence is itself informative; a
+  consumer MUST NOT read absence as failure or presence as proof. **It commits
+  to the whole room, never the page** — a page-scoped root is satisfied by
+  construction and could never fail, which would let a member feel checked
+  while checking nothing.
+
+  It is evidence at all only because responses are signed (SPEC §7.3 item 7,
+  implemented in vti#1334/#1335). An unsigned root is a number from nobody in
+  particular, and a host could deny having said it.
+
+
+
 ## [0.18.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.18.9...trust-tasks-rs-v0.18.10) — 2026-09-09
 
 
