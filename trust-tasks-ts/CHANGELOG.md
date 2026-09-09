@@ -11,6 +11,72 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.9 — 2026-09-09
+
+
+### Added
+
+- **persona/facet**: A named part of a life, and what belongs to it (#405)
+
+* feat(persona): facet — a named part of a life, and what belongs to it
+
+  A holder who uses this model for a while does not end up with three
+  profiles. They end up with twenty — one per site, one per counterparty, one
+  made once and no longer explicable — and a flat list of twenty is a list
+  nobody reads. A facet is the arrangement over them: Work, Home, Play, and
+  whatever else a particular life has in it.
+
+  Three tasks: `put`, `list`, `delete`, all agent-scoped like the pool and the
+  profiles they group.
+
+  **Why a Trust Task and not a client preference.** A grouping kept in a
+  browser's local storage is a grouping the holder's phone does not have. It
+  also tells the maintainer something it cannot otherwise know — that two
+  profiles are, to the holder, parts of one life — which turns a linkage
+  report from a list of every shared value into a list of the ones crossing a
+  boundary the holder actually drew.
+
+  **Membership lives on the facet, not on the attribute.** The obvious
+  alternative is a `facetId` member on `persona/attribute/put`, and it is the
+  wrong shape for a mechanical reason: that task REPLACES the attribute, and a
+  well-behaved consumer does not hold the values it would have to resend —
+  `attribute/list` withholds the plaintext of anything resolving to
+  `sensitivity: high` unless asked for by name. So such a consumer either
+  requests every sensitive value it holds in order to perform an arrangement
+  that has nothing to do with values, or sends a put without one and silently
+  destroys them. One record on the facet has neither problem.
+
+  **A profile belongs to at most one facet; an attribute may belong to
+  several.** The first because a facet is where a consumer reads a profile's
+  colour from and two answers is no answer — refused with
+  `faceAlreadyPlaced`, whose details name the facet already holding it so a
+  producer can offer to move rather than guess. The second because a mobile
+  number is genuinely part of both a working life and a home one.
+
+  **`colour` carries a NAME, never a literal.** A hex value cannot be legible
+  in a terminal, a light theme and a dark one at once, so a stored one is
+  wrong somewhere and the holder cannot know where; and a consumer that
+  reserves colours to mean something must be able to keep a decorative choice
+  out of that channel, which it can do with a closed set and cannot do with an
+  arbitrary value. The eight are distinguishable and none is named for
+  success, warning or danger.
+
+  **A facet is an arrangement, not a container.** Delete removes the word and
+  the statement about what belonged to it; every profile and attribute
+  survives. There is deliberately no `cascade` member — an arrangement that
+  could take its members with it is a folder, and a holder who reads it as one
+  is right to fear it. `releasedFaces` reports what now belongs nowhere.
+
+  **It never crosses into a trust context.** A facet is the holder's own
+  statement that two identities belong to the same part of one life, which is
+  exactly the join multiple personas exist to deny a verifier. MUST NOT appear
+  in a materialised projection, a disclosure, or any document a verifier
+  receives.
+
+  `FacetColour` is added to the persona `_shared` definitions so `put` and
+  `list` resolve the same enum; cross-spec `$ref`s outside `_shared` do not
+  resolve in this build.
+
 ## 0.17.8 — 2026-09-08
 
 
