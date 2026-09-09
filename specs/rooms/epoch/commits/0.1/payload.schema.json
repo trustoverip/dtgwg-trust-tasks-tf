@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/epoch/commits/0.1",
+  "title": "Rooms Epoch Commits \u2014 payload",
+  "description": "TODO: what the request payload of rooms/epoch/commits carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework \u2014 SPEC \u00a76.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "sinceEpoch",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to catch up on."
+    },
+    "sinceEpoch": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The epoch this member is at. The host returns the commits **above** it, in order.\n\nA member asks for what they are missing rather than for a count, because only they know where they are \u2014 a host that guessed would be guessing from the last time it saw them, which on a `private` room is a thing it should not be tracking."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Page size to ask for. Commits are large and a member far behind may have many; a caller reads to the end by asking again from the epoch it reached."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `read` at this room's scope. A commit is opaque to whoever holds it without the group state, so this authorises the *fetch* rather than the contents \u2014 and on a `private` room requires no host session, exactly as a record read does."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "commits"
+      ],
+      "description": "Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.",
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "commits": {
+          "type": "array",
+          "maxItems": 100,
+          "description": "The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "epoch",
+              "commit"
+            ],
+            "properties": {
+              "epoch": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The epoch this commit produced."
+              },
+              "commit": {
+                "type": "string",
+                "maxLength": 262144,
+                "description": "The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects."
+              }
+            }
+          }
+        },
+        "roomEpoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The epoch the room is at now.\n\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "title": "Rooms Epoch Commits \u2014 response payload"
+    }
+  }
+}

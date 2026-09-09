@@ -258,6 +258,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "roomId"
 ///  ],
 ///  "properties": {
+///    "commit": {
+///      "description": "\nThe MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.",
+///      "type": "string",
+///      "maxLength": 262144
+///    },
 ///    "epoch": {
 ///      "description": "The new epoch number, which MUST be exactly one greater than the current one. A host records the number and never learns the key.",
 ///      "type": "integer",
@@ -294,6 +299,16 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
+    /**
+    The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.
+
+    Carried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.
+
+    **Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.
+
+    OPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.*/
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub commit: ::std::option::Option<PayloadCommit>,
     ///The new epoch number, which MUST be exactly one greater than the current one. A host records the number and never learns the key.
     pub epoch: i64,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
@@ -314,6 +329,82 @@ pub struct Payload {
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+/**
+The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.
+
+Carried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.
+
+**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.
+
+OPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "\nThe MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.",
+///  "type": "string",
+///  "maxLength": 262144
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadCommit(::std::string::String);
+impl ::std::ops::Deref for PayloadCommit {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadCommit> for ::std::string::String {
+    fn from(value: PayloadCommit) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadCommit {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 262144usize {
+            return Err("longer than 262144 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadCommit {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadCommit {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadCommit {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadCommit {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///Optional operator-facing rationale, recorded in the room's audit.
@@ -574,6 +665,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Payload {
+        commit: ::std::result::Result<
+            ::std::option::Option<super::PayloadCommit>,
+            ::std::string::String,
+        >,
         epoch: ::std::result::Result<i64, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         link: ::std::result::Result<::std::option::Option<super::EpochLink>, ::std::string::String>,
@@ -587,6 +682,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
+                commit: Ok(Default::default()),
                 epoch: Err("no value supplied for epoch".to_string()),
                 ext: Ok(Default::default()),
                 link: Ok(Default::default()),
@@ -597,6 +693,16 @@ pub mod builder {
         }
     }
     impl Payload {
+        pub fn commit<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadCommit>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.commit = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for commit: {e}"));
+            self
+        }
         pub fn epoch<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<i64>,
@@ -662,6 +768,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                commit: value.commit?,
                 epoch: value.epoch?,
                 ext: value.ext?,
                 link: value.link?,
@@ -674,6 +781,7 @@ pub mod builder {
     impl ::std::convert::From<super::Payload> for Payload {
         fn from(value: super::Payload) -> Self {
             Self {
+                commit: Ok(value.commit),
                 epoch: Ok(value.epoch),
                 ext: Ok(value.ext),
                 link: Ok(value.link),
@@ -756,7 +864,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"EpochLink\": {\n      \"additionalProperties\": false,\n      \"description\": \"One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        },\n        \"wrapped\": {\n          \"description\": \"The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"epoch\",\n        \"wrapped\",\n        \"nonce\"\n      ],\n      \"title\": \"EpochLink\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/epoch/mint. Type https://trusttasks.org/spec/rooms/epoch/mint/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Epoch Mint — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/epoch/mint/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"epoch\": {\n      \"description\": \"The new epoch number, which MUST be exactly one greater than the current one. A host records the number and never learns the key.\",\n      \"minimum\": 2,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"link\": {\n      \"$comment\": \"Optional rather than required: this member was added to an already-published version, and requiring it would break every conforming producer. A room that omits it is making the choice the description names, not failing to make one.\",\n      \"$ref\": \"#/$defs/EpochLink\",\n      \"description\": \"The rung of the epoch key chain that this advance produces: the outgoing epoch's storage key sealed under the incoming one. Carried here because minting is the only moment at which one party holds both keys, and a room that advances without producing it silently loses the ability to read everything written before — for every member, including whoever wrote it. Its `epoch` MUST equal `epoch`, and a host MUST reject the request otherwise; a host MUST NOT replace a link it already holds for an epoch, because a second one is either a replay or a re-pointing of the room's history at key material of somebody else's choosing, and the members who already walked the original would never see the difference. Absent where the room does not keep its history readable, and necessarily absent for a room's first epoch, which has no predecessor.\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `admin` action at this room's scope. Restricting epoch minting matters: if any key-holder could mint one, any member could evict any other by declining to seal the new key to them — silently, and with no server-side check possible on a room whose membership the host cannot see.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional operator-facing rationale, recorded in the room's audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose epoch advances.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"epoch\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Epoch Mint — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"EpochLink\": {\n      \"additionalProperties\": false,\n      \"description\": \"One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        },\n        \"wrapped\": {\n          \"description\": \"The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"epoch\",\n        \"wrapped\",\n        \"nonce\"\n      ],\n      \"title\": \"EpochLink\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/epoch/mint. Type https://trusttasks.org/spec/rooms/epoch/mint/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Epoch Mint — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/epoch/mint/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"commit\": {\n      \"description\": \"The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\\n\\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\\n\\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\\n\\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.\",\n      \"maxLength\": 262144,\n      \"type\": \"string\"\n    },\n    \"epoch\": {\n      \"description\": \"The new epoch number, which MUST be exactly one greater than the current one. A host records the number and never learns the key.\",\n      \"minimum\": 2,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"link\": {\n      \"$comment\": \"Optional rather than required: this member was added to an already-published version, and requiring it would break every conforming producer. A room that omits it is making the choice the description names, not failing to make one.\",\n      \"$ref\": \"#/$defs/EpochLink\",\n      \"description\": \"The rung of the epoch key chain that this advance produces: the outgoing epoch's storage key sealed under the incoming one. Carried here because minting is the only moment at which one party holds both keys, and a room that advances without producing it silently loses the ability to read everything written before — for every member, including whoever wrote it. Its `epoch` MUST equal `epoch`, and a host MUST reject the request otherwise; a host MUST NOT replace a link it already holds for an epoch, because a second one is either a replay or a re-pointing of the room's history at key material of somebody else's choosing, and the members who already walked the original would never see the difference. Absent where the room does not keep its history readable, and necessarily absent for a room's first epoch, which has no predecessor.\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `admin` action at this room's scope. Restricting epoch minting matters: if any key-holder could mint one, any member could evict any other by declining to seal the new key to them — silently, and with no server-side check possible on a room whose membership the host cannot see.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional operator-facing rationale, recorded in the room's audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose epoch advances.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"epoch\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Epoch Mint — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

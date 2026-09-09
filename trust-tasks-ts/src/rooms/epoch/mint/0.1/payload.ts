@@ -24,6 +24,16 @@ export interface RoomsEpochMintPayload {
    */
   link?: EpochLink;
   /**
+   * The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.
+   *
+   * Carried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.
+   *
+   * **Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.
+   *
+   * OPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.
+   */
+  commit?: string;
+  /**
    * Optional operator-facing rationale, recorded in the room's audit.
    */
   reason?: string;
@@ -94,6 +104,11 @@ export const PAYLOAD_SCHEMA = {
       "$ref": "#/$defs/EpochLink",
       "description": "The rung of the epoch key chain that this advance produces: the outgoing epoch's storage key sealed under the incoming one. Carried here because minting is the only moment at which one party holds both keys, and a room that advances without producing it silently loses the ability to read everything written before — for every member, including whoever wrote it. Its `epoch` MUST equal `epoch`, and a host MUST reject the request otherwise; a host MUST NOT replace a link it already holds for an epoch, because a second one is either a replay or a re-pointing of the room's history at key material of somebody else's choosing, and the members who already walked the original would never see the difference. Absent where the room does not keep its history readable, and necessarily absent for a room's first epoch, which has no predecessor.",
       "$comment": "Optional rather than required: this member was added to an already-published version, and requiring it would break every conforming producer. A room that omits it is making the choice the description names, not failing to make one."
+    },
+    "commit": {
+      "type": "string",
+      "maxLength": 262144,
+      "description": "The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together."
     },
     "reason": {
       "type": "string",
