@@ -11,6 +11,51 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.17.10 — 2026-09-09
+
+
+### Added
+
+- **persona/correlation**: Say whether a link crosses a part of the holder's life (#408)
+
+Additive members on `persona/correlation/analyze/1.0`: `crossesFacets` and
+  `facetIds` on a finding, `facetId` on each `sharedWith` location.
+
+  **Severity is how linkable. Facets are whether the holder minds.** Two axes,
+  kept apart, because collapsing them loses whichever one is inconvenient.
+
+  `severity` is a fact about the value and the proof beneath it — a credential
+  presented whole links every verifier that sees it, and that is true whatever
+  the holder intended. `crossesFacets` is a fact about the holder's own
+  arrangement: a work email in every work profile is linkage they built on
+  purpose, and a consumer that alarms on it teaches them to dismiss alarms,
+  which costs them the one that matters.
+
+  So the spec is explicit that a maintainer **MUST NOT** reduce severity, or
+  omit a finding, because a linkage stays inside one facet. The linkage is
+  real either way — two verifiers who see both profiles link the holder
+  regardless of which part of their own life they filed each under — and a
+  severity that softened on intent would report a false all-clear about
+  something a counterparty can still do.
+
+  **Absent is unknown, not false.** A maintainer without facets omits all
+  three rather than emitting `crossesFacets: false`, because `false` asserts
+  the holder keeps these identities in one part of their life and an
+  implementation with no facets has made no such finding.
+
+  **An unarranged profile is not a second facet.** `crossesFacets` is true
+  only where two or more DISTINCT facets appear; otherwise every holder who
+  has arranged one part of their life and not the rest would see a crossing on
+  everything they own.
+
+  **No facet NAME crosses.** The caller holds the facet records and can
+  resolve an identifier; the name is the member of a facet worth protecting,
+  and this response already carries the linkage map.
+
+  Bindings regenerated per CONTRIBUTING-SPECS.md; no version bump or CHANGELOG
+  entry (release-plz owns both). Rust workspace builds --all-features;
+  trust-tasks-ts 79/79.
+
 ## 0.17.9 — 2026-09-09
 
 
