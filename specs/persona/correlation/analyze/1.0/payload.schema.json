@@ -6,19 +6,36 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Analyse one attribute. Omit to analyse the whole pool." },
-    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Analyse one composition — what would this profile link if bound." },
+    "attributeId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+      "description": "Analyse one attribute. Omit to analyse the whole pool."
+    },
+    "profileId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+      "description": "Analyse one composition — what would this profile link if bound."
+    },
     "candidate": {
-      "type": "object", "additionalProperties": false,
-      "required": ["type", "valueType", "value"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "valueType",
+        "value"
+      ],
       "description": "Analyse a value the holder is CONSIDERING but has not written. This is what lets a builder warn before the mistake rather than after it, which is the difference between a guard and a report. A maintainer MUST NOT store a candidate.",
       "properties": {
-        "type": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
-        "valueType": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType" },
+        "type": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType"
+        },
+        "valueType": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType"
+        },
         "value": {}
       }
     },
-    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
@@ -27,39 +44,101 @@
       "description": "Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["findings"],
+      "required": [
+        "findings"
+      ],
       "properties": {
         "findings": {
-          "type": "array", "maxItems": 256,
+          "type": "array",
+          "maxItems": 256,
           "items": {
-            "type": "object", "additionalProperties": false,
-            "required": ["severity", "why", "remedies"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "severity",
+              "why",
+              "remedies"
+            ],
             "properties": {
-              "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
-              "severity": { "type": "string", "enum": ["low", "high"] },
+              "attributeId": {
+                "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "high"
+                ]
+              },
               "sharedWith": {
-                "type": "array", "maxItems": 128,
+                "type": "array",
+                "maxItems": 128,
                 "description": "Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.",
                 "items": {
-                  "type": "object", "additionalProperties": false,
+                  "type": "object",
+                  "additionalProperties": false,
                   "properties": {
-                    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
-                    "contextId": { "type": "string" },
-                    "personaDid": { "type": "string" },
-                    "disclosedTo": { "type": "array", "maxItems": 64, "items": { "type": "string" } }
+                    "profileId": {
+                      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+                    },
+                    "contextId": {
+                      "type": "string"
+                    },
+                    "personaDid": {
+                      "type": "string"
+                    },
+                    "disclosedTo": {
+                      "type": "array",
+                      "maxItems": 64,
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "facetId": {
+                      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+                      "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own."
+                    }
                   }
                 }
               },
-              "why": { "type": "string", "maxLength": 1024, "description": "Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss." },
+              "why": {
+                "type": "string",
+                "maxLength": 1024,
+                "description": "Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss."
+              },
               "remedies": {
-                "type": "array", "maxItems": 8,
-                "items": { "type": "string", "enum": ["useDifferentValue", "reissueCredentialToThisDid", "correlateDeliberately", "proceedAndRecord"] },
+                "type": "array",
+                "maxItems": 8,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "useDifferentValue",
+                    "reissueCredentialToThisDid",
+                    "correlateDeliberately",
+                    "proceedAndRecord"
+                  ]
+                },
                 "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it."
+              },
+              "crossesFacets": {
+                "type": "boolean",
+                "description": "Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets."
+              },
+              "facetIds": {
+                "type": "array",
+                "maxItems": 64,
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+                },
+                "description": "The distinct facets this linkage touches, so a consumer can name them — \"Work and Home share your mobile number\" is a sentence a holder can act on, where \"a value is shared\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct."
               }
             }
           }
         },
-        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

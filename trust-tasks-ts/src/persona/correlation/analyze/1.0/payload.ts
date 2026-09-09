@@ -51,6 +51,10 @@ export interface PersonaCorrelationAnalyzeResponsePayload {
        * @maxItems 64
        */
       disclosedTo?: string[];
+      /**
+       * The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.
+       */
+      facetId?: Ulid;
     }[];
     /**
      * Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.
@@ -113,6 +117,16 @@ export interface PersonaCorrelationAnalyzeResponsePayload {
           "useDifferentValue" | "reissueCredentialToThisDid" | "correlateDeliberately" | "proceedAndRecord",
           "useDifferentValue" | "reissueCredentialToThisDid" | "correlateDeliberately" | "proceedAndRecord"
         ];
+    /**
+     * Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets.
+     */
+    crossesFacets?: boolean;
+    /**
+     * The distinct facets this linkage touches, so a consumer can name them — "Work and Home share your mobile number" is a sentence a holder can act on, where "a value is shared" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct.
+     *
+     * @maxItems 64
+     */
+    facetIds?: Ulid[];
   }[];
   ext?: Ext;
 }
@@ -236,6 +250,10 @@ export const PAYLOAD_SCHEMA = {
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "facetId": {
+                      "$ref": "#/$defs/Ulid",
+                      "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own."
                     }
                   }
                 }
@@ -258,6 +276,19 @@ export const PAYLOAD_SCHEMA = {
                   ]
                 },
                 "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it."
+              },
+              "crossesFacets": {
+                "type": "boolean",
+                "description": "Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets."
+              },
+              "facetIds": {
+                "type": "array",
+                "maxItems": 64,
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "#/$defs/Ulid"
+                },
+                "description": "The distinct facets this linkage touches, so a consumer can name them — \"Work and Home share your mobile number\" is a sentence a holder can act on, where \"a value is shared\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct."
               }
             }
           }
@@ -366,6 +397,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "facetId": {
+                      "$ref": "#/$defs/Ulid",
+                      "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own."
                     }
                   }
                 }
@@ -388,6 +423,19 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                   ]
                 },
                 "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it."
+              },
+              "crossesFacets": {
+                "type": "boolean",
+                "description": "Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets."
+              },
+              "facetIds": {
+                "type": "array",
+                "maxItems": 64,
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "#/$defs/Ulid"
+                },
+                "description": "The distinct facets this linkage touches, so a consumer can name them — \"Work and Home share your mobile number\" is a sentence a holder can act on, where \"a value is shared\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct."
               }
             }
           }

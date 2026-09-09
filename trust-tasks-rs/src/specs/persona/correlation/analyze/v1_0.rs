@@ -380,6 +380,19 @@ impl PayloadCandidate {
 ///          "attributeId": {
 ///            "$ref": "#/definitions/Ulid"
 ///          },
+///          "crossesFacets": {
+///            "description": "Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets.",
+///            "type": "boolean"
+///          },
+///          "facetIds": {
+///            "description": "The distinct facets this linkage touches, so a consumer can name them — \"Work and Home share your mobile number\" is a sentence a holder can act on, where \"a value is shared\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct.",
+///            "type": "array",
+///            "items": {
+///              "$ref": "#/definitions/Ulid"
+///            },
+///            "maxItems": 64,
+///            "uniqueItems": true
+///          },
 ///          "remedies": {
 ///            "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.",
 ///            "type": "array",
@@ -416,6 +429,10 @@ impl PayloadCandidate {
 ///                    "type": "string"
 ///                  },
 ///                  "maxItems": 64
+///                },
+///                "facetId": {
+///                  "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.",
+///                  "$ref": "#/definitions/Ulid"
 ///                },
 ///                "personaDid": {
 ///                  "type": "string"
@@ -473,6 +490,19 @@ impl Response {
 ///    "attributeId": {
 ///      "$ref": "#/definitions/Ulid"
 ///    },
+///    "crossesFacets": {
+///      "description": "Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets.",
+///      "type": "boolean"
+///    },
+///    "facetIds": {
+///      "description": "The distinct facets this linkage touches, so a consumer can name them — \"Work and Home share your mobile number\" is a sentence a holder can act on, where \"a value is shared\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct.",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/Ulid"
+///      },
+///      "maxItems": 64,
+///      "uniqueItems": true
+///    },
 ///    "remedies": {
 ///      "description": "What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.",
 ///      "type": "array",
@@ -510,6 +540,10 @@ impl Response {
 ///            },
 ///            "maxItems": 64
 ///          },
+///          "facetId": {
+///            "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.",
+///            "$ref": "#/definitions/Ulid"
+///          },
 ///          "personaDid": {
 ///            "type": "string"
 ///          },
@@ -541,6 +575,20 @@ pub struct ResponseFindingsItem {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub attribute_id: ::std::option::Option<Ulid>,
+    ///Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets.
+    #[serde(
+        rename = "crossesFacets",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub crosses_facets: ::std::option::Option<bool>,
+    ///The distinct facets this linkage touches, so a consumer can name them — "Work and Home share your mobile number" is a sentence a holder can act on, where "a value is shared" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct.
+    #[serde(
+        rename = "facetIds",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub facet_ids: ::std::option::Option<Vec<Ulid>>,
     ///What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.
     pub remedies: ::std::vec::Vec<ResponseFindingsItemRemediesItem>,
     pub severity: ResponseFindingsItemSeverity,
@@ -733,6 +781,10 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseFindingsItemSeve
 ///      },
 ///      "maxItems": 64
 ///    },
+///    "facetId": {
+///      "description": "The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.",
+///      "$ref": "#/definitions/Ulid"
+///    },
 ///    "personaDid": {
 ///      "type": "string"
 ///    },
@@ -760,6 +812,13 @@ pub struct ResponseFindingsItemSharedWithItem {
         skip_serializing_if = "::std::vec::Vec::is_empty"
     )]
     pub disclosed_to: ::std::vec::Vec<::std::string::String>,
+    ///The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.
+    #[serde(
+        rename = "facetId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub facet_id: ::std::option::Option<Ulid>,
     #[serde(
         rename = "personaDid",
         default,
@@ -778,6 +837,7 @@ impl ::std::default::Default for ResponseFindingsItemSharedWithItem {
         Self {
             context_id: Default::default(),
             disclosed_to: Default::default(),
+            facet_id: Default::default(),
             persona_did: Default::default(),
             profile_id: Default::default(),
         }
@@ -1235,6 +1295,9 @@ pub mod builder {
     pub struct ResponseFindingsItem {
         attribute_id:
             ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
+        crosses_facets: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        facet_ids:
+            ::std::result::Result<::std::option::Option<Vec<super::Ulid>>, ::std::string::String>,
         remedies: ::std::result::Result<
             ::std::vec::Vec<super::ResponseFindingsItemRemediesItem>,
             ::std::string::String,
@@ -1250,6 +1313,8 @@ pub mod builder {
         fn default() -> Self {
             Self {
                 attribute_id: Ok(Default::default()),
+                crosses_facets: Ok(Default::default()),
+                facet_ids: Ok(Default::default()),
                 remedies: Err("no value supplied for remedies".to_string()),
                 severity: Err("no value supplied for severity".to_string()),
                 shared_with: Ok(Default::default()),
@@ -1266,6 +1331,26 @@ pub mod builder {
             self.attribute_id = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for attribute_id: {e}"));
+            self
+        }
+        pub fn crosses_facets<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.crosses_facets = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for crosses_facets: {e}"));
+            self
+        }
+        pub fn facet_ids<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<Vec<super::Ulid>>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.facet_ids = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for facet_ids: {e}"));
             self
         }
         pub fn remedies<T>(mut self, value: T) -> Self
@@ -1316,6 +1401,8 @@ pub mod builder {
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 attribute_id: value.attribute_id?,
+                crosses_facets: value.crosses_facets?,
+                facet_ids: value.facet_ids?,
                 remedies: value.remedies?,
                 severity: value.severity?,
                 shared_with: value.shared_with?,
@@ -1327,6 +1414,8 @@ pub mod builder {
         fn from(value: super::ResponseFindingsItem) -> Self {
             Self {
                 attribute_id: Ok(value.attribute_id),
+                crosses_facets: Ok(value.crosses_facets),
+                facet_ids: Ok(value.facet_ids),
                 remedies: Ok(value.remedies),
                 severity: Ok(value.severity),
                 shared_with: Ok(value.shared_with),
@@ -1342,6 +1431,7 @@ pub mod builder {
         >,
         disclosed_to:
             ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        facet_id: ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
         persona_did: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
@@ -1354,6 +1444,7 @@ pub mod builder {
             Self {
                 context_id: Ok(Default::default()),
                 disclosed_to: Ok(Default::default()),
+                facet_id: Ok(Default::default()),
                 persona_did: Ok(Default::default()),
                 profile_id: Ok(Default::default()),
             }
@@ -1378,6 +1469,16 @@ pub mod builder {
             self.disclosed_to = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for disclosed_to: {e}"));
+            self
+        }
+        pub fn facet_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ulid>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.facet_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for facet_id: {e}"));
             self
         }
         pub fn persona_did<T>(mut self, value: T) -> Self
@@ -1411,6 +1512,7 @@ pub mod builder {
             Ok(Self {
                 context_id: value.context_id?,
                 disclosed_to: value.disclosed_to?,
+                facet_id: value.facet_id?,
                 persona_did: value.persona_did?,
                 profile_id: value.profile_id?,
             })
@@ -1423,6 +1525,7 @@ pub mod builder {
             Self {
                 context_id: Ok(value.context_id),
                 disclosed_to: Ok(value.disclosed_to),
+                facet_id: Ok(value.facet_id),
                 persona_did: Ok(value.persona_did),
                 profile_id: Ok(value.profile_id),
             }
@@ -1434,7 +1537,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"findings\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"attributeId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"remedies\": {\n                \"description\": \"What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.\",\n                \"items\": {\n                  \"enum\": [\n                    \"useDifferentValue\",\n                    \"reissueCredentialToThisDid\",\n                    \"correlateDeliberately\",\n                    \"proceedAndRecord\"\n                  ],\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 8,\n                \"type\": \"array\"\n              },\n              \"severity\": {\n                \"enum\": [\n                  \"low\",\n                  \"high\"\n                ],\n                \"type\": \"string\"\n              },\n              \"sharedWith\": {\n                \"description\": \"Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.\",\n                \"items\": {\n                  \"additionalProperties\": false,\n                  \"properties\": {\n                    \"contextId\": {\n                      \"type\": \"string\"\n                    },\n                    \"disclosedTo\": {\n                      \"items\": {\n                        \"type\": \"string\"\n                      },\n                      \"maxItems\": 64,\n                      \"type\": \"array\"\n                    },\n                    \"personaDid\": {\n                      \"type\": \"string\"\n                    },\n                    \"profileId\": {\n                      \"$ref\": \"#/$defs/Ulid\"\n                    }\n                  },\n                  \"type\": \"object\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"why\": {\n                \"description\": \"Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.\",\n                \"maxLength\": 1024,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"severity\",\n              \"why\",\n              \"remedies\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"findings\"\n      ],\n      \"title\": \"Persona Correlation Analyze — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/correlation/analyze/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Report where the holder's identities link to one another, and what can be done about each link. The findings task behind the counts the write tasks return.\",\n  \"properties\": {\n    \"attributeId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Analyse one attribute. Omit to analyse the whole pool.\"\n    },\n    \"candidate\": {\n      \"additionalProperties\": false,\n      \"description\": \"Analyse a value the holder is CONSIDERING but has not written. This is what lets a builder warn before the mistake rather than after it, which is the difference between a guard and a report. A maintainer MUST NOT store a candidate.\",\n      \"properties\": {\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"value\": {},\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"valueType\",\n        \"value\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Analyse one composition — what would this profile link if bound.\"\n    }\n  },\n  \"title\": \"Persona Correlation Analyze — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"findings\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"attributeId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"crossesFacets\": {\n                \"description\": \"Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets.\",\n                \"type\": \"boolean\"\n              },\n              \"facetIds\": {\n                \"description\": \"The distinct facets this linkage touches, so a consumer can name them — \\\"Work and Home share your mobile number\\\" is a sentence a holder can act on, where \\\"a value is shared\\\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct.\",\n                \"items\": {\n                  \"$ref\": \"#/$defs/Ulid\"\n                },\n                \"maxItems\": 64,\n                \"type\": \"array\",\n                \"uniqueItems\": true\n              },\n              \"remedies\": {\n                \"description\": \"What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.\",\n                \"items\": {\n                  \"enum\": [\n                    \"useDifferentValue\",\n                    \"reissueCredentialToThisDid\",\n                    \"correlateDeliberately\",\n                    \"proceedAndRecord\"\n                  ],\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 8,\n                \"type\": \"array\"\n              },\n              \"severity\": {\n                \"enum\": [\n                  \"low\",\n                  \"high\"\n                ],\n                \"type\": \"string\"\n              },\n              \"sharedWith\": {\n                \"description\": \"Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.\",\n                \"items\": {\n                  \"additionalProperties\": false,\n                  \"properties\": {\n                    \"contextId\": {\n                      \"type\": \"string\"\n                    },\n                    \"disclosedTo\": {\n                      \"items\": {\n                        \"type\": \"string\"\n                      },\n                      \"maxItems\": 64,\n                      \"type\": \"array\"\n                    },\n                    \"facetId\": {\n                      \"$ref\": \"#/$defs/Ulid\",\n                      \"description\": \"The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.\"\n                    },\n                    \"personaDid\": {\n                      \"type\": \"string\"\n                    },\n                    \"profileId\": {\n                      \"$ref\": \"#/$defs/Ulid\"\n                    }\n                  },\n                  \"type\": \"object\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"why\": {\n                \"description\": \"Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.\",\n                \"maxLength\": 1024,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"severity\",\n              \"why\",\n              \"remedies\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"findings\"\n      ],\n      \"title\": \"Persona Correlation Analyze — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/correlation/analyze/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Report where the holder's identities link to one another, and what can be done about each link. The findings task behind the counts the write tasks return.\",\n  \"properties\": {\n    \"attributeId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Analyse one attribute. Omit to analyse the whole pool.\"\n    },\n    \"candidate\": {\n      \"additionalProperties\": false,\n      \"description\": \"Analyse a value the holder is CONSIDERING but has not written. This is what lets a builder warn before the mistake rather than after it, which is the difference between a guard and a report. A maintainer MUST NOT store a candidate.\",\n      \"properties\": {\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"value\": {},\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"valueType\",\n        \"value\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Analyse one composition — what would this profile link if bound.\"\n    }\n  },\n  \"title\": \"Persona Correlation Analyze — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1443,7 +1546,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"findings\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"attributeId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"remedies\": {\n                \"description\": \"What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.\",\n                \"items\": {\n                  \"enum\": [\n                    \"useDifferentValue\",\n                    \"reissueCredentialToThisDid\",\n                    \"correlateDeliberately\",\n                    \"proceedAndRecord\"\n                  ],\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 8,\n                \"type\": \"array\"\n              },\n              \"severity\": {\n                \"enum\": [\n                  \"low\",\n                  \"high\"\n                ],\n                \"type\": \"string\"\n              },\n              \"sharedWith\": {\n                \"description\": \"Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.\",\n                \"items\": {\n                  \"additionalProperties\": false,\n                  \"properties\": {\n                    \"contextId\": {\n                      \"type\": \"string\"\n                    },\n                    \"disclosedTo\": {\n                      \"items\": {\n                        \"type\": \"string\"\n                      },\n                      \"maxItems\": 64,\n                      \"type\": \"array\"\n                    },\n                    \"personaDid\": {\n                      \"type\": \"string\"\n                    },\n                    \"profileId\": {\n                      \"$ref\": \"#/$defs/Ulid\"\n                    }\n                  },\n                  \"type\": \"object\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"why\": {\n                \"description\": \"Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.\",\n                \"maxLength\": 1024,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"severity\",\n              \"why\",\n              \"remedies\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"findings\"\n      ],\n      \"title\": \"Persona Correlation Analyze — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"findings\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"attributeId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"crossesFacets\": {\n                \"description\": \"Whether this linkage spans two or more of the holder's facets — parts of their life they have said belong apart. **A second axis, not a restatement of `severity`.** `severity` says how strongly a disclosure would link the holder, which is a fact about provenance and proof rung and is true whatever the holder intended; this says whether the holder would mind. A value shared between two profiles in the SAME facet is linkage the holder arranged on purpose — a work email in every work profile — and a consumer that alarmed on it teaches people to dismiss the alarm. A value shared ACROSS facets is the finding worth raising. True only when two or more DISTINCT facets appear among `sharedWith`: a profile belonging to no facet is unarranged, not a second facet, and contributes nothing here. Absent when the maintainer does not implement facets.\",\n                \"type\": \"boolean\"\n              },\n              \"facetIds\": {\n                \"description\": \"The distinct facets this linkage touches, so a consumer can name them — \\\"Work and Home share your mobile number\\\" is a sentence a holder can act on, where \\\"a value is shared\\\" is not. Identifiers rather than names, on the same reasoning as every other member here: the caller already holds the facet records and a name repeated on the wire is a second copy to keep correct.\",\n                \"items\": {\n                  \"$ref\": \"#/$defs/Ulid\"\n                },\n                \"maxItems\": 64,\n                \"type\": \"array\",\n                \"uniqueItems\": true\n              },\n              \"remedies\": {\n                \"description\": \"What the holder can actually do. Naming reissueCredentialToThisDid matters more than it looks: without it, a holder told 'this links your personas' has no action but to abandon the attribute, and the honest fix — a credential re-issued against the persona actually using it — stays invisible unless the analysis names it.\",\n                \"items\": {\n                  \"enum\": [\n                    \"useDifferentValue\",\n                    \"reissueCredentialToThisDid\",\n                    \"correlateDeliberately\",\n                    \"proceedAndRecord\"\n                  ],\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 8,\n                \"type\": \"array\"\n              },\n              \"severity\": {\n                \"enum\": [\n                  \"low\",\n                  \"high\"\n                ],\n                \"type\": \"string\"\n              },\n              \"sharedWith\": {\n                \"description\": \"Where else this value appears, and where it has actually gone. Identifiers ARE returned here, unlike the counts the write tasks give back — this task is holder-authorized and its whole purpose is to let the holder act, which they cannot do on a number.\",\n                \"items\": {\n                  \"additionalProperties\": false,\n                  \"properties\": {\n                    \"contextId\": {\n                      \"type\": \"string\"\n                    },\n                    \"disclosedTo\": {\n                      \"items\": {\n                        \"type\": \"string\"\n                      },\n                      \"maxItems\": 64,\n                      \"type\": \"array\"\n                    },\n                    \"facetId\": {\n                      \"$ref\": \"#/$defs/Ulid\",\n                      \"description\": \"The facet the profile at this location belongs to. Absent where it belongs to none, which is a real and common state rather than a gap — most profiles are unarranged until someone arranges them, and a consumer MUST NOT read absence as a facet of its own.\"\n                    },\n                    \"personaDid\": {\n                      \"type\": \"string\"\n                    },\n                    \"profileId\": {\n                      \"$ref\": \"#/$defs/Ulid\"\n                    }\n                  },\n                  \"type\": \"object\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"why\": {\n                \"description\": \"Plain-language cause. A severity with no explanation is a warning a holder learns to dismiss.\",\n                \"maxLength\": 1024,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"severity\",\n              \"why\",\n              \"remedies\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"findings\"\n      ],\n      \"title\": \"Persona Correlation Analyze — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

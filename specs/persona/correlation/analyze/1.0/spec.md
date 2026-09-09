@@ -2,11 +2,11 @@
 slug: persona/correlation/analyze
 version: "1.0"
 title: Persona Correlation — Analyze
-summary: Report where the holder's identities link to one another, why, and what can be done about each link — including the remedy a holder would not otherwise think of.
+summary: Report where the holder's identities link to one another, why, whether the link crosses a part of their life they keep separate, and what can be done about each — including the remedy a holder would not otherwise think of.
 status: draft
 targetFrameworkVersion: "0.5"
 category: identity
-keywords: [persona, privacy, correlation]
+keywords: [persona, privacy, correlation, facet]
 authors:
   - Glenn Gore (https://github.com/stormer78)
 parties:
@@ -60,6 +60,25 @@ has no action available but to abandon the attribute, and the honest fix — a
 credential re-issued against the persona actually using it — stays invisible
 unless the analysis names it.
 
+**Severity is how linkable. Facets are whether the holder minds.** These are two
+axes and the specification keeps them apart, because collapsing them loses
+whichever one is inconvenient.
+
+`severity` is a fact about the value and the proof beneath it: a credential
+presented whole links every verifier that sees it, and that is true whatever the
+holder intended. `crossesFacets` is a fact about the holder's own arrangement: a
+work email appearing in every work profile is linkage they built on purpose, and
+a consumer that alarms on it is teaching them to dismiss alarms — which costs
+them the one that matters. The same value shared *across* facets is the finding
+worth raising, and it is the reason a maintainer that implements
+`persona/facet/*` can say something here that one without facets cannot.
+
+A maintainer **MUST NOT** reduce `severity` because a linkage stays inside one
+facet. The linkage is real either way: two verifiers who see both profiles link
+the holder regardless of which part of their own life they filed each under, and
+a severity that softened on intent would be reporting a false all-clear about
+something a counterparty can still do.
+
 One correction the analysis must encode: **a credential presented whole correlates
 more than a self-asserted value**, because the issuer signature is identical at
 every verifier, while a derived proof correlates less because it differs every
@@ -83,6 +102,24 @@ A conforming **maintainer** **MUST** reject the document unless the caller is
 **MUST** compute matches over a keyed hash rather than a plaintext index; and
 **MUST** score severity from the value and the proof rung together rather than
 from provenance alone.
+
+A maintainer that implements `persona/facet/*` **SHOULD** populate
+`crossesFacets`, `facetIds` and `sharedWith[].facetId`; one that does not
+**MUST** omit all three rather than emitting `false`, because `false` asserts
+that the holder keeps these identities in one part of their life and an
+implementation with no facets has made no such finding. A consumer **MUST**
+treat an absent `crossesFacets` as *unknown* and not as *does not cross*.
+
+A maintainer **MUST NOT** reduce `severity` because a linkage falls inside a
+single facet, and **MUST NOT** omit a finding for that reason. The arrangement
+is the holder's own filing and changes nothing a counterparty can do; suppressing
+the finding would hide a real linkage behind a preference.
+
+`crossesFacets` is true only where two or more **distinct** facets appear among
+`sharedWith`. A profile belonging to no facet is unarranged, not a second facet,
+and a maintainer **MUST NOT** count it as one — otherwise every holder who has
+arranged one part of their life and not the rest sees a crossing on everything
+they own.
 
 A conforming maintainer **MUST NOT** treat a per-profile override as reducing
 severity. Changing a displayed value does nothing about the credential beneath it,
@@ -111,6 +148,17 @@ See the payload schema.
 A `candidate` carries a personal value the holder has not yet written; it is
 analysed and **MUST NOT** be stored. The response carries the holder's own profile,
 context, persona and verifier identifiers — no values.
+
+### The facet members carry the holder's own filing
+
+`facetIds` and `sharedWith[].facetId` say which parts of their life the holder
+considers these identities to belong to — the most correlating statement in the
+persona family, and the reason `persona/facet/*` never leaves the agent scope.
+Returning them here does not widen that exposure: this task is already
+holder-authorized and unscoped, and already returns the linkage map itself. A
+maintainer **MUST NOT** return a facet **name** in this response — the caller
+holds the facet records and can resolve an identifier, and a name is the member
+of a facet worth protecting.
 
 ### Correlation
 
