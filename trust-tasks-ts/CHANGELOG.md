@@ -11,6 +11,59 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.18.0 — 2026-09-09
+
+
+### Fixed
+
+- **rooms/owner/issue-authority**: `validUntil` is REQUIRED; 0.2 requires it (#418)
+
+`0.1` typed `validUntil` as optional, so a caller could ask this task for a
+  grant that never lapses. DTG Core Credentials requires the property on every
+  authority credential, and states the reason: "Unlike the base structure,
+  `validUntil` is REQUIRED for a VAC … nothing about the subject's current
+  standing is consulted when a VAC is verified, so authority that does not expire
+  is authority nobody can withdraw by waiting."
+
+  So `0.1` described a request no conforming implementation could honour. An
+  issuer refuses to build the credential; a verifier refuses a chain link that
+  carries no expiry. A grant minted without one would have failed at its first use
+  at a host, for a reason the holder could not act on.
+
+  This bites hardest here because the task mints a chain ROOT. A root is the grant
+  nothing else can withdraw — there is no status list consulted at verification
+  and no membership check behind it — so for a root, expiry is not one of several
+  ways a grant ends. It is the only one that works without the room reissuing or
+  revoking.
+
+  ## No default, deliberately
+
+  A consumer MUST NOT substitute one for an absent value. How long a room's
+  authority should last is the owner's judgement about their own room, and a
+  recipient that picked a lifetime would be making that judgement silently, in the
+  one place the owner cannot see it. Refusing puts the choice back where it
+  belongs. A caller with no view should say so with a short value rather than by
+  omission — and a shorter value is always safe, since attenuation may only
+  narrow, so the root's lifetime is the ceiling on everything derived from it.
+
+  ## Also here
+
+  `0.1` is retired, superseded by `0.2`.
+
+  Found while bumping `verifiable-trust-infrastructure` to dtg-credentials 0.9,
+  where `new_vac` stopped accepting an `Option` — the library making the rule
+  structural is what surfaced a registry spec that had been out of step since
+  Working Draft 02. The generated `0.2` binding types `valid_until` as a plain
+  `DateTime`, so the consumer compiles against 0.9 unchanged once it re-pins.
+
+  Sibling specs were checked and are correct as they stand: `issue-membership`
+  mints a VMC and `invite` mints a VIC, where the base structure applies and an
+  optional `validUntil` is right. This is the only rooms spec that mints a VAC.
+
+  Bindings regenerated; library versions untouched per RELEASING.md.
+
+- **rooms/keys/present**: `audience` and `nonce` could never work; 0.2 removes both (#415)
+
 ## 0.17.11 — 2026-09-09
 
 
