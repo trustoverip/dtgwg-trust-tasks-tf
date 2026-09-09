@@ -119,6 +119,12 @@ As on a listing: OPTIONAL, because a host that maintains no tree must not invent
 a root; not a completeness proof on its own, because a single root is the host's
 own assertion until it is compared against one the host did not choose.
 
+`recordCount` and `headVersion` travel with it and are what make that comparison
+possible at all — see [`rooms/records/list`](../../list/0.1/spec.md), whose section
+on them governs. The short of it: a root without a `headVersion` names no state, so
+two of them differing is a room that moved as readily as a host that equivocated,
+and a reader **MUST NOT** compare it against another root.
+
 ## Traces
 
 `trace` is the path from this record's leaf to `dataCommitment`. Verifying it answers
@@ -132,7 +138,8 @@ confusion would be silent.
 ### The leaf preimage is this response
 
 **The leaf is `SHA-256(0x00 || JCS(record))`, where the record is this response payload
-with `dataCommitment`, `trace` and `ext` removed.** That object is `CommittedRecord` in
+with its verification members — `dataCommitment`, `recordCount`, `headVersion` and
+`trace` — and `ext` removed.** That object is `CommittedRecord` in
 the [shared schema](../../../_shared/0.1/room.schema.json), and a reader MAY validate
 what it assembles against that definition before hashing it.
 

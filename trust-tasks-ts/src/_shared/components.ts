@@ -89,7 +89,9 @@ export type CredentialId = string;
 /**
  * The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.
  *
- * A room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.
+ * A room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing.
+ *
+ * **A root on its own is not comparable, and an earlier revision of this description said it was.** It claimed a host showing two members two different roots had been caught, which is false while a room can move between two reads: the host answers *there was a write*, and nothing contradicts it. Comparison needs the state each root describes, which is what `HeadVersion` names — and `RecordCount` is the other half of the same omission, since Certificate Transparency's signed tree head is a root *and a size* and this family shipped only the root. A reader that receives a `dataCommitment` **without** them can use it against a witnessed anchor, where the epoch pins the state, and **MUST NOT** compare it against another root.
  *
  * **The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:
  *   1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.
@@ -155,6 +157,22 @@ export type ExpectedVersion_VtaV0_1 = number;
  * A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.
  */
 export type FacetColour = "slate" | "indigo" | "teal" | "moss" | "sand" | "clay" | "rose" | "plum";
+/**
+ * The highest version among the records `DataCommitment` covers. `0` for a room that holds none.
+ *
+ * **Derived from the same set as the root, and not read from the room's own counter.** The two agree for any host that has never erased a record — versions are assigned strictly increasing and a retraction keeps its tombstone — but they are not interchangeable, because a root and a counter are *two reads*, and two reads are not a snapshot. A write landing between them yields a pair that is individually correct and jointly false: two members holding roots taken over different trees, labelled with one version. That reads as equivocation and is not, and a **false accusation discredits the mechanism rather than the host** — the worst outcome available here. Taken from the committed set, the version cannot disagree with the root it labels, whatever else is happening to the room.
+ *
+ * The corollary is worth stating: a host that **erases** a record — as distinct from retracting it, which leaves a tombstone in the tree — moves the root without necessarily moving this value, and two members straddling that erasure would see one version over two roots. Erasure is a retention act with its own answer, and a family that exposes one owes this definition another look.
+ *
+ * **This is what makes two roots comparable at all**, and without it the comparison this family is built on cannot be performed. A room moves: every put, curate and retraction assigns a new version, so two roots taken at two moments differ legitimately and a reader learns nothing from the difference. Shown two different roots, a host that equivocated and a host that was merely written to are indistinguishable — the first can always answer *the room moved between your reads*, and nothing contradicts it.
+ *
+ * A version is assigned by exactly the mutations that change the tree — every put, curate and retraction takes the next one — so the highest of them names the **state** the root describes. Two roots carrying the same `headVersion` and differing is a host caught: there is no write to attribute the difference to. Two roots carrying different ones are simply two moments, and a reader should draw nothing from them.
+ *
+ * A host can lie about this number too, and it is then lying about the counter it also uses for optimistic concurrency (`expectedVersion`) and for incremental sync (`sinceVersion`) — so a member holding a signed acknowledgement of a write at version `V` contradicts any head below `V` directly.
+ *
+ * **Not a timestamp.** A time is host-asserted, unverifiable and useless for this: two roots a second apart are not evidence of anything, while two roots at one version are.
+ */
+export type HeadVersion = number;
 /**
  * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
  */
@@ -276,6 +294,16 @@ export type Provenance =
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
 export type PushRegistration = Apns | Fcm | WebPush;
+/**
+ * How many records the room held when `DataCommitment` was computed — the number of leaves in that tree, tombstones included, since a tombstone is a record.
+ *
+ * **Why a root needs this.** Certificate Transparency's signed tree head is a root *and a tree size*; this family shipped the root alone, and the half that was dropped is the half that makes a listing checkable. A reader holding a **complete, unfiltered** listing cannot recompute the root — a leaf commits to a whole record and a listing returns a projection without the body — but it can count. A host that omits a record from a listing while committing to a tree that holds it now contradicts itself in the same response, with no second party and no anchor involved.
+ *
+ * A host can of course understate both together. That is the point rather than a hole: the omission stops being silence and becomes a **specific claim about how many records the room holds**, which any other member's view, or any writer's signed put acknowledgement, contradicts. Making an omission attributable is the whole of what this machinery buys; it never claimed to make one impossible.
+ *
+ * **It counts the room, never the page.** The same rule `DataCommitment` states, and the same trap: a count scoped to what was returned is one a host satisfies by construction. So this is only comparable against a listing read to the end with **no** `prefix` and **no** `sinceVersion` — a filtered listing legitimately holds fewer, and a reader that compares one against this has found a discrepancy it created itself.
+ */
+export type RecordCount = number;
 /**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *

@@ -101,10 +101,57 @@ against a copy the host did not choose for them:
   grown;
 - the **witnessed anchor**, once a room anchors one.
 
-A host that shows two members two different roots for the same room has been
-caught, and cannot claim a transient. That is the whole mechanism, and it is the
-same one Certificate Transparency relies on: a signed tree head is not proof of
-non-equivocation, comparing them is.
+That is the same mechanism Certificate Transparency relies on: a signed tree head
+is not proof of non-equivocation, comparing them is.
+
+### A root alone is not comparable — `recordCount` and `headVersion`
+
+An earlier revision of this section ended *"a host that shows two members two
+different roots for the same room has been caught, and cannot claim a transient."*
+**That was wrong**, and the error came from taking half of the analogy above.
+
+A room moves. Every put, curate and retraction changes the tree, so two roots taken
+at two moments differ for the most ordinary reason there is. A host shown to have
+served two different roots answers *there was a write between your reads* — and
+with a bare root there is nothing that contradicts it. The comparison the whole
+member is built on could not be performed by anybody.
+
+Certificate Transparency does not have this problem because **an STH is a root and
+a tree size**, and a size names the state the root describes. This family shipped
+the root and dropped the rest. So:
+
+- **`headVersion`** — the highest version among the records the root covers. A
+  version is assigned by exactly the mutations that change the tree, so the highest
+  of them names the state. Two roots at the **same** `headVersion` that differ is a
+  host caught, with no write to attribute the difference to. Two roots at different
+  ones are two moments, and a reader must draw nothing from them.
+
+  It is taken **from the committed set**, not read from the room's own counter, and
+  a host **MUST** derive it that way. The two agree for any host that has never
+  erased a record, but they are not interchangeable: a root and a counter are two
+  reads, and two reads are not a snapshot. A write landing between them labels a
+  root with a version from a different moment, and two members would then hold
+  roots over different trees under one version — which reads as equivocation and is
+  not. **A false accusation discredits the mechanism rather than the host**, which
+  is the worst outcome this machinery has.
+- **`recordCount`** — how many records the room held, tombstones included. A reader
+  cannot recompute the root from a listing (below), but it can **count**. A host
+  that omits a record from a listing while committing to a tree holding it now
+  contradicts itself inside one response, with no second party and no anchor.
+
+Both are computed from the snapshot the root was taken over, and both are OPTIONAL
+only in the sense the root is: a host that maintains no tree asserts none of it.
+A host that serves `dataCommitment` **SHOULD** serve both, and a reader that
+receives a root **without** them **MUST NOT** compare it against another root. Such
+a root is still usable against a **witnessed anchor**, where the epoch pins the
+state — which is why it is not simply refused.
+
+A host can of course understate the count and the head together. That is the point
+rather than a hole: the omission stops being *silence* and becomes a specific claim
+about how many records the room holds and how far it has been written, which any
+other member's view — and any writer's signed put acknowledgement — contradicts
+directly. Making an omission **attributable** is the whole of what this machinery
+buys; it never claimed to make one impossible.
 
 ### Why it is OPTIONAL
 

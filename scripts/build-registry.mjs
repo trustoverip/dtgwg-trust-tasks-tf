@@ -1462,8 +1462,11 @@ function syncWebsiteFrameworkSpec() {
 const COMMITTED_RECORD_PATH = path.join(SPECS_DIR, 'rooms', '_shared', '0.1', 'room.schema.json');
 const RECORDS_GET_PATH = path.join(SPECS_DIR, 'rooms', 'records', 'get', '0.1', 'payload.schema.json');
 /* The response's own verification members — everything a reader strips before
- * hashing. Kept beside the check because this list IS the rule the prose states. */
-const NON_COMMITTED_RESPONSE_MEMBERS = ['dataCommitment', 'trace', 'ext'];
+ * hashing. Kept beside the check because this list IS the rule the prose states.
+ * It has already earned its keep once: adding recordCount and headVersion to the
+ * response failed this check on the first build, which is the correct answer and
+ * the one nobody would have got from reading two files. */
+const NON_COMMITTED_RESPONSE_MEMBERS = ['dataCommitment', 'recordCount', 'headVersion', 'trace', 'ext'];
 
 function checkCommittedRecordMirror() {
   const shared = readJson(COMMITTED_RECORD_PATH);

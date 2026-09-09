@@ -83,9 +83,17 @@
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/DataCommitment",
           "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads \u2014 and so a `trace` returned beside it has a root to reach."
         },
+        "recordCount": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordCount",
+          "description": "How many records the room holds, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none."
+        },
+        "headVersion": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/HeadVersion",
+          "description": "The room's highest assigned record version, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. Without it two roots are not comparable at all: a host shown to have served two different ones answers that the room moved, and nothing contradicts it."
+        },
         "trace": {
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordTrace",
-          "description": "The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.\n\n**The leaf preimage is this response payload with `dataCommitment`, `trace` and `ext` removed** \u2014 which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.\n\nOPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds \u2014 an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one."
+          "description": "The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.\n\n**The leaf preimage is this response payload with its verification members \u2014 `dataCommitment`, `recordCount`, `headVersion` and `trace` \u2014 and `ext` removed** \u2014 which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.\n\nOPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds \u2014 an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one."
         },
         "ext": {
           "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
@@ -96,6 +104,12 @@
           "dataCommitment",
           "status",
           "updatedAt"
+        ],
+        "recordCount": [
+          "dataCommitment"
+        ],
+        "headVersion": [
+          "dataCommitment"
         ]
       }
     }

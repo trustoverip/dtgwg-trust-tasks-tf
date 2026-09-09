@@ -69,9 +69,25 @@
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/DataCommitment",
           "description": "The room's data commitment at the moment this listing was taken. OPTIONAL because a host that does not maintain the tree cannot honestly assert one, and a fabricated root is worse than an absent one \u2014 its absence says 'this host offers no completeness guarantee', which is true and useful. Present, it is signed along with the rest of the response, which is what makes it evidence rather than a claim."
         },
+        "recordCount": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordCount",
+          "description": "How many records the room holds, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. A reader holding this listing **read to the end** with no `prefix` and no `sinceVersion` can compare its length against this; against a page, a filtered listing or a watermarked one it is a discrepancy the reader manufactured."
+        },
+        "headVersion": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/HeadVersion",
+          "description": "The room's highest assigned record version, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. Without it two roots are not comparable at all: a host shown to have served two different ones answers that the room moved, and nothing contradicts it."
+        },
         "ext": {
           "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }
+      },
+      "dependentRequired": {
+        "recordCount": [
+          "dataCommitment"
+        ],
+        "headVersion": [
+          "dataCommitment"
+        ]
       }
     }
   }
