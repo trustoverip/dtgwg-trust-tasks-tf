@@ -12,6 +12,8 @@ keywords:
   - read
   - authority
   - recall
+  - commitment
+  - trace
 authors:
   - Glenn Gore (https://github.com/stormer78)
 parties:
@@ -36,7 +38,7 @@ exposure:
   discloses: metadata
   ingests: none
   actsAsSubject: false
-  rationale: "Returns record content — sealed on `attributed` and `private` rooms, cleartext on `open`. The host learns which record was read and, on `open` and `attributed`, which member read it."
+  rationale: "Returns record content — sealed on `attributed` and `private` rooms, cleartext on `open`. The host learns which record was read and, on `open` and `attributed`, which member read it. The response also names the record's author on those two tiers: the same member `rooms/records/list` already returns there, now carried on a single read because it is part of what the record commits to."
 retention:
   class: transient
   rationale: "The task returns existing state and stores nothing of its own."
@@ -85,6 +87,18 @@ no-dereference rules of
 [`rooms/records/put`](../../put/0.1/spec.md), and **MUST NOT** condition service of a
 `private` room on a session of its own.
 
+The response has its own two parties, and they are the other way round. A host that
+serves `trace` **MUST** compute it and `dataCommitment` from the same snapshot of the
+room, and **MUST** serve every committed member it holds — an omitted `status`,
+`updatedAt`, `pinned` or `author` leaves the reader hashing a different object and
+reaching a leaf that is in no tree. A host that maintains no record tree **MUST NOT**
+serve either member.
+
+A reader **MUST** verify a `trace` against the `dataCommitment` carried in the same
+response and no other; **MUST** treat a `trace` arriving without `dataCommitment`,
+`status` or `updatedAt` as *invalid* rather than merely unverified; and **MUST NOT**
+read a verified `trace` as evidence that the room holds no record the host withheld.
+
 A host **SHOULD** record reads on `open` and `attributed` rooms. Reads of shared material
 are the interesting event — but such a log is itself a record of who was interested in
 what, so it warrants a stated retention period of its own rather than inheriting a general
@@ -98,13 +112,79 @@ read — the same value and the same construction as
 
 It is here, on a single-record read, for two reasons. A reader taking several
 reads can tell **whether the room moved between them**, which a per-read root
-answers and a listing taken once does not. And when traces are specified, this is
-the root a returned record will be proved to sit under — carrying it now means
-that later addition needs no new member and no version bump on this response.
+answers and a listing taken once does not. And it is the root a returned record is
+proved to sit under — `trace` reaches it, and is defined to reach nothing else.
 
 As on a listing: OPTIONAL, because a host that maintains no tree must not invent
 a root; not a completeness proof on its own, because a single root is the host's
 own assertion until it is compared against one the host did not choose.
+
+## Traces
+
+`trace` is the path from this record's leaf to `dataCommitment`. Verifying it answers
+exactly one question — *is this record under the root the host just asserted?* — and a
+reader that takes it to answer any other has been misled by the word "proof", which is
+why the member is not called one. In this framework `proof` is the document's
+data-integrity proof ([SPEC §7.3](/SPEC.md#73-specification-requirements)); a payload
+member of the same name in the same document invites reading one for the other, and the
+confusion would be silent.
+
+### The leaf preimage is this response
+
+**The leaf is `SHA-256(0x00 || JCS(record))`, where the record is this response payload
+with `dataCommitment`, `trace` and `ext` removed.** That object is `CommittedRecord` in
+the [shared schema](../../../_shared/0.1/room.schema.json), and a reader MAY validate
+what it assembles against that definition before hashing it.
+
+Reassembly is therefore a **deletion**, not a reconstruction — the reader already holds
+every member. The obvious alternative, carrying the committed record as a member of its
+own, would put the ciphertext on the wire twice: paid for on every read, and free to
+disagree with itself on the read where it mattered.
+
+That is what the four members this response gained are for. `status`, `updatedAt`,
+`pinned` and `author` are committed, and a response omitting them was one no reader could
+hash. They are OPTIONAL so that adding them to a published `0.1` breaks nothing;
+`dependentRequired` makes `status`, `updatedAt` and `dataCommitment` mandatory wherever
+`trace` is present, which is the only place their absence can do harm.
+
+The definition used to be looser than it reads. `DataCommitment` described its leaf as
+"`RecordMetadata` plus its stored content" — exact-sounding, and not reproducible:
+`RecordMetadata` is the *projection* a listing returns, which renders `updatedAt` as a
+timestamp, lifts `epoch` to the top level, carries `title` and `description` pulled out of
+an `open` room's body, and has no `pinned` at all. A host hashing what it stores and a
+reader hashing that projection commit to different roots, and nothing said which counted.
+Traces are what made the gap matter: a commitment only has to be *comparable between two
+of the same implementation*, while a trace has to be *computable by someone else*.
+
+### Verification
+
+  1. `h = SHA-256(0x00 || JCS(record))` — the leaf.
+  2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is
+     true, and `SHA-256(0x01 || h || sibling)` when it is false.
+  3. `h` **MUST** equal `dataCommitment` **from this same response**. Not one kept from an
+     earlier read and not one from a listing: a room moves, and a trace is only ever a
+     statement about the tree it was cut from.
+
+An **empty `trace` is valid** — the room holds one record and its leaf is the root. That
+is not the same as an absent `trace`, which says the host offered none.
+
+A trace is **not** always `ceil(log₂ n)` steps: a level that promotes an odd node
+unchanged (`DataCommitment` step 4) contributes no step for it. Follow the steps given
+rather than counting them against a tree size you assumed.
+
+### What a trace does not prove
+
+A trace binds a record to a root. It says **nothing** about whether that root is the
+room's. A reader that verifies a trace against a root the same host handed it a moment
+earlier has checked the host's arithmetic and nothing more: a host serving a private view
+of the room builds a consistent tree over that view and traces every record in it
+perfectly.
+
+The root becomes evidence the way it does on a listing — by comparison against one the
+host did not choose: the root it gave another member, the root it gave this member
+earlier, or a witnessed anchor. **The two mechanisms answer different questions and
+neither substitutes for the other.** The commitment catches a host that equivocates; the
+trace binds one record to what that host committed to. Completeness needs both.
 
 ## Security & Privacy
 

@@ -93,7 +93,7 @@ export type CredentialId = string;
  *
  * **The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:
  *   1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.
- *   2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.
+ *   2. Leaf: `SHA-256(0x00 || JCS(record))`, where the record is a `CommittedRecord` — that definition fixes the members exactly, and this step used to name a *projection* instead, which two implementations could read two ways — JCS is its RFC 8785 canonicalization, and `0x00` is RFC 6962's leaf-domain prefix.
  *   3. Internal node: `SHA-256(0x01 || left || right)`.
  *   4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.
  *   5. A room holding no records commits to `SHA-256("")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.
@@ -101,6 +101,8 @@ export type CredentialId = string;
  * The leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.
  *
  * The commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.
+ *
+ * Proving that a *particular* record sits under this root is a separate question, answered by `RecordTrace` on a single-record read. A commitment catches a host that equivocates; a trace binds one record to what the host committed to. Neither is the other, and a reader wanting completeness needs both plus a root it did not get from the host it is checking.
  */
 export type DataCommitment = DigestMultibase;
 /**
@@ -274,6 +276,36 @@ export type Provenance =
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
 export type PushRegistration = Apns | Fcm | WebPush;
+/**
+ * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
+ *
+ * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
+ *
+ * **To verify**, given the `CommittedRecord` reassembled from the same response:
+ *   1. `h = SHA-256(0x00 || JCS(record))` — the leaf, by `DataCommitment` step 2.
+ *   2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is true, and `SHA-256(0x01 || h || sibling)` when it is false.
+ *   3. `h` **MUST** equal the `dataCommitment` **carried in the same response**. Not one from an earlier read, and not one from a listing: a room moves, and a trace is only ever a statement about the tree it was cut from. A host **MUST** compute the trace and the commitment from the same snapshot.
+ *
+ * An **empty array is valid** and is not the same as an absent member. It says the room holds exactly one record, whose leaf is the root; absence of `trace` says the host offered no trace at all.
+ *
+ * A trace is **not** always `ceil(log2 n)` steps. A level that promotes an odd node unchanged (`DataCommitment` step 4) contributes no step for that node, so a reader must follow the steps it was given rather than count them against a tree size it assumed.
+ *
+ * `maxItems` bounds a tree of 2⁶⁴ records. Verification cost is the reader's and the array is the host's, so the ceiling is stated rather than left to whoever writes the loop.
+ *
+ * **What a trace does not prove.** It binds a record to a root. It says nothing about whether that root is the room's — only comparing the root against one the host did not choose does that, exactly as `DataCommitment` describes. A reader that verifies a trace against a root received in the same breath has checked the host's arithmetic and nothing else. The two mechanisms answer different questions and neither substitutes for the other.
+ *
+ * @maxItems 64
+ */
+export type RecordTrace = {
+  /**
+   * The sibling node's hash — a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document.
+   */
+  sibling: DigestMultibase;
+  /**
+   * Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing — inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated.
+   */
+  siblingIsLeft: boolean;
+}[];
 /**
  * Whether the record asserts an authorization or a recognition relationship.
  */

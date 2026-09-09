@@ -1446,6 +1446,61 @@ function syncWebsiteFrameworkSpec() {
   console.log(`  synced SPEC.md → ${path.relative(ROOT, dst)}`);
 }
 
+/* Cross-check the record-commitment mirror. The leaf preimage of a room's
+ * record tree is defined once, as rooms/_shared CommittedRecord, and is stated
+ * to be rooms/records/get's response payload minus dataCommitment, trace and
+ * ext. Nothing forces those two member lists to agree, and a divergence is the
+ * worst shape a defect can take here: both files validate, both look right, and
+ * a reader assembling the preimage from the response reaches a leaf the host
+ * never hashed. Every trace then fails to verify with nothing to point at.
+ *
+ * So the two are compared by member NAME. Requiredness deliberately is not
+ * compared: CommittedRecord requires what a leaf must contain, while the
+ * response leaves status and updatedAt optional so that adding them to a
+ * published 0.1 stays non-breaking — dependentRequired on `trace` is what
+ * makes them mandatory where they matter. */
+const COMMITTED_RECORD_PATH = path.join(SPECS_DIR, 'rooms', '_shared', '0.1', 'room.schema.json');
+const RECORDS_GET_PATH = path.join(SPECS_DIR, 'rooms', 'records', 'get', '0.1', 'payload.schema.json');
+/* The response's own verification members — everything a reader strips before
+ * hashing. Kept beside the check because this list IS the rule the prose states. */
+const NON_COMMITTED_RESPONSE_MEMBERS = ['dataCommitment', 'trace', 'ext'];
+
+function checkCommittedRecordMirror() {
+  const shared = readJson(COMMITTED_RECORD_PATH);
+  const get = readJson(RECORDS_GET_PATH);
+  const committed = shared?.$defs?.CommittedRecord?.properties;
+  const response = get?.$defs?.Response?.properties;
+  if (!committed || !response) {
+    warn('rooms CommittedRecord / records-get Response not readable — skipping commitment mirror check');
+    return;
+  }
+  const rel = (p) => path.relative(ROOT, p);
+  const expected = new Set(Object.keys(committed));
+  const actual = new Set(Object.keys(response).filter((k) => !NON_COMMITTED_RESPONSE_MEMBERS.includes(k)));
+
+  for (const member of expected) {
+    if (!actual.has(member)) {
+      fail(
+        rel(RECORDS_GET_PATH),
+        `CommittedRecord defines '${member}' but the rooms/records/get response does not carry it — ` +
+        `a reader cannot assemble the leaf preimage from this response, so every trace it serves fails to verify. ` +
+        `Add '${member}' to $defs.Response.properties, or remove it from CommittedRecord.`
+      );
+    }
+  }
+  for (const member of actual) {
+    if (!expected.has(member)) {
+      fail(
+        rel(COMMITTED_RECORD_PATH),
+        `the rooms/records/get response carries '${member}' but CommittedRecord does not define it — ` +
+        `the preimage is stated to be that response minus ${NON_COMMITTED_RESPONSE_MEMBERS.join(', ')}, so this member is ` +
+        `either part of the leaf (add it to CommittedRecord) or a verification member ` +
+        `(add it to NON_COMMITTED_RESPONSE_MEMBERS in this script, and say so in the prose).`
+      );
+    }
+  }
+}
+
 /**
  * Cross-check `bindings/<slug>/<version>/spec.md` against `window.TT_BINDINGS`.
  *
@@ -1643,6 +1698,7 @@ function main() {
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
   checkBindingRegistry();
+  checkCommittedRecordMirror();
   checkBindingFrameworkTarget();
   checkBindingErrorSpecPin();
   checkExampleDocuments();

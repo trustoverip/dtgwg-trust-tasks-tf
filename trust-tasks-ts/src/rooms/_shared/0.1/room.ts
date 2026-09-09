@@ -14,4 +14,4 @@ export interface RoomsSharedTypes {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AuthorityPresentation, DataCommitment, EpochLink, RecordMetadata, RetentionPolicy, SealedRecord, Visibility } from "../../../_shared/components.js";
+export type { AuthorityPresentation, DataCommitment, EpochLink, RecordMetadata, RecordTrace, RetentionPolicy, SealedRecord, Visibility } from "../../../_shared/components.js";

@@ -47,6 +47,29 @@
           "type": "integer",
           "minimum": 1
         },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "deprecated",
+            "retracted"
+          ],
+          "description": "Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it \u2014 and a host that could omit it could retract a record without touching a byte of it."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. Required alongside a `trace` for the same reason `status` is."
+        },
+        "pinned": {
+          "type": "boolean",
+          "const": true,
+          "description": "Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots."
+        },
+        "author": {
+          "type": "string",
+          "description": "The member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.\n\nThis member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` \u2014 a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response."
+        },
         "sealed": {
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/SealedRecord",
           "description": "Present on an `attributed` or `private` room."
@@ -58,11 +81,22 @@
         },
         "dataCommitment": {
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/DataCommitment",
-          "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads \u2014 and, once traces are specified, so this record can be proved to sit inside this root."
+          "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads \u2014 and so a `trace` returned beside it has a root to reach."
+        },
+        "trace": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordTrace",
+          "description": "The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.\n\n**The leaf preimage is this response payload with `dataCommitment`, `trace` and `ext` removed** \u2014 which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.\n\nOPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds \u2014 an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one."
         },
         "ext": {
           "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }
+      },
+      "dependentRequired": {
+        "trace": [
+          "dataCommitment",
+          "status",
+          "updatedAt"
+        ]
       }
     }
   }

@@ -125,8 +125,30 @@ never fail, which would make the member feel checked while checking nothing.
 
 The consequence is deliberate: a reader **cannot** recompute the root from a
 single page, and is not meant to. Comparison is what this member is for; proving
-a *particular* record sits under a particular root is what a trace will be for,
-and that is a separate member in a later version.
+a *particular* record sits under a particular root is what a
+[trace](../../get/0.1/spec.md#traces) is for, and it lives on the single-record
+read.
+
+### A listing cannot be reconciled against the root
+
+Not even a complete, unfiltered one — and this is worth stating plainly, because
+"compare the roots" invites the assumption that a reader who has every entry can
+recompute one. A leaf commits to a **whole record**, its metadata and its stored
+content together, while this task returns `RecordMetadata`, a projection that
+deliberately omits the body. A reader holding every entry in the room cannot
+rebuild a single leaf.
+
+That is a cost of committing to whole records, and it is the right cost. A leaf
+over metadata alone would make a listing self-verifying — and would leave an
+`open` room's body, which is cleartext the host stores and nobody signs, outside
+the commitment entirely. On the sealed tiers less would have been lost, since the
+AEAD already binds each ciphertext to `roomId`, `key`, `version` and `epoch`; on
+`open` there is nothing else holding the body at all.
+
+Reconciling a listing against the root therefore means reading the records — one
+[`rooms/records/get`](../../get/0.1/spec.md) each, verifying each trace. That is a
+deliberate audit, not something a client does behind every listing, and this
+member is not an invitation to make it one.
 
 ### It is only evidence because the response is signed
 

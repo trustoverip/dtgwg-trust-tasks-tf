@@ -93,21 +93,23 @@ A room's records are already signed and room-bound, so a host cannot forge, alte
 
 **The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:
   1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.
-  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.
+  2. Leaf: `SHA-256(0x00 || JCS(record))`, where the record is a `CommittedRecord` — that definition fixes the members exactly, and this step used to name a *projection* instead, which two implementations could read two ways — JCS is its RFC 8785 canonicalization, and `0x00` is RFC 6962's leaf-domain prefix.
   3. Internal node: `SHA-256(0x01 || left || right)`.
   4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.
   5. A room holding no records commits to `SHA-256("")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.
 
 The leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.
 
-The commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.*/
+The commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.
+
+Proving that a *particular* record sits under this root is a separate question, answered by `RecordTrace` on a single-record read. A commitment catches a host that equivocates; a trace binds one record to what the host committed to. Neither is the other, and a reader wanting completeness needs both plus a root it did not get from the host it is checking.*/
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "DataCommitment",
-///  "description": "\nThe root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.",
+///  "description": "\nThe root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where the record is a `CommittedRecord` — that definition fixes the members exactly, and this step used to name a *projection* instead, which two implementations could read two ways — JCS is its RFC 8785 canonicalization, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\n\nProving that a *particular* record sits under this root is a separate question, answered by `RecordTrace` on a single-record read. A commitment catches a host that equivocates; a trace binds one record to what the host committed to. Neither is the other, and a reader wanting completeness needs both plus a root it did not get from the host it is checking.",
 ///  "$ref": "#/definitions/DigestMultibase"
 ///}
 /// ```
@@ -478,6 +480,112 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
             })
     }
 }
+/**
+The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
+
+**It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
+
+**To verify**, given the `CommittedRecord` reassembled from the same response:
+  1. `h = SHA-256(0x00 || JCS(record))` — the leaf, by `DataCommitment` step 2.
+  2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is true, and `SHA-256(0x01 || h || sibling)` when it is false.
+  3. `h` **MUST** equal the `dataCommitment` **carried in the same response**. Not one from an earlier read, and not one from a listing: a room moves, and a trace is only ever a statement about the tree it was cut from. A host **MUST** compute the trace and the commitment from the same snapshot.
+
+An **empty array is valid** and is not the same as an absent member. It says the room holds exactly one record, whose leaf is the root; absence of `trace` says the host offered no trace at all.
+
+A trace is **not** always `ceil(log2 n)` steps. A level that promotes an odd node unchanged (`DataCommitment` step 4) contributes no step for that node, so a reader must follow the steps it was given rather than count them against a tree size it assumed.
+
+`maxItems` bounds a tree of 2⁶⁴ records. Verification cost is the reader's and the array is the host's, so the ceiling is stated rather than left to whoever writes the loop.
+
+**What a trace does not prove.** It binds a record to a root. It says nothing about whether that root is the room's — only comparing the root against one the host did not choose does that, exactly as `DataCommitment` describes. A reader that verifies a trace against a root received in the same breath has checked the host's arithmetic and nothing else. The two mechanisms answer different questions and neither substitutes for the other.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "RecordTrace",
+///  "description": "\nThe path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.\n\n**It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.\n\n**To verify**, given the `CommittedRecord` reassembled from the same response:\n  1. `h = SHA-256(0x00 || JCS(record))` — the leaf, by `DataCommitment` step 2.\n  2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is true, and `SHA-256(0x01 || h || sibling)` when it is false.\n  3. `h` **MUST** equal the `dataCommitment` **carried in the same response**. Not one from an earlier read, and not one from a listing: a room moves, and a trace is only ever a statement about the tree it was cut from. A host **MUST** compute the trace and the commitment from the same snapshot.\n\nAn **empty array is valid** and is not the same as an absent member. It says the room holds exactly one record, whose leaf is the root; absence of `trace` says the host offered no trace at all.\n\nA trace is **not** always `ceil(log2 n)` steps. A level that promotes an odd node unchanged (`DataCommitment` step 4) contributes no step for that node, so a reader must follow the steps it was given rather than count them against a tree size it assumed.\n\n`maxItems` bounds a tree of 2⁶⁴ records. Verification cost is the reader's and the array is the host's, so the ceiling is stated rather than left to whoever writes the loop.\n\n**What a trace does not prove.** It binds a record to a root. It says nothing about whether that root is the room's — only comparing the root against one the host did not choose does that, exactly as `DataCommitment` describes. A reader that verifies a trace against a root received in the same breath has checked the host's arithmetic and nothing else. The two mechanisms answer different questions and neither substitutes for the other.",
+///  "type": "array",
+///  "items": {
+///    "type": "object",
+///    "required": [
+///      "sibling",
+///      "siblingIsLeft"
+///    ],
+///    "properties": {
+///      "sibling": {
+///        "description": "The sibling node's hash — a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document.",
+///        "$ref": "#/definitions/DigestMultibase"
+///      },
+///      "siblingIsLeft": {
+///        "description": "Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing — inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated.",
+///        "type": "boolean"
+///      }
+///    },
+///    "additionalProperties": false
+///  },
+///  "maxItems": 64
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct RecordTrace(pub ::std::vec::Vec<RecordTraceItem>);
+impl ::std::ops::Deref for RecordTrace {
+    type Target = ::std::vec::Vec<RecordTraceItem>;
+    fn deref(&self) -> &::std::vec::Vec<RecordTraceItem> {
+        &self.0
+    }
+}
+impl ::std::convert::From<RecordTrace> for ::std::vec::Vec<RecordTraceItem> {
+    fn from(value: RecordTrace) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::vec::Vec<RecordTraceItem>> for RecordTrace {
+    fn from(value: ::std::vec::Vec<RecordTraceItem>) -> Self {
+        Self(value)
+    }
+}
+///`RecordTraceItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "sibling",
+///    "siblingIsLeft"
+///  ],
+///  "properties": {
+///    "sibling": {
+///      "description": "The sibling node's hash — a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document.",
+///      "$ref": "#/definitions/DigestMultibase"
+///    },
+///    "siblingIsLeft": {
+///      "description": "Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing — inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated.",
+///      "type": "boolean"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct RecordTraceItem {
+    ///The sibling node's hash — a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document.
+    pub sibling: DigestMultibase,
+    ///Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing — inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated.
+    #[serde(rename = "siblingIsLeft")]
+    pub sibling_is_left: bool,
+}
+impl RecordTraceItem {
+    pub fn builder() -> builder::RecordTraceItem {
+        Default::default()
+    }
+}
 ///Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.
 ///
 /// <details><summary>JSON schema</summary>
@@ -492,13 +600,17 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 ///    "version"
 ///  ],
 ///  "properties": {
+///    "author": {
+///      "description": "\nThe member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.\n\nThis member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` — a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response.",
+///      "type": "string"
+///    },
 ///    "cleartext": {
 ///      "description": "Present on an `open` room.",
 ///      "type": "object",
 ///      "additionalProperties": true
 ///    },
 ///    "dataCommitment": {
-///      "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.",
+///      "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and so a `trace` returned beside it has a root to reach.",
 ///      "$ref": "#/definitions/DataCommitment"
 ///    },
 ///    "ext": {
@@ -507,9 +619,32 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 ///    "key": {
 ///      "type": "string"
 ///    },
+///    "pinned": {
+///      "description": "Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots.",
+///      "type": "boolean",
+///      "const": true
+///    },
 ///    "sealed": {
 ///      "description": "Present on an `attributed` or `private` room.",
 ///      "$ref": "#/definitions/SealedRecord"
+///    },
+///    "status": {
+///      "description": "Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.",
+///      "type": "string",
+///      "enum": [
+///        "active",
+///        "deprecated",
+///        "retracted"
+///      ]
+///    },
+///    "trace": {
+///      "description": "\nThe path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.\n\n**The leaf preimage is this response payload with `dataCommitment`, `trace` and `ext` removed** — which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.\n\nOPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds — an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one.",
+///      "$ref": "#/definitions/RecordTrace"
+///    },
+///    "updatedAt": {
+///      "description": "RFC 3339. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. Required alongside a `trace` for the same reason `status` is.",
+///      "type": "string",
+///      "format": "date-time"
 ///    },
 ///    "version": {
 ///      "type": "integer",
@@ -517,7 +652,14 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 ///    }
 ///  },
 ///  "additionalProperties": false,
-///  "$anchor": "response"
+///  "$anchor": "response",
+///  "dependentRequired": {
+///    "trace": [
+///      "dataCommitment",
+///      "status",
+///      "updatedAt"
+///    ]
+///  }
 ///}
 /// ```
 /// </details>
@@ -525,10 +667,16 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    /**
+    The member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.
+
+    This member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` — a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response.*/
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub author: ::std::option::Option<::std::string::String>,
     ///Present on an `open` room.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub cleartext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.
+    ///The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and so a `trace` returned beside it has a root to reach.
     #[serde(
         rename = "dataCommitment",
         default,
@@ -538,14 +686,114 @@ pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub key: ::std::string::String,
+    ///Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub pinned: ::std::option::Option<bool>,
     ///Present on an `attributed` or `private` room.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub sealed: ::std::option::Option<SealedRecord>,
+    ///Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub status: ::std::option::Option<ResponseStatus>,
+    /**
+    The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.
+
+    **The leaf preimage is this response payload with `dataCommitment`, `trace` and `ext` removed** — which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.
+
+    OPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds — an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one.*/
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub trace: ::std::option::Option<RecordTrace>,
+    ///RFC 3339. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. Required alongside a `trace` for the same reason `status` is.
+    #[serde(
+        rename = "updatedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub updated_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     pub version: ::std::num::NonZeroU64,
 }
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.",
+///  "type": "string",
+///  "enum": [
+///    "active",
+///    "deprecated",
+///    "retracted"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ResponseStatus {
+    #[serde(rename = "active")]
+    Active,
+    #[serde(rename = "deprecated")]
+    Deprecated,
+    #[serde(rename = "retracted")]
+    Retracted,
+}
+impl ::std::fmt::Display for ResponseStatus {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Active => f.write_str("active"),
+            Self::Deprecated => f.write_str("deprecated"),
+            Self::Retracted => f.write_str("retracted"),
+        }
+    }
+}
+impl ::std::str::FromStr for ResponseStatus {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "active" => Ok(Self::Active),
+            "deprecated" => Ok(Self::Deprecated),
+            "retracted" => Ok(Self::Retracted),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.
@@ -752,7 +1000,65 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct RecordTraceItem {
+        sibling: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        sibling_is_left: ::std::result::Result<bool, ::std::string::String>,
+    }
+    impl ::std::default::Default for RecordTraceItem {
+        fn default() -> Self {
+            Self {
+                sibling: Err("no value supplied for sibling".to_string()),
+                sibling_is_left: Err("no value supplied for sibling_is_left".to_string()),
+            }
+        }
+    }
+    impl RecordTraceItem {
+        pub fn sibling<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sibling = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sibling: {e}"));
+            self
+        }
+        pub fn sibling_is_left<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sibling_is_left = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sibling_is_left: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RecordTraceItem> for super::RecordTraceItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RecordTraceItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                sibling: value.sibling?,
+                sibling_is_left: value.sibling_is_left?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RecordTraceItem> for RecordTraceItem {
+        fn from(value: super::RecordTraceItem) -> Self {
+            Self {
+                sibling: Ok(value.sibling),
+                sibling_is_left: Ok(value.sibling_is_left),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct Response {
+        author: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
         cleartext: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
@@ -763,8 +1069,19 @@ pub mod builder {
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         key: ::std::result::Result<::std::string::String, ::std::string::String>,
+        pinned: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
         sealed: ::std::result::Result<
             ::std::option::Option<super::SealedRecord>,
+            ::std::string::String,
+        >,
+        status: ::std::result::Result<
+            ::std::option::Option<super::ResponseStatus>,
+            ::std::string::String,
+        >,
+        trace:
+            ::std::result::Result<::std::option::Option<super::RecordTrace>, ::std::string::String>,
+        updated_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
         version: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
@@ -772,16 +1089,31 @@ pub mod builder {
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
+                author: Ok(Default::default()),
                 cleartext: Ok(Default::default()),
                 data_commitment: Ok(Default::default()),
                 ext: Ok(Default::default()),
                 key: Err("no value supplied for key".to_string()),
+                pinned: Ok(Default::default()),
                 sealed: Ok(Default::default()),
+                status: Ok(Default::default()),
+                trace: Ok(Default::default()),
+                updated_at: Ok(Default::default()),
                 version: Err("no value supplied for version".to_string()),
             }
         }
     }
     impl Response {
+        pub fn author<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.author = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for author: {e}"));
+            self
+        }
         pub fn cleartext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
@@ -824,6 +1156,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for key: {e}"));
             self
         }
+        pub fn pinned<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pinned = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pinned: {e}"));
+            self
+        }
         pub fn sealed<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<super::SealedRecord>>,
@@ -832,6 +1174,38 @@ pub mod builder {
             self.sealed = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for sealed: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseStatus>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+        pub fn trace<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RecordTrace>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.trace = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for trace: {e}"));
+            self
+        }
+        pub fn updated_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.updated_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for updated_at: {e}"));
             self
         }
         pub fn version<T>(mut self, value: T) -> Self
@@ -849,11 +1223,16 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                author: value.author?,
                 cleartext: value.cleartext?,
                 data_commitment: value.data_commitment?,
                 ext: value.ext?,
                 key: value.key?,
+                pinned: value.pinned?,
                 sealed: value.sealed?,
+                status: value.status?,
+                trace: value.trace?,
+                updated_at: value.updated_at?,
                 version: value.version?,
             })
         }
@@ -861,11 +1240,16 @@ pub mod builder {
     impl ::std::convert::From<super::Response> for Response {
         fn from(value: super::Response) -> Self {
             Self {
+                author: Ok(value.author),
                 cleartext: Ok(value.cleartext),
                 data_commitment: Ok(value.data_commitment),
                 ext: Ok(value.ext),
                 key: Ok(value.key),
+                pinned: Ok(value.pinned),
                 sealed: Ok(value.sealed),
+                status: Ok(value.status),
+                trace: Ok(value.trace),
+                updated_at: Ok(value.updated_at),
                 version: Ok(value.version),
             }
         }
@@ -945,7 +1329,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"DataCommitment\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\\n\\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\\n\\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\\n  3. Internal node: `SHA-256(0x01 || left || right)`.\\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\\n  5. A room holding no records commits to `SHA-256(\\\"\\\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\\n\\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\\n\\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\",\n      \"title\": \"DataCommitment\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"dataCommitment\": {\n          \"$ref\": \"#/$defs/DataCommitment\",\n          \"description\": \"The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/records/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record to read.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `read` action at this room's scope. A read presents exactly as a write does, and on a `private` room requires no host session at all — authorizing reads by session would hand the host a member identifier on every access, and a week of access logs would reconstruct the membership the tier exists to withhold.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Records Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"DataCommitment\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\\n\\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\\n\\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where the record is a `CommittedRecord` — that definition fixes the members exactly, and this step used to name a *projection* instead, which two implementations could read two ways — JCS is its RFC 8785 canonicalization, and `0x00` is RFC 6962's leaf-domain prefix.\\n  3. Internal node: `SHA-256(0x01 || left || right)`.\\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\\n  5. A room holding no records commits to `SHA-256(\\\"\\\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\\n\\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\\n\\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\\n\\nProving that a *particular* record sits under this root is a separate question, answered by `RecordTrace` on a single-record read. A commitment catches a host that equivocates; a trace binds one record to what the host committed to. Neither is the other, and a reader wanting completeness needs both plus a root it did not get from the host it is checking.\",\n      \"title\": \"DataCommitment\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordTrace\": {\n      \"description\": \"The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.\\n\\n**It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.\\n\\n**To verify**, given the `CommittedRecord` reassembled from the same response:\\n  1. `h = SHA-256(0x00 || JCS(record))` — the leaf, by `DataCommitment` step 2.\\n  2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is true, and `SHA-256(0x01 || h || sibling)` when it is false.\\n  3. `h` **MUST** equal the `dataCommitment` **carried in the same response**. Not one from an earlier read, and not one from a listing: a room moves, and a trace is only ever a statement about the tree it was cut from. A host **MUST** compute the trace and the commitment from the same snapshot.\\n\\nAn **empty array is valid** and is not the same as an absent member. It says the room holds exactly one record, whose leaf is the root; absence of `trace` says the host offered no trace at all.\\n\\nA trace is **not** always `ceil(log2 n)` steps. A level that promotes an odd node unchanged (`DataCommitment` step 4) contributes no step for that node, so a reader must follow the steps it was given rather than count them against a tree size it assumed.\\n\\n`maxItems` bounds a tree of 2⁶⁴ records. Verification cost is the reader's and the array is the host's, so the ceiling is stated rather than left to whoever writes the loop.\\n\\n**What a trace does not prove.** It binds a record to a root. It says nothing about whether that root is the room's — only comparing the root against one the host did not choose does that, exactly as `DataCommitment` describes. A reader that verifies a trace against a root received in the same breath has checked the host's arithmetic and nothing else. The two mechanisms answer different questions and neither substitutes for the other.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"sibling\": {\n            \"$ref\": \"#/$defs/DigestMultibase\",\n            \"description\": \"The sibling node's hash — a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document.\"\n          },\n          \"siblingIsLeft\": {\n            \"description\": \"Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing — inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated.\",\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"sibling\",\n          \"siblingIsLeft\"\n        ],\n        \"type\": \"object\"\n      },\n      \"maxItems\": 64,\n      \"title\": \"RecordTrace\",\n      \"type\": \"array\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"dependentRequired\": {\n        \"trace\": [\n          \"dataCommitment\",\n          \"status\",\n          \"updatedAt\"\n        ]\n      },\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"author\": {\n          \"description\": \"The member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.\\n\\nThis member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` — a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response.\",\n          \"type\": \"string\"\n        },\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"dataCommitment\": {\n          \"$ref\": \"#/$defs/DataCommitment\",\n          \"description\": \"The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and so a `trace` returned beside it has a root to reach.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"pinned\": {\n          \"const\": true,\n          \"description\": \"Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots.\",\n          \"type\": \"boolean\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"status\": {\n          \"description\": \"Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.\",\n          \"enum\": [\n            \"active\",\n            \"deprecated\",\n            \"retracted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"trace\": {\n          \"$ref\": \"#/$defs/RecordTrace\",\n          \"description\": \"The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.\\n\\n**The leaf preimage is this response payload with `dataCommitment`, `trace` and `ext` removed** — which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.\\n\\nOPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds — an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. Required alongside a `trace` for the same reason `status` is.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/records/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record to read.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `read` action at this room's scope. A read presents exactly as a write does, and on a `private` room requires no host session at all — authorizing reads by session would hand the host a member identifier on every access, and a week of access logs would reconstruct the membership the tier exists to withhold.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Records Get — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -954,7 +1338,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"DataCommitment\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\\n\\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\\n\\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\\n  3. Internal node: `SHA-256(0x01 || left || right)`.\\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\\n  5. A room holding no records commits to `SHA-256(\\\"\\\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\\n\\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\\n\\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\",\n      \"title\": \"DataCommitment\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"dataCommitment\": {\n          \"$ref\": \"#/$defs/DataCommitment\",\n          \"description\": \"The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"DataCommitment\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\\n\\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\\n\\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where the record is a `CommittedRecord` — that definition fixes the members exactly, and this step used to name a *projection* instead, which two implementations could read two ways — JCS is its RFC 8785 canonicalization, and `0x00` is RFC 6962's leaf-domain prefix.\\n  3. Internal node: `SHA-256(0x01 || left || right)`.\\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\\n  5. A room holding no records commits to `SHA-256(\\\"\\\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\\n\\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\\n\\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\\n\\nProving that a *particular* record sits under this root is a separate question, answered by `RecordTrace` on a single-record read. A commitment catches a host that equivocates; a trace binds one record to what the host committed to. Neither is the other, and a reader wanting completeness needs both plus a root it did not get from the host it is checking.\",\n      \"title\": \"DataCommitment\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordTrace\": {\n      \"description\": \"The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.\\n\\n**It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.\\n\\n**To verify**, given the `CommittedRecord` reassembled from the same response:\\n  1. `h = SHA-256(0x00 || JCS(record))` — the leaf, by `DataCommitment` step 2.\\n  2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is true, and `SHA-256(0x01 || h || sibling)` when it is false.\\n  3. `h` **MUST** equal the `dataCommitment` **carried in the same response**. Not one from an earlier read, and not one from a listing: a room moves, and a trace is only ever a statement about the tree it was cut from. A host **MUST** compute the trace and the commitment from the same snapshot.\\n\\nAn **empty array is valid** and is not the same as an absent member. It says the room holds exactly one record, whose leaf is the root; absence of `trace` says the host offered no trace at all.\\n\\nA trace is **not** always `ceil(log2 n)` steps. A level that promotes an odd node unchanged (`DataCommitment` step 4) contributes no step for that node, so a reader must follow the steps it was given rather than count them against a tree size it assumed.\\n\\n`maxItems` bounds a tree of 2⁶⁴ records. Verification cost is the reader's and the array is the host's, so the ceiling is stated rather than left to whoever writes the loop.\\n\\n**What a trace does not prove.** It binds a record to a root. It says nothing about whether that root is the room's — only comparing the root against one the host did not choose does that, exactly as `DataCommitment` describes. A reader that verifies a trace against a root received in the same breath has checked the host's arithmetic and nothing else. The two mechanisms answer different questions and neither substitutes for the other.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"sibling\": {\n            \"$ref\": \"#/$defs/DigestMultibase\",\n            \"description\": \"The sibling node's hash — a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document.\"\n          },\n          \"siblingIsLeft\": {\n            \"description\": \"Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing — inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated.\",\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"sibling\",\n          \"siblingIsLeft\"\n        ],\n        \"type\": \"object\"\n      },\n      \"maxItems\": 64,\n      \"title\": \"RecordTrace\",\n      \"type\": \"array\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"dependentRequired\": {\n        \"trace\": [\n          \"dataCommitment\",\n          \"status\",\n          \"updatedAt\"\n        ]\n      },\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"author\": {\n          \"description\": \"The member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.\\n\\nThis member is new to this response and is a **disclosure**: `rooms/records/list` already returns it on those tiers, so it tells a reader nothing the family withheld, but a host serving a single record now names its writer where before it did not. It is not conditional on `trace` — a reader wanting the record without the writer's identifier is asking for a different room tier, not a different response.\",\n          \"type\": \"string\"\n        },\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"dataCommitment\": {\n          \"$ref\": \"#/$defs/DataCommitment\",\n          \"description\": \"The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and so a `trace` returned beside it has a root to reach.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"pinned\": {\n          \"const\": true,\n          \"description\": \"Present **only** when the record is pinned; absent means it is not. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. `false` is not a permitted spelling: absent is how false is written in the preimage, and two spellings would give one record two roots.\",\n          \"type\": \"boolean\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"status\": {\n          \"description\": \"Curation state. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. A host that serves a `trace` MUST serve this, because a reader cannot reach the leaf without it — and a host that could omit it could retract a record without touching a byte of it.\",\n          \"enum\": [\n            \"active\",\n            \"deprecated\",\n            \"retracted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"trace\": {\n          \"$ref\": \"#/$defs/RecordTrace\",\n          \"description\": \"The path from this record's leaf to `dataCommitment`, proving the record sits under the root the host just asserted.\\n\\n**The leaf preimage is this response payload with `dataCommitment`, `trace` and `ext` removed** — which is exactly `CommittedRecord`, and a reader MAY validate the object it assembles against that definition before hashing it. Nothing is reconstructed and no member is carried twice; the reader deletes three members from what it already holds.\\n\\nOPTIONAL, on the same reasoning as `dataCommitment`: a host that maintains no tree must not invent one. A host that serves this MUST have computed it and `dataCommitment` from the same snapshot, and MUST serve every committed member it holds — an omitted `status`, `updatedAt`, `pinned` or `author` yields a leaf the reader cannot reach, so the failure is a refused trace rather than a false one.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`. Required alongside a `trace` for the same reason `status` is.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

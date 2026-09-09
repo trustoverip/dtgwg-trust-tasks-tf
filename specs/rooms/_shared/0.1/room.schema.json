@@ -159,10 +159,89 @@
         }
       }
     },
+    "CommittedRecord": {
+      "title": "CommittedRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "version",
+        "status",
+        "updatedAt"
+      ],
+      "description": "**The leaf preimage of the record tree** \u2014 the exact JSON object a host hashes into a leaf, and the exact object a reader reassembles to check a `RecordTrace`.\n\nThis definition exists because a commitment nobody but its author can recompute is not a commitment. `DataCommitment` names the tree; this names what goes into it, member by member, so that a second implementation reaches the same root over the same room. An earlier revision described the leaf as \"this family's `RecordMetadata` plus its stored content\", which reads exact and is not: `RecordMetadata` is a *projection* a listing returns \u2014 it renders `updatedAt` as a timestamp, promotes `epoch` to the top level, carries `title` and `description` lifted out of an `open` room's body, and has no `pinned` at all. A host hashing its own stored representation and a reader hashing that projection commit to different roots, and neither of them is wrong; there was simply no statement of which one counted.\n\n**It is also the response payload of `rooms/records/get` with `dataCommitment`, `trace` and `ext` removed.** That is a design decision rather than a coincidence to be maintained by hand: the reader of a single record already holds every member, so reassembling the preimage is a *deletion* rather than a reconstruction, and no copy of the ciphertext is carried twice \u2014 to be paid for on every read, and to disagree with itself.\n\nMembers are hashed in the order JCS (RFC 8785) puts them in, so nothing here depends on the order they are written or served in.\n\nNothing on the wire `$ref`s this definition, so the generated libraries emit no type for it \u2014 deliberately. A consumer derives the preimage from the response it already has (`Omit<Response, \"dataCommitment\" | \"trace\" | \"ext\">` and its equivalents), which cannot drift from that response the way a second generated struct could. The definition is here to be *validated against* and to be read.\n\n**Absence carries meaning, so every presence rule is exact:**\n  - `pinned` is present **only** when true. `\"pinned\": false` is not a committed record: absent is how false is spelled here, and accepting both spellings would give one record two roots.\n  - `epoch` is **not** a member of this object. It lives inside `sealed`, where the AEAD binds it; a top-level copy would be a second place for it to disagree with itself.\n  - `sealed` is present on `attributed` and `private`, `cleartext` on `open`, and **neither** on a `retracted` tombstone, whose body is gone.\n  - `author` is present where the tier discloses one \u2014 `open` and `attributed` \u2014 and absent on `private`, where the author is inside the sealed body.\n  - `title` and `description` are **not** members. A listing lifts them out of an `open` room's body for display; committing to them *and* to the body they came from would commit to the same bytes twice and leave a host free to choose which copy to serve.\n\nA host that omits a member it holds, or serves one it does not, produces a leaf the reader cannot reach, and the trace fails. Every way of getting this wrong fails closed, which is what lets the rules be this strict.",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The record's key within the room. Also the sort key of the tree \u2014 see `DataCommitment` step 1."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Server-assigned, monotonic per room."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "deprecated",
+            "retracted"
+          ],
+          "description": "Curation state. Committed rather than left out because a host that could flip `active` to `retracted` would retract a record without touching a byte of it."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339, as `RecordMetadata` renders it and as every other timestamp in this family is spelled. A host storing epoch seconds MUST render before hashing: the digest is over the wire form, not over the storage form."
+        },
+        "pinned": {
+          "type": "boolean",
+          "const": true,
+          "description": "Present only when the record is pinned; absent means it is not. See the presence rules above \u2014 `false` is not a permitted spelling."
+        },
+        "author": {
+          "type": "string",
+          "description": "The member who wrote it. Present on `open` and `attributed`; absent on `private`, where the author is sealed with the body. Committed because on an `attributed` room the author is part of what the record means."
+        },
+        "sealed": {
+          "$ref": "#/$defs/SealedRecord",
+          "description": "The record as the host stores it on `attributed` and `private`. The **plaintext is never involved** in the commitment: the host holds ciphertext, and commits to exactly what it holds."
+        },
+        "cleartext": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The record body on an `open` room."
+        }
+      }
+    },
     "DataCommitment": {
       "title": "DataCommitment",
       "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
-      "description": "The root of the room's record tree \u2014 a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them \u2014 one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds \u2014 including tombstones, which are records \u2014 and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes \u2014 a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** \u2014 on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail."
+      "description": "The root of the room's record tree \u2014 a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them \u2014 one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds \u2014 including tombstones, which are records \u2014 and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where the record is a `CommittedRecord` \u2014 that definition fixes the members exactly, and this step used to name a *projection* instead, which two implementations could read two ways \u2014 JCS is its RFC 8785 canonicalization, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes \u2014 a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** \u2014 on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\n\nProving that a *particular* record sits under this root is a separate question, answered by `RecordTrace` on a single-record read. A commitment catches a host that equivocates; a trace binds one record to what the host committed to. Neither is the other, and a reader wanting completeness needs both plus a root it did not get from the host it is checking."
+    },
+    "RecordTrace": {
+      "title": "RecordTrace",
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sibling",
+          "siblingIsLeft"
+        ],
+        "properties": {
+          "sibling": {
+            "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+            "description": "The sibling node's hash \u2014 a leaf hash or an internal node hash of this room's record tree, encoded exactly as `DataCommitment` is. A digest over **bytes**, produced by one of the two prefixed constructions in `DataCommitment`, not over a JSON document."
+          },
+          "siblingIsLeft": {
+            "type": "boolean",
+            "description": "Whether the sibling is the **left** child of the parent; the node being proved is the other one. Concatenation order is the whole of what a Merkle proof asserts, so this bit is load-bearing \u2014 inverting it on a single step yields a different root, and a reader that infers it from the record's position has assumed a tree shape the host never stated."
+          }
+        }
+      },
+      "description": "The path from one record's leaf to the room's `DataCommitment` \u2014 a Merkle inclusion proof, in the vocabulary this work already uses for it.\n\n**It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC \u00a77.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.\n\n**To verify**, given the `CommittedRecord` reassembled from the same response:\n  1. `h = SHA-256(0x00 || JCS(record))` \u2014 the leaf, by `DataCommitment` step 2.\n  2. For each step in order: `h = SHA-256(0x01 || sibling || h)` when `siblingIsLeft` is true, and `SHA-256(0x01 || h || sibling)` when it is false.\n  3. `h` **MUST** equal the `dataCommitment` **carried in the same response**. Not one from an earlier read, and not one from a listing: a room moves, and a trace is only ever a statement about the tree it was cut from. A host **MUST** compute the trace and the commitment from the same snapshot.\n\nAn **empty array is valid** and is not the same as an absent member. It says the room holds exactly one record, whose leaf is the root; absence of `trace` says the host offered no trace at all.\n\nA trace is **not** always `ceil(log2 n)` steps. A level that promotes an odd node unchanged (`DataCommitment` step 4) contributes no step for that node, so a reader must follow the steps it was given rather than count them against a tree size it assumed.\n\n`maxItems` bounds a tree of 2\u2076\u2074 records. Verification cost is the reader's and the array is the host's, so the ceiling is stated rather than left to whoever writes the loop.\n\n**What a trace does not prove.** It binds a record to a root. It says nothing about whether that root is the room's \u2014 only comparing the root against one the host did not choose does that, exactly as `DataCommitment` describes. A reader that verifies a trace against a root received in the same breath has checked the host's arithmetic and nothing else. The two mechanisms answer different questions and neither substitutes for the other."
     }
   }
 }
