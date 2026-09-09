@@ -3,7 +3,7 @@
  * Source: specs/rooms/records/get/0.1/payload.schema.json
  */
 
-import type { AuthorityPresentation, Ext, SealedRecord } from "../../../../_shared/components.js";
+import type { AuthorityPresentation, DataCommitment, DigestMultibase, Ext, SealedRecord } from "../../../../_shared/components.js";
 
 
 export interface RoomsRecordsGetPayload {
@@ -40,11 +40,15 @@ export interface RoomsRecordsGetResponsePayload {
   cleartext?: {
     [k: string]: unknown | undefined;
   };
+  /**
+   * The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.
+   */
+  dataCommitment?: DataCommitment;
   ext?: Ext;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AuthorityPresentation, Ext, SealedRecord };
+export type { AuthorityPresentation, DataCommitment, DigestMultibase, Ext, SealedRecord };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/records/get/0.1" as const;
@@ -125,6 +129,10 @@ export const PAYLOAD_SCHEMA = {
           "description": "Present on an `open` room.",
           "additionalProperties": true
         },
+        "dataCommitment": {
+          "$ref": "#/$defs/DataCommitment",
+          "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -139,6 +147,21 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "DataCommitment": {
+      "title": "DataCommitment",
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail."
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     },
     "SealedRecord": {
       "title": "SealedRecord",
@@ -230,6 +253,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Present on an `open` room.",
           "additionalProperties": true
         },
+        "dataCommitment": {
+          "$ref": "#/$defs/DataCommitment",
+          "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -244,6 +271,21 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "DataCommitment": {
+      "title": "DataCommitment",
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail."
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     },
     "SealedRecord": {
       "title": "SealedRecord",

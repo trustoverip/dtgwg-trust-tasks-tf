@@ -86,6 +86,164 @@ impl AuthorityPresentation {
         Default::default()
     }
 }
+/**
+The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.
+
+A room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.
+
+**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:
+  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.
+  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.
+  3. Internal node: `SHA-256(0x01 || left || right)`.
+  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.
+  5. A room holding no records commits to `SHA-256("")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.
+
+The leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.
+
+The commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DataCommitment",
+///  "description": "\nThe root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\n\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\n\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\n  3. Internal node: `SHA-256(0x01 || left || right)`.\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\n  5. A room holding no records commits to `SHA-256(\"\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\n\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\n\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.",
+///  "$ref": "#/definitions/DigestMultibase"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct DataCommitment(pub DigestMultibase);
+impl ::std::ops::Deref for DataCommitment {
+    type Target = DigestMultibase;
+    fn deref(&self) -> &DigestMultibase {
+        &self.0
+    }
+}
+impl ::std::convert::From<DataCommitment> for DigestMultibase {
+    fn from(value: DataCommitment) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for DataCommitment {
+    fn from(value: DigestMultibase) -> Self {
+        Self(value)
+    }
+}
+impl ::std::str::FromStr for DataCommitment {
+    type Err = <DigestMultibase as ::std::str::FromStr>::Err;
+    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
+        Ok(Self(value.parse()?))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DataCommitment {
+    type Error = <DigestMultibase as ::std::str::FromStr>::Err;
+    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for DataCommitment {
+    type Error = <DigestMultibase as ::std::str::FromStr>::Err;
+    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for DataCommitment {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+/**
+A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
+
+Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
+
+This definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.
+
+Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DigestMultibase",
+///  "description": "\nA cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+///  "examples": [
+///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+///  ],
+///  "type": "string",
+///  "minLength": 16,
+///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct DigestMultibase(::std::string::String);
+impl ::std::ops::Deref for DigestMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for ::std::string::String {
+    fn from(value: DigestMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for DigestMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\"".into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -339,6 +497,10 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 ///      "type": "object",
 ///      "additionalProperties": true
 ///    },
+///    "dataCommitment": {
+///      "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.",
+///      "$ref": "#/definitions/DataCommitment"
+///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
@@ -366,6 +528,13 @@ pub struct Response {
     ///Present on an `open` room.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub cleartext: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.
+    #[serde(
+        rename = "dataCommitment",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub data_commitment: ::std::option::Option<DataCommitment>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     pub key: ::std::string::String,
@@ -588,6 +757,10 @@ pub mod builder {
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
+        data_commitment: ::std::result::Result<
+            ::std::option::Option<super::DataCommitment>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         key: ::std::result::Result<::std::string::String, ::std::string::String>,
         sealed: ::std::result::Result<
@@ -600,6 +773,7 @@ pub mod builder {
         fn default() -> Self {
             Self {
                 cleartext: Ok(Default::default()),
+                data_commitment: Ok(Default::default()),
                 ext: Ok(Default::default()),
                 key: Err("no value supplied for key".to_string()),
                 sealed: Ok(Default::default()),
@@ -618,6 +792,16 @@ pub mod builder {
             self.cleartext = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for cleartext: {e}"));
+            self
+        }
+        pub fn data_commitment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DataCommitment>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.data_commitment = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for data_commitment: {e}"));
             self
         }
         pub fn ext<T>(mut self, value: T) -> Self
@@ -666,6 +850,7 @@ pub mod builder {
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 cleartext: value.cleartext?,
+                data_commitment: value.data_commitment?,
                 ext: value.ext?,
                 key: value.key?,
                 sealed: value.sealed?,
@@ -677,6 +862,7 @@ pub mod builder {
         fn from(value: super::Response) -> Self {
             Self {
                 cleartext: Ok(value.cleartext),
+                data_commitment: Ok(value.data_commitment),
                 ext: Ok(value.ext),
                 key: Ok(value.key),
                 sealed: Ok(value.sealed),
@@ -759,7 +945,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/records/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record to read.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `read` action at this room's scope. A read presents exactly as a write does, and on a `private` room requires no host session at all — authorizing reads by session would hand the host a member identifier on every access, and a week of access logs would reconstruct the membership the tier exists to withhold.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Records Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"DataCommitment\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\\n\\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\\n\\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\\n  3. Internal node: `SHA-256(0x01 || left || right)`.\\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\\n  5. A room holding no records commits to `SHA-256(\\\"\\\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\\n\\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\\n\\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\",\n      \"title\": \"DataCommitment\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"dataCommitment\": {\n          \"$ref\": \"#/$defs/DataCommitment\",\n          \"description\": \"The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/records/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record to read.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `read` action at this room's scope. A read presents exactly as a write does, and on a `private` room requires no host session at all — authorizing reads by session would hand the host a member identifier on every access, and a week of access logs would reconstruct the membership the tier exists to withhold.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Records Get — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -768,7 +954,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"DataCommitment\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.\\n\\nA room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.\\n\\n**The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:\\n  1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.\\n  2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.\\n  3. Internal node: `SHA-256(0x01 || left || right)`.\\n  4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.\\n  5. A room holding no records commits to `SHA-256(\\\"\\\")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.\\n\\nThe leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.\\n\\nThe commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.\",\n      \"title\": \"DataCommitment\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.\",\n      \"properties\": {\n        \"cleartext\": {\n          \"additionalProperties\": true,\n          \"description\": \"Present on an `open` room.\",\n          \"type\": \"object\"\n        },\n        \"dataCommitment\": {\n          \"$ref\": \"#/$defs/DataCommitment\",\n          \"description\": \"The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads — and, once traces are specified, so this record can be proved to sit inside this root.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedRecord\",\n          \"description\": \"Present on an `attributed` or `private` room.\"\n        },\n        \"version\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, `version` and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

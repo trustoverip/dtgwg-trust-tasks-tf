@@ -87,6 +87,23 @@ export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
  */
 export type CredentialId = string;
 /**
+ * The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.
+ *
+ * A room's records are already signed and room-bound, so a host cannot forge, alter or relocate one. What it can do for free is stay silent: a listing that omits a record is indistinguishable from a room that never held it. This value is what makes that omission detectable, so it is only worth anything when the reader can compare it against a copy the host did not choose for them — one it gave another member, one it gave the same member earlier, or the witnessed anchor. A commitment read once, in isolation, proves nothing; a host that shows two members two different roots has been caught.
+ *
+ * **The construction is normative**, because two hosts that compute different roots over the same room make every comparison meaningless:
+ *   1. Take every record the room holds — including tombstones, which are records — and order them by `key` using unsigned byte order.
+ *   2. Leaf: `SHA-256(0x00 || JCS(record))`, where JCS is the RFC 8785 canonicalization of the record as this family's `RecordMetadata` plus its stored content, and `0x00` is RFC 6962's leaf-domain prefix.
+ *   3. Internal node: `SHA-256(0x01 || left || right)`.
+ *   4. A level with an odd number of nodes promotes the last one unchanged. It MUST NOT be duplicated: duplicating makes a tree of n leaves collide with one of n+1 whose last is repeated, so two different rooms commit to the same root.
+ *   5. A room holding no records commits to `SHA-256("")`, a distinguished value rather than zeroes — a root of zeroes is what an uninitialised buffer looks like, and an empty room is a real state a host must be able to commit to honestly.
+ *
+ * The leaf covers the whole record rather than its body, and that is deliberate: a host that could flip `status` from active to retracted, move `pinned`, or rewrite `author` on an `attributed` room would rewrite what the room means without touching a byte of ciphertext. The **plaintext is never involved** — on the sealed tiers the host holds ciphertext and commits to exactly what it stores.
+ *
+ * The commitment is over the **whole room**, never over the page being returned. A page-scoped root is one a host satisfies by construction and could never fail.
+ */
+export type DataCommitment = DigestMultibase;
+/**
  * The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.
  */
 export type Decision = "approve" | "deny";

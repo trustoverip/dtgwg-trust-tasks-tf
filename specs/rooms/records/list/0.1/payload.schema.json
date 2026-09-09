@@ -65,6 +65,10 @@
           "maxLength": 4096,
           "description": "Present when more records remain."
         },
+        "dataCommitment": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/DataCommitment",
+          "description": "The room's data commitment at the moment this listing was taken. OPTIONAL because a host that does not maintain the tree cannot honestly assert one, and a fabricated root is worse than an absent one \u2014 its absence says 'this host offers no completeness guarantee', which is true and useful. Present, it is signed along with the rest of the response, which is what makes it evidence rather than a claim."
+        },
         "ext": {
           "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }

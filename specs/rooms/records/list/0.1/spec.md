@@ -82,6 +82,60 @@ A conforming **consumer** (the host) **MUST** apply the chain rules of
 supplying `sinceVersion`, so that a deletion propagates; **MUST NOT** accept a cursor it did
 not issue; and **MUST NOT** return record bodies from this task.
 
+## The data commitment
+
+A listing has **no completeness property of its own**. Records are signed and
+room-bound, so a host cannot forge one, alter one, or move it between rooms — but
+omitting one from a response costs nothing and looks like a room that never held
+it. `dataCommitment` is what turns that silence into something checkable.
+
+### What it is worth, and when
+
+**A commitment read once, in isolation, proves nothing.** It is the host's own
+assertion, and a host willing to omit a record is willing to assert the root of
+the set it chose to send. It becomes evidence the moment a reader can compare it
+against a copy the host did not choose for them:
+
+- the root the same host gave **another member**;
+- the root it gave **the same member earlier**, against a listing that has only
+  grown;
+- the **witnessed anchor**, once a room anchors one.
+
+A host that shows two members two different roots for the same room has been
+caught, and cannot claim a transient. That is the whole mechanism, and it is the
+same one Certificate Transparency relies on: a signed tree head is not proof of
+non-equivocation, comparing them is.
+
+### Why it is OPTIONAL
+
+A host that does not maintain the tree cannot honestly assert a root, and a
+fabricated one is worse than none — its **absence is itself informative**, saying
+"this host offers no completeness guarantee", which is true and which a member is
+entitled to know. A member who requires the guarantee can decline such a host;
+one who does not can carry on.
+
+A conforming consumer **MUST NOT** treat an absent `dataCommitment` as a failure,
+and **MUST NOT** treat a present one as a completeness proof on its own.
+
+### Whole room, never the page
+
+The commitment is over every record the room holds, not over the records being
+returned. A page-scoped root is one a host satisfies by construction and could
+never fail, which would make the member feel checked while checking nothing.
+
+The consequence is deliberate: a reader **cannot** recompute the root from a
+single page, and is not meant to. Comparison is what this member is for; proving
+a *particular* record sits under a particular root is what a trace will be for,
+and that is a separate member in a later version.
+
+### It is only evidence because the response is signed
+
+Every specification declaring a `proof` requirement on its request declares one
+on its response too ([SPEC §7.3](/SPEC.md#73-specification-requirements) item 7),
+so this value arrives attributable. An unsigned root would be a number from
+nobody in particular, and none of the comparisons above would mean anything — a
+host could deny having said it.
+
 ## Security & Privacy
 
 **A host verifies chains; it does not keep a roster.** Authorization is decided entirely by

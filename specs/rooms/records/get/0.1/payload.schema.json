@@ -56,6 +56,10 @@
           "description": "Present on an `open` room.",
           "additionalProperties": true
         },
+        "dataCommitment": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/DataCommitment",
+          "description": "The room's data commitment at the moment this record was read. Carried on a single-record read as well as a listing so a reader can tell whether the room moved between two reads \u2014 and, once traces are specified, so this record can be proved to sit inside this root."
+        },
         "ext": {
           "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
         }

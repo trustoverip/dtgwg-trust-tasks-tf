@@ -90,6 +90,22 @@ are the interesting event — but such a log is itself a record of who was inter
 what, so it warrants a stated retention period of its own rather than inheriting a general
 one.
 
+## The data commitment
+
+`dataCommitment` carries the room's record-tree root at the moment this record was
+read — the same value and the same construction as
+[`rooms/records/list`](../../list/0.1/spec.md), whose section on it governs.
+
+It is here, on a single-record read, for two reasons. A reader taking several
+reads can tell **whether the room moved between them**, which a per-read root
+answers and a listing taken once does not. And when traces are specified, this is
+the root a returned record will be proved to sit under — carrying it now means
+that later addition needs no new member and no version bump on this response.
+
+As on a listing: OPTIONAL, because a host that maintains no tree must not invent
+a root; not a completeness proof on its own, because a single root is the host's
+own assertion until it is compared against one the host did not choose.
+
 ## Security & Privacy
 
 **A host verifies chains; it does not keep a roster.** Authorization is decided entirely by
