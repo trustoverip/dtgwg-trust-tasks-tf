@@ -51,7 +51,14 @@ jobs:
       # build scripts probe for `libdbus-1` via pkg-config. Install the
       # dev headers so libdbus-sys finds the system library.
       - name: Install libdbus-1-dev
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+        run: |
+          # `apt-get update` exits non-zero when ANY configured source fails, and
+          # the runner image ships Google's Chrome repo, which periodically serves
+          # a Packages.gz whose hash does not match its Release file. This job
+          # needs Ubuntu's archive and nothing else, so a failed update is not
+          # informative — the *install* is the check, and it still fails loudly.
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
       - name: cargo test (default features)
         run: cargo test --workspace --all-targets
       - name: cargo test (--features validate)
@@ -88,7 +95,14 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - name: Install libdbus-1-dev
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+        run: |
+          # `apt-get update` exits non-zero when ANY configured source fails, and
+          # the runner image ships Google's Chrome repo, which periodically serves
+          # a Packages.gz whose hash does not match its Release file. This job
+          # needs Ubuntu's archive and nothing else, so a failed update is not
+          # informative — the *install* is the check, and it still fails loudly.
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
       - name: clippy (default features)
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: clippy (--all-features)
@@ -234,7 +248,14 @@ jobs:
       # once `trust-tasks-rs` is on crates.io; add them here when that
       # happens.
       - name: Install libdbus-1-dev
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+        run: |
+          # `apt-get update` exits non-zero when ANY configured source fails, and
+          # the runner image ships Google's Chrome repo, which periodically serves
+          # a Packages.gz whose hash does not match its Release file. This job
+          # needs Ubuntu's archive and nothing else, so a failed update is not
+          # informative — the *install* is the check, and it still fails loudly.
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
       - name: cargo package trust-tasks-rs (default features)
         run: cargo package -p trust-tasks-rs
       - name: cargo package trust-tasks-rs (--features validate)

@@ -77,7 +77,14 @@ jobs:
       # compiles the packaged tarball, so the release job needs them too — same
       # as the `test` / `package` jobs in rust.yml.
       - name: Install libdbus-1-dev
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+        run: |
+          # `apt-get update` exits non-zero when ANY configured source fails, and
+          # the runner image ships Google's Chrome repo, which periodically serves
+          # a Packages.gz whose hash does not match its Release file. This job
+          # needs Ubuntu's archive and nothing else, so a failed update is not
+          # informative — the *install* is the check, and it still fails loudly.
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -116,7 +123,14 @@ jobs:
           persist-credentials: false
 
       - name: Install libdbus-1-dev
-        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+        run: |
+          # `apt-get update` exits non-zero when ANY configured source fails, and
+          # the runner image ships Google's Chrome repo, which periodically serves
+          # a Packages.gz whose hash does not match its Release file. This job
+          # needs Ubuntu's archive and nothing else, so a failed update is not
+          # informative — the *install* is the check, and it still fails loudly.
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
 
       - uses: dtolnay/rust-toolchain@stable
 
