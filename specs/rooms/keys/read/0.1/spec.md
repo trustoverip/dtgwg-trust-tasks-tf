@@ -105,6 +105,7 @@ The reason this is not a proxy.
 1. **The reply is signed by the host that was addressed.** [SPEC §7.3 item 7](/SPEC.md#73-specification-requirements) makes `rooms/records/get`'s response proof REQUIRED, and the recipient **MUST** verify it *and* bind the proven signer to the `host` it named. A proof that verifies against some other party is a reply from somebody else. An unsigned or misattributed reply is `hostRefused` with the reason stated — never a success with a caveat.
 2. **The trace reaches the commitment served beside it.** The recipient **MUST** reassemble the leaf preimage from the response — that payload with its verification members removed, which is exactly `CommittedRecord` — hash it, replay the trace, and compare against the `dataCommitment` **in the same response**. Never one kept from an earlier read.
 3. **The root against what it has seen before, at this `headVersion`.** See `verification.priorRoots`. An agent that keeps no history says `notChecked` rather than omitting the question.
+4. **The room's own witnessed anchor**, where it has published one. See `verification.anchor`. This is the only one of these a **first-time reader** can make: it needs no history, no peer and no gossip channel, because every member resolves the same room DID and reads the same witness-co-signed entry. It is also the only place a **rollback** is visible — a host serving a state older than the room's own published statement is `behind`, and nothing else in this family catches that.
 
 ### A verdict is never an error
 

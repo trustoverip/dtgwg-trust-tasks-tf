@@ -231,6 +231,50 @@
       "minimum": 0,
       "description": "The highest version among the records `DataCommitment` covers. `0` for a room that holds none.\n\n**Derived from the same set as the root, and not read from the room's own counter.** The two agree for any host that has never erased a record \u2014 versions are assigned strictly increasing and a retraction keeps its tombstone \u2014 but they are not interchangeable, because a root and a counter are *two reads*, and two reads are not a snapshot. A write landing between them yields a pair that is individually correct and jointly false: two members holding roots taken over different trees, labelled with one version. That reads as equivocation and is not, and a **false accusation discredits the mechanism rather than the host** \u2014 the worst outcome available here. Taken from the committed set, the version cannot disagree with the root it labels, whatever else is happening to the room.\n\nThe corollary is worth stating: a host that **erases** a record \u2014 as distinct from retracting it, which leaves a tombstone in the tree \u2014 moves the root without necessarily moving this value, and two members straddling that erasure would see one version over two roots. Erasure is a retention act with its own answer, and a family that exposes one owes this definition another look.\n\n**This is what makes two roots comparable at all**, and without it the comparison this family is built on cannot be performed. A room moves: every put, curate and retraction assigns a new version, so two roots taken at two moments differ legitimately and a reader learns nothing from the difference. Shown two different roots, a host that equivocated and a host that was merely written to are indistinguishable \u2014 the first can always answer *the room moved between your reads*, and nothing contradicts it.\n\nA version is assigned by exactly the mutations that change the tree \u2014 every put, curate and retraction takes the next one \u2014 so the highest of them names the **state** the root describes. Two roots carrying the same `headVersion` and differing is a host caught: there is no write to attribute the difference to. Two roots carrying different ones are simply two moments, and a reader should draw nothing from them.\n\nA host can lie about this number too, and it is then lying about the counter it also uses for optimistic concurrency (`expectedVersion`) and for incremental sync (`sinceVersion`) \u2014 so a member holding a signed acknowledgement of a write at version `V` contradicts any head below `V` directly.\n\n**Not a timestamp.** A time is host-asserted, unverifiable and useless for this: two roots a second apart are not evidence of anything, while two roots at one version are."
     },
+    "EpochAnchor": {
+      "title": "EpochAnchor",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "epoch",
+        "epochAuthenticator",
+        "headVersion"
+      ],
+      "description": "What a room writes into its own witnessed log, so that a host serving a stale, forked or partial view of it becomes **evident rather than merely possible**.\n\n**Witnessed is the whole point.** Witnesses co-sign a `did:webvh` log entry, so a value that rides one is singular: the room cannot have told two members two different things about the same epoch without the log showing it. An anchor that did not ride a log entry would be a value the host could equally have made up, which is what every unanchored assertion in this family already is.\n\nIt goes in a **typed service entry** on the room's DID document, which is the only slot in a `did:webvh` log entry that carries an ecosystem-defined value today: `parameters` is a closed struct, `versionId` and `versionTime` are computed, and `proof` is the witnesses' signature over the rest \u2014 it secures the anchor and cannot be it.\n\n**Publishing one is not free.** A `did:webvh` update that supplies a document rotates the DID's update key and refreshes its pre-rotation commitments, so every anchor is a witnessed update *and* a rotation. That makes cadence an operational decision rather than only a freshness one: a room anchoring on every write would rotate its own DID's update key on every write.",
+      "properties": {
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The key epoch this anchor describes."
+        },
+        "epochAuthenticator": {
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The MLS epoch authenticator for `epoch` \u2014 a value every member of the group derives independently and no host can compute. A member whose own authenticator differs from the anchored one is in a **forked group**, which is the attack this exists to make visible."
+        },
+        "headVersion": {
+          "$ref": "#/$defs/HeadVersion",
+          "description": "The room's version watermark at the moment of anchoring, as the host reported it."
+        },
+        "dataCommitment": {
+          "$ref": "#/$defs/DataCommitment",
+          "description": "The room's record-tree root at the same moment. OPTIONAL for the same reason it is on a read: a host that maintains no tree asserts none, and an owner cannot anchor what it was not given. Where it is present it is the only comparison in this family that needs neither a gossip channel rooms deliberately lack nor durable state in a member's agent \u2014 every member reads the same anchored root."
+        },
+        "recordCount": {
+          "$ref": "#/$defs/RecordCount",
+          "description": "How many records the room held. Present with `dataCommitment` and absent without it: a root without the state it describes is not comparable to another root."
+        }
+      }
+    },
+    "AnchorCadence": {
+      "title": "AnchorCadence",
+      "type": "string",
+      "enum": [
+        "never",
+        "renewal",
+        "manual"
+      ],
+      "description": "How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** \u2014 nothing in this family can make an owner anchor.\n\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\n\n  - `never` \u2014 no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\n  - `renewal` \u2014 one anchor per epoch change, which is the cadence \u00a79's lifecycle already moves at.\n  - `manual` \u2014 the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\n\nDeliberately not a duration. A room that promised \"daily\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour."
+    },
     "RecordTrace": {
       "title": "RecordTrace",
       "type": "array",
@@ -282,6 +326,18 @@
             "notChecked"
           ],
           "description": "Whether this root matches what the agent has seen from this host for this room **at this `headVersion`**.\n\nThis is the comparison a member cannot make for themselves. A tab does not outlive itself and a CLI holds nothing; the agent is the only party on the member's side of the boundary that saw both reads.\n\n  - `agree` \u2014 seen at this head before, same root.\n  - `conflict` \u2014 seen at this head before, **different root**. A host caught: there is no write to attribute the difference to, because a write would have moved the head.\n  - `noneHeld` \u2014 first read at this head. Not evidence of anything; a memory of one is not a comparison.\n  - `notChecked` \u2014 this agent keeps no root history. An honest answer for an agent that cannot make the comparison, and **not** a synonym for `noneHeld`: one says nothing was found, the other says nothing was looked for.\n\nREQUIRED, so that an agent which does not check has to say so rather than omit the question."
+        },
+        "anchor": {
+          "type": "string",
+          "enum": [
+            "agrees",
+            "ahead",
+            "behind",
+            "conflict",
+            "none",
+            "notChecked"
+          ],
+          "description": "How what the host served compares with the room's own **witnessed anchor** (`EpochAnchor`).\n\nThis is the comparison that needs neither a gossip channel rooms deliberately lack nor durable state in an agent: every member resolves the same room DID and reads the same entry, co-signed by witnesses. It is the only one of the three a first-time reader can make.\n\n  - `agrees` \u2014 the host served the anchored state, and its root matches.\n  - `ahead` \u2014 the room has moved past the anchor. The ordinary case; an anchor describes a moment, not the present, and says nothing about records written since.\n  - `behind` \u2014 **the host is serving a state older than the room's own witnessed statement.** A rollback, and a detection nothing else in this family can make: a member with no history, no peer and no prior read still catches it.\n  - `conflict` \u2014 same `headVersion` as the anchor, different root. The host has contradicted a value its own room published and witnesses co-signed.\n  - `none` \u2014 the room has published no anchor. Not a fault; anchoring costs a witnessed update and a key rotation, and a room may reasonably decline.\n  - `notChecked` \u2014 the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked."
         },
         "count": {
           "type": "string",

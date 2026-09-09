@@ -248,6 +248,7 @@ export * as RoomsKeysPresent_v0_2 from "./rooms/keys/present/0.2/payload.js";
 export * as RoomsKeysRead_v0_1 from "./rooms/keys/read/0.1/payload.js";
 export * as RoomsKeysSeal_v0_1 from "./rooms/keys/seal/0.1/payload.js";
 export * as RoomsKeysWelcome_v0_1 from "./rooms/keys/welcome/0.1/payload.js";
+export * as RoomsOwnerAnchor_v0_1 from "./rooms/owner/anchor/0.1/payload.js";
 export * as RoomsOwnerClaim_v0_1 from "./rooms/owner/claim/0.1/payload.js";
 export * as RoomsOwnerInvite_v0_1 from "./rooms/owner/invite/0.1/payload.js";
 export * as RoomsOwnerIssueAuthority_v0_1 from "./rooms/owner/issue-authority/0.1/payload.js";
