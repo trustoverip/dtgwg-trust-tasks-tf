@@ -11,6 +11,61 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.18.1 — 2026-09-09
+
+
+### Specifications
+
+- **rooms/records/get**: Traces, and the leaf preimage they need (#419)
+
+A commitment lets a reader catch a host that equivocates. A trace is what proves
+  a *particular* record sits under a particular root. `trace` is that member, on
+  the single-record read.
+
+  Adding it exposed a defect in the commitment already shipped. `DataCommitment`
+  described its leaf as "`RecordMetadata` plus its stored content" — exact-sounding
+  and not reproducible. `RecordMetadata` is the projection a listing returns: it
+  renders `updatedAt` as a timestamp, lifts `epoch` to the top level, carries
+  `title` and `description` pulled out of an `open` room's body, and has no
+  `pinned` at all. A host hashing what it stores and a reader hashing that
+  projection reach different roots, and nothing said which one counted. That was
+  survivable while the only use was comparing two roots from the same
+  implementation; a trace has to be computable by someone else.
+
+  So the preimage is pinned exactly, as `CommittedRecord`, and it is defined to
+  *be* this response payload with `dataCommitment`, `trace` and `ext` removed.
+  Reassembly is a deletion rather than a reconstruction, and no copy of the
+  ciphertext is carried twice — to be paid for on every read, and to disagree with
+  itself on the read where it mattered.
+
+  `status`, `updatedAt`, `pinned` and `author` are added to the response because
+  they are committed, and a response omitting them was one no reader could hash.
+  They are OPTIONAL so this stays non-breaking for a published 0.1;
+  `dependentRequired` makes `status`, `updatedAt` and `dataCommitment` mandatory
+  wherever `trace` is present, which is the only place their absence can do harm.
+  `author` is a new disclosure on this task — `rooms/records/list` already returns
+  it on `open` and `attributed`, so the family withheld nothing, but a
+  single-record read now names the writer where before it did not.
+
+  Two things stated rather than left to be discovered:
+
+  - A trace binds a record to a root and says nothing about whether that root is
+    the room's. A reader that verifies one against a root the same host handed it
+    a moment earlier has checked the host's arithmetic and nothing more.
+  - A listing cannot be reconciled against the root at all, not even a complete
+    one: a leaf commits to a whole record and a listing returns a projection
+    without the body. Reconciliation means reading the records.
+
+  Host-visible break, though not a library one. A host that implemented the old
+  wording literally computes a different root than this requires; the generated
+  libraries gain only additive surface — `RecordTrace`, and optional members on a
+  `#[non_exhaustive]` struct — and reject nothing they used to accept.
+
+  `checkCommittedRecordMirror()` in the registry build guards the one hand-kept
+  correspondence this introduces: CommittedRecord's members against the get
+  response's, by name. Verified non-vacuous — removing `status` from the response
+  fails the build, naming the member and both ways to fix it.
+
 ## 0.18.0 — 2026-09-09
 
 
