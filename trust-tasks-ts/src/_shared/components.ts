@@ -2700,6 +2700,52 @@ export interface QueueLimits {
   receiveQueueLimit?: number;
 }
 /**
+ * What the agent checked on the member's behalf, and what it found.
+ *
+ * **A verdict, never an error.** None of these values fails the task, including the ones that report a host caught out. A member's own agent refusing to hand over a record because the *host* misbehaved punishes the member for somebody else's act — and locks them out of the room holding the records that would show what happened, at the moment they most need them. The consequence belongs on the **write** path, where continuing to hand material to a party you have caught is what compounds the damage.
+ *
+ * So a consumer **MUST NOT** treat any value here as a failed read, and **MUST** surface an adverse one rather than logging it. What that costs is words: a member shown a bare warning icon dismisses it, and a member later refused a write with no explanation blames their own agent. A detection the member attributes to the wrong party is worse than no detection.
+ *
+ * Members are **absent where the task cannot produce them** rather than carrying a not-applicable value — a listing has no `trace` because there is no single record to trace, and a single read has no `count` because a count is only checkable against a listing read to its end.
+ */
+export interface ReadVerification {
+  /**
+   * Whether the record's `RecordTrace` reached the `dataCommitment` served beside it.
+   *
+   * `verified` says the record is under the root the host asserted — and **nothing about whether that root is the room's**, which is what `priorRoots` and an anchor are for. `notOffered` is a host that maintains no tree, which is legal and informative. `failed` is arithmetic that does not close: the host served a path that does not reach its own root, which is either a defect or a fabrication and is not distinguishable from here.
+   */
+  trace?: "verified" | "failed" | "notOffered";
+  /**
+   * Whether this root matches what the agent has seen from this host for this room **at this `headVersion`**.
+   *
+   * This is the comparison a member cannot make for themselves. A tab does not outlive itself and a CLI holds nothing; the agent is the only party on the member's side of the boundary that saw both reads.
+   *
+   *   - `agree` — seen at this head before, same root.
+   *   - `conflict` — seen at this head before, **different root**. A host caught: there is no write to attribute the difference to, because a write would have moved the head.
+   *   - `noneHeld` — first read at this head. Not evidence of anything; a memory of one is not a comparison.
+   *   - `notChecked` — this agent keeps no root history. An honest answer for an agent that cannot make the comparison, and **not** a synonym for `noneHeld`: one says nothing was found, the other says nothing was looked for.
+   *
+   * REQUIRED, so that an agent which does not check has to say so rather than omit the question.
+   */
+  priorRoots: "agree" | "conflict" | "noneHeld" | "notChecked";
+  /**
+   * Whether the number of records returned matches the `recordCount` the host committed to.
+   *
+   * Only ever comparable against a listing with **no** `prefix`, **no** `sinceVersion` and read to its end — anything else legitimately holds fewer, and comparing it is a discrepancy the reader manufactured. `notComparable` is that case, and it is the common one.
+   *
+   * `short` is a host contradicting itself inside one exchange: it committed to a tree of N records and served fewer, with no filter to explain the difference. That is the omission the commitment exists to make detectable, caught without a second party and without an anchor.
+   */
+  count?: "agrees" | "short" | "notComparable" | "notOffered";
+  /**
+   * What the host asserted about the room, passed through unaltered so the member can compare it somewhere this agent cannot reach — with another member, or against a witnessed anchor. All three or none: a root without the state it describes is not comparable to another root, which is the whole of `HeadVersion`.
+   */
+  head?: {
+    dataCommitment: DataCommitment;
+    recordCount: RecordCount;
+    headVersion: HeadVersion;
+  };
+}
+/**
  * What `rooms/records/list` returns. Never the body: ranking happens on the client, and a host that returned every body would make the caller pay for the whole room on every listing.
  */
 export interface RecordMetadata {
