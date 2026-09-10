@@ -6,5 +6,6 @@ pub mod did_templates;
 pub mod get;
 pub mod list;
 pub mod preview_delete;
+pub mod secrets;
 pub mod update;
 pub mod update_did;
