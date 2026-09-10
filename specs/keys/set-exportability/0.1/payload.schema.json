@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/set-exportability/0.1",
+  "title": "Keys Set Exportability — payload",
+  "description": "Names one key and the exportability it should carry afterwards. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyId",
+    "exportable"
+  ],
+  "properties": {
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The key whose exportability changes. Custodian-scoped, as everywhere in `keys/*`."
+    },
+    "exportable": {
+      "type": "boolean",
+      "description": "The state the key should be in when this request succeeds — not a delta. `false` asks the custodian to refuse every future export of the key; `true` asks it to allow them again. Stated absolutely so a repeat of the same request is a no-op rather than a toggle: a producer that retried a lost reply must not discover it has undone itself."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Set Exportability — response payload",
+      "description": "The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "description": "The record the custodian now holds. Never null — a request naming a key the custodian does not hold is `keys:notFound`, not a successful answer with no record. This differs from `keys/show`, where 'no such key' is a legitimate success.",
+          "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyRecord"
+        }
+      }
+    }
+  }
+}

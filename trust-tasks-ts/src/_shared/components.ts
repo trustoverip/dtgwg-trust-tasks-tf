@@ -2174,6 +2174,10 @@ export interface KeyRecord {
    */
   label?: string;
   /**
+   * Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.
+   */
+  exportable?: boolean;
+  /**
    * Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.
    */
   contextId?: string;

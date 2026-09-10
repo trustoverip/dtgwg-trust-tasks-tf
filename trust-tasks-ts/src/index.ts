@@ -145,6 +145,7 @@ export * as KeysImport_v0_1 from "./keys/import/0.1/payload.js";
 export * as KeysList_v0_1 from "./keys/list/0.1/payload.js";
 export * as KeysRename_v0_1 from "./keys/rename/0.1/payload.js";
 export * as KeysRevoke_v0_1 from "./keys/revoke/0.1/payload.js";
+export * as KeysSetExportability_v0_1 from "./keys/set-exportability/0.1/payload.js";
 export * as KeysShow_v0_1 from "./keys/show/0.1/payload.js";
 export * as KeysSign_v0_1 from "./keys/sign/0.1/payload.js";
 export * as MessagingShared_v0_1 from "./messaging/_shared/0.1/messaging.js";

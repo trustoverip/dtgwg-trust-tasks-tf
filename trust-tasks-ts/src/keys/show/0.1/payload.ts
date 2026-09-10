@@ -153,6 +153,11 @@ export const PAYLOAD_SCHEMA = {
           "maxLength": 256,
           "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
         },
+        "exportable": {
+          "type": "boolean",
+          "description": "Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.",
+          "$comment": "No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it."
+        },
         "contextId": {
           "type": "string",
           "description": "Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee."
@@ -290,6 +295,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "maxLength": 256,
           "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
+        },
+        "exportable": {
+          "type": "boolean",
+          "description": "Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.",
+          "$comment": "No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it."
         },
         "contextId": {
           "type": "string",
