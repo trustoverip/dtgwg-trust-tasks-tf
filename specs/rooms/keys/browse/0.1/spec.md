@@ -93,6 +93,7 @@ Everything [`rooms/keys/read`](../../read/0.1/spec.md) says about a caller-named
 1. **The reply is signed by the host that was addressed** — verified, and the proven signer bound to the `host` named. An unsigned or misattributed reply is `hostRefused`, never a success with a caveat.
 2. **The root against what it has seen before, at this `headVersion`** — `verification.priorRoots`.
 3. **The length against the count the host committed to** — `verification.count`, and this is the check that only exists here.
+4. **The room's own witnessed anchor**, where it has published one — `verification.anchor`. The only one of these a first-time reader can make, and the only place a **rollback** is visible: a host serving a state older than the room's own published statement is `behind`.
 
 ### Counting is the check a listing can actually do
 

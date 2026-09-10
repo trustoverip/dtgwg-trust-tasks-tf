@@ -17,6 +17,18 @@
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
 /**
+ * How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.
+ *
+ * It is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.
+ *
+ *   - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.
+ *   - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.
+ *   - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.
+ *
+ * Deliberately not a duration. A room that promised "daily" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.
+ */
+export type AnchorCadence = "never" | "renewal" | "manual";
+/**
  * The kind of privileged change recorded in the audit log.
  */
 export type AuditAction =
@@ -1863,6 +1875,37 @@ export interface EndorsementType {
   createdByDid?: string;
 }
 /**
+ * What a room writes into its own witnessed log, so that a host serving a stale, forked or partial view of it becomes **evident rather than merely possible**.
+ *
+ * **Witnessed is the whole point.** Witnesses co-sign a `did:webvh` log entry, so a value that rides one is singular: the room cannot have told two members two different things about the same epoch without the log showing it. An anchor that did not ride a log entry would be a value the host could equally have made up, which is what every unanchored assertion in this family already is.
+ *
+ * It goes in a **typed service entry** on the room's DID document, which is the only slot in a `did:webvh` log entry that carries an ecosystem-defined value today: `parameters` is a closed struct, `versionId` and `versionTime` are computed, and `proof` is the witnesses' signature over the rest — it secures the anchor and cannot be it.
+ *
+ * **Publishing one is not free.** A `did:webvh` update that supplies a document rotates the DID's update key and refreshes its pre-rotation commitments, so every anchor is a witnessed update *and* a rotation. That makes cadence an operational decision rather than only a freshness one: a room anchoring on every write would rotate its own DID's update key on every write.
+ */
+export interface EpochAnchor {
+  /**
+   * The key epoch this anchor describes.
+   */
+  epoch: number;
+  /**
+   * The MLS epoch authenticator for `epoch` — a value every member of the group derives independently and no host can compute. A member whose own authenticator differs from the anchored one is in a **forked group**, which is the attack this exists to make visible.
+   */
+  epochAuthenticator: DigestMultibase;
+  /**
+   * The room's version watermark at the moment of anchoring, as the host reported it.
+   */
+  headVersion: HeadVersion;
+  /**
+   * The room's record-tree root at the same moment. OPTIONAL for the same reason it is on a read: a host that maintains no tree asserts none, and an owner cannot anchor what it was not given. Where it is present it is the only comparison in this family that needs neither a gossip channel rooms deliberately lack nor durable state in a member's agent — every member reads the same anchored root.
+   */
+  dataCommitment?: DataCommitment;
+  /**
+   * How many records the room held. Present with `dataCommitment` and absent without it: a root without the state it describes is not comparable to another root.
+   */
+  recordCount?: RecordCount;
+}
+/**
  * One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.
  */
 export interface EpochLink {
@@ -2728,6 +2771,19 @@ export interface ReadVerification {
    * REQUIRED, so that an agent which does not check has to say so rather than omit the question.
    */
   priorRoots: "agree" | "conflict" | "noneHeld" | "notChecked";
+  /**
+   * How what the host served compares with the room's own **witnessed anchor** (`EpochAnchor`).
+   *
+   * This is the comparison that needs neither a gossip channel rooms deliberately lack nor durable state in an agent: every member resolves the same room DID and reads the same entry, co-signed by witnesses. It is the only one of the three a first-time reader can make.
+   *
+   *   - `agrees` — the host served the anchored state, and its root matches.
+   *   - `ahead` — the room has moved past the anchor. The ordinary case; an anchor describes a moment, not the present, and says nothing about records written since.
+   *   - `behind` — **the host is serving a state older than the room's own witnessed statement.** A rollback, and a detection nothing else in this family can make: a member with no history, no peer and no prior read still catches it.
+   *   - `conflict` — same `headVersion` as the anchor, different root. The host has contradicted a value its own room published and witnesses co-signed.
+   *   - `none` — the room has published no anchor. Not a fault; anchoring costs a witnessed update and a key rotation, and a room may reasonably decline.
+   *   - `notChecked` — the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked.
+   */
+  anchor?: "agrees" | "ahead" | "behind" | "conflict" | "none" | "notChecked";
   /**
    * Whether the number of records returned matches the `recordCount` the host committed to.
    *

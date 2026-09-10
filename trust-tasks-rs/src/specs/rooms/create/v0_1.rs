@@ -29,6 +29,95 @@ pub mod error {
         }
     }
 }
+/**
+How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.
+
+It is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.
+
+  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.
+  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.
+  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.
+
+Deliberately not a duration. A room that promised "daily" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.*/
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "AnchorCadence",
+///  "description": "\nHow often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\n\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\n\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\n\nDeliberately not a duration. A room that promised \"daily\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.",
+///  "type": "string",
+///  "enum": [
+///    "never",
+///    "renewal",
+///    "manual"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum AnchorCadence {
+    #[serde(rename = "never")]
+    Never,
+    #[serde(rename = "renewal")]
+    Renewal,
+    #[serde(rename = "manual")]
+    Manual,
+}
+impl ::std::fmt::Display for AnchorCadence {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Never => f.write_str("never"),
+            Self::Renewal => f.write_str("renewal"),
+            Self::Manual => f.write_str("manual"),
+        }
+    }
+}
+impl ::std::str::FromStr for AnchorCadence {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "never" => Ok(Self::Never),
+            "renewal" => Ok(Self::Renewal),
+            "manual" => Ok(Self::Manual),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AnchorCadence {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AnchorCadence {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AnchorCadence {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -152,6 +241,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "visibility"
 ///  ],
 ///  "properties": {
+///    "anchorCadence": {
+///      "description": "What this room intends about anchoring. OPTIONAL; absent reads as `manual`, which draws no expectation and is the honest default for a room whose owner has not decided. A host stores it and serves it back — it constrains nothing the host does.",
+///      "$ref": "#/definitions/AnchorCadence"
+///    },
 ///    "ext": {
 ///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
 ///      "$ref": "#/definitions/Ext"
@@ -185,6 +278,13 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
+    ///What this room intends about anchoring. OPTIONAL; absent reads as `manual`, which draws no expectation and is the honest default for a room whose owner has not decided. A host stores it and serves it back — it constrains nothing the host does.
+    #[serde(
+        rename = "anchorCadence",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub anchor_cadence: ::std::option::Option<AnchorCadence>,
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
@@ -229,6 +329,10 @@ impl Payload {
 ///    "roomId"
 ///  ],
 ///  "properties": {
+///    "anchorCadence": {
+///      "description": "Echoed so a caller knows what was recorded rather than what was asked — the two differ on a host that predates this member.",
+///      "$ref": "#/definitions/AnchorCadence"
+///    },
 ///    "epoch": {
 ///      "description": "Always 1 for a new room.",
 ///      "type": "integer",
@@ -250,6 +354,13 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    ///Echoed so a caller knows what was recorded rather than what was asked — the two differ on a host that predates this member.
+    #[serde(
+        rename = "anchorCadence",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub anchor_cadence: ::std::option::Option<AnchorCadence>,
     ///Always 1 for a new room.
     pub epoch: ::std::num::NonZeroU64,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -422,6 +533,10 @@ impl ::std::convert::TryFrom<::std::string::String> for Visibility {
 pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
+        anchor_cadence: ::std::result::Result<
+            ::std::option::Option<super::AnchorCadence>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         owner_did: ::std::result::Result<::std::string::String, ::std::string::String>,
         retention_days: ::std::result::Result<
@@ -438,6 +553,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
+                anchor_cadence: Ok(Default::default()),
                 ext: Ok(Default::default()),
                 owner_did: Err("no value supplied for owner_did".to_string()),
                 retention_days: Ok(Default::default()),
@@ -448,6 +564,16 @@ pub mod builder {
         }
     }
     impl Payload {
+        pub fn anchor_cadence<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AnchorCadence>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.anchor_cadence = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for anchor_cadence: {e}"));
+            self
+        }
         pub fn ext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
@@ -513,6 +639,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                anchor_cadence: value.anchor_cadence?,
                 ext: value.ext?,
                 owner_did: value.owner_did?,
                 retention_days: value.retention_days?,
@@ -525,6 +652,7 @@ pub mod builder {
     impl ::std::convert::From<super::Payload> for Payload {
         fn from(value: super::Payload) -> Self {
             Self {
+                anchor_cadence: Ok(value.anchor_cadence),
                 ext: Ok(value.ext),
                 owner_did: Ok(value.owner_did),
                 retention_days: Ok(value.retention_days),
@@ -536,6 +664,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
+        anchor_cadence: ::std::result::Result<
+            ::std::option::Option<super::AnchorCadence>,
+            ::std::string::String,
+        >,
         epoch: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         room_id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -543,6 +675,7 @@ pub mod builder {
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
+                anchor_cadence: Ok(Default::default()),
                 epoch: Err("no value supplied for epoch".to_string()),
                 ext: Ok(Default::default()),
                 room_id: Err("no value supplied for room_id".to_string()),
@@ -550,6 +683,16 @@ pub mod builder {
         }
     }
     impl Response {
+        pub fn anchor_cadence<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AnchorCadence>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.anchor_cadence = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for anchor_cadence: {e}"));
+            self
+        }
         pub fn epoch<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::num::NonZeroU64>,
@@ -585,6 +728,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                anchor_cadence: value.anchor_cadence?,
                 epoch: value.epoch?,
                 ext: value.ext?,
                 room_id: value.room_id?,
@@ -594,6 +738,7 @@ pub mod builder {
     impl ::std::convert::From<super::Response> for Response {
         fn from(value: super::Response) -> Self {
             Self {
+                anchor_cadence: Ok(value.anchor_cadence),
                 epoch: Ok(value.epoch),
                 ext: Ok(value.ext),
                 room_id: Ok(value.room_id),
@@ -607,7 +752,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"ownerDid\": {\n      \"description\": \"The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.\",\n      \"type\": \"string\"\n    },\n    \"retentionDays\": {\n      \"description\": \"How long the host will hold the room after its epoch lapses without renewal, before storage may be reclaimed. Stated at creation rather than discovered: reclamation that surprises a member is a failure of the design, not of the member.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"retentionPolicy\": {\n      \"$ref\": \"#/$defs/RetentionPolicy\",\n      \"description\": \"Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.\",\n      \"type\": \"string\"\n    },\n    \"visibility\": {\n      \"$ref\": \"#/$defs/Visibility\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"visibility\",\n    \"ownerDid\"\n  ],\n  \"title\": \"Rooms Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AnchorCadence\": {\n      \"description\": \"How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\\n\\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\\n\\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\\n\\nDeliberately not a duration. A room that promised \\\"daily\\\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.\",\n      \"enum\": [\n        \"never\",\n        \"renewal\",\n        \"manual\"\n      ],\n      \"title\": \"AnchorCadence\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"anchorCadence\": {\n          \"$ref\": \"#/$defs/AnchorCadence\",\n          \"description\": \"Echoed so a caller knows what was recorded rather than what was asked — the two differ on a host that predates this member.\"\n        },\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"anchorCadence\": {\n      \"$ref\": \"#/$defs/AnchorCadence\",\n      \"description\": \"What this room intends about anchoring. OPTIONAL; absent reads as `manual`, which draws no expectation and is the honest default for a room whose owner has not decided. A host stores it and serves it back — it constrains nothing the host does.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"ownerDid\": {\n      \"description\": \"The room's accountable party: the controller of the room's identifier, the issuer of every credential in it, and the party a host addresses about quota, abuse, or lifecycle. Visible at every visibility, including `private` — a room has someone answerable for it.\",\n      \"type\": \"string\"\n    },\n    \"retentionDays\": {\n      \"description\": \"How long the host will hold the room after its epoch lapses without renewal, before storage may be reclaimed. Stated at creation rather than discovered: reclamation that surprises a member is a failure of the design, not of the member.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"retentionPolicy\": {\n      \"$ref\": \"#/$defs/RetentionPolicy\",\n      \"description\": \"Whether this room keeps its history readable across a membership change. Absent means `chained`, which is the choice a room wants unless it has a reason not to: joining a room should mean being able to read it. A host MUST reject an epoch link for a room whose policy is `fromJoin` rather than storing one it declared it would not have.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier, minted by its owner before this call. A host is told the identifier; it does not assign one, because a room whose identity the host chose could not move to another host.\",\n      \"type\": \"string\"\n    },\n    \"visibility\": {\n      \"$ref\": \"#/$defs/Visibility\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"visibility\",\n    \"ownerDid\"\n  ],\n  \"title\": \"Rooms Create — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -616,7 +761,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AnchorCadence\": {\n      \"description\": \"How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\\n\\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\\n\\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\\n\\nDeliberately not a duration. A room that promised \\\"daily\\\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.\",\n      \"enum\": [\n        \"never\",\n        \"renewal\",\n        \"manual\"\n      ],\n      \"title\": \"AnchorCadence\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.1#response.\",\n      \"properties\": {\n        \"anchorCadence\": {\n          \"$ref\": \"#/$defs/AnchorCadence\",\n          \"description\": \"Echoed so a caller knows what was recorded rather than what was asked — the two differ on a host that predates this member.\"\n        },\n        \"epoch\": {\n          \"description\": \"Always 1 for a new room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
