@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/export-secret/0.1",
+  "title": "Keys Export Secret — payload",
+  "description": "Names one key whose private half is being asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyId"
+  ],
+  "properties": {
+    "keyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The key to release. Custodian-scoped, as everywhere in `keys/*`. One key per request: there is deliberately no list form, so that each release is one decision the custodian can refuse, record and rate-limit on its own terms."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys Export Secret — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyId",
+        "keyType",
+        "publicKeyMultibase",
+        "privateKeyMultibase"
+      ],
+      "description": "The key material. Failures use trust-task-error, not this shape. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/export-secret/0.1#response.",
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The key released, echoed so a consumer can confirm it received the one it named rather than matching on request order."
+        },
+        "keyType": {
+          "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyType"
+        },
+        "publicKeyMultibase": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The public half, multibase-encoded. Returned alongside the private half so a consumer can check the pair agrees before installing it, rather than deriving the public half and hoping."
+        },
+        "privateKeyMultibase": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The private half, multibase-encoded (Base58BTC) over its multicodec-prefixed bytes. The prefix identifies the key material; a consumer decodes by prefix rather than trusting `keyType` alone."
+        }
+      }
+    }
+  }
+}
