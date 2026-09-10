@@ -7,5 +7,6 @@ pub mod import;
 pub mod list;
 pub mod rename;
 pub mod revoke;
+pub mod set_exportability;
 pub mod show;
 pub mod sign;

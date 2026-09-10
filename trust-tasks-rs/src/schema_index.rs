@@ -461,6 +461,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/revoke/0.1#response" => <crate::specs::keys::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/set-exportability/0.1" => <crate::specs::keys::set_exportability::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/set-exportability/0.1#response" => <crate::specs::keys::set_exportability::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/show/0.1" => <crate::specs::keys::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/show/0.1#response" => <crate::specs::keys::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2265,6 +2269,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/revoke/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::keys::revoke::v0_1::Payload,
+        >()),
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/set-exportability/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::keys::set_exportability::v0_1::Payload,
         >()),
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/show/0.1" => Some(crate::SpecPolicy::of::<
