@@ -107,7 +107,8 @@ A conforming Holder:
 
 1. MUST reply to a `#request` document with either a `#response` document or a
    `trust-task-error` document.
-2. MUST echo the request's `challenge` verbatim in the response payload.
+2. MUST echo the request's `challenge` and `artifact` verbatim in the response
+   payload, on both `attested` and `unavailable` results.
 3. MUST set `result` to `unavailable` where it holds no receipt for the identified
    artifact, and MUST NOT distinguish that case from a refusal to disclose at the
    envelope level.
@@ -123,9 +124,13 @@ A conforming Verifier:
    resolution mechanism the Verifier's trust framework accepts.
 2. MUST treat a response whose `challenge` does not match the one it supplied as
    unverifiable, regardless of proof validity.
-3. MUST verify the referenced receipt under the receipt's own specification before
-   relying on `assessment`.
-4. MUST NOT infer from `unavailable` that no receipt exists.
+3. MUST treat a response whose `artifact` does not match the one it supplied — both
+   `digest` and `algorithm`, compared exactly — as unverifiable, regardless of proof
+   validity.
+4. MUST verify the referenced receipt under the receipt's own specification before
+   relying on `assessment`, and MUST NOT rely on `assessment` unless the receipt
+   binds the same artifact the request identified.
+5. MUST NOT infer from `unavailable` that no receipt exists.
 
 ## Authorization
 
@@ -202,7 +207,9 @@ The payload members:
 - **`challenge`** is the request's challenge echoed verbatim. It is what binds this
   response to this Verifier's question.
 - **`artifact`** repeats the requested digest, so the response stands alone as a
-  record without the request beside it.
+  record without the request beside it. It is not decoration: a Verifier MUST
+  compare it against the artifact it asked about (Verifier rule 3), because a
+  response is otherwise free to answer about an artifact nobody asked about.
 - **`assessment`** is present only when `result` is `attested`. It is opaque at the
   task layer: `primitive` names the specification a Verifier must verify the receipt
   under, and `determination` belongs to that primitive's vocabulary. This
@@ -354,6 +361,22 @@ under [SPEC §7.3 item 14](/SPEC.md#73-specification-requirements), which makes 
 task consequential and changes what a consumer is obliged to do; a profile that
 needs it is a different specification with a different classification, not a
 category added to this one.
+
+### Substitution of the attested artifact
+
+The `challenge` binds a response to one Verifier's request, but it does not by
+itself bind the response to the artifact that request asked about. A Holder that
+holds a receipt for artifact B and none for artifact A can, without forging
+anything, answer a request about A with `result: "attested"`, `artifact: B`, and a
+genuinely valid receipt for B. Every signature in that exchange verifies: the
+envelope proof is the Holder's, the challenge is the one the Verifier sent, and the
+receipt is authentic under its own primitive. Only the subject has been swapped.
+
+Verifier rules 3 and 4 are what close this. Rule 3 rejects the response before the
+receipt is ever fetched, and rule 4 catches the case where the response echoes A
+faithfully but the receipt underneath binds B. Neither is expressible in the payload
+schema, because the request is not in the response document's scope — a Verifier
+that validates the schema and the proof and stops has not performed the comparison.
 
 ### Correlation
 
