@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/epoch/prune/0.1",
+  "title": "Rooms Epoch Prune \u2014 payload",
+  "description": "TODO: what the request payload of rooms/epoch/prune carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework \u2014 SPEC \u00a76.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "beforeEpoch",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to prune."
+    },
+    "beforeEpoch": {
+      "type": "integer",
+      "minimum": 2,
+      "description": "Drop every rung *below* this epoch, so the chain walks back no further than it.\n\n`minimum: 2` because pruning below epoch 1 would drop nothing and asking to is a caller that has misunderstood the direction \u2014 the chain walks backwards, and epoch 1 is where it ends."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `admin` at this room's scope. Not `curate`, and not `write`: pruning is not a statement about any record, and every member who can write can curate. It ends the room's ability to open a span of its own history, for everyone, which is the same class of act as advancing the epoch."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. A prune is irreversible and unattributable after the fact \u2014 the rungs are simply gone \u2014 so the only record of intent is the one made at the time."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "pruned",
+        "earliestRung"
+      ],
+      "description": "Success response to rooms/epoch/prune. Type https://trusttasks.org/spec/rooms/epoch/prune/0.1#response.",
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "pruned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many rungs were dropped. `0` is a success: the chain already went back no further, and a caller that read it as a failure would retry an operation that has nothing left to do."
+        },
+        "earliestRung": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The lowest epoch the chain still reaches, after pruning. **Not a restatement of `beforeEpoch`**: a chain with a gap in it already stopped somewhere, and a prune below that gap changes nothing about how far back a member can actually walk. Reporting the request back would tell an operator they had achieved something they had not."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "title": "Rooms Epoch Prune \u2014 response payload"
+    }
+  }
+}
