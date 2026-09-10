@@ -11,6 +11,60 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.19.3 — 2026-09-10
+
+
+### Specifications
+
+- **keys**: Release one key's private half, by name (#446)
+
+A custodian holds private keys and uses them on request so the material never
+  has to leave. Sometimes it does have to: an operator backing up one key, a
+  service being handed the identity it will run as, a migration to another
+  custodian.
+
+  There was no specified way to ask. Implementations reached for whatever export
+  happened to exist — in the reference implementation, a URI called
+  `vta/seeds/export-mnemonic` that exports no mnemonic and no seed. It is a
+  per-key secret export wearing the name of the thing it was migrated from, in the
+  wrong family, gated on an authority far wider than the act needs, and with no
+  published spec at all. Three operator commands sit on it.
+
+  This is that operation, named honestly and in the family it belongs to.
+
+  **One key per request, deliberately.** A batch form would make a hundred
+  releases one decision, and the value of this shape is that each is its own —
+  something the custodian can refuse, record and rate-limit individually. Two of
+  the nine negative fixtures are the batch shapes someone would reach for first: a
+  `keyId` array, and a `keyIds` member arriving alongside. A third is a
+  `contextId` selector, because "every key in a context" is a different request
+  with a different risk and must not be reachable by widening this one.
+
+  **Entitlement is necessary and not sufficient**, and that is the substance of
+  Authorization. Two refusals hold regardless of how authorised the caller is, so
+  both are consumer requirements rather than policy:
+
+  - `neverExportable` — material that exists only inside the custodian and is
+    reproducible nowhere. A custodian making an exception for a sufficiently
+    privileged caller would be describing a different key than the one it stored.
+  - `notExportable` — a key marked not releasable via `keys/set-exportability`. A
+    refusal about the key, not the asker: no amount of authority satisfies it, only
+    having the restriction lifted first, which is deliberately harder than imposing
+    it was.
+
+  Kept as two codes rather than one because they send an operator to different
+  places — the first is a property that cannot change, the second a decision that
+  can — and only one of them is worth trying to do something about.
+
+  A refusal is a `trust-task-error`, never a response document with an empty
+  `privateKeyMultibase`. A producer reading that shape cannot tell a withheld key
+  from a released one, and an empty string where a key belongs is the value most
+  likely to be installed and used.
+
+  Another fixture is a `deliverTo` member: the response goes to the producer that
+  asked, established by the envelope. A destination on the request would be an
+  open redirect for key material.
+
 ## 0.19.2 — 2026-09-10
 
 
