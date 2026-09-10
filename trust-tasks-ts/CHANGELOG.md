@@ -11,6 +11,43 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.18.5 — 2026-09-10
+
+
+### Specifications
+
+- **process-attestation**: Bind the response to the artifact that was asked about (#435)
+
+Verifier conformance pinned the challenge but never the artifact. A
+  Holder that holds a receipt for artifact B and none for artifact A could
+  answer a request about A with result "attested", artifact B, and a
+  genuinely valid receipt for B. Every signature in that exchange
+  verifies - the envelope proof is the Holder's, the challenge is the one
+  the Verifier sent, and the receipt is authentic under its own
+  primitive - so a Verifier implementing exactly the four published rules
+  concludes that A was attested. Only the subject was swapped.
+
+  The response prose said artifact "repeats the requested digest", but
+  that was descriptive, and nothing on the Verifier side compared it.
+
+  Adds two Verifier rules: reject a response whose artifact does not match
+  the one supplied, and do not rely on assessment unless the receipt binds
+  that same artifact. The first rejects the response before the receipt is
+  fetched; the second catches a response that echoes A faithfully while
+  the receipt underneath binds B. Neither is expressible in the payload
+  schema, because the request is not in the response document's scope, so
+  they are stated as conformance rules and explained in Security &
+  Privacy.
+
+  Also makes the Holder's artifact echo normative rather than implied,
+  mirroring the existing challenge echo. The schema already requires
+  artifact on both result branches, so this constrains no wire shape that
+  was previously free.
+
+  Prose only: no schema change, and regenerating both libraries produces
+  no diff. In place in 0.1 per SPEC 5.2 - the specification is draft, so
+  its prose may change without notice.
+
 ## 0.18.4 — 2026-09-10
 
 
