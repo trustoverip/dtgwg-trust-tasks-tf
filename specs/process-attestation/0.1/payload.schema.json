@@ -116,7 +116,7 @@
       "properties": {
         "digest": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{16,128}$",
+          "pattern": "^[A-Za-z0-9_-]{43,128}$",
           "description": "base64url, unpadded."
         },
         "algorithm": {
@@ -234,10 +234,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "byteLength": {
-              "type": "integer",
-              "minimum": 0
-            },
             "mediaType": {
               "type": "string",
               "maxLength": 255

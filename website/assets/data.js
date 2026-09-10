@@ -124,6 +124,13 @@ window.TT_CATEGORIES = [
     icon: "credit-card"
   },
   {
+    id: "provenance",
+    name: "Provenance",
+    color: "violet",
+    blurb: "Evidence of how an artifact or a flow came to be \u2014 process attestation bound to a Verifier-supplied challenge, ceremony receipts, and other records asserting that something was produced the way it is claimed to have been.",
+    icon: "anchor"
+  },
+  {
     id: "reputation",
     name: "Reputation",
     color: "sky",
