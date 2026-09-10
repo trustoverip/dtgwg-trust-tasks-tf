@@ -445,6 +445,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/derive-and-sign-document/0.1#response" => <crate::specs::keys::derive_and_sign_document::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/export-secret/0.1" => <crate::specs::keys::export_secret::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/export-secret/0.1#response" => <crate::specs::keys::export_secret::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/import/0.1" => <crate::specs::keys::import::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/import/0.1#response" => <crate::specs::keys::import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2254,6 +2258,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::keys::derive_and_sign_document::v0_1::Payload,
             >())
         }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/export-secret/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::keys::export_secret::v0_1::Payload,
+        >()),
         #[cfg(feature = "keys")]
         "https://trusttasks.org/spec/keys/import/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::keys::import::v0_1::Payload,

@@ -141,6 +141,7 @@ export * as SignAlgorithmShared_v0_1 from "./keys/_shared/0.1/sign-algorithm.js"
 export * as KeysCreate_v0_1 from "./keys/create/0.1/payload.js";
 export * as KeysDeriveAndSignDocument_v0_1 from "./keys/derive-and-sign-document/0.1/payload.js";
 export * as KeysDeriveAndSign_v0_1 from "./keys/derive-and-sign/0.1/payload.js";
+export * as KeysExportSecret_v0_1 from "./keys/export-secret/0.1/payload.js";
 export * as KeysImport_v0_1 from "./keys/import/0.1/payload.js";
 export * as KeysList_v0_1 from "./keys/list/0.1/payload.js";
 export * as KeysRename_v0_1 from "./keys/rename/0.1/payload.js";
