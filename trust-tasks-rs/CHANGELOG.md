@@ -31,6 +31,51 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.20.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.20.0...trust-tasks-rs-v0.20.1) — 2026-09-10
+
+
+### Specifications
+
+- **vta/contexts/secrets**: A service fetches the keys of the DID it operates ([#440](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/440))
+
+A service the VTA holds an identity for — a mediator, a data-room host, any
+  long-running integration — has to hold that DID's private keys to decrypt what
+  is addressed to it. It cannot ask per frame, so it fetches them at startup.
+
+  There was no specified way to do that. The one path that worked was
+  `vta/seeds/export-mnemonic`, which is unspecced, exports no mnemonic (it is a
+  per-key secret export that kept the name of what it was migrated from), and is
+  gated on global Admin — so being a service required authority over the whole
+  agent, and assembling a bundle meant one call per key.
+
+  This is one request naming one context, one response carrying that context's
+  DID and its key material, and one authorization decision about the one thing
+  being decided: may this caller act in this context.
+
+  Three things the prose is deliberate about:
+
+  - **The entitlement is scope, not rank.** A service authorised for its own
+    context reaches exactly the DID it was provisioned with, and a party with wide
+    authority over the recipient is not thereby entitled to any context's keys. A
+    consumer implementing this as a privilege level gets it backwards and hands a
+    broadly-authorised caller everything, so Authorization says so outright.
+
+  - **Entitlement is checked before existence**, which is what makes `notFound`
+    safe to return at all: it is only ever said to a caller already entitled to
+    that id, so the pair leaks nothing about ids the caller may not reach.
+
+  - **`secrets` MAY be empty**, and that is a provisioning state rather than a
+    failure. A consumer that reports it as an error misreports a context that is
+    merely not provisioned yet.
+
+  `proofRequirement.request` is REQUIRED rather than the usual RECOMMENDED: an
+  unsigned ask must not be sufficient on a task whose answer is a private key.
+  The response is evidentiary in the other direction — it is the recipient's own
+  record of what it released, to whom, and when, which is the only durable account
+  of a secret leaving.
+
+
+
 ## [0.20.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.19.4...trust-tasks-rs-v0.20.0) — 2026-09-10
 
 
