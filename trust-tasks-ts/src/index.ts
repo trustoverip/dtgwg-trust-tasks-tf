@@ -212,6 +212,7 @@ export * as PolicyList_v0_1 from "./policy/list/0.1/payload.js";
 export * as PolicyList_v0_2 from "./policy/list/0.2/payload.js";
 export * as PolicyUpsert_v0_1 from "./policy/upsert/0.1/payload.js";
 export * as PolicyUpsert_v0_2 from "./policy/upsert/0.2/payload.js";
+export * as ProcessAttestation_v0_1 from "./process-attestation/0.1/payload.js";
 export * as ProvisionIntegration_v0_1 from "./provision/integration/0.1/payload.js";
 export * as ProvisionIntegration_v0_2 from "./provision/integration/0.2/payload.js";
 export * as ProvisionIntegration_v0_3 from "./provision/integration/0.3/payload.js";

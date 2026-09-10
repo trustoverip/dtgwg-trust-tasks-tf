@@ -50,6 +50,7 @@ all-specs = [
     "messaging",
     "persona",
     "policy",
+    "process-attestation",
     "provision",
     "push",
     "registry",
@@ -79,6 +80,7 @@ keys = []
 messaging = []
 persona = []
 policy = []
+process-attestation = []
 provision = []
 push = []
 registry = []

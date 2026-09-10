@@ -52,3 +52,6 @@
 /specs/trust-task-error/           @stormer78
 /specs/trust-task-ok/              @stormer78
 /specs/trust-task-next-step/       @stormer78
+
+# Process Attestation
+/specs/process-attestation/         @dcondrey

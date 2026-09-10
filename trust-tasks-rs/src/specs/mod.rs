@@ -88,6 +88,8 @@ pub mod messaging;
 pub mod persona;
 #[cfg(feature = "policy")]
 pub mod policy;
+#[cfg(feature = "process-attestation")]
+pub mod process_attestation;
 #[cfg(feature = "provision")]
 pub mod provision;
 #[cfg(feature = "push")]

@@ -1,0 +1,55 @@
+[
+  {
+    "note": "Bare/unnamespaced ext key. SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  },
+  {
+    "note": "Unknown top-level payload member. additionalProperties: false catches `frobnicate`.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "frobnicate": true
+    }
+  },
+  {
+    "note": "Challenge below the 16-character floor. A short nonce is guessable, and anti-replay is the only integrity property the request has.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "challenge": "tooshort"
+    }
+  },
+  {
+    "note": "Digest carries base64 padding and '+'. The Artifact pattern is base64url unpadded, so a producer emitting standard base64 is rejected rather than silently compared against a differently-encoded digest.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8+Rk2vN4pT7sYwD1jB6xK0aC3eI9M=", "algorithm": "sha-256" },
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ"
+    }
+  },
+  {
+    "note": "Unregistered disclosure category. An enum rather than a pattern, so a primitive cannot widen its own disclosure surface by inventing a name.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "disclosure": ["summary", "keystroke-samples"]
+    }
+  },
+  {
+    "note": "Duplicate disclosure entries; uniqueItems. Repeats are a producer bug and would otherwise reach the Holder as a request to disclose twice.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "disclosure": ["document", "document"]
+    }
+  },
+  {
+    "note": "Missing algorithm. A bare digest cannot be compared without knowing which function produced it.",
+    "payload": {
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M" },
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ"
+    }
+  }
+]

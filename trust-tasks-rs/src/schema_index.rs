@@ -708,6 +708,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/policy/upsert/0.2" => <crate::specs::policy::upsert::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/upsert/0.2#response" => <crate::specs::policy::upsert::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "process-attestation")]
+        "https://trusttasks.org/spec/process-attestation/0.1" => <crate::specs::process_attestation::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "process-attestation")]
+        "https://trusttasks.org/spec/process-attestation/0.1#response" => <crate::specs::process_attestation::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "provision")]
         "https://trusttasks.org/spec/provision/integration/0.1" => <crate::specs::provision::integration::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "provision")]
@@ -2549,6 +2553,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/upsert/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::policy::upsert::v0_2::Payload,
+        >()),
+        #[cfg(feature = "process-attestation")]
+        "https://trusttasks.org/spec/process-attestation/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::process_attestation::v0_1::Payload,
         >()),
         #[cfg(feature = "provision")]
         "https://trusttasks.org/spec/provision/integration/0.1" => Some(crate::SpecPolicy::of::<
