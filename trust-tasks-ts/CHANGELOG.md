@@ -11,6 +11,162 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.18.4 — 2026-09-10
+
+
+### Added
+
+- **process-attestation**: Add Process Attestation Trust Task 0.1 (#430)
+
+* feat(process-attestation): add Process Attestation Trust Task 0.1
+
+- **rooms/epoch/commits**: A host relays commits, so a renewal is not O(n) deliveries (#432)
+
+Every epoch change is a commit and every member must apply it or fall out of the
+  group. Without somewhere to fetch one from, the only way it reaches a member is
+  the owner sending it — O(n) deliveries per renewal, to parties the owner must
+  have addresses for, all of which have to be online or have inboxes. A room whose
+  members are people with browsers does not have that.
+
+  `rooms/epoch/mint` gains an optional `commit`, published where it is produced:
+  minting is the moment the committer holds it, and a separate publish task would
+  be a second chance to forget. A room that advances without leaving the commit
+  somewhere fetchable **forks** — every member who missed the delivery is left at
+  an epoch the room has moved past.
+
+  **A host may relay a commit although it may not relay a Welcome**, and the note
+  says so rather than leaving it to be re-derived. A Welcome names the party
+  joining, which on `private` is the thing the tier withholds. A commit is
+  ciphertext plus a leaf index and names nobody: a host relaying them learns that
+  the room moved, which it knew from `epoch`, and that some member is behind, which
+  fetching anything already tells it. So it authorises exactly as a record read
+  does — a `read` chain, and no host session on `private`.
+
+  Two rules that exist because MLS is strict and the failures are silent:
+
+  - **Ordered, with no gaps.** Commits apply in sequence; one applied out of order
+    or over a gap is rejected by the group. A host missing one MUST return the run
+    it holds UP TO the gap and stop. A short answer is recoverable; a set with a
+    hole in it is a member stuck at an epoch with no explanation.
+  - **`roomEpoch` is not `sinceEpoch` plus the count**, and a consumer MUST NOT
+    compute it that way. They differ exactly when a commit is missing or a page
+    ended early, and that difference is the useful part: a member who applies
+    everything served and is still behind knows a delivery is missing rather than
+    concluding their own state is broken.
+
+  What it does not do, stated: it does not make a commit REACH an offline member,
+  only make one fetchable — a member who never comes back never catches up, and a
+  room that removes them is doing the right thing. And it is not a substitute for
+  the epoch key chain: a commit moves a member forward, a rung lets them read
+  backwards, and a member who applies every commit and fetches no rungs can write
+  to the room and read nothing written before they arrived.
+
+  422 specifications against 422 TypeScript and 417 Rust modules, all agreeing.
+
+- **rooms/epoch/prune**: A room decides to stop being able to read its own past (#431)
+
+The verb behind `rooms/create`'s `retentionPolicy`. A room that chose `chained`
+  keeps its whole history readable; this is how such a room decides, later and
+  deliberately, that some of it should stop being.
+
+  **What is destroyed is the rungs, not the records**, and describing it as
+  deleting records would describe something else. A pruned room still holds every
+  record and a host still serves them. What is gone is the ability to *derive* the
+  keys they were sealed under.
+
+  That cuts both ways and both are easy to get wrong on screen. A member who
+  already walked the chain keeps what they derived — a key someone has read is a
+  key they have, and nothing here reaches into an agent. A member who joins
+  afterwards can never read that span however much authority they are granted: the
+  host serves them ciphertext and no key exists to open it. Closer to losing a key
+  than to shredding a document.
+
+  `admin`, not `curate` and not `write`. Pruning makes no statement about any
+  record, so `curate` is the wrong shape as well as the wrong strength — and every
+  member who can write can curate, which would put "end the room's readable
+  history" within reach of every writer. It belongs beside `rooms/epoch/mint`,
+  being the same class of act.
+
+  `beforeEpoch` at or above the room's current epoch is REFUSED rather than
+  performed. `beforeEpoch: currentEpoch` reads like "keep from here" and would drop
+  every rung, leaving a member who restarts unable to derive anything below the
+  epoch they are handed next — a plausible typo with a consequence nobody would
+  choose.
+
+  `earliestRung` reports **reach, not the request**, and a host MUST NOT echo
+  `beforeEpoch` into it. A chain can already have a gap, and a prune below one
+  changes nothing about how far back a member can actually walk; echoing the
+  request would tell an operator they had achieved something they had not.
+  `pruned: 0` is a success for the same reason.
+
+  No soft delete, stated as a MUST: a host that kept the rungs would defeat the
+  operation while reporting success, and a rung retained "just in case" is a rung
+  that can be produced under compulsion — which is the state the owner was trying
+  to leave.
+
+  422 specifications against 422 TypeScript and 417 Rust modules, all agreeing.
+
+- **rooms/owner/anchor**: A room writes its own state where a host cannot (#429)
+
+Everything else in this family produces values a host asserts. An anchor is the
+  one statement a host does not make, cannot forge, and cannot show two members two
+  versions of — because witnesses co-sign the `did:webvh` log entry it rides, so it
+  is singular. An anchor that did not ride one would be a value the host could
+  equally have made up.
+
+  Three attacks die together and none dies without it: a rolled-back room, whose
+  every value is its own; a forked group, which the MLS epoch authenticator catches
+  because every member derives it independently and no host can compute it; and
+  equivocation about contents, where an anchored root is the copy the host did not
+  choose — for **every member at once**, needing neither a gossip channel rooms
+  deliberately lack nor durable state in a member's agent.
+
+  **The owner holds one of the three values it publishes**, and getting that wrong
+  is what an earlier design note did. `rooms/epoch/mint` answers `{roomId, epoch}` —
+  no watermark, and no reason there should be one: minting acts on the epoch, while
+  the watermark and the commitment are facts about the room's records, which live at
+  the host. So an anchor is assembled from a read, and all three head values MUST
+  come from ONE response: a root and a version from two reads can straddle a write,
+  and the pair is then individually correct and jointly false.
+
+  That the owner anchors a value the host gave it looks circular and is not. The
+  owner does not vouch for the root — it did not compute the tree. The anchor makes
+  the root singular and witnessed, which is Certificate Transparency's arrangement
+  exactly: the operator's own tree head is what gets published, and gossip is what
+  makes equivocation fatal.
+
+  A recipient SHOULD reconcile first and MUST report the outcome, and **MUST NOT
+  refuse to anchor on a failed reconciliation.** An owner withholding an anchor
+  from a suspect room leaves it with no witnessed statement at all, which is the
+  position a misbehaving host benefits from.
+
+  `notWitnessed` is a refusal rather than a warning: an entry nobody co-signed
+  looks like an anchor and carries none of the property, which is worse than its
+  absence because a member checking it would believe they had checked something.
+
+  The cost is stated where an operator will read it. `vta/webvh/dids/update/1.0`
+  needs nothing added, but supplying a document ROTATES the DID's update key and
+  refreshes its pre-rotation commitments — so cadence is an operational decision
+  rather than only a freshness one.
+
+  Two members ride along, because an anchor nobody reads is a log entry:
+
+  - **`ReadVerification.anchor`** on `rooms/keys/{read,browse}`. The only one of
+    those checks a FIRST-TIME reader can make — no history, no peer, no gossip —
+    and the only place a **rollback** is visible: a host serving a state older than
+    the room's own published statement is `behind`, and nothing else in this family
+    catches that. `notChecked` is deliberately not a synonym for `none`: one says
+    the room published nothing, the other says nobody looked.
+  - **`anchorCadence`** on `rooms/create`, which makes silence legible. A room that
+    says `renewal` and has not anchored in ten epochs is telling a member
+    something, and a member who did not know what to expect could not have noticed.
+    Deliberately not a duration: a room promising "daily" would make a claim its
+    owner's availability cannot keep, and a member comparing against a clock would
+    read an owner's holiday as a host's misbehaviour.
+
+  Scaffolded with `npm run new-spec`. 422 specifications against 422 TypeScript and
+  417 Rust modules, all agreeing; `cargo test --workspace` green.
+
 ## 0.18.3 — 2026-09-09
 
 
