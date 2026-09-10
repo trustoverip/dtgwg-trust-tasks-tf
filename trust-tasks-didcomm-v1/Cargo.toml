@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-didcomm-v1"
-version = "0.19.4"
+version = "0.20.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -27,7 +27,7 @@ default = ["legacy-basic-message"]
 legacy-basic-message = []
 
 [dependencies]
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.19" }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.20" }
 affinidi-messaging-didcomm-v1 = "0.2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 log = "0.4"
