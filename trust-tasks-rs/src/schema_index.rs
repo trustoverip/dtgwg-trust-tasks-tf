@@ -1134,6 +1134,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response" => <crate::specs::vta::contexts::preview_delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/secrets/1.0" => <crate::specs::vta::contexts::secrets::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/secrets/1.0#response" => <crate::specs::vta::contexts::secrets::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/update/1.0" => <crate::specs::vta::contexts::update::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/update/1.0#response" => <crate::specs::vta::contexts::update::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3033,6 +3037,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::vta::contexts::preview_delete::v1_0::Payload,
             >())
         }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/secrets/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::contexts::secrets::v1_0::Payload,
+        >()),
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/contexts/update/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::contexts::update::v1_0::Payload,
