@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/anchor/0.1",
+  "title": "Rooms Owner Anchor \u2014 payload",
+  "description": "TODO: what the request payload of rooms/owner/anchor carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework \u2014 SPEC \u00a76.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host",
+    "signingKeyId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to anchor. The recipient MUST hold its group state and MUST be able to update its DID."
+    },
+    "host": {
+      "type": "string",
+      "description": "The host to read the room's head from, as a DID.\n\nThe owner holds **one** of the three values it is about to publish. `rooms/epoch/mint`'s response is `{roomId, epoch}` \u2014 no watermark, and no reason there should be one: minting acts on the epoch, while the watermark and the commitment are facts about the room's *records*, which live at the host. So an anchor is assembled from a read, and this names where."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "description": "The room's signing key, named rather than looked up: nothing maps a DID to its key, and a wrong key fails to verify against the room's own document at first use."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "anchored",
+        "versionId"
+      ],
+      "description": "Success response to rooms/owner/anchor. Type https://trusttasks.org/spec/rooms/owner/anchor/0.1#response.",
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "anchored": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochAnchor",
+          "description": "What was written \u2014 returned so an owner can see it without resolving their own room, and so an operator can compare it with what a member later reads."
+        },
+        "versionId": {
+          "type": "string",
+          "description": "The `did:webvh` log entry the anchor rode. This is what makes the anchor *witnessed*: naming the entry lets anyone fetch it and check the witnesses' signature over it."
+        },
+        "reconciled": {
+          "type": "boolean",
+          "description": "Whether the host's own listing reconciled with the `recordCount` it committed to, at the moment this was read.\n\n`false` is a host contradicting itself, and the anchor was still written \u2014 deliberately. An owner that refused to anchor a suspect room would leave it with no witnessed statement at all, which is the position the host benefits from. What is published is *what the host claimed*, and this member records that the owner had already caught it claiming something inconsistent."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "title": "Rooms Owner Anchor \u2014 response payload"
+    }
+  }
+}

@@ -194,6 +194,18 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "Whether this root matches what the agent has seen from this host for this room **at this `headVersion`**.\n\nThis is the comparison a member cannot make for themselves. A tab does not outlive itself and a CLI holds nothing; the agent is the only party on the member's side of the boundary that saw both reads.\n\n  - `agree` — seen at this head before, same root.\n  - `conflict` — seen at this head before, **different root**. A host caught: there is no write to attribute the difference to, because a write would have moved the head.\n  - `noneHeld` — first read at this head. Not evidence of anything; a memory of one is not a comparison.\n  - `notChecked` — this agent keeps no root history. An honest answer for an agent that cannot make the comparison, and **not** a synonym for `noneHeld`: one says nothing was found, the other says nothing was looked for.\n\nREQUIRED, so that an agent which does not check has to say so rather than omit the question."
         },
+        "anchor": {
+          "type": "string",
+          "enum": [
+            "agrees",
+            "ahead",
+            "behind",
+            "conflict",
+            "none",
+            "notChecked"
+          ],
+          "description": "How what the host served compares with the room's own **witnessed anchor** (`EpochAnchor`).\n\nThis is the comparison that needs neither a gossip channel rooms deliberately lack nor durable state in an agent: every member resolves the same room DID and reads the same entry, co-signed by witnesses. It is the only one of the three a first-time reader can make.\n\n  - `agrees` — the host served the anchored state, and its root matches.\n  - `ahead` — the room has moved past the anchor. The ordinary case; an anchor describes a moment, not the present, and says nothing about records written since.\n  - `behind` — **the host is serving a state older than the room's own witnessed statement.** A rollback, and a detection nothing else in this family can make: a member with no history, no peer and no prior read still catches it.\n  - `conflict` — same `headVersion` as the anchor, different root. The host has contradicted a value its own room published and witnesses co-signed.\n  - `none` — the room has published no anchor. Not a fault; anchoring costs a witnessed update and a key rotation, and a room may reasonably decline.\n  - `notChecked` — the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked."
+        },
         "count": {
           "type": "string",
           "enum": [
@@ -388,6 +400,18 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "notChecked"
           ],
           "description": "Whether this root matches what the agent has seen from this host for this room **at this `headVersion`**.\n\nThis is the comparison a member cannot make for themselves. A tab does not outlive itself and a CLI holds nothing; the agent is the only party on the member's side of the boundary that saw both reads.\n\n  - `agree` — seen at this head before, same root.\n  - `conflict` — seen at this head before, **different root**. A host caught: there is no write to attribute the difference to, because a write would have moved the head.\n  - `noneHeld` — first read at this head. Not evidence of anything; a memory of one is not a comparison.\n  - `notChecked` — this agent keeps no root history. An honest answer for an agent that cannot make the comparison, and **not** a synonym for `noneHeld`: one says nothing was found, the other says nothing was looked for.\n\nREQUIRED, so that an agent which does not check has to say so rather than omit the question."
+        },
+        "anchor": {
+          "type": "string",
+          "enum": [
+            "agrees",
+            "ahead",
+            "behind",
+            "conflict",
+            "none",
+            "notChecked"
+          ],
+          "description": "How what the host served compares with the room's own **witnessed anchor** (`EpochAnchor`).\n\nThis is the comparison that needs neither a gossip channel rooms deliberately lack nor durable state in an agent: every member resolves the same room DID and reads the same entry, co-signed by witnesses. It is the only one of the three a first-time reader can make.\n\n  - `agrees` — the host served the anchored state, and its root matches.\n  - `ahead` — the room has moved past the anchor. The ordinary case; an anchor describes a moment, not the present, and says nothing about records written since.\n  - `behind` — **the host is serving a state older than the room's own witnessed statement.** A rollback, and a detection nothing else in this family can make: a member with no history, no peer and no prior read still catches it.\n  - `conflict` — same `headVersion` as the anchor, different root. The host has contradicted a value its own room published and witnesses co-signed.\n  - `none` — the room has published no anchor. Not a fault; anchoring costs a witnessed update and a key rotation, and a room may reasonably decline.\n  - `notChecked` — the consumer did not resolve the room. An honest answer, and **not** a synonym for `none`: one says the room published nothing, the other says nobody looked."
         },
         "count": {
           "type": "string",
