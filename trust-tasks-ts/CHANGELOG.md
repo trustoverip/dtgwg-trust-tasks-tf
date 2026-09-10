@@ -11,6 +11,73 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.19.2 — 2026-09-10
+
+
+### Specifications
+
+- **keys**: A key can be marked as never leaving its custodian (#443)
+
+A custodian holds private keys and will release some of them to an entitled
+  caller — that is what `vta/contexts/secrets` exists for. For some keys that is
+  exactly wrong: the key signs something whose authority should never be
+  reproducible outside the custodian, and no future caller, however well
+  authorised, should be able to walk away with it.
+
+  Two parts.
+
+  **`exportable` on the shared `KeyRecord`.** `false` means the custodian refuses
+  every export of the key and serves only *uses* of it — signing, key agreement —
+  so the material never leaves.
+
+  Absence means the key may be exported. That is the permissive reading and it is
+  deliberate: it is what every record written before this member existed already
+  meant, so a custodian adding the member cannot silently retract access its
+  callers already have. Stated in prose, and **no JSON Schema `default` is
+  declared** — a declared default is materialised by the bindings, the field
+  becomes non-optional, and an absent member would reappear as an explicit `true`
+  on re-serialisation, breaking round-trip idempotence for every existing record.
+  The generated field is `Option<bool>`, which is the check that this was done
+  right. There is a `$comment` in the schema saying so, because the mistake is
+  easy to make twice.
+
+  The member also does not speak to recoverability: a custodian's whole-store
+  backup is a different mechanism from an export to a caller. If it did, operators
+  would avoid the flag for fear of stranding a key, which would be the opposite of
+  the intended effect.
+
+  **`keys/set-exportability/0.1`** changes it. The substance is in Authorization,
+  and it is one rule:
+
+  > A consumer **MUST** require strictly stronger authorization to set
+  > `exportable: true` on a key that currently carries `false` than it requires to
+  > set `false` in the first place.
+
+  That asymmetry is the whole value of the member. A restriction the party who
+  imposed it can lift unilaterally protects against accident but not against a
+  compromised caller holding that party's credentials — which is the case the
+  restriction exists for. Because the directions are checked differently, reaching
+  the authority that can impose it does not reach the authority that can remove it.
+
+  What "strictly stronger" is made of is left to the consumer — a second approver,
+  an operator with authority the ordinary administrator lacks, a
+  re-authentication are all reasonable — because §7.3 item 13 forbids a
+  specification from declaring that consent, approval or a step-up is required.
+  What this spec constrains is the *relation* between the two entitlements, not
+  the mechanism behind either.
+
+  `exportable` is an absolute state, not a toggle, so a producer that retries a
+  request whose reply was lost lands where it asked rather than the opposite; the
+  task is idempotent and "already in this state" is explicitly not a conflict.
+  One of the nine negative fixtures is a `toggle` member, and another is
+  `"exportable": "false"` — truthy in several languages, and the most dangerous
+  possible misreading of this task.
+
+  Response wraps the record in `key` to match `keys/show` and `keys/create`;
+  `keys:notFound` is the family code from the category conventions, and
+  `permissionDenied` stays the standard one, named in prose as §3 of those
+  conventions requires.
+
 ## 0.19.1 — 2026-09-10
 
 
