@@ -5,7 +5,7 @@ title: "Process Attestation"
 summary: "Evidence that an artifact was produced through a captured process, attested by the party that captured it and bound to a Verifier-supplied challenge."
 status: draft
 targetFrameworkVersion: "0.5.0"
-category: framework
+category: provenance
 keywords: [process, attestation, provenance, authorship, evidence]
 authors:
   - David L. Condrey (https://github.com/dcondrey)
@@ -260,7 +260,6 @@ specification defines no extended error codes of its own.
     },
     "disclosed": {
       "document": {
-        "byteLength": 18432,
         "mediaType": "text/markdown"
       },
       "timeline": {
@@ -348,11 +347,17 @@ The response carries a determination, a receipt reference, and the derived
 aggregates for the requested categories.
 
 Disclosure categories in this version return derived values only: `document` (the
-artifact binding), `timeline` (session bounds and checkpoint count), `integrity`
-(chain and signature state), and `anchors` (external timestamp anchors). The
-determination is not a category, because `assessment` already carries it on every
-attested response; making it one would put the same value in two places and invite
-them to disagree.
+artifact's media type), `timeline` (session bounds and checkpoint count),
+`integrity` (chain and signature state), and `anchors` (external timestamp
+anchors). The determination is not a category, because `assessment` already
+carries it on every attested response; making it one would put the same value in
+two places and invite them to disagree.
+
+The artifact's byte length is not a category either, for the same reason and by
+the same rule: `artifact.byteLength` already carries it on every response, so a
+`document.byteLength` beside it would be a second copy with no defined
+tie-breaker when the two disagree. `document` carries only what `artifact` does
+not.
 
 Raw behavioral sample data, behavioral fingerprints, and per-region edit topology
 are **out of scope for this version**. A capture primitive that holds such data MUST

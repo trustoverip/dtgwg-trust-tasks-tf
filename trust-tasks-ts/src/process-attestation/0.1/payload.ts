@@ -95,7 +95,6 @@ export interface Assessment {
  */
 export interface Disclosed {
   document?: {
-    byteLength?: number;
     mediaType?: string;
   };
   timeline?: {
@@ -265,7 +264,7 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "digest": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{16,128}$",
+          "pattern": "^[A-Za-z0-9_-]{43,128}$",
           "description": "base64url, unpadded."
         },
         "algorithm": {
@@ -383,10 +382,6 @@ export const PAYLOAD_SCHEMA = {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "byteLength": {
-              "type": "integer",
-              "minimum": 0
-            },
             "mediaType": {
               "type": "string",
               "maxLength": 255
@@ -559,7 +554,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "digest": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{16,128}$",
+          "pattern": "^[A-Za-z0-9_-]{43,128}$",
           "description": "base64url, unpadded."
         },
         "algorithm": {
@@ -677,10 +672,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "byteLength": {
-              "type": "integer",
-              "minimum": 0
-            },
             "mediaType": {
               "type": "string",
               "maxLength": 255
