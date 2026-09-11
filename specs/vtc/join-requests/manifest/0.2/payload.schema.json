@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2",
+  "title": "VTC Join-Requests Manifest — payload",
+  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Duration": {
+      "title": "Duration",
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$",
+      "description": "An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit."
+    },
+    "Criterion": {
+      "title": "Criterion",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "presentationDefinition"
+      ],
+      "dependentRequired": {
+        "vetting": [
+          "requirementsDigest"
+        ]
+      },
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs."
+        },
+        "presentationDefinition": {
+          "type": "object",
+          "description": "The presentation-definition an applicant must satisfy for this criterion (opaque here)."
+        },
+        "vetting": {
+          "$ref": "#/$defs/VettingRequirements"
+        },
+        "requirementsDigest": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission. REQUIRED when `vetting` is present."
+        }
+      }
+    },
+    "VettingRequirements": {
+      "title": "VettingRequirements",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "version",
+        "statementType",
+        "minStatements",
+        "acceptedMethods",
+        "eligibleVetters"
+      ],
+      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.",
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "Version of this requirements object's shape. `0.1` for the members defined here."
+        },
+        "statementType": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register."
+        },
+        "minStatements": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many counted statements are needed, counting each vetter once however many DIDs they hold."
+        },
+        "minByMethod": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Per-method floors within `minStatements` — e.g. `{ \"inPerson\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor."
+        },
+        "acceptedMethods": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod"
+          },
+          "description": "Methods whose statements count at all."
+        },
+        "acceptedDocumentClasses": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingDocumentation"
+          },
+          "description": "Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
+        },
+        "requiredClaims": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType"
+          },
+          "description": "Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none."
+        },
+        "optionalClaims": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType"
+          },
+          "description": "Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts."
+        },
+        "maxStatementAge": {
+          "$ref": "#/$defs/Duration"
+        },
+        "eligibleVetters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role"
+          ],
+          "properties": {
+            "role": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count (normally `vetter`)."
+            }
+          },
+          "description": "How a vetter's eligibility is established."
+        },
+        "independence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxByDeclaredRelationship": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingRelationship"
+              },
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "description": "The most counted statements that may come from vetters declaring each relationship — e.g. `{ \"family\": 0 }`."
+            },
+            "requireConsistentIdentityCommitment": {
+              "type": "boolean",
+              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false."
+            }
+          },
+          "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps."
+        },
+        "invitation": {
+          "type": "string",
+          "enum": [
+            "required",
+            "optional",
+            "none"
+          ],
+          "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs."
+        },
+        "decisionSla": {
+          "$ref": "#/$defs/Duration"
+        },
+        "requirementsGrace": {
+          "$ref": "#/$defs/Duration"
+        },
+        "governanceFrameworkUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048,
+          "description": "Where the community's vetting governance — including the attestation text vetters sign — is published."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests Manifest — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "communityDid",
+        "criteria"
+      ],
+      "properties": {
+        "communityDid": {
+          "type": "string",
+          "pattern": "^did:"
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
