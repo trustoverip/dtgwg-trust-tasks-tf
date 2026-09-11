@@ -499,6 +499,7 @@ export * as VtcRelationshipsPublish_v0_2 from "./vtc/relationships/publish/0.2/p
 export * as VtcRelationshipsRequest_v0_1 from "./vtc/relationships/request/0.1/payload.js";
 export * as VtcRelationshipsRequest_v0_2 from "./vtc/relationships/request/0.2/payload.js";
 export * as VtcRelationshipsRevoke_v0_1 from "./vtc/relationships/revoke/0.1/payload.js";
+export * as VtcVettingRevokeStatement_v0_1 from "./vtc/vetting/revoke-statement/0.1/payload.js";
 export * as VtcWebsiteFilesDelete_v0_1 from "./vtc/website/files/delete/0.1/payload.js";
 export * as VtcWebsiteFilesList_v0_1 from "./vtc/website/files/list/0.1/payload.js";
 export * as VtcWebsiteGenerationsList_v0_1 from "./vtc/website/generations/list/0.1/payload.js";

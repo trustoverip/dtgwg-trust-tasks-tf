@@ -17,4 +17,5 @@ pub mod policies;
 pub mod recognition;
 pub mod registry;
 pub mod relationships;
+pub mod vetting;
 pub mod website;
