@@ -61,13 +61,14 @@ related:
   - vetting/decline
   - vtc/join-requests/manifest
   - credential-exchange/issue
+  - vtc/vetting/vetters/list
 ---
 
 ## Abstract
 
 A community that admits people on **peer identity vetting** asks its applicants to be vetted by existing members before it decides. Each vetter checks, in person or on a call, that the applicant is who they claim to be and controls the DID they are applying with, and issues a signed Vetting Statement. This task is the first step: the applicant asks one vetter to vet them for one community.
 
-The vetter either accepts — returning a `requestId` and, ideally, proof that it is currently eligible to vet for that community — or refuses with a `trust-task-error`. An accepted request leads to [`vetting/session`](../../session/0.1/spec.md), in which the vetter checks the applicant and then delivers a statement over [`credential-exchange/issue`](../../../credential-exchange/issue/0.1/spec.md) or declines with [`vetting/decline`](../../decline/0.1/spec.md). The applicant repeats this with as many vetters as the community's [manifest](../../../vtc/join-requests/manifest/0.2/spec.md) requires.
+The vetter either accepts — returning a `requestId` and, ideally, proof that it is currently eligible to vet for that community — or refuses with a `trust-task-error`. An accepted request leads to [`vetting/session`](../../session/0.1/spec.md), in which the vetter checks the applicant and then delivers a statement over [`credential-exchange/issue`](../../../credential-exchange/issue/0.1/spec.md) or declines with [`vetting/decline`](../../decline/0.1/spec.md). The applicant repeats this with as many vetters as the community's [manifest](../../../vtc/join-requests/manifest/0.2/spec.md) requires. An applicant who does not yet know a vetter can find the community's listed vetters with [`vtc/vetting/vetters/list`](../../../vtc/vetting/vetters/list/0.1/spec.md), and get a ticket as a listing's `contactHint` describes.
 
 These tasks run between two people's agents. No community service is a party to them; the community sees only the statements the applicant eventually submits.
 
@@ -125,7 +126,7 @@ Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, verifying either do
 
 **Join DID** — the DID the applicant applies with. Every card, every statement and the final submission name it; that is what ties an application's evidence together.
 
-**Ticket** — something a vetter hands an applicant out of band so that a request reaches them. The **short code** is eight Crockford base32 characters (`XXXX-XXXX`, 40 bits) that a person reads or types; the **scanned** form is a `ticketId` plus a 32-byte `secret`, usually from a QR code.
+**Ticket** — something a vetter hands an applicant out of band so that a request reaches them. The **short code** is eight Crockford base32 characters (`XXXX-XXXX`, 40 bits) that a person reads or types; the **scanned** form is a `ticketId` plus a 32-byte `secret`, usually from a QR code. Either form can travel as a [ticket URI](#ticket-uri).
 
 **Introduction** — an invitation credential for the community, naming the applicant's join DID, issued by the community or a member. A vetter may accept one in place of a ticket.
 
@@ -274,6 +275,36 @@ The presentation carries Carol's vetter role credential — the one issued in th
 }
 ```
 
+## Ticket URI
+
+*This section is informative.*
+
+A vetter's agent usually hands a ticket over as a QR code. The code encodes a **ticket URI**, which carries what the applicant's agent needs to address the request: the community, the vetter, and the ticket. Everything else in the request is the applicant's to fill in.
+
+```
+vetting-ticket:?v=1&community=<community DID>&vetter=<vetter DID>&ticket=<ticketId>&secret=<secret>
+vetting-ticket:?v=1&community=<community DID>&vetter=<vetter DID>&code=<short code>
+```
+
+| Parameter | Value | Used as |
+|---|---|---|
+| `v` | The URI format version: `1` | — |
+| `community` | The community's DID, percent-encoded | `payload.community` |
+| `vetter` | The vetter's DID, percent-encoded | the request's `recipient` |
+| `ticket` | The scanned ticket's `ticketId` | `payload.ticket.ticketId` |
+| `secret` | The scanned ticket's 32-byte secret, base64url without padding | `payload.ticket.secret` |
+| `code` | A short code, `XXXX-XXXX` | `payload.ticket.code` |
+
+The first form carries a scanned ticket, with `ticket` and `secret` together. The second carries a short code in `code`, in place of both. An encoder writes the parameters in the order shown. A reader refuses a URI whose `v` it does not recognise, because a later version may give a parameter a different meaning. The DIDs are percent-encoded because a DID may itself contain `%`, `&` or `=`, which would otherwise break the query. The `vetting-ticket` scheme is not registered with IANA.
+
+The scanned ticket from a QR code, with the illustrative `ticketId` `tkt-8Hq3`, reads:
+
+```
+vetting-ticket:?v=1&community=did%3Awebvh%3AQmVtcScid%3Akernel-vtc.example&vetter=did%3Awebvh%3AQmCarolScid1%3Akernel-vtc.example%3Acarol&ticket=tkt-8Hq3&secret=q6cGfTAnmpsJ9Ahv0Nn0p1jTlmfu9kNhAg0Dft9sXIc
+```
+
+The applicant's agent sends that request to `did:webvh:QmCarolScid1:kernel-vtc.example:carol`, with `community` set to `did:webvh:QmVtcScid:kernel-vtc.example` and `ticket` set to `{ "ticketId": "tkt-8Hq3", "secret": "q6cGfTAnmpsJ9Ahv0Nn0p1jTlmfu9kNhAg0Dft9sXIc" }`. The short code in the first Request example would travel as `…&code=K7QF-2M9X`.
+
 ## Security & Privacy
 
 **A wrong short code gets no reply.** A short code carries 40 bits, and the only thing that makes guessing one impractical is that a guesser learns nothing from a wrong guess. A vetter therefore sends nothing at all — no `trust-task-error` — for a request whose short code matches no active ticket (Conformance item 3). It **SHOULD** stop considering requests from a sender after five failed short codes in an hour, and **SHOULD** stop accepting short codes altogether, while still accepting scanned tickets, when failures spike across senders. A scanned ticket's 256-bit secret is not guessable, so its failure is reported as `invalidTicket`. Silence is not a refusal an applicant can rely on ([SPEC §4.12](/SPEC.md#412-document-lifecycle)); an applicant whose request goes unanswered should check the code with the vetter out of band.
@@ -282,7 +313,7 @@ The presentation carries Carol's vetter role credential — the one issued in th
 
 The smallest request that works is `community`, `joinDid` and whatever gets it past the vetter's gate. Everything else is the applicant's choice. `message` and `availability` are free text the applicant wrote. They are bounded, read by the vetter alone, and **MUST** be attributed to the applicant wherever they are shown, because they are the one part of the request whose truth nobody has checked. An `introduction` is a credential naming the applicant and the member who introduced them, so carrying one tells the vetter who that member is.
 
-A ticket secret or short code is a credential. The request **MUST** travel over a channel confidential to the two parties, as DIDComm authcrypt and TSP both are.
+A ticket secret or short code is a credential. The request **MUST** travel over a channel confidential to the two parties, as DIDComm authcrypt and TSP both are. A [ticket URI](#ticket-uri) is a credential too, and so is a QR code showing one: whoever scans it first can redeem the ticket. A vetter's agent **SHOULD** show it only to the applicant it is meant for, and an applicant's agent **SHOULD NOT** keep it once the request is sent.
 
 Nothing about identity documents belongs in this exchange — not a number, not a scan, not "passport, expires 2031". The vetter looks at the document during the session, and it never goes on the wire.
 

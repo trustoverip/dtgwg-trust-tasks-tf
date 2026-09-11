@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/profile/0.1",
+  "title": "VTC Vetting — Vetters Profile — payload",
+  "description": "A vetter publishes, replaces or unlists their vetter profile with their community: the languages, coarse location, methods, documentation and events an applicant looking for a vetter can filter on. The payload is the whole profile and replaces whatever the community held. `listed: false` keeps the profile but removes it from vtc/vetting/vetters/list.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["listed", "languages", "methods", "acceptsDocumentation", "events"],
+  "properties": {
+    "listed": {
+      "type": "boolean",
+      "description": "Whether the profile appears in vtc/vetting/vetters/list. `false` keeps it stored and hidden."
+    },
+    "displayName": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterDisplayName"
+    },
+    "languages": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/LanguageTag"
+      },
+      "description": "BCP 47 tags of the languages the vetter can hold a session in, most preferred first. May be empty."
+    },
+    "location": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterLocation"
+    },
+    "methods": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterMethods"
+    },
+    "acceptsDocumentation": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterAcceptsDocumentation"
+    },
+    "availability": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterAvailability"
+    },
+    "contactHint": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterContactHint"
+    },
+    "events": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterEvent"
+      },
+      "description": "Events the vetter will attend and vet at. May be empty. Events that have ended stay stored but are not listed."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Vetters Profile — response payload",
+      "description": "The community stored the profile.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["listed", "updatedAt"],
+      "properties": {
+        "listed": {
+          "type": "boolean",
+          "description": "The stored profile's `listed` value."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community stored this profile. vtc/vetting/vetters/list returns the same value."
+        }
+      }
+    }
+  }
+}

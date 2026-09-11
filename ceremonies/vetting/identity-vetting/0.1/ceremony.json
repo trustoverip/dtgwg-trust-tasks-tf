@@ -97,6 +97,7 @@
     "vetting/decline",
     "credential-exchange/issue",
     "vtc/vetting/revoke-statement",
+    "vtc/vetting/vetters/list",
     "vtc/join-requests/submit"
   ]
 }

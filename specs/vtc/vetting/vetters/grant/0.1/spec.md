@@ -50,6 +50,9 @@ related:
   - credential-exchange/issue
   - vetting/request
   - vtc/join-requests/manifest
+  - vtc/vetting/vetters/profile
+  - vtc/vetting/vetters/list
+  - vtc/vetting/vetters/resend
 ---
 
 ## Abstract
@@ -57,6 +60,8 @@ related:
 A community that admits people on peer identity vetting counts statements only from the members it has made **vetters**. Eligibility is a credential: the community issues the member a **role credential**. That is an `EndorsementCredential` whose `credentialSubject.endorsement` is `{ "type": "CommunityRole", "role": "vetter", "communityDid": … }`, and it carries a revocation status entry. The vetter presents it to applicants in [`vetting/request`](../../../../../vetting/request/0.1/spec.md), so an applicant can check eligibility before arranging a session. The community checks it again when it decides, against its own records.
 
 This task is how an administrator grants that role. The credential is revoked with [`vtc/endorsements/revoke`](../../../../endorsements/revoke/0.1/spec.md), and removing a member revokes it too. A community's manifest names the role it counts as `vetting.eligibleVetters.role`.
+
+A vetter who has lost the credential asks for it again with [`vtc/vetting/vetters/resend`](../../resend/0.1/spec.md). A vetter who wants applicants to find them publishes a profile with [`vtc/vetting/vetters/profile`](../../profile/0.1/spec.md), which [`vtc/vetting/vetters/list`](../../list/0.1/spec.md) returns. A grant alone lists nobody.
 
 ## Status of this Document
 
@@ -81,8 +86,8 @@ A conforming **community** (`recipient`):
    - an `id`, returned as `credentialId`.
 
    `CommunityRole` is the community's reserved endorsement type. It is not registered through `vtc/endorsement-types/register`, which refuses it.
-5. **MUST** deliver the credential to the member over [`credential-exchange/issue/0.1`](../../../../../credential-exchange/issue/0.1/spec.md). A failed delivery does not undo the grant. The community **MAY** deliver the same credential again when the grant is repeated.
-6. **MUST** treat a grant as ended once its credential is revoked through [`vtc/endorsements/revoke/0.1`](../../../../endorsements/revoke/0.1/spec.md) with `endorsementId`, or expires. When a member is removed or leaves, the community **MUST** revoke every live vetter grant that member holds.
+5. **MUST** deliver the credential to the member over [`credential-exchange/issue/0.1`](../../../../../credential-exchange/issue/0.1/spec.md). A failed delivery does not undo the grant. The community **MAY** deliver the same credential again when the grant is repeated, and delivers it again when the member asks with [`vtc/vetting/vetters/resend`](../../resend/0.1/spec.md).
+6. **MUST** treat a grant as ended once its credential is revoked through [`vtc/endorsements/revoke/0.1`](../../../../endorsements/revoke/0.1/spec.md) with `endorsementId`, or expires. When a member is removed or leaves, the community **MUST** revoke every live vetter grant that member holds. When a grant is revoked, the community **MUST** delete the member's [vetter profile](../../profile/0.1/spec.md).
 
 ## Authorization
 
@@ -216,4 +221,4 @@ Durable. The community keeps the endorsement record, the status-list slot, and t
 
 ### Consent/purpose
 
-The purpose is to make a member eligible to vet for this community, and the credential is presented only for that. A community **MUST NOT** use grants for anything else, such as a public list of vetters. Which members are vetters is disclosed by each vetter, to the applicants they choose, not by the community. Whether a member must agree before being made a vetter, and whether an administrator needs a step-up to grant the role, are the community's policy and the administrator's agent's. Per [SPEC §7.3](/SPEC.md#73-specification-requirements) item 13, this specification does not decide them.
+The purpose is to make a member eligible to vet for this community, and the credential is presented only for that. A community **MUST NOT** use grants for anything else. In particular, a grant never puts a member in a list of vetters on its own. A vetter appears in [`vtc/vetting/vetters/list`](../../list/0.1/spec.md) only after choosing to, by publishing a profile with `listed: true` through [`vtc/vetting/vetters/profile`](../../profile/0.1/spec.md), and only to callers the community can identify. Otherwise, which members are vetters is disclosed by each vetter, to the applicants they choose, not by the community. Whether a member must agree before being made a vetter, and whether an administrator needs a step-up to grant the role, are the community's policy and the administrator's agent's. Per [SPEC §7.3](/SPEC.md#73-specification-requirements) item 13, this specification does not decide them.

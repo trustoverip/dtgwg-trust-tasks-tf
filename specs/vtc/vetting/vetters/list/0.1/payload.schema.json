@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/list/0.1",
+  "title": "VTC Vetting — Vetters List — payload",
+  "description": "An authenticated applicant or member asks a community for its listed vetters, optionally filtered by language, location, method or event. Only active members with a live vetter grant and a profile stored with `listed: true` appear, and each entry carries only what the vetter published, their DID and their grant's expiry. Every filter is optional; filters combine with AND.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "language": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/LanguageTag",
+      "description": "Matches a vetter with a listed language tag equal to this one or beginning with it followed by `-`, case-insensitively: `de` matches `de` and `de-AT`."
+    },
+    "country": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/CountryCode"
+    },
+    "region": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/PlaceName"
+    },
+    "city": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/PlaceName"
+    },
+    "method": {
+      "$ref": "../../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod"
+    },
+    "eventFrom": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/CalendarDate"
+    },
+    "eventTo": {
+      "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/CalendarDate"
+    },
+    "eventName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Matches an event whose `name` contains this text, case-insensitively."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Most entries to return. Absent: 50."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Opaque continuation token from a previous page's `nextCursor`, sent with the same filters."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "ListedVetter": {
+      "title": "ListedVetter",
+      "description": "One listed vetter: the published profile without `listed` and `ext`, the vetter's DID, the expiry of their live grant, and when the profile was stored. Nothing else about the member is disclosed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vetterDid", "languages", "methods", "acceptsDocumentation", "events", "grantValidUntil", "updatedAt"],
+      "properties": {
+        "vetterDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The vetter's member DID — the subject of their vetter role credential, and the DID a vetting/request is addressed to."
+        },
+        "displayName": {
+          "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterDisplayName"
+        },
+        "languages": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/LanguageTag"
+          }
+        },
+        "location": {
+          "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterLocation"
+        },
+        "methods": {
+          "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterMethods"
+        },
+        "acceptsDocumentation": {
+          "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterAcceptsDocumentation"
+        },
+        "availability": {
+          "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterAvailability"
+        },
+        "contactHint": {
+          "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterContactHint"
+        },
+        "events": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterEvent"
+          },
+          "description": "The profile's events whose `endDate` is today (UTC) or later. Ended events are never returned."
+        },
+        "grantValidUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The `validUntil` of the vetter's live vetter role credential."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community stored this profile, as returned by vtc/vetting/vetters/profile."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Vetters List — response payload",
+      "description": "One page of listed vetters matching every filter sent.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vetters"],
+      "properties": {
+        "vetters": {
+          "type": "array",
+          "maxItems": 100,
+          "items": { "$ref": "#/$defs/ListedVetter" },
+          "description": "The page, in the order Conformance defines. May be empty."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more entries match; send it as `cursor`, with the same filters, for the next page. Absent on the last page."
+        }
+      }
+    }
+  }
+}
