@@ -7,17 +7,9 @@ import type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMeth
 
 
 /**
- * A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period.
+ * An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
  */
 export type Duration = string;
-/**
- * How long after submission the community undertakes to reach a decision, including on an application referred to human review.
- */
-export type Duration1 = string;
-/**
- * How long an application started under an earlier `requirementsDigest` continues to be evaluated under that earlier version after the criterion changes.
- */
-export type Duration2 = string;
 
 /**
  * Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.
@@ -47,7 +39,7 @@ export interface Criterion {
   requirementsDigest?: DigestMultibase;
 }
 /**
- * What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.
+ * What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.
  */
 export interface VettingRequirements {
   /**
@@ -117,8 +109,8 @@ export interface VettingRequirements {
    * Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.
    */
   invitation?: "required" | "optional" | "none";
-  decisionSla?: Duration1;
-  requirementsGrace?: Duration2;
+  decisionSla?: Duration;
+  requirementsGrace?: Duration;
   /**
    * Where the community's vetting governance — including the attestation text vetters sign — is published.
    */
@@ -218,7 +210,7 @@ export const PAYLOAD_SCHEMA = {
         "acceptedMethods",
         "eligibleVetters"
       ],
-      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.",
+      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.",
       "properties": {
         "version": {
           "type": "string",
@@ -283,8 +275,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts."
         },
         "maxStatementAge": {
-          "$ref": "#/$defs/Duration",
-          "description": "A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period."
+          "$ref": "#/$defs/Duration"
         },
         "eligibleVetters": {
           "type": "object",
@@ -335,12 +326,10 @@ export const PAYLOAD_SCHEMA = {
           "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs."
         },
         "decisionSla": {
-          "$ref": "#/$defs/Duration",
-          "description": "How long after submission the community undertakes to reach a decision, including on an application referred to human review."
+          "$ref": "#/$defs/Duration"
         },
         "requirementsGrace": {
-          "$ref": "#/$defs/Duration",
-          "description": "How long an application started under an earlier `requirementsDigest` continues to be evaluated under that earlier version after the criterion changes."
+          "$ref": "#/$defs/Duration"
         },
         "governanceFrameworkUrl": {
           "type": "string",
@@ -497,7 +486,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "acceptedMethods",
         "eligibleVetters"
       ],
-      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.",
+      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.",
       "properties": {
         "version": {
           "type": "string",
@@ -562,8 +551,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts."
         },
         "maxStatementAge": {
-          "$ref": "#/$defs/Duration",
-          "description": "A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period."
+          "$ref": "#/$defs/Duration"
         },
         "eligibleVetters": {
           "type": "object",
@@ -614,12 +602,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs."
         },
         "decisionSla": {
-          "$ref": "#/$defs/Duration",
-          "description": "How long after submission the community undertakes to reach a decision, including on an application referred to human review."
+          "$ref": "#/$defs/Duration"
         },
         "requirementsGrace": {
-          "$ref": "#/$defs/Duration",
-          "description": "How long an application started under an earlier `requirementsDigest` continues to be evaluated under that earlier version after the criterion changes."
+          "$ref": "#/$defs/Duration"
         },
         "governanceFrameworkUrl": {
           "type": "string",
