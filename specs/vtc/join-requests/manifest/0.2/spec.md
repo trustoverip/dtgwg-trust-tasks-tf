@@ -41,6 +41,7 @@ errorCodes: []
 related:
   - vtc/join-requests/submit
   - vtc/endorsement-types/register
+  - vtc/vetting/vetters/grant
   - vetting/request
 ---
 
@@ -110,7 +111,7 @@ This task is not consequential ([SPEC §2](/SPEC.md#2-terminology)): it changes 
 | `requiredClaims` | Claim types the Vetting Card must carry and a counted statement must list as verified; the identity commitment is computed over these |
 | `optionalClaims` | Claim types an applicant may add; never affect counting |
 | `maxStatementAge` | A statement older than this at decision time does not count |
-| `eligibleVetters.role` | The community role a statement's issuer must hold for it to count |
+| `eligibleVetters.role` | The role named in a community-issued `CommunityRole` endorsement credential (see [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)) that a statement's issuer must hold for it to count |
 | `independence` | Caps per declared vetter–applicant relationship (`none`, `communityColleague`, `sameEmployer`, `family`, `otherPersonal`); whether all statements must carry the same identity commitment |
 | `invitation` | Whether an invitation credential must (`required`) or may (`optional`) accompany the statements, or plays no part (`none`) |
 | `decisionSla` | How long after submission the community undertakes to decide |

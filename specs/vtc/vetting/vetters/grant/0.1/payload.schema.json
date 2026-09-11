@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1",
+  "title": "VTC Vetting — Vetters Grant — payload",
+  "description": "A community administrator makes a member a vetter. The community issues the member a revocable `CommunityRole` endorsement credential for the `vetter` role, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["memberDid"],
+  "properties": {
+    "memberDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with."
+    },
+    "validitySeconds": {
+      "type": "integer",
+      "minimum": 86400,
+      "maximum": 63072000,
+      "description": "OPTIONAL. How long the role credential is valid, from issuance: at least one day, at most two years. Absent: 31536000 (365 days). Ignored when the member already holds a live grant."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Vetters Grant — response payload",
+      "description": "The grant — newly issued, or the member's existing live grant.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endorsementId", "credentialId", "validFrom", "validUntil"],
+      "properties": {
+        "endorsementId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community's endorsement record for this grant — the identifier vtc/endorsements/revoke takes."
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+          "description": "The `id` of the role credential, a URI."
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The role credential's `validFrom`."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The role credential's `validUntil`."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

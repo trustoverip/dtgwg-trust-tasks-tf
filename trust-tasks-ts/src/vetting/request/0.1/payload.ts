@@ -123,10 +123,7 @@ export interface VettingRequestResponsePayload {
    * The vetter's handle for this accepted request, carried by the session and any decline.
    */
   requestId: string;
-  /**
-   * RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`.
-   */
-  eligibilityVp?: {};
+  eligibilityVp?: EligibilityPresentation;
   /**
    * RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.
    *
@@ -138,6 +135,61 @@ export interface VettingRequestResponsePayload {
    */
   sessionHint?: string;
   ext?: Ext;
+}
+/**
+ * OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.
+ */
+export interface EligibilityPresentation {
+  /**
+   * JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).
+   *
+   * @minItems 1
+   */
+  "@context": [string, ...string[]];
+  /**
+   * MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).
+   *
+   * @minItems 1
+   */
+  type: [string, ...string[]];
+  /**
+   * The vetter's DID — the response's `issuer`.
+   */
+  holder: string;
+  /**
+   * Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.
+   *
+   * @minItems 1
+   */
+  verifiableCredential: [{}, ...{}[]];
+  /**
+   * The `id` of the vetting/request document this responds to.
+   */
+  nonce: string;
+  /**
+   * The applicant's `joinDid` from that request.
+   */
+  domain: string;
+  proof: EligibilityPresentationProof;
+  [k: string]: unknown | undefined;
+}
+/**
+ * A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.
+ */
+export interface EligibilityPresentationProof {
+  type: "DataIntegrityProof";
+  /**
+   * e.g. `eddsa-jcs-2022`.
+   */
+  cryptosuite: string;
+  /**
+   * A verification method of `holder`, authorized for `authentication`.
+   */
+  verificationMethod: string;
+  proofPurpose: "authentication";
+  created?: string;
+  proofValue: string;
+  [k: string]: unknown | undefined;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
@@ -287,6 +339,114 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
+    "EligibilityPresentation": {
+      "title": "EligibilityPresentation",
+      "description": "OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "@context",
+        "type",
+        "holder",
+        "verifiableCredential",
+        "nonce",
+        "domain",
+        "proof"
+      ],
+      "properties": {
+        "@context": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "description": "JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express)."
+        },
+        "type": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": "MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express)."
+        },
+        "holder": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The vetter's DID — the response's `issuer`."
+        },
+        "verifiableCredential": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object"
+          },
+          "description": "Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential."
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The `id` of the vetting/request document this responds to."
+        },
+        "domain": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The applicant's `joinDid` from that request."
+        },
+        "proof": {
+          "$ref": "#/$defs/EligibilityPresentationProof"
+        }
+      }
+    },
+    "EligibilityPresentationProof": {
+      "title": "EligibilityPresentationProof",
+      "description": "A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "type",
+        "cryptosuite",
+        "verificationMethod",
+        "proofPurpose",
+        "proofValue"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "DataIntegrityProof"
+        },
+        "cryptosuite": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "e.g. `eddsa-jcs-2022`."
+        },
+        "verificationMethod": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "A verification method of `holder`, authorized for `authentication`."
+        },
+        "proofPurpose": {
+          "type": "string",
+          "const": "authentication"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "proofValue": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    },
     "Response": {
       "$anchor": "response",
       "title": "Vetting Request — response payload",
@@ -304,8 +464,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "The vetter's handle for this accepted request, carried by the session and any decline."
         },
         "eligibilityVp": {
-          "type": "object",
-          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`."
+          "$ref": "#/$defs/EligibilityPresentation"
         },
         "acceptsDocumentation": {
           "type": "array",
@@ -422,6 +581,114 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
+    "EligibilityPresentation": {
+      "title": "EligibilityPresentation",
+      "description": "OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "@context",
+        "type",
+        "holder",
+        "verifiableCredential",
+        "nonce",
+        "domain",
+        "proof"
+      ],
+      "properties": {
+        "@context": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "description": "JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express)."
+        },
+        "type": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": "MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express)."
+        },
+        "holder": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The vetter's DID — the response's `issuer`."
+        },
+        "verifiableCredential": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object"
+          },
+          "description": "Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential."
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The `id` of the vetting/request document this responds to."
+        },
+        "domain": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The applicant's `joinDid` from that request."
+        },
+        "proof": {
+          "$ref": "#/$defs/EligibilityPresentationProof"
+        }
+      }
+    },
+    "EligibilityPresentationProof": {
+      "title": "EligibilityPresentationProof",
+      "description": "A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "type",
+        "cryptosuite",
+        "verificationMethod",
+        "proofPurpose",
+        "proofValue"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "DataIntegrityProof"
+        },
+        "cryptosuite": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "e.g. `eddsa-jcs-2022`."
+        },
+        "verificationMethod": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "A verification method of `holder`, authorized for `authentication`."
+        },
+        "proofPurpose": {
+          "type": "string",
+          "const": "authentication"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "proofValue": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    },
     "Response": {
       "$anchor": "response",
       "title": "Vetting Request — response payload",
@@ -439,8 +706,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The vetter's handle for this accepted request, carried by the session and any decline."
         },
         "eligibilityVp": {
-          "type": "object",
-          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`."
+          "$ref": "#/$defs/EligibilityPresentation"
         },
         "acceptsDocumentation": {
           "type": "array",
