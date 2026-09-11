@@ -12,7 +12,7 @@ import type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMeth
 export type Duration = string;
 
 /**
- * Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.
+ * Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under. The response may also carry `branding`, how the community asks to be shown.
  */
 export interface VTCJoinRequestsManifestPayload {
   ext?: Ext;
@@ -20,6 +20,7 @@ export interface VTCJoinRequestsManifestPayload {
 export interface VTCJoinRequestsManifestResponsePayload {
   communityDid: string;
   criteria: Criterion[];
+  branding?: CommunityBranding;
   ext?: Ext;
 }
 export interface Criterion {
@@ -117,6 +118,24 @@ export interface VettingRequirements {
   governanceFrameworkUrl?: string;
   [k: string]: unknown | undefined;
 }
+/**
+ * OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
+ */
+export interface CommunityBranding {
+  /**
+   * The community's name as it asks to be shown.
+   */
+  displayName?: string;
+  /**
+   * An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.
+   */
+  accentColor?: string;
+  /**
+   * An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.
+   */
+  logoUrl?: string;
+  ext?: Ext;
+}
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
 export type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMethod };
@@ -146,7 +165,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2",
   "title": "VTC Join-Requests Manifest — payload",
-  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.",
+  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under. The response may also carry `branding`, how the community asks to be shown.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -340,6 +359,35 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
+    "CommunityBranding": {
+      "title": "CommunityBranding",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community's name as it asks to be shown."
+        },
+        "accentColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case."
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048,
+          "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
     "Response": {
       "$anchor": "response",
       "title": "VTC Join-Requests Manifest — response payload",
@@ -359,6 +407,9 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/Criterion"
           }
+        },
+        "branding": {
+          "$ref": "#/$defs/CommunityBranding"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -616,6 +667,35 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
+    "CommunityBranding": {
+      "title": "CommunityBranding",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community's name as it asks to be shown."
+        },
+        "accentColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case."
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048,
+          "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
     "Response": {
       "$anchor": "response",
       "title": "VTC Join-Requests Manifest — response payload",
@@ -635,6 +715,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/Criterion"
           }
+        },
+        "branding": {
+          "$ref": "#/$defs/CommunityBranding"
         },
         "ext": {
           "$ref": "#/$defs/Ext"

@@ -33,7 +33,7 @@ exposure:
   discloses: metadata
   ingests: none
   actsAsSubject: false
-  rationale: "The response describes what the community asks of applicants — presentation-definitions, vetting counts and methods, a governance link. None of it is data about a member, applicant, or natural person. The request carries nothing."
+  rationale: "The response describes what the community asks of applicants — presentation-definitions, vetting counts and methods, a governance link — and optionally how the community asks to be shown. None of it is data about a member, applicant, or natural person. The request carries nothing."
 retention:
   class: transient
   rationale: The request has no members at all, so there is nothing for a community to keep from it beyond whatever attribution the optional proof carries. This is the one task in the family that leaves no trace of an applicant, which is what makes it usable before deciding whether to apply.
@@ -42,6 +42,7 @@ related:
   - vtc/join-requests/submit
   - vtc/endorsement-types/register
   - vtc/vetting/vetters/grant
+  - vtc/vetting/vetters/list
   - vetting/request
 ---
 
@@ -49,7 +50,9 @@ related:
 
 The **VTC Join-Requests — Manifest** Trust Task returns a community's join criteria so a prospective applicant knows what to present before presenting anything. Each criterion names a presentation-definition the applicant must satisfy. A criterion MAY also carry a **`vetting`** requirements object — how many identity-vetting statements the community needs, by which methods, from whom — and then MUST carry a **`requirementsDigest`** naming that exact version of the criterion.
 
-The applicant then gathers what is required and submits via [`vtc/join-requests/submit`](../../submit/0.2/spec.md).
+The applicant then gathers what is required and submits via [`vtc/join-requests/submit`](../../submit/0.2/spec.md). An applicant that needs vetters, and does not know any, can find the community's listed vetters with [`vtc/vetting/vetters/list`](../../../vetting/vetters/list/0.1/spec.md).
+
+The response **MAY** also carry **`branding`** — a display name, an accent colour and a logo — so a client can show the community recognisably. Branding is presentation, not identity.
 
 ## Status of this Document
 
@@ -76,11 +79,13 @@ A conforming **community** (`recipient`):
 3. **MUST NOT** publish a `vetting` object it cannot evaluate as written: `minStatements` at least 1, `acceptedMethods` non-empty, every method in `minByMethod` also in `acceptedMethods`, and every duration in the form the schema permits.
 4. **MUST** evaluate a submission that cites a `requirementsDigest` under the criterion version that digest names, while that version is within its `requirementsGrace`, and **MUST** record which version governed the decision. Outside the grace window, or where no grace is declared, the current version governs.
 5. **MUST NOT** apply to a vetting statement any constraint the `vetting` object does not state. Absent members mean no constraint of that kind; this specification defines no default count, method floor, age limit, or documentation, and a community that relies on one publishes it.
+6. **MAY** return `branding`, with any of its members. Branding belongs to no criterion, so no `requirementsDigest` covers it, and changing it changes nothing an applicant was told to gather.
 
 A conforming **applicant**:
 
 1. **MUST** ignore members of `vetting` it does not recognise, and **MUST** treat a `vetting` object that fails item 3 above as unsatisfiable rather than guess at its meaning. A client's reading of the requirements is advisory in any case: the community's decision is authoritative, and some of what it evaluates — current vetter eligibility, for one — is visible only to the community.
 2. On starting an application under a criterion carrying `vetting`, **SHOULD** record the `requirementsDigest` at that moment, cite it in every [`vetting/request`](../../../../vetting/request/0.1/spec.md) and at submission, and recompute it from the criterion before relying on it.
+3. **MUST NOT** treat `branding` as evidence of which community it is dealing with — `communityDid` is that — and **SHOULD** ignore a `branding` member it cannot use, such as a logo that fails to load, rather than refuse the manifest.
 
 ### Computing `requirementsDigest`
 
@@ -121,6 +126,17 @@ This task is not consequential ([SPEC §2](/SPEC.md#2-terminology)): it changes 
 Durations are ISO 8601 in weeks, days, hours, minutes and seconds (`P120D`, `P2W`, `PT15M`). Years and months are not accepted: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
 
 **`requirementsDigest`** — the digest defined under Conformance. It names a version of a criterion, not a community policy as a whole.
+
+**Community branding (`branding`)** — how the community asks to be shown, all members optional:
+
+| Member | Rule |
+|---|---|
+| `displayName` | 1–128 characters |
+| `accentColor` | `#rrggbb`, hexadecimal, compared case-insensitively |
+| `logoUrl` | An https URL, at most 2048 characters |
+| `ext` | [SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member) extensions |
+
+A community sets it through its own administration, outside any Trust Task.
 
 ## Request
 
@@ -208,6 +224,43 @@ The first criterion needs two vetting statements, at least one in person, none f
 }
 ```
 
+### With community branding
+
+A community that sets branding returns it beside the criteria. Branding is outside every criterion, so the digest a criterion carries is unaffected by it.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c04",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c03",
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:05:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example",
+    "criteria": [
+      {
+        "id": "invited",
+        "description": "Present an invitation issued by this community.",
+        "presentationDefinition": {
+          "credentials": [
+            {
+              "id": "invitation",
+              "format": "ldp_vc",
+              "meta": { "type_values": [["InvitationCredential"]] }
+            }
+          ]
+        }
+      }
+    ],
+    "branding": {
+      "displayName": "Kernel VTC",
+      "accentColor": "#1f6feb",
+      "logoUrl": "https://kernel-vtc.example/assets/logo.svg"
+    }
+  }
+}
+```
+
 ## Security & Privacy
 
 ### Data carried
@@ -226,7 +279,10 @@ a claim value, a vetter's identity, or anything about any applicant. In particul
 it does not list vetters. How an applicant finds one is a separate question, with a
 different privacy answer, and folding a vetter list into a document anyone can
 fetch anonymously would publish exactly the social graph peer vetting is designed
-to keep private. A community **MUST NOT** use the open `vetting` object to carry
+to keep private. That answer is
+[`vtc/vetting/vetters/list`](../../../vetting/vetters/list/0.1/spec.md), which
+returns only vetters who chose to be listed, and only to callers the community can
+identify. A community **MUST NOT** use the open `vetting` object to carry
 vetter identities, applicant data, or anything else about a person.
 
 `acceptedDocumentClasses` is absent by default, and communities **SHOULD** leave it
@@ -234,6 +290,14 @@ absent unless their governance genuinely needs a floor. Stating a floor pushes e
 vetter towards the same documents. It also excludes applicants who do not hold one
 of the listed classes, and a vetter who knows someone well enough to attest without a
 document is often the better evidence.
+
+`branding` is the community's own presentation and carries nothing about a person.
+`displayName` is self-asserted, and a client **SHOULD** show it beside, never in place
+of, whatever the user chose the community by. `logoUrl` is the one member a client
+fetches from somewhere other than the community, and fetching it tells that host
+that someone, at some network address, is looking at this community. A client
+**SHOULD** fetch a logo only when about to show it, **SHOULD NOT** send cookies or
+credentials with the fetch, and **MUST** treat the image as untrusted input.
 
 ### Correlation
 

@@ -426,6 +426,7 @@ export * as InvitationShared_v0_1 from "./vtc/_shared/0.1/invitation.js";
 export * as InviteShared_v0_1 from "./vtc/_shared/0.1/invite.js";
 export * as JoinRequestShared_v0_1 from "./vtc/_shared/0.1/join-request.js";
 export * as MemberShared_v0_1 from "./vtc/_shared/0.1/member.js";
+export * as VetterProfileShared_v0_1 from "./vtc/_shared/0.1/vetter-profile.js";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload.js";
 export * as VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
@@ -501,6 +502,9 @@ export * as VtcRelationshipsRequest_v0_2 from "./vtc/relationships/request/0.2/p
 export * as VtcRelationshipsRevoke_v0_1 from "./vtc/relationships/revoke/0.1/payload.js";
 export * as VtcVettingRevokeStatement_v0_1 from "./vtc/vetting/revoke-statement/0.1/payload.js";
 export * as VtcVettingVettersGrant_v0_1 from "./vtc/vetting/vetters/grant/0.1/payload.js";
+export * as VtcVettingVettersList_v0_1 from "./vtc/vetting/vetters/list/0.1/payload.js";
+export * as VtcVettingVettersProfile_v0_1 from "./vtc/vetting/vetters/profile/0.1/payload.js";
+export * as VtcVettingVettersResend_v0_1 from "./vtc/vetting/vetters/resend/0.1/payload.js";
 export * as VtcWebsiteFilesDelete_v0_1 from "./vtc/website/files/delete/0.1/payload.js";
 export * as VtcWebsiteFilesList_v0_1 from "./vtc/website/files/list/0.1/payload.js";
 export * as VtcWebsiteGenerationsList_v0_1 from "./vtc/website/generations/list/0.1/payload.js";

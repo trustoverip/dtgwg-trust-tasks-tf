@@ -43,6 +43,10 @@ export type AuditAction =
   | "adminAdd"
   | "adminStrip";
 /**
+ * A calendar date, `YYYY-MM-DD` (RFC 3339 full-date), with no time or zone. Compared as a UTC date.
+ */
+export type CalendarDate = string;
+/**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
 export type Capability_DeviceV0_1 =
@@ -94,6 +98,10 @@ export type ConsumerKind_DeviceV0_1 = Companion_DeviceV0_1 | Service_DeviceV0_1;
  * Discriminator: is this consumer a user-driven Companion or a headless Service?
  */
 export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
+/**
+ * An ISO 3166-1 alpha-2 country code, upper case, e.g. `DE`.
+ */
+export type CountryCode = string;
 /**
  * Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
  */
@@ -210,9 +218,17 @@ export type KeyType = "ed25519" | "x25519" | "p256";
  */
 export type Kind = "dm" | "group" | "channel";
 /**
+ * A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively.
+ */
+export type LanguageTag = string;
+/**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
+/**
+ * A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.
+ */
+export type PlaceName = string;
 /**
  * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
  *
@@ -488,6 +504,183 @@ export type Version_PersonaV0_1 = number;
  * A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
  */
 export type Version_VtaV0_1 = number;
+/**
+ * What documentation the vetter relies on, in the same tokens as vetting/request's `acceptsDocumentation` — `passport`, `nationalId`, `driverLicence`, `none`, or another lowerCamelCase class. The vetter's own choice; empty says nothing either way.
+ *
+ * @maxItems 16
+ */
+export type VetterAcceptsDocumentation =
+  | []
+  | [VettingDocumentation]
+  | [VettingDocumentation, VettingDocumentation]
+  | [VettingDocumentation, VettingDocumentation, VettingDocumentation]
+  | [VettingDocumentation, VettingDocumentation, VettingDocumentation, VettingDocumentation]
+  | [VettingDocumentation, VettingDocumentation, VettingDocumentation, VettingDocumentation, VettingDocumentation]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ]
+  | [
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation,
+      VettingDocumentation
+    ];
+/**
+ * Vetter-authored free text on when they are available to vet. Attributed to the vetter.
+ */
+export type VetterAvailability = string;
+/**
+ * Vetter-authored free text on how to obtain a ticket from them, e.g. `Find me at the OpenVTC booth`. A hint, not an address a request can be sent to: vetting/request still needs a ticket or an introduction the vetter accepts.
+ */
+export type VetterContactHint = string;
+/**
+ * The name the vetter chooses to be listed under. Self-asserted and unverified: it is not the name on any document, and a client MUST attribute it to the vetter.
+ */
+export type VetterDisplayName = string;
+/**
+ * The methods the vetter offers, from `inPerson`, `video`, `priorAcquaintance`.
+ *
+ * @minItems 1
+ * @maxItems 3
+ */
+export type VetterMethods =
+  | [VettingMethod]
+  | [VettingMethod, VettingMethod]
+  | [VettingMethod, VettingMethod, VettingMethod];
 /**
  * A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
  */
@@ -3673,6 +3866,30 @@ export interface VerdictWith {
    * A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.
    */
   presentationDefinition?: {};
+}
+/**
+ * An event the vetter will attend and vet at. `endDate` is on or after `startDate` and no more than 31 days after it; JSON Schema cannot compare two members, so the community checks both and refuses a violation with `malformedRequest`.
+ */
+export interface VetterEvent {
+  /**
+   * The event's name, e.g. `Linux Plumbers Conference 2026`.
+   */
+  name: string;
+  startDate: CalendarDate;
+  endDate: CalendarDate;
+  location?: VetterLocation;
+  /**
+   * OPTIONAL. The event's own https page.
+   */
+  url?: string;
+}
+/**
+ * Where a vetter can meet people, as coarse as the vetter chooses: a country, optionally a region, optionally a city. Never a street address.
+ */
+export interface VetterLocation {
+  country: CountryCode;
+  region?: PlaceName;
+  city?: PlaceName;
 }
 export interface VettingCard {
   /**
