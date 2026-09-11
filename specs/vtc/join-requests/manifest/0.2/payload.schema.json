@@ -145,7 +145,7 @@
               "minLength": 1,
               "maxLength": 128,
               "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count (normally `vetter`)."
+              "description": "The role named in a community-issued `CommunityRole` endorsement credential (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that credential."
             }
           },
           "description": "How a vetter's eligibility is established."

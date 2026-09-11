@@ -93,10 +93,17 @@ A conforming **vetter** (`recipient`):
 2. **MUST** decide whether the request passes its own gate — a valid ticket it issued for `community`, an introduction it accepts, or a policy of taking requests without either — **before** anything about the request reaches a person. A request that fails the gate **MUST NOT** produce a notification.
 3. **MUST NOT** answer a request whose short `code` matches no active ticket — not with a response, and not with a `trust-task-error`. A scanned ticket whose `secret` does not match is refused with `vetting/request:invalidTicket`.
 4. **MUST** compare ticket codes and secrets in constant time, count one use of a ticket per accepted request, and treat the first `issuer` to redeem a ticket as the only party later documents of that vetting may come from.
-5. On accepting, returns the `#response` with a `requestId` unique among its open requests. It **SHOULD** include `eligibilityVp`: a presentation, held by the vetter's DID (the response's `issuer`), of the membership credential and the role credential the community issued it, with `challenge` equal to the request document's `id` and `domain` equal to `community`. The applicant chose that `id`, so the presentation is fresh to this request: one the vetter made while it still held the role cannot be replayed after it lost it. It **SHOULD** include `acceptsDocumentation`.
+5. On accepting, returns the `#response` with a `requestId` unique among its open requests. It **SHOULD** include `acceptsDocumentation`, and **SHOULD** include `eligibilityVp`, a Verifiable Presentation in which:
+   - `@context` begins with `https://www.w3.org/ns/credentials/v2`, and `type` includes `VerifiablePresentation`;
+   - `holder` is the vetter's DID — the response's `issuer`;
+   - `nonce` is the `id` of the request document it answers, and `domain` is that request's `joinDid`;
+   - `verifiableCredential` includes the community's `CommunityRole` endorsement credential naming the vetter, whose `role` is the manifest's `eligibleVetters.role` — the credential [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md) issues;
+   - `proof` is a Data Integrity proof by `holder`, with `proofPurpose` `authentication`, over the presentation including `nonce` and `domain`.
+
+   The applicant chose the nonce and is named by the domain, so the presentation is fresh to this request and bound to this applicant. One the vetter made while it still held the role cannot be replayed after it lost it, or shown to a different applicant.
 6. Otherwise returns a `trust-task-error` carrying one of this specification's codes. A refusal is never a `#response`.
 
-A conforming **applicant**, on receiving a response carrying `eligibilityVp`, **SHOULD** check that its holder is the response's `issuer`; that its `challenge` is the `id` of the request document it sent and its `domain` is `community`; that both credentials are issued by `community` and name the vetter; that the role credential names the role the community's manifest requires; and that neither is expired or revoked. The check is advisory: the community evaluates eligibility again when it decides, and a statement from a vetter that was not eligible does not count.
+A conforming **applicant**, on receiving `eligibilityVp`, **SHOULD** verify it. The `proof` verifies under an `authentication` key of `holder`, and `holder` is the response's `issuer`. `nonce` is the `id` of the request it sent, and `domain` is its own `joinDid`. The `CommunityRole` credential is issued by `community` and names `holder` as its subject. Its `endorsement.communityDid` is `community` and its `endorsement.role` is the manifest's `eligibleVetters.role`. It is within its validity period, and its `credentialStatus` does not show it revoked. The check is **advisory**: the community is authoritative, evaluates eligibility again when it decides, and does not count a statement from a vetter that was not eligible. An applicant that cannot complete the check — a status list it cannot reach, say — **MAY** go ahead with the vetter, accepting that risk.
 
 ## Authorization
 
@@ -104,7 +111,7 @@ A conforming **applicant**, on receiving a response carrying `eligibilityVp`, **
 
 What a request needs is authority to be **heard**, not authority to be vetted. It comes from the vetter: possession of a ticket the vetter issued, an introduction the vetter accepts, or the vetter's own policy of taking requests without either. A ticket is a bearer secret. Holding one says nothing about who the applicant is — that is the proof and the `joinDid` equality — and entitles the holder to nothing beyond having the request considered. Whether to vet anyone remains the vetter's decision, and `vetting/request:declined` needs no reason.
 
-What the response asserts is the vetter's eligibility, and that authority is the **community's**: a membership credential and a role credential the community issued to the vetter. `eligibilityVp` presents that evidence; it does not create it. A vetter that accepts without being eligible has done nothing a conforming applicant need rely on, because its statements will not count.
+What the response asserts is the vetter's eligibility, and that authority is the **community's**: the `CommunityRole` endorsement credential the community issued to the vetter through [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md), which the community can revoke. `eligibilityVp` presents that evidence; it does not create it. A vetter that accepts without being eligible has done nothing a conforming applicant need rely on, because its statements will not count.
 
 Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, verifying either document's `proof` establishes who sent it, never that they may do what it asks.
 
@@ -112,7 +119,9 @@ Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, verifying either do
 
 **Applicant** — the person who wants to join a community, acting through their agent.
 
-**Vetter** — an existing member the community has made eligible to vet, acting through their agent.
+**Vetter** — an existing member holding the community's vetter role credential, acting through their agent.
+
+**Eligibility presentation** — `eligibilityVp`: the vetter's presentation of that role credential, bound by `nonce` to one request and by `domain` to one applicant.
 
 **Join DID** — the DID the applicant applies with. Every card, every statement and the final submission name it; that is what ties an application's evidence together.
 
@@ -163,7 +172,7 @@ The vetter, now responding, accepts the request, per the sub-schema reachable vi
 
 ### Accepted, with proof of eligibility
 
-The presentation is abridged; its credentials are the community's membership credential and `vetter` role credential for Carol.
+The presentation carries Carol's vetter role credential — the one issued in the [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md) example — bound to Alice's request and join DID.
 
 ```json
 {
@@ -176,21 +185,52 @@ The presentation is abridged; its credentials are the community's membership cre
   "payload": {
     "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
     "eligibilityVp": {
-      "@context": ["https://www.w3.org/ns/credentials/v2"],
-      "type": ["VerifiablePresentation"],
+      "@context": [
+        "https://www.w3.org/ns/credentials/v2"
+      ],
+      "type": [
+        "VerifiablePresentation"
+      ],
       "holder": "did:webvh:QmCarolScid1:kernel-vtc.example:carol",
+      "nonce": "urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01",
+      "domain": "did:webvh:QmAliceScid1:alice.example",
       "verifiableCredential": [
         {
-          "type": ["VerifiableCredential", "DTGCredential", "MembershipCredential"],
+          "@context": [
+            "https://www.w3.org/ns/credentials/v2",
+            "https://firstperson.network/credentials/dtg/v1"
+          ],
+          "id": "urn:uuid:5c7e9a1b-3d5f-4b7c-9e1a-2c4e6a8b0d01",
+          "type": [
+            "VerifiableCredential",
+            "DTGCredential",
+            "EndorsementCredential"
+          ],
           "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
-          "credentialSubject": { "id": "did:webvh:QmCarolScid1:kernel-vtc.example:carol" }
-        },
-        {
-          "type": ["VerifiableCredential", "DTGCredential", "EndorsementCredential"],
-          "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+          "validFrom": "2026-09-13T10:00:01Z",
+          "validUntil": "2027-09-13T10:00:01Z",
           "credentialSubject": {
             "id": "did:webvh:QmCarolScid1:kernel-vtc.example:carol",
-            "endorsement": { "type": "CommunityRole", "role": "vetter" }
+            "endorsement": {
+              "type": "CommunityRole",
+              "role": "vetter",
+              "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example"
+            }
+          },
+          "credentialStatus": {
+            "id": "https://kernel-vtc.example/status/revocation/1#4213",
+            "type": "BitstringStatusListEntry",
+            "statusPurpose": "revocation",
+            "statusListIndex": "4213",
+            "statusListCredential": "https://kernel-vtc.example/status/revocation/1"
+          },
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:webvh:QmVtcScid:kernel-vtc.example#key-1",
+            "created": "2026-09-13T10:00:01Z",
+            "proofPurpose": "assertionMethod",
+            "proofValue": "z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR"
           }
         }
       ],
@@ -198,9 +238,8 @@ The presentation is abridged; its credentials are the community's membership cre
         "type": "DataIntegrityProof",
         "cryptosuite": "eddsa-jcs-2022",
         "verificationMethod": "did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1",
+        "created": "2026-09-14T09:05:00Z",
         "proofPurpose": "authentication",
-        "challenge": "urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01",
-        "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
         "proofValue": "z5k2pxtz3XrdADnsNJ1XQiZ4oj7XHVqTamscwe3Wir6JjjNKp6mJZZTmynBW32NBmWCxjs5g8Xmjck9ZLfPKtU5G4"
       }
     },

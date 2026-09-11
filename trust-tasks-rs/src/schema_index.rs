@@ -1662,6 +1662,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1#response" => <crate::specs::vtc::vetting::revoke_statement::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1" => <crate::specs::vtc::vetting::vetters::grant::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1#response" => <crate::specs::vtc::vetting::vetters::grant::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1" => <crate::specs::vtc::website::files::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1#response" => <crate::specs::vtc::website::files::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3711,6 +3715,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::vetting::revoke_statement::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::vetting::vetters::grant::v0_1::Payload,
             >())
         }
         #[cfg(feature = "vtc")]

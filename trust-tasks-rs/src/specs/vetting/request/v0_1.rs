@@ -119,6 +119,763 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
             })
     }
 }
+///OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "EligibilityPresentation",
+///  "description": "OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.",
+///  "type": "object",
+///  "required": [
+///    "@context",
+///    "domain",
+///    "holder",
+///    "nonce",
+///    "proof",
+///    "type",
+///    "verifiableCredential"
+///  ],
+///  "properties": {
+///    "@context": {
+///      "description": "JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).",
+///      "type": "array",
+///      "items": {
+///        "type": "string",
+///        "maxLength": 2048,
+///        "minLength": 1
+///      },
+///      "minItems": 1
+///    },
+///    "domain": {
+///      "description": "The applicant's `joinDid` from that request.",
+///      "type": "string",
+///      "pattern": "^did:"
+///    },
+///    "holder": {
+///      "description": "The vetter's DID — the response's `issuer`.",
+///      "type": "string",
+///      "pattern": "^did:"
+///    },
+///    "nonce": {
+///      "description": "The `id` of the vetting/request document this responds to.",
+///      "type": "string",
+///      "maxLength": 512,
+///      "minLength": 1
+///    },
+///    "proof": {
+///      "$ref": "#/definitions/EligibilityPresentationProof"
+///    },
+///    "type": {
+///      "description": "MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).",
+///      "type": "array",
+///      "items": {
+///        "type": "string",
+///        "maxLength": 128,
+///        "minLength": 1
+///      },
+///      "minItems": 1,
+///      "uniqueItems": true
+///    },
+///    "verifiableCredential": {
+///      "description": "Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.",
+///      "type": "array",
+///      "items": {
+///        "type": "object"
+///      },
+///      "minItems": 1
+///    }
+///  },
+///  "additionalProperties": true
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct EligibilityPresentation {
+    ///JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).
+    #[serde(rename = "@context")]
+    pub context: ::std::vec::Vec<EligibilityPresentationContextItem>,
+    ///The applicant's `joinDid` from that request.
+    pub domain: EligibilityPresentationDomain,
+    ///The vetter's DID — the response's `issuer`.
+    pub holder: EligibilityPresentationHolder,
+    ///The `id` of the vetting/request document this responds to.
+    pub nonce: EligibilityPresentationNonce,
+    pub proof: EligibilityPresentationProof,
+    ///MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).
+    #[serde(rename = "type")]
+    pub type_: Vec<EligibilityPresentationTypeItem>,
+    ///Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.
+    #[serde(rename = "verifiableCredential")]
+    pub verifiable_credential:
+        ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+}
+impl EligibilityPresentation {
+    pub fn builder() -> builder::EligibilityPresentation {
+        Default::default()
+    }
+}
+///`EligibilityPresentationContextItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationContextItem(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationContextItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationContextItem> for ::std::string::String {
+    fn from(value: EligibilityPresentationContextItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationContextItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationContextItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationContextItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationContextItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationContextItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The applicant's `joinDid` from that request.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The applicant's `joinDid` from that request.",
+///  "type": "string",
+///  "pattern": "^did:"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationDomain(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationDomain {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationDomain> for ::std::string::String {
+    fn from(value: EligibilityPresentationDomain) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationDomain {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationDomain {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationDomain {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationDomain {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationDomain {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The vetter's DID — the response's `issuer`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The vetter's DID — the response's `issuer`.",
+///  "type": "string",
+///  "pattern": "^did:"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationHolder(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationHolder {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationHolder> for ::std::string::String {
+    fn from(value: EligibilityPresentationHolder) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationHolder {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationHolder {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationHolder {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationHolder {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationHolder {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The `id` of the vetting/request document this responds to.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The `id` of the vetting/request document this responds to.",
+///  "type": "string",
+///  "maxLength": 512,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationNonce(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationNonce {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationNonce> for ::std::string::String {
+    fn from(value: EligibilityPresentationNonce) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationNonce {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 512usize {
+            return Err("longer than 512 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationNonce {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationNonce {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationNonce {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationNonce {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "EligibilityPresentationProof",
+///  "description": "A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.",
+///  "type": "object",
+///  "required": [
+///    "cryptosuite",
+///    "proofPurpose",
+///    "proofValue",
+///    "type",
+///    "verificationMethod"
+///  ],
+///  "properties": {
+///    "created": {
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "cryptosuite": {
+///      "description": "e.g. `eddsa-jcs-2022`.",
+///      "type": "string",
+///      "maxLength": 64,
+///      "minLength": 1,
+///      "pattern": "^[a-z0-9-]+$"
+///    },
+///    "proofPurpose": {
+///      "type": "string",
+///      "const": "authentication"
+///    },
+///    "proofValue": {
+///      "type": "string",
+///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+///    },
+///    "type": {
+///      "type": "string",
+///      "const": "DataIntegrityProof"
+///    },
+///    "verificationMethod": {
+///      "description": "A verification method of `holder`, authorized for `authentication`.",
+///      "type": "string",
+///      "pattern": "^did:"
+///    }
+///  },
+///  "additionalProperties": true
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct EligibilityPresentationProof {
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub created: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///e.g. `eddsa-jcs-2022`.
+    pub cryptosuite: EligibilityPresentationProofCryptosuite,
+    #[serde(rename = "proofPurpose")]
+    pub proof_purpose: ::std::string::String,
+    #[serde(rename = "proofValue")]
+    pub proof_value: EligibilityPresentationProofProofValue,
+    #[serde(rename = "type")]
+    pub type_: ::std::string::String,
+    ///A verification method of `holder`, authorized for `authentication`.
+    #[serde(rename = "verificationMethod")]
+    pub verification_method: EligibilityPresentationProofVerificationMethod,
+}
+impl EligibilityPresentationProof {
+    pub fn builder() -> builder::EligibilityPresentationProof {
+        Default::default()
+    }
+}
+///e.g. `eddsa-jcs-2022`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "e.g. `eddsa-jcs-2022`.",
+///  "type": "string",
+///  "maxLength": 64,
+///  "minLength": 1,
+///  "pattern": "^[a-z0-9-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationProofCryptosuite(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationProofCryptosuite {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationProofCryptosuite> for ::std::string::String {
+    fn from(value: EligibilityPresentationProofCryptosuite) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationProofCryptosuite {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z0-9-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationProofCryptosuite {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationProofCryptosuite {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationProofCryptosuite {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationProofCryptosuite {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`EligibilityPresentationProofProofValue`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationProofProofValue(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationProofProofValue {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationProofProofValue> for ::std::string::String {
+    fn from(value: EligibilityPresentationProofProofValue) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationProofProofValue {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^z[1-9A-HJ-NP-Za-km-z]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^z[1-9A-HJ-NP-Za-km-z]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationProofProofValue {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationProofProofValue {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationProofProofValue {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationProofProofValue {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A verification method of `holder`, authorized for `authentication`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "A verification method of `holder`, authorized for `authentication`.",
+///  "type": "string",
+///  "pattern": "^did:"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationProofVerificationMethod(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationProofVerificationMethod {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationProofVerificationMethod>
+    for ::std::string::String
+{
+    fn from(value: EligibilityPresentationProofVerificationMethod) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationProofVerificationMethod {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationProofVerificationMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String>
+    for EligibilityPresentationProofVerificationMethod
+{
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String>
+    for EligibilityPresentationProofVerificationMethod
+{
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationProofVerificationMethod {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`EligibilityPresentationTypeItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 128,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct EligibilityPresentationTypeItem(::std::string::String);
+impl ::std::ops::Deref for EligibilityPresentationTypeItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<EligibilityPresentationTypeItem> for ::std::string::String {
+    fn from(value: EligibilityPresentationTypeItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for EligibilityPresentationTypeItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for EligibilityPresentationTypeItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for EligibilityPresentationTypeItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for EligibilityPresentationTypeItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationTypeItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -931,8 +1688,7 @@ impl<'de> ::serde::Deserialize<'de> for QrTicketTicketId {
 ///      "uniqueItems": true
 ///    },
 ///    "eligibilityVp": {
-///      "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`.",
-///      "type": "object"
+///      "$ref": "#/definitions/EligibilityPresentation"
 ///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
@@ -966,13 +1722,12 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub accepts_documentation: ::std::option::Option<Vec<VettingDocumentation>>,
-    ///RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`.
     #[serde(
         rename = "eligibilityVp",
         default,
-        skip_serializing_if = "::serde_json::Map::is_empty"
+        skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub eligibility_vp: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub eligibility_vp: ::std::option::Option<EligibilityPresentation>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///The vetter's handle for this accepted request, carried by the session and any decline.
@@ -1445,6 +2200,267 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingMethod {
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
+    pub struct EligibilityPresentation {
+        context: ::std::result::Result<
+            ::std::vec::Vec<super::EligibilityPresentationContextItem>,
+            ::std::string::String,
+        >,
+        domain: ::std::result::Result<super::EligibilityPresentationDomain, ::std::string::String>,
+        holder: ::std::result::Result<super::EligibilityPresentationHolder, ::std::string::String>,
+        nonce: ::std::result::Result<super::EligibilityPresentationNonce, ::std::string::String>,
+        proof: ::std::result::Result<super::EligibilityPresentationProof, ::std::string::String>,
+        type_: ::std::result::Result<
+            Vec<super::EligibilityPresentationTypeItem>,
+            ::std::string::String,
+        >,
+        verifiable_credential: ::std::result::Result<
+            ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for EligibilityPresentation {
+        fn default() -> Self {
+            Self {
+                context: Err("no value supplied for context".to_string()),
+                domain: Err("no value supplied for domain".to_string()),
+                holder: Err("no value supplied for holder".to_string()),
+                nonce: Err("no value supplied for nonce".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+                verifiable_credential: Err(
+                    "no value supplied for verifiable_credential".to_string()
+                ),
+            }
+        }
+    }
+    impl EligibilityPresentation {
+        pub fn context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::EligibilityPresentationContextItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context: {e}"));
+            self
+        }
+        pub fn domain<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationDomain>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.domain = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for domain: {e}"));
+            self
+        }
+        pub fn holder<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationHolder>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.holder = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for holder: {e}"));
+            self
+        }
+        pub fn nonce<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationNonce>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.nonce = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for nonce: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::EligibilityPresentationTypeItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn verifiable_credential<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::vec::Vec<::serde_json::Map<::std::string::String, ::serde_json::Value>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verifiable_credential = value.try_into().map_err(|e| {
+                format!("error converting supplied value for verifiable_credential: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EligibilityPresentation> for super::EligibilityPresentation {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EligibilityPresentation,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context: value.context?,
+                domain: value.domain?,
+                holder: value.holder?,
+                nonce: value.nonce?,
+                proof: value.proof?,
+                type_: value.type_?,
+                verifiable_credential: value.verifiable_credential?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EligibilityPresentation> for EligibilityPresentation {
+        fn from(value: super::EligibilityPresentation) -> Self {
+            Self {
+                context: Ok(value.context),
+                domain: Ok(value.domain),
+                holder: Ok(value.holder),
+                nonce: Ok(value.nonce),
+                proof: Ok(value.proof),
+                type_: Ok(value.type_),
+                verifiable_credential: Ok(value.verifiable_credential),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct EligibilityPresentationProof {
+        created: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        cryptosuite: ::std::result::Result<
+            super::EligibilityPresentationProofCryptosuite,
+            ::std::string::String,
+        >,
+        proof_purpose: ::std::result::Result<::std::string::String, ::std::string::String>,
+        proof_value: ::std::result::Result<
+            super::EligibilityPresentationProofProofValue,
+            ::std::string::String,
+        >,
+        type_: ::std::result::Result<::std::string::String, ::std::string::String>,
+        verification_method: ::std::result::Result<
+            super::EligibilityPresentationProofVerificationMethod,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for EligibilityPresentationProof {
+        fn default() -> Self {
+            Self {
+                created: Ok(Default::default()),
+                cryptosuite: Err("no value supplied for cryptosuite".to_string()),
+                proof_purpose: Err("no value supplied for proof_purpose".to_string()),
+                proof_value: Err("no value supplied for proof_value".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+                verification_method: Err("no value supplied for verification_method".to_string()),
+            }
+        }
+    }
+    impl EligibilityPresentationProof {
+        pub fn created<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.created = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for created: {e}"));
+            self
+        }
+        pub fn cryptosuite<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationProofCryptosuite>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cryptosuite = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cryptosuite: {e}"));
+            self
+        }
+        pub fn proof_purpose<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof_purpose = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof_purpose: {e}"));
+            self
+        }
+        pub fn proof_value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationProofProofValue>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof_value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof_value: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn verification_method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EligibilityPresentationProofVerificationMethod>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification_method = value.try_into().map_err(|e| {
+                format!("error converting supplied value for verification_method: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EligibilityPresentationProof> for super::EligibilityPresentationProof {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EligibilityPresentationProof,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                created: value.created?,
+                cryptosuite: value.cryptosuite?,
+                proof_purpose: value.proof_purpose?,
+                proof_value: value.proof_value?,
+                type_: value.type_?,
+                verification_method: value.verification_method?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EligibilityPresentationProof> for EligibilityPresentationProof {
+        fn from(value: super::EligibilityPresentationProof) -> Self {
+            Self {
+                created: Ok(value.created),
+                cryptosuite: Ok(value.cryptosuite),
+                proof_purpose: Ok(value.proof_purpose),
+                proof_value: Ok(value.proof_value),
+                type_: Ok(value.type_),
+                verification_method: Ok(value.verification_method),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct Payload {
         availability: ::std::result::Result<
             ::std::option::Option<super::PayloadAvailability>,
@@ -1687,7 +2703,7 @@ pub mod builder {
             ::std::string::String,
         >,
         eligibility_vp: ::std::result::Result<
-            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::option::Option<super::EligibilityPresentation>,
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -1721,9 +2737,7 @@ pub mod builder {
         }
         pub fn eligibility_vp<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<
-                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-            >,
+            T: ::std::convert::TryInto<::std::option::Option<super::EligibilityPresentation>>,
             T::Error: ::std::fmt::Display,
         {
             self.eligibility_vp = value
@@ -1830,7 +2844,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QrTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"secret\": {\n          \"description\": \"32 random bytes, base64url without padding.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._:-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ticketId\",\n        \"secret\"\n      ],\n      \"title\": \"QrTicket\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\n      \"properties\": {\n        \"acceptsDocumentation\": {\n          \"description\": \"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"eligibilityVp\": {\n          \"description\": \"RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"The vetter's handle for this accepted request, carried by the session and any decline.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sessionHint\": {\n          \"description\": \"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\"\n      ],\n      \"title\": \"Vetting Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"ShortCodeTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\n          \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"ShortCodeTicket\",\n      \"type\": \"object\"\n    },\n    \"Ticket\": {\n      \"description\": \"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/ShortCodeTicket\"\n        },\n        {\n          \"$ref\": \"#/$defs/QrTicket\"\n        }\n      ],\n      \"title\": \"Ticket\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vetting/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentSchemas\": {\n    \"ticket\": {\n      \"not\": {\n        \"required\": [\n          \"introduction\"\n        ]\n      }\n    }\n  },\n  \"description\": \"An applicant asks one vetter to vet them for one community. The applicant is the document's issuer, and `joinDid` repeats that DID: it is the DID the applicant is applying with, and every card and statement that follows names it. Carries a ticket the vetter issued or an introduction, never both. The vetter's response accepts the request and proves the vetter is currently eligible to vet for that community.\",\n  \"properties\": {\n    \"availability\": {\n      \"description\": \"OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"community\": {\n      \"description\": \"The community the applicant is applying to and asks to be vetted for.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"introduction\": {\n      \"description\": \"A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.\",\n      \"type\": \"object\"\n    },\n    \"joinDid\": {\n      \"description\": \"The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"languages\": {\n      \"description\": \"BCP 47 language tags the applicant can hold a session in, most preferred first.\",\n      \"items\": {\n        \"maxLength\": 35,\n        \"pattern\": \"^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$\",\n        \"type\": \"string\"\n      },\n      \"maxItems\": 16,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"message\": {\n      \"description\": \"OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"preferredMethod\": {\n      \"$ref\": \"#/$defs/VettingMethod\",\n      \"description\": \"The method the applicant would prefer. A preference: the vetter chooses the session's method.\"\n    },\n    \"requirementsDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The `requirementsDigest` of the community's manifest criterion the applicant is gathering for, recorded when the application started. RECOMMENDED; a community that publishes no digest leaves the applicant nothing to cite.\"\n    },\n    \"ticket\": {\n      \"$ref\": \"#/$defs/Ticket\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"joinDid\"\n  ],\n  \"title\": \"Vetting Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"EligibilityPresentation\": {\n      \"additionalProperties\": true,\n      \"description\": \"OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.\",\n      \"properties\": {\n        \"@context\": {\n          \"description\": \"JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"domain\": {\n          \"description\": \"The applicant's `joinDid` from that request.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"holder\": {\n          \"description\": \"The vetter's DID — the response's `issuer`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"The `id` of the vetting/request document this responds to.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/EligibilityPresentationProof\"\n        },\n        \"type\": {\n          \"description\": \"MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"verifiableCredential\": {\n          \"description\": \"Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"@context\",\n        \"type\",\n        \"holder\",\n        \"verifiableCredential\",\n        \"nonce\",\n        \"domain\",\n        \"proof\"\n      ],\n      \"title\": \"EligibilityPresentation\",\n      \"type\": \"object\"\n    },\n    \"EligibilityPresentationProof\": {\n      \"additionalProperties\": true,\n      \"description\": \"A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.\",\n      \"properties\": {\n        \"created\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"cryptosuite\": {\n          \"description\": \"e.g. `eddsa-jcs-2022`.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"proofPurpose\": {\n          \"const\": \"authentication\",\n          \"type\": \"string\"\n        },\n        \"proofValue\": {\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"DataIntegrityProof\",\n          \"type\": \"string\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"A verification method of `holder`, authorized for `authentication`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"cryptosuite\",\n        \"verificationMethod\",\n        \"proofPurpose\",\n        \"proofValue\"\n      ],\n      \"title\": \"EligibilityPresentationProof\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QrTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"secret\": {\n          \"description\": \"32 random bytes, base64url without padding.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._:-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ticketId\",\n        \"secret\"\n      ],\n      \"title\": \"QrTicket\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\n      \"properties\": {\n        \"acceptsDocumentation\": {\n          \"description\": \"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"eligibilityVp\": {\n          \"$ref\": \"#/$defs/EligibilityPresentation\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"The vetter's handle for this accepted request, carried by the session and any decline.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sessionHint\": {\n          \"description\": \"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\"\n      ],\n      \"title\": \"Vetting Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"ShortCodeTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\n          \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"ShortCodeTicket\",\n      \"type\": \"object\"\n    },\n    \"Ticket\": {\n      \"description\": \"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/ShortCodeTicket\"\n        },\n        {\n          \"$ref\": \"#/$defs/QrTicket\"\n        }\n      ],\n      \"title\": \"Ticket\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vetting/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentSchemas\": {\n    \"ticket\": {\n      \"not\": {\n        \"required\": [\n          \"introduction\"\n        ]\n      }\n    }\n  },\n  \"description\": \"An applicant asks one vetter to vet them for one community. The applicant is the document's issuer, and `joinDid` repeats that DID: it is the DID the applicant is applying with, and every card and statement that follows names it. Carries a ticket the vetter issued or an introduction, never both. The vetter's response accepts the request and proves the vetter is currently eligible to vet for that community.\",\n  \"properties\": {\n    \"availability\": {\n      \"description\": \"OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"community\": {\n      \"description\": \"The community the applicant is applying to and asks to be vetted for.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"introduction\": {\n      \"description\": \"A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.\",\n      \"type\": \"object\"\n    },\n    \"joinDid\": {\n      \"description\": \"The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"languages\": {\n      \"description\": \"BCP 47 language tags the applicant can hold a session in, most preferred first.\",\n      \"items\": {\n        \"maxLength\": 35,\n        \"pattern\": \"^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$\",\n        \"type\": \"string\"\n      },\n      \"maxItems\": 16,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"message\": {\n      \"description\": \"OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"preferredMethod\": {\n      \"$ref\": \"#/$defs/VettingMethod\",\n      \"description\": \"The method the applicant would prefer. A preference: the vetter chooses the session's method.\"\n    },\n    \"requirementsDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The `requirementsDigest` of the community's manifest criterion the applicant is gathering for, recorded when the application started. RECOMMENDED; a community that publishes no digest leaves the applicant nothing to cite.\"\n    },\n    \"ticket\": {\n      \"$ref\": \"#/$defs/Ticket\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"joinDid\"\n  ],\n  \"title\": \"Vetting Request — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1839,7 +2853,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QrTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"secret\": {\n          \"description\": \"32 random bytes, base64url without padding.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._:-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ticketId\",\n        \"secret\"\n      ],\n      \"title\": \"QrTicket\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\n      \"properties\": {\n        \"acceptsDocumentation\": {\n          \"description\": \"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"eligibilityVp\": {\n          \"description\": \"RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"The vetter's handle for this accepted request, carried by the session and any decline.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sessionHint\": {\n          \"description\": \"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\"\n      ],\n      \"title\": \"Vetting Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"ShortCodeTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\n          \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"ShortCodeTicket\",\n      \"type\": \"object\"\n    },\n    \"Ticket\": {\n      \"description\": \"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/ShortCodeTicket\"\n        },\n        {\n          \"$ref\": \"#/$defs/QrTicket\"\n        }\n      ],\n      \"title\": \"Ticket\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"EligibilityPresentation\": {\n      \"additionalProperties\": true,\n      \"description\": \"OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.\",\n      \"properties\": {\n        \"@context\": {\n          \"description\": \"JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"domain\": {\n          \"description\": \"The applicant's `joinDid` from that request.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"holder\": {\n          \"description\": \"The vetter's DID — the response's `issuer`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"The `id` of the vetting/request document this responds to.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/EligibilityPresentationProof\"\n        },\n        \"type\": {\n          \"description\": \"MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"verifiableCredential\": {\n          \"description\": \"Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"@context\",\n        \"type\",\n        \"holder\",\n        \"verifiableCredential\",\n        \"nonce\",\n        \"domain\",\n        \"proof\"\n      ],\n      \"title\": \"EligibilityPresentation\",\n      \"type\": \"object\"\n    },\n    \"EligibilityPresentationProof\": {\n      \"additionalProperties\": true,\n      \"description\": \"A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.\",\n      \"properties\": {\n        \"created\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"cryptosuite\": {\n          \"description\": \"e.g. `eddsa-jcs-2022`.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"proofPurpose\": {\n          \"const\": \"authentication\",\n          \"type\": \"string\"\n        },\n        \"proofValue\": {\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"DataIntegrityProof\",\n          \"type\": \"string\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"A verification method of `holder`, authorized for `authentication`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"cryptosuite\",\n        \"verificationMethod\",\n        \"proofPurpose\",\n        \"proofValue\"\n      ],\n      \"title\": \"EligibilityPresentationProof\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QrTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"secret\": {\n          \"description\": \"32 random bytes, base64url without padding.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._:-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ticketId\",\n        \"secret\"\n      ],\n      \"title\": \"QrTicket\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\n      \"properties\": {\n        \"acceptsDocumentation\": {\n          \"description\": \"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"eligibilityVp\": {\n          \"$ref\": \"#/$defs/EligibilityPresentation\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"The vetter's handle for this accepted request, carried by the session and any decline.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sessionHint\": {\n          \"description\": \"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\"\n      ],\n      \"title\": \"Vetting Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"ShortCodeTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\n          \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"ShortCodeTicket\",\n      \"type\": \"object\"\n    },\n    \"Ticket\": {\n      \"description\": \"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/ShortCodeTicket\"\n        },\n        {\n          \"$ref\": \"#/$defs/QrTicket\"\n        }\n      ],\n      \"title\": \"Ticket\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -1861,7 +2875,7 @@ mod conformance {
     }
     #[test]
     fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b02\",\n  \"type\": \"https://trusttasks.org/spec/vetting/request/0.1#response\",\n  \"threadId\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmAliceScid1:alice.example\",\n  \"issuedAt\": \"2026-09-14T09:05:00Z\",\n  \"payload\": {\n    \"requestId\": \"urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01\",\n    \"eligibilityVp\": {\n      \"@context\": [\"https://www.w3.org/ns/credentials/v2\"],\n      \"type\": [\"VerifiablePresentation\"],\n      \"holder\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n      \"verifiableCredential\": [\n        {\n          \"type\": [\"VerifiableCredential\", \"DTGCredential\", \"MembershipCredential\"],\n          \"issuer\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n          \"credentialSubject\": { \"id\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\" }\n        },\n        {\n          \"type\": [\"VerifiableCredential\", \"DTGCredential\", \"EndorsementCredential\"],\n          \"issuer\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n          \"credentialSubject\": {\n            \"id\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n            \"endorsement\": { \"type\": \"CommunityRole\", \"role\": \"vetter\" }\n          }\n        }\n      ],\n      \"proof\": {\n        \"type\": \"DataIntegrityProof\",\n        \"cryptosuite\": \"eddsa-jcs-2022\",\n        \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n        \"proofPurpose\": \"authentication\",\n        \"challenge\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01\",\n        \"domain\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n        \"proofValue\": \"z5k2pxtz3XrdADnsNJ1XQiZ4oj7XHVqTamscwe3Wir6JjjNKp6mJZZTmynBW32NBmWCxjs5g8Xmjck9ZLfPKtU5G4\"\n      }\n    },\n    \"acceptsDocumentation\": [\"passport\", \"nationalId\", \"none\"],\n    \"sessionHint\": \"Video, Thursday 17 September at 15:00 UTC. I will email you a link.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-09-14T09:05:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b02\",\n  \"type\": \"https://trusttasks.org/spec/vetting/request/0.1#response\",\n  \"threadId\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmAliceScid1:alice.example\",\n  \"issuedAt\": \"2026-09-14T09:05:00Z\",\n  \"payload\": {\n    \"requestId\": \"urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01\",\n    \"eligibilityVp\": {\n      \"@context\": [\n        \"https://www.w3.org/ns/credentials/v2\"\n      ],\n      \"type\": [\n        \"VerifiablePresentation\"\n      ],\n      \"holder\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n      \"nonce\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01\",\n      \"domain\": \"did:webvh:QmAliceScid1:alice.example\",\n      \"verifiableCredential\": [\n        {\n          \"@context\": [\n            \"https://www.w3.org/ns/credentials/v2\",\n            \"https://firstperson.network/credentials/dtg/v1\"\n          ],\n          \"id\": \"urn:uuid:5c7e9a1b-3d5f-4b7c-9e1a-2c4e6a8b0d01\",\n          \"type\": [\n            \"VerifiableCredential\",\n            \"DTGCredential\",\n            \"EndorsementCredential\"\n          ],\n          \"issuer\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n          \"validFrom\": \"2026-09-13T10:00:01Z\",\n          \"validUntil\": \"2027-09-13T10:00:01Z\",\n          \"credentialSubject\": {\n            \"id\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n            \"endorsement\": {\n              \"type\": \"CommunityRole\",\n              \"role\": \"vetter\",\n              \"communityDid\": \"did:webvh:QmVtcScid:kernel-vtc.example\"\n            }\n          },\n          \"credentialStatus\": {\n            \"id\": \"https://kernel-vtc.example/status/revocation/1#4213\",\n            \"type\": \"BitstringStatusListEntry\",\n            \"statusPurpose\": \"revocation\",\n            \"statusListIndex\": \"4213\",\n            \"statusListCredential\": \"https://kernel-vtc.example/status/revocation/1\"\n          },\n          \"proof\": {\n            \"type\": \"DataIntegrityProof\",\n            \"cryptosuite\": \"eddsa-jcs-2022\",\n            \"verificationMethod\": \"did:webvh:QmVtcScid:kernel-vtc.example#key-1\",\n            \"created\": \"2026-09-13T10:00:01Z\",\n            \"proofPurpose\": \"assertionMethod\",\n            \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n          }\n        }\n      ],\n      \"proof\": {\n        \"type\": \"DataIntegrityProof\",\n        \"cryptosuite\": \"eddsa-jcs-2022\",\n        \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n        \"created\": \"2026-09-14T09:05:00Z\",\n        \"proofPurpose\": \"authentication\",\n        \"proofValue\": \"z5k2pxtz3XrdADnsNJ1XQiZ4oj7XHVqTamscwe3Wir6JjjNKp6mJZZTmynBW32NBmWCxjs5g8Xmjck9ZLfPKtU5G4\"\n      }\n    },\n    \"acceptsDocumentation\": [\"passport\", \"nationalId\", \"none\"],\n    \"sessionHint\": \"Video, Thursday 17 September at 15:00 UTC. I will email you a link.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-09-14T09:05:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
