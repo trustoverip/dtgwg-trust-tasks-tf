@@ -1,0 +1,93 @@
+[
+  {
+    "note": "A session with no challenge gives the card nothing to bind to, so a card could be replayed into it from any other session.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "method": "video",
+      "requiredClaims": [
+        "name.legal"
+      ],
+      "expiresAt": "2026-09-17T15:17:00Z"
+    }
+  },
+  {
+    "note": "The challenge is 32 random bytes. A short value is guessable, and a card bound to a guessable challenge can be pre-computed.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "challenge": "abc123",
+      "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "method": "video",
+      "requiredClaims": [
+        "name.legal"
+      ],
+      "expiresAt": "2026-09-17T15:17:00Z"
+    }
+  },
+  {
+    "note": "`domain` is the community DID the applicant is being vetted for, not a host name.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "challenge": "Xq3v9bT0cN2mR8sLk4Jw7pYh1eZa6uGd5fQi0oVxWnE",
+      "domain": "kernel-vtc.example",
+      "method": "video",
+      "requiredClaims": [
+        "name.legal"
+      ],
+      "expiresAt": "2026-09-17T15:17:00Z"
+    }
+  },
+  {
+    "note": "A portrait is never requested. Vetting works by looking at the person, not by transmitting their image.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "challenge": "Xq3v9bT0cN2mR8sLk4Jw7pYh1eZa6uGd5fQi0oVxWnE",
+      "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "method": "video",
+      "requiredClaims": [
+        "name.legal",
+        "person.portrait"
+      ],
+      "expiresAt": "2026-09-17T15:17:00Z"
+    }
+  },
+  {
+    "note": "A session always lapses. Without `expiresAt` a card could be demanded for an old session long after the people left the call.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "challenge": "Xq3v9bT0cN2mR8sLk4Jw7pYh1eZa6uGd5fQi0oVxWnE",
+      "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "method": "video",
+      "requiredClaims": [
+        "name.legal"
+      ]
+    }
+  },
+  {
+    "note": "The session does not ask for documentation details. What a vetter looks at stays in the room; a `documentNumber` request member would move it onto the wire.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "challenge": "Xq3v9bT0cN2mR8sLk4Jw7pYh1eZa6uGd5fQi0oVxWnE",
+      "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "method": "video",
+      "requiredClaims": [
+        "name.legal"
+      ],
+      "expiresAt": "2026-09-17T15:17:00Z",
+      "documentNumber": true
+    }
+  },
+  {
+    "note": "Methods are the hyphenated forms the vetting vocabulary defines: `prior-acquaintance`, not `priorAcquaintance`.",
+    "payload": {
+      "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+      "challenge": "Xq3v9bT0cN2mR8sLk4Jw7pYh1eZa6uGd5fQi0oVxWnE",
+      "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "method": "priorAcquaintance",
+      "requiredClaims": [
+        "name.legal"
+      ],
+      "expiresAt": "2026-09-17T15:17:00Z"
+    }
+  }
+]

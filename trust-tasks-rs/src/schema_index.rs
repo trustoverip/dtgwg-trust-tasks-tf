@@ -1045,6 +1045,16 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vault/usage/0.2" => <crate::specs::vault::usage::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vault")]
         "https://trusttasks.org/spec/vault/usage/0.2#response" => <crate::specs::vault::usage::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/decline/0.1" => <crate::specs::vetting::decline::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/request/0.1" => <crate::specs::vetting::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/request/0.1#response" => <crate::specs::vetting::request::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/session/0.1" => <crate::specs::vetting::session::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/session/0.1#response" => <crate::specs::vetting::session::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vrc")]
         "https://trusttasks.org/spec/vrc/relationships/issue/0.1" => <crate::specs::vrc::relationships::issue::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vrc")]
@@ -2936,6 +2946,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "vault")]
         "https://trusttasks.org/spec/vault/usage/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::vault::usage::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/decline/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vetting::decline::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vetting::request::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/session/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vetting::session::v0_1::Payload,
         >()),
         #[cfg(feature = "vrc")]
         "https://trusttasks.org/spec/vrc/relationships/issue/0.1" => Some(crate::SpecPolicy::of::<

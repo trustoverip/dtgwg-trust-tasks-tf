@@ -1403,6 +1403,23 @@ export interface CredentialReference {
   expiresAt?: string | null;
 }
 /**
+ * A W3C Data Integrity proof by the card's publisher. Additional Data Integrity members (e.g. `created`) are permitted and are covered as the cryptosuite defines.
+ */
+export interface DataIntegrityProof {
+  type: "DataIntegrityProof";
+  /**
+   * e.g. `eddsa-jcs-2022`.
+   */
+  cryptosuite: string;
+  /**
+   * A verification method of `publisher`, authorized for `assertionMethod`.
+   */
+  verificationMethod: string;
+  proofPurpose: "assertionMethod";
+  proofValue: string;
+  [k: string]: unknown | undefined;
+}
+/**
  * One presentation request awaiting the holder's decision, as the approver sees it.
  *
  * This is deliberately **not** the stored record. A consumer also retains the original DCQL query so an approval can re-present byte-faithfully against the verifier's original nonce; that is machinery, not a decision input, and is not exposed here. What is exposed is exactly what an approver needs to answer "should I disclose this": who is asking, why, and precisely which claims of which held credentials would leave the wallet.
@@ -3656,6 +3673,78 @@ export interface VerdictWith {
    * A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.
    */
   presentationDefinition?: {};
+}
+export interface VettingCard {
+  /**
+   * Exactly `VerifiableDataStructure`, `RelationshipCard` and `VettingCard`, in any order.
+   *
+   * @minItems 3
+   * @maxItems 3
+   */
+  type: [
+    "VerifiableDataStructure" | "RelationshipCard" | "VettingCard",
+    "VerifiableDataStructure" | "RelationshipCard" | "VettingCard",
+    "VerifiableDataStructure" | "RelationshipCard" | "VettingCard"
+  ];
+  /**
+   * Fresh per card. A card is never re-sent to a second session under the same id.
+   */
+  id: string;
+  /**
+   * The applicant's DID — the issuer of the vetting request and the subject every resulting statement names. The card is signed with this DID's assertion key.
+   */
+  publisher: string;
+  cardVersion: number;
+  /**
+   * The vetter's DID — the issuer of the vetting session. A card addressed to anyone else is refused.
+   */
+  audience: string;
+  /**
+   * The community the applicant is being vetted for.
+   */
+  community: string;
+  /**
+   * The session's challenge, copied verbatim.
+   */
+  challenge: string;
+  /**
+   * The session's domain, copied verbatim.
+   */
+  domain: string;
+  issuedAt: string;
+  /**
+   * No later than the session's `expiresAt`.
+   */
+  expiresAt: string;
+  /**
+   * @minItems 1
+   */
+  claims: [VettingCardClaim, ...VettingCardClaim[]];
+  /**
+   * digestMultibase over the RFC 8785 canonicalization of `{ "salt": commitmentSalt, "claims": R }`, where R is `{ "type", "value" }` for every card claim whose type the session lists in `requiredClaims`, ordered by `type` then `value` (code-point order). SHA-256 RECOMMENDED. Because the applicant uses one salt per application, every vetter of that application sees the same value.
+   */
+  identityCommitment: DigestMultibase;
+  /**
+   * 32 random bytes, base64url without padding, generated once per application. Goes to vetters inside the card and to nobody else: a party holding the commitment without the salt cannot test guesses at the claimed name.
+   */
+  commitmentSalt: string;
+  proof: DataIntegrityProof;
+}
+export interface VettingCardClaim {
+  /**
+   * The claim type. `person.portrait` is refused: identity vetting works by a vetter looking at the person, not by transmitting their image.
+   */
+  type: ClaimType;
+  /**
+   * The claimed value, exactly as rendered from the applicant's persona — a string for most claim types, structured JSON for some (e.g. a postal address). Authored by the applicant and asserted under their signature; the vetter's check is what gives it any assurance.
+   */
+  value: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Where the value's assurance comes from. `selfAsserted` — the applicant says so, and the vetter's human check is the only assurance added — is the only value this version defines; a verifier MUST NOT treat any other value as adding assurance it does not understand.
+   */
+  provenance: string;
 }
 /**
  * An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.
