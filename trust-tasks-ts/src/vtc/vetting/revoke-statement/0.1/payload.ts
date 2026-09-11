@@ -19,9 +19,9 @@ export interface VTCVettingRevokeStatementPayload {
    */
   statementDigestMultibase: DigestMultibase;
   /**
-   * OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
+   * OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
    */
-  reason?: "mistake" | "new-information" | "key-compromise" | "other";
+  reason?: "mistake" | "newInformation" | "keyCompromise" | "other";
   ext?: Ext;
 }
 /**
@@ -86,11 +86,11 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "enum": [
         "mistake",
-        "new-information",
-        "key-compromise",
+        "newInformation",
+        "keyCompromise",
         "other"
       ],
-      "description": "OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these."
+      "description": "OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these."
     },
     "ext": {
       "$ref": "#/$defs/Ext"

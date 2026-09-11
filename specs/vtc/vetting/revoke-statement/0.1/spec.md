@@ -99,7 +99,7 @@ A conforming **community** (`recipient`):
 
 The authority to withdraw a statement is **having issued it**. A notice has effect only on a statement whose `issuer` is the notice's sender and whose digest is the notice's digest (Conformance item 4). A party that is not the issuer can send a notice, and the community may record it, but it can never match the statement it names. That is why the community can accept notices for statements it has not seen yet without opening a way to withdraw other people's evidence.
 
-The sender must also be, or have been, a member. Statements count only when issued by eligible members, and a vetter that has since left or been removed keeps the right to withdraw what it issued, which matters most in the key-compromise case.
+The sender must also be, or have been, a member. Statements count only when issued by eligible members, and a vetter that has since left or been removed keeps the right to withdraw what it issued, which matters most in the `keyCompromise` case.
 
 A vetter needs no justification, and the community does not weigh one. The `reason` is information for the community's own review, not a condition of the withdrawal. Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, verifying the notice's `proof` establishes who sent it; the match against the statement's `issuer` is what establishes that they may withdraw it.
 
@@ -129,8 +129,8 @@ The digest is the real value for the statement shown in [`vetting/session`](../.
   "issuedAt": "2026-10-02T11:30:00Z",
   "payload": {
     "statementId": "urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601",
-    "statementDigestMultibase": "zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW",
-    "reason": "new-information"
+    "statementDigestMultibase": "zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z",
+    "reason": "newInformation"
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -191,4 +191,4 @@ The vetter keeps the response as its evidence of when the community recorded the
 
 ### Consent/purpose
 
-The purpose is to stop a statement from counting, and the community's use of a notice is limited to that and to reviewing decisions the statement was part of. Using notices to rate vetters, or to profile the applicants they concern beyond that review, is a purpose the vetter did not address. A key-compromise notice is also a signal about the vetter's own key, and the community **SHOULD** treat it as one — for instance by reviewing other statements that key signed — within its published policy. Whether a vetter's agent requires a step-up before it sends a notice is that agent's policy. Per [SPEC §7.3](/SPEC.md#73-specification-requirements) item 13, this specification does not decide it.
+The purpose is to stop a statement from counting, and the community's use of a notice is limited to that and to reviewing decisions the statement was part of. Using notices to rate vetters, or to profile the applicants they concern beyond that review, is a purpose the vetter did not address. A `keyCompromise` notice is also a signal about the vetter's own key, and the community **SHOULD** treat it as one — for instance by reviewing other statements that key signed — within its published policy. Whether a vetter's agent requires a step-up before it sends a notice is that agent's policy. Per [SPEC §7.3](/SPEC.md#73-specification-requirements) item 13, this specification does not decide it.

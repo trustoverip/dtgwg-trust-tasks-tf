@@ -246,12 +246,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "reason": {
-///      "description": "OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.",
+///      "description": "OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.",
 ///      "type": "string",
 ///      "enum": [
 ///        "mistake",
-///        "new-information",
-///        "key-compromise",
+///        "newInformation",
+///        "keyCompromise",
 ///        "other"
 ///      ]
 ///    },
@@ -277,7 +277,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
+    ///OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub reason: ::std::option::Option<PayloadReason>,
     ///Digest over the RFC 8785 canonicalization of the withdrawn statement exactly as issued, `proof` included (SHA-256 RECOMMENDED). Pins the notice to one credential, so it cannot be aimed at a different statement that reuses the id.
@@ -292,18 +292,18 @@ impl Payload {
         Default::default()
     }
 }
-///OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
+///OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.",
+///  "description": "OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.",
 ///  "type": "string",
 ///  "enum": [
 ///    "mistake",
-///    "new-information",
-///    "key-compromise",
+///    "newInformation",
+///    "keyCompromise",
 ///    "other"
 ///  ]
 ///}
@@ -325,9 +325,9 @@ impl Payload {
 pub enum PayloadReason {
     #[serde(rename = "mistake")]
     Mistake,
-    #[serde(rename = "new-information")]
+    #[serde(rename = "newInformation")]
     NewInformation,
-    #[serde(rename = "key-compromise")]
+    #[serde(rename = "keyCompromise")]
     KeyCompromise,
     #[serde(rename = "other")]
     Other,
@@ -336,8 +336,8 @@ impl ::std::fmt::Display for PayloadReason {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
             Self::Mistake => f.write_str("mistake"),
-            Self::NewInformation => f.write_str("new-information"),
-            Self::KeyCompromise => f.write_str("key-compromise"),
+            Self::NewInformation => f.write_str("newInformation"),
+            Self::KeyCompromise => f.write_str("keyCompromise"),
             Self::Other => f.write_str("other"),
         }
     }
@@ -347,8 +347,8 @@ impl ::std::str::FromStr for PayloadReason {
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
             "mistake" => Ok(Self::Mistake),
-            "new-information" => Ok(Self::NewInformation),
-            "key-compromise" => Ok(Self::KeyCompromise),
+            "newInformation" => Ok(Self::NewInformation),
+            "keyCompromise" => Ok(Self::KeyCompromise),
             "other" => Ok(Self::Other),
             _ => Err("invalid value".into()),
         }
@@ -647,7 +647,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The community recorded the notice.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"recordedAt\": {\n          \"description\": \"When the community recorded the notice. A repeated notice for the same statement returns the time the first was recorded: revocation converges, and a vetter retrying cannot move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"recordedAt\"\n      ],\n      \"title\": \"VTC Vetting — Revoke Statement — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter tells the community it withdraws a Vetting Statement it issued. The community records the notice against the statement's id and digest, and from then on that statement does not count. The response is the time the community recorded the notice; repeating a notice returns the original time.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.\",\n      \"enum\": [\n        \"mistake\",\n        \"new-information\",\n        \"key-compromise\",\n        \"other\"\n      ],\n      \"type\": \"string\"\n    },\n    \"statementDigestMultibase\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Digest over the RFC 8785 canonicalization of the withdrawn statement exactly as issued, `proof` included (SHA-256 RECOMMENDED). Pins the notice to one credential, so it cannot be aimed at a different statement that reuses the id.\"\n    },\n    \"statementId\": {\n      \"description\": \"The withdrawn statement's `id`, a URI (e.g. `urn:uuid:…`).\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"statementId\",\n    \"statementDigestMultibase\"\n  ],\n  \"title\": \"VTC Vetting — Revoke Statement — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The community recorded the notice.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"recordedAt\": {\n          \"description\": \"When the community recorded the notice. A repeated notice for the same statement returns the time the first was recorded: revocation converges, and a vetter retrying cannot move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"recordedAt\"\n      ],\n      \"title\": \"VTC Vetting — Revoke Statement — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter tells the community it withdraws a Vetting Statement it issued. The community records the notice against the statement's id and digest, and from then on that statement does not count. The response is the time the community recorded the notice; repeating a notice returns the original time.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these.\",\n      \"enum\": [\n        \"mistake\",\n        \"newInformation\",\n        \"keyCompromise\",\n        \"other\"\n      ],\n      \"type\": \"string\"\n    },\n    \"statementDigestMultibase\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Digest over the RFC 8785 canonicalization of the withdrawn statement exactly as issued, `proof` included (SHA-256 RECOMMENDED). Pins the notice to one credential, so it cannot be aimed at a different statement that reuses the id.\"\n    },\n    \"statementId\": {\n      \"description\": \"The withdrawn statement's `id`, a URI (e.g. `urn:uuid:…`).\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"statementId\",\n    \"statementDigestMultibase\"\n  ],\n  \"title\": \"VTC Vetting — Revoke Statement — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -670,7 +670,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1\",\n  \"threadId\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n  \"issuedAt\": \"2026-10-02T11:30:00Z\",\n  \"payload\": {\n    \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\",\n    \"statementDigestMultibase\": \"zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW\",\n    \"reason\": \"new-information\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-10-02T11:30:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1\",\n  \"threadId\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n  \"issuedAt\": \"2026-10-02T11:30:00Z\",\n  \"payload\": {\n    \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\",\n    \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n    \"reason\": \"newInformation\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-10-02T11:30:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -701,8 +701,8 @@ mod conformance {
                 "{\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
-                "Reasons are the hyphenated forms this specification defines: `new-information`, not `newInformation`.",
-                "{\n  \"reason\": \"newInformation\",\n  \"statementDigestMultibase\": \"zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "Reasons are lowerCamelCase (SPEC §4.10): `newInformation`, not `new-information`.",
+                "{\n  \"reason\": \"new-information\",\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
                 "The digest is a multibase multihash, not a bare hex SHA-256 — a verifier must be able to tell which algorithm produced it.",
@@ -710,19 +710,19 @@ mod conformance {
             ),
             (
                 "The notice names the statement; it does not carry it. Sending the whole credential would hand the community the applicant's statement before the applicant chose to submit it.",
-                "{\n  \"statement\": {\n    \"type\": [\n      \"VerifiableCredential\",\n      \"EndorsementCredential\"\n    ]\n  },\n  \"statementDigestMultibase\": \"zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"statement\": {\n    \"type\": [\n      \"VerifiableCredential\",\n      \"EndorsementCredential\"\n    ]\n  },\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
                 "No free-text explanation. A withdrawal reason in prose is a statement about the applicant sent to the community that will decide on them; the closed `reason` set is all this task carries.",
-                "{\n  \"details\": \"I think the applicant used someone else's passport.\",\n  \"reason\": \"other\",\n  \"statementDigestMultibase\": \"zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"details\": \"I think the applicant used someone else's passport.\",\n  \"reason\": \"other\",\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
                 "`statementId` is a URI, not a bare local handle.",
-                "{\n  \"statementDigestMultibase\": \"zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW\",\n  \"statementId\": \"statement-42\"\n}",
+                "{\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"statement-42\"\n}",
             ),
             (
                 "`ext` keys must be reverse-DNS namespaces (SPEC §4.5.1).",
-                "{\n  \"ext\": {\n    \"mine\": {}\n  },\n  \"statementDigestMultibase\": \"zQmeKtmNKfNz6njsiUEfa4WKzHMN3JRvu67dr6LyoQXAAJW\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"ext\": {\n    \"mine\": {}\n  },\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

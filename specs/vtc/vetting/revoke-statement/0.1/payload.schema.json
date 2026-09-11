@@ -20,8 +20,8 @@
     },
     "reason": {
       "type": "string",
-      "enum": ["mistake", "new-information", "key-compromise", "other"],
-      "description": "OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these."
+      "enum": ["mistake", "newInformation", "keyCompromise", "other"],
+      "description": "OPTIONAL. `mistake` — the vetter attested in error. `newInformation` — the vetter learned something that changes its view. `keyCompromise` — the key that signed the statement may be in someone else's hands. `other` — none of these."
     },
     "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
