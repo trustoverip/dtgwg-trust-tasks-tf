@@ -4,7 +4,7 @@
  */
 
 /**
- * The closed vocabularies every identity-vetting artifact is written in: how a vetter established who an applicant is (VettingMethod), what documentation they relied on (VettingDocumentClass, VettingAcceptedDocumentation), and how they know the applicant (VettingRelationship). Used by vtc/join-requests/manifest (what a community requires), the vetting/* peer tasks (what a vetter offers and does), and the identity-vetting endorsement body (what a vetter attested). One definition, so a community's requirement and a vetter's statement are compared value-for-value rather than by translation. Claim types are not redefined here: they are the persona family's ClaimType (persona/_shared/0.1/persona-record), because a Vetting Card is rendered from a persona. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).
+ * The vocabularies every identity-vetting artifact is written in: how a vetter established who an applicant is (VettingMethod), what documentation is accepted or was relied on (VettingDocumentation), and how the vetter knows the applicant (VettingRelationship). Used by vtc/join-requests/manifest (what a community requires), the vetting/* peer tasks (what a vetter offers and does), and the identity-vetting endorsement body (what a vetter attested). One definition, so a community's requirement and a vetter's statement are compared value-for-value rather than by translation. Claim types are not redefined here: they are the persona family's ClaimType (persona/_shared/0.1/persona-record), because a Vetting Card is rendered from a persona. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).
  */
 export interface VettingSharedVocabulary {
   [k: string]: unknown | undefined;
@@ -14,4 +14,4 @@ export interface VettingSharedVocabulary {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { VettingDocumentClass, VettingMethod, VettingRelationship } from "../../../_shared/components.js";
+export type { VettingDocumentation, VettingMethod, VettingRelationship } from "../../../_shared/components.js";

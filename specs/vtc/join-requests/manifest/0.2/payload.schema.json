@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2",
   "title": "VTC Join-Requests Manifest — payload",
-  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirement object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.",
+  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -12,10 +12,9 @@
     "Duration": {
       "title": "Duration",
       "type": "string",
-      "minLength": 3,
       "maxLength": 32,
-      "pattern": "^P([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$",
-      "description": "An ISO 8601 duration (e.g. `P120D`, `PT8H`)."
+      "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$",
+      "description": "An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit."
     },
     "Criterion": {
       "title": "Criterion",
@@ -44,10 +43,15 @@
     "VettingRequirements": {
       "title": "VettingRequirements",
       "type": "object",
-      "additionalProperties": false,
-      "required": ["statementType", "minStatements", "acceptedMethods", "eligibleVetters"],
-      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies.",
+      "additionalProperties": true,
+      "required": ["version", "statementType", "minStatements", "acceptedMethods", "eligibleVetters"],
+      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.",
       "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "Version of this requirements object's shape. `0.1` for the members defined here."
+        },
         "statementType": {
           "type": "string",
           "format": "uri",
@@ -63,8 +67,8 @@
         "minByMethod": {
           "type": "object",
           "propertyNames": { "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod" },
-          "additionalProperties": { "type": "integer", "minimum": 1 },
-          "description": "Per-method floors within `minStatements` — e.g. `{ \"inPerson\": 1 }`. Absent: no method floor."
+          "additionalProperties": { "type": "integer", "minimum": 0 },
+          "description": "Per-method floors within `minStatements` — e.g. `{ \"in-person\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor."
         },
         "acceptedMethods": {
           "type": "array",
@@ -77,14 +81,14 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingDocumentClass" },
-          "description": "Document classes a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
+          "items": { "$ref": "../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingDocumentation" },
+          "description": "Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
         },
         "requiredClaims": {
           "type": "array",
           "uniqueItems": true,
           "items": { "$ref": "../../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
-          "description": "Claim types the applicant's Vetting Card must carry and a counted statement must list as verified. Absent: none."
+          "description": "Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none."
         },
         "optionalClaims": {
           "type": "array",
@@ -94,7 +98,7 @@
         },
         "maxStatementAge": {
           "$ref": "#/$defs/Duration",
-          "description": "A statement older than this at submission does not count. Absent: no age limit."
+          "description": "A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period."
         },
         "eligibleVetters": {
           "type": "object",
@@ -106,7 +110,7 @@
               "minLength": 1,
               "maxLength": 128,
               "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count."
+              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count (normally `vetter`)."
             }
           },
           "description": "How a vetter's eligibility is established."
@@ -123,7 +127,7 @@
             },
             "requireConsistentIdentityCommitment": {
               "type": "boolean",
-              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity."
+              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false."
             }
           },
           "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps."
@@ -133,22 +137,9 @@
           "enum": ["required", "optional", "none"],
           "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs."
         },
-        "tickets": {
-          "type": "string",
-          "enum": ["vetterPolicy", "required"],
-          "description": "Whether a request to a vetter must carry a ticket that vetter issued. `vetterPolicy` leaves it to each vetter; `required` means the community expects every vetter to demand one."
-        },
-        "vetterDirectory": {
-          "type": "boolean",
-          "description": "Whether this community offers a directory in which vetters may opt to be listed."
-        },
-        "requireVrc": {
-          "type": "boolean",
-          "description": "When true, a statement counts only where vetter and applicant also hold a verifiable relationship credential pair."
-        },
         "decisionSla": {
           "$ref": "#/$defs/Duration",
-          "description": "How long after submission the community undertakes to reach a decision, including a referral to human review."
+          "description": "How long after submission the community undertakes to reach a decision, including on an application referred to human review."
         },
         "requirementsGrace": {
           "$ref": "#/$defs/Duration",

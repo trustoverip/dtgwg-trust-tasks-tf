@@ -489,17 +489,17 @@ export type Version_PersonaV0_1 = number;
  */
 export type Version_VtaV0_1 = number;
 /**
- * A class of identity document a vetter looked at. Only the class travels — never a document number, an image, an issuing authority or an expiry date. `other` covers documentation the vetter accepts that none of the named classes describes; what it was stays with the vetter. Each vetter decides which classes they accept; a community MAY restrict which classes count, and by default does not.
+ * A class of documentation, named in lowercase words joined by hyphens. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `national-id`, `driver-licence`, and `none` — the vetter will attest without a document, which is the `prior-acquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
  */
-export type VettingDocumentClass = "passport" | "nationalId" | "driverLicence" | "other";
+export type VettingDocumentation = string;
 /**
- * How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.
+ * How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.
  */
-export type VettingMethod = "inPerson" | "video" | "priorAcquaintance";
+export type VettingMethod = "in-person" | "video" | "prior-acquaintance";
 /**
  * The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.
  */
-export type VettingRelationship = "none" | "communityColleague" | "sameEmployer" | "family" | "otherPersonal";
+export type VettingRelationship = "none" | "community-colleague" | "same-employer" | "family" | "other-personal";
 /**
  * A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
  */

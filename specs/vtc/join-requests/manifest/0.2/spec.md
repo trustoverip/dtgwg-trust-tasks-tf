@@ -45,7 +45,7 @@ related:
 
 ## Abstract
 
-The **VTC Join-Requests — Manifest** Trust Task returns a community's join criteria so a prospective applicant knows what to present before presenting anything. Each criterion names a presentation-definition the applicant must satisfy. A criterion MAY also carry a **`vetting`** requirement object — how many identity-vetting statements the community needs, by which methods, from whom — and then MUST carry a **`requirementsDigest`** naming that exact version of the criterion.
+The **VTC Join-Requests — Manifest** Trust Task returns a community's join criteria so a prospective applicant knows what to present before presenting anything. Each criterion names a presentation-definition the applicant must satisfy. A criterion MAY also carry a **`vetting`** requirements object — how many identity-vetting statements the community needs, by which methods, from whom — and then MUST carry a **`requirementsDigest`** naming that exact version of the criterion.
 
 The applicant then gathers what is required and submits via [`vtc/join-requests/submit`](../../submit/0.2/spec.md).
 
@@ -71,10 +71,14 @@ A conforming **community** (`recipient`):
 
 1. Returns `communityDid` and `criteria`. A community **MAY** tailor the criteria to the caller, but the default is its public join policy.
 2. For every criterion carrying `vetting`, **MUST** carry `requirementsDigest`, computed as defined below over the criterion exactly as returned.
-3. **MUST** evaluate a submission that cites a `requirementsDigest` under the criterion version that digest names, while that version is within its `requirementsGrace`, and **MUST** record which version governed the decision. Outside the grace window, or where no grace is declared, the current version governs.
-4. **MUST NOT** apply to a vetting statement any constraint the `vetting` object does not state. Absent members mean no constraint of that kind; this specification defines no default count, method floor, age limit, or document class, and a community that relies on one publishes it.
+3. **MUST NOT** publish a `vetting` object it cannot evaluate as written: `minStatements` at least 1, `acceptedMethods` non-empty, every method in `minByMethod` also in `acceptedMethods`, and every duration in the form the schema permits.
+4. **MUST** evaluate a submission that cites a `requirementsDigest` under the criterion version that digest names, while that version is within its `requirementsGrace`, and **MUST** record which version governed the decision. Outside the grace window, or where no grace is declared, the current version governs.
+5. **MUST NOT** apply to a vetting statement any constraint the `vetting` object does not state. Absent members mean no constraint of that kind; this specification defines no default count, method floor, age limit, or documentation, and a community that relies on one publishes it.
 
-A conforming **applicant** that starts an application under a criterion carrying `vetting` **SHOULD** record the `requirementsDigest` at that moment and cite it in every request it makes to a vetter and at submission, and **SHOULD** recompute it from the criterion before relying on it.
+A conforming **applicant**:
+
+1. **MUST** ignore members of `vetting` it does not recognise, and **MUST** treat a `vetting` object that fails item 3 above as unsatisfiable rather than guess at its meaning. A client's reading of the requirements is advisory in any case: the community's decision is authoritative, and some of what it evaluates — current vetter eligibility, for one — is visible only to the community.
+2. On starting an application under a criterion carrying `vetting`, **SHOULD** record the `requirementsDigest` at that moment, cite it in every request it makes to a vetter and at submission, and recompute it from the criterion before relying on it.
 
 ### Computing `requirementsDigest`
 
@@ -82,7 +86,7 @@ A conforming **applicant** that starts an application under a criterion carrying
 requirementsDigest = multibase( multihash( SHA-256( JCS( criterion ∖ requirementsDigest ) ) ) )
 ```
 
-`criterion ∖ requirementsDigest` is the criterion object with its `requirementsDigest` member removed and nothing else changed; `JCS` is [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) serialized as UTF-8. The value is a `DigestMultibase`. SHA-256 and base58btc (`z`) are **RECOMMENDED**, and a consumer compares decoded multihash bytes, not encoded strings. The digest covers `description` and `presentationDefinition` as well as `vetting`, because a change to any of them changes what the applicant was told to do.
+`criterion ∖ requirementsDigest` is the criterion object with its `requirementsDigest` member removed and nothing else changed — members of `vetting` a reader does not recognise included. `JCS` is [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) serialized as UTF-8. The value is a `DigestMultibase`. SHA-256 and base58btc (`z`) are **RECOMMENDED**, and a consumer compares decoded multihash bytes, not encoded strings. The digest covers `description` and `presentationDefinition` as well as `vetting`, because a change to any of them changes what the applicant was told to do.
 
 ## Authorization
 
@@ -92,27 +96,27 @@ This task is not consequential ([SPEC §2](/SPEC.md#2-terminology)): it changes 
 
 **Criterion** — one way of satisfying the join policy: an `id`, an optional human `description`, a `presentationDefinition`, and optionally `vetting` and `requirementsDigest`.
 
-**Vetting requirement object (`vetting`)** — what identity-vetting evidence the criterion needs beyond what the presentation-definition can express. Every number in it is community policy.
+**Vetting requirements object (`vetting`)** — what identity-vetting evidence the criterion needs beyond what the presentation-definition can express. Every number in it is community policy. The object is open: members defined by a later version of its shape are ignored by readers that do not know them.
 
 | Member | Meaning |
 |---|---|
+| `version` | Version of this object's shape — `0.1` for the members below |
 | `statementType` | The endorsement type URI a counted statement carries, registered via [`vtc/endorsement-types/register`](../../../endorsement-types/register/0.1/spec.md) |
 | `minStatements` | Statements needed, counting each vetter once however many DIDs they hold |
-| `minByMethod` | Per-method floors within `minStatements` |
-| `acceptedMethods` | Methods whose statements count at all: `inPerson`, `video`, `priorAcquaintance` |
-| `acceptedDocumentClasses` | Optional, and absent by default. Absent: each vetter decides what documentation they accept, including none. Present: a statement that relied on no listed class does not count |
-| `requiredClaims` | Claim types the Vetting Card must carry and a counted statement must list as verified |
+| `minByMethod` | Per-method floors within `minStatements`, keyed by method |
+| `acceptedMethods` | Methods whose statements count at all: `in-person`, `video`, `prior-acquaintance` |
+| `acceptedDocumentClasses` | Optional, and absent by default. Absent: each vetter decides what documentation they accept, including none. Present: a statement that relied on none of the listed documentation does not count |
+| `requiredClaims` | Claim types the Vetting Card must carry and a counted statement must list as verified; the identity commitment is computed over these |
 | `optionalClaims` | Claim types an applicant may add; never affect counting |
-| `maxStatementAge` | A statement older than this at submission does not count |
+| `maxStatementAge` | A statement older than this at decision time does not count |
 | `eligibleVetters.role` | The community role a statement's issuer must hold for it to count |
-| `independence` | Caps per declared vetter–applicant relationship; whether all statements must carry the same identity commitment |
+| `independence` | Caps per declared vetter–applicant relationship (`none`, `community-colleague`, `same-employer`, `family`, `other-personal`); whether all statements must carry the same identity commitment |
 | `invitation` | Whether an invitation credential must (`required`) or may (`optional`) accompany the statements, or plays no part (`none`) |
-| `tickets` | Whether each vetter decides (`vetterPolicy`) or the community expects every vetter to require a ticket (`required`) |
-| `vetterDirectory` | Whether the community offers an opt-in vetter directory |
-| `requireVrc` | Whether a statement counts only alongside a relationship credential pair |
 | `decisionSla` | How long after submission the community undertakes to decide |
 | `requirementsGrace` | How long an application started under an earlier digest is evaluated under that version |
 | `governanceFrameworkUrl` | Where the vetting governance, including the attestation text vetters sign, is published |
+
+Durations are ISO 8601 in weeks, days, hours, minutes and seconds (`P120D`, `P2W`, `PT15M`). Years and months are not accepted: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
 
 **`requirementsDigest`** — the digest defined under Conformance. It names a version of a criterion, not a community policy as a whole.
 
@@ -164,26 +168,25 @@ The first criterion needs two vetting statements, at least one in person, none f
           ]
         },
         "vetting": {
+          "version": "0.1",
           "statementType": "https://firstperson.network/endorsements/identity-vetting/0.1",
           "minStatements": 2,
-          "minByMethod": { "inPerson": 1 },
-          "acceptedMethods": ["inPerson", "video", "priorAcquaintance"],
+          "minByMethod": { "in-person": 1 },
+          "acceptedMethods": ["in-person", "video", "prior-acquaintance"],
           "requiredClaims": ["name.legal"],
           "optionalClaims": ["account.handle", "url.homepage"],
           "maxStatementAge": "P120D",
           "eligibleVetters": { "role": "vetter" },
           "independence": {
-            "maxByDeclaredRelationship": { "family": 0, "sameEmployer": 1 },
+            "maxByDeclaredRelationship": { "family": 0, "same-employer": 1 },
             "requireConsistentIdentityCommitment": true
           },
           "invitation": "optional",
-          "tickets": "vetterPolicy",
-          "vetterDirectory": false,
           "decisionSla": "P14D",
           "requirementsGrace": "P30D",
           "governanceFrameworkUrl": "https://kernel-vtc.example/governance#vetting"
         },
-        "requirementsDigest": "zQmfJG5HsnXfn2PtAh8hhcbHL41fKjN5pPmoHtnb2uUPSGs"
+        "requirementsDigest": "zQmQTZyBgsmMfS8WypHETAjQrGbvmXmxjQXc3HDYYYvVbay"
       },
       {
         "id": "invited",
@@ -221,7 +224,8 @@ a claim value, a vetter's identity, or anything about any applicant. In particul
 it does not list vetters. How an applicant finds one is a separate question, with a
 different privacy answer, and folding a vetter list into a document anyone can
 fetch anonymously would publish exactly the social graph peer vetting is designed
-to keep private.
+to keep private. A community **MUST NOT** use the open `vetting` object to carry
+vetter identities, applicant data, or anything else about a person.
 
 `acceptedDocumentClasses` is absent by default, and communities **SHOULD** leave it
 absent unless their governance genuinely needs a floor. Stating a floor pushes every

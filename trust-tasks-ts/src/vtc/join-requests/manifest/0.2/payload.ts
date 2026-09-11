@@ -3,15 +3,15 @@
  * Source: specs/vtc/join-requests/manifest/0.2/payload.schema.json
  */
 
-import type { ClaimType, DigestMultibase, Ext, VettingDocumentClass, VettingMethod } from "../../../../_shared/components.js";
+import type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMethod } from "../../../../_shared/components.js";
 
 
 /**
- * A statement older than this at submission does not count. Absent: no age limit.
+ * A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period.
  */
 export type Duration = string;
 /**
- * How long after submission the community undertakes to reach a decision, including a referral to human review.
+ * How long after submission the community undertakes to reach a decision, including on an application referred to human review.
  */
 export type Duration1 = string;
 /**
@@ -20,7 +20,7 @@ export type Duration1 = string;
 export type Duration2 = string;
 
 /**
- * Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirement object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.
+ * Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.
  */
 export interface VTCJoinRequestsManifestPayload {
   ext?: Ext;
@@ -47,9 +47,13 @@ export interface Criterion {
   requirementsDigest?: DigestMultibase;
 }
 /**
- * What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies.
+ * What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.
  */
 export interface VettingRequirements {
+  /**
+   * Version of this requirements object's shape. `0.1` for the members defined here.
+   */
+  version: string;
   /**
    * The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register.
    */
@@ -59,7 +63,7 @@ export interface VettingRequirements {
    */
   minStatements: number;
   /**
-   * Per-method floors within `minStatements` — e.g. `{ "inPerson": 1 }`. Absent: no method floor.
+   * Per-method floors within `minStatements` — e.g. `{ "in-person": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.
    */
   minByMethod?: {
     [k: string]: number | undefined;
@@ -71,13 +75,13 @@ export interface VettingRequirements {
    */
   acceptedMethods: [VettingMethod, ...VettingMethod[]];
   /**
-   * Document classes a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.
+   * Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.
    *
    * @minItems 1
    */
-  acceptedDocumentClasses?: [VettingDocumentClass, ...VettingDocumentClass[]];
+  acceptedDocumentClasses?: [VettingDocumentation, ...VettingDocumentation[]];
   /**
-   * Claim types the applicant's Vetting Card must carry and a counted statement must list as verified. Absent: none.
+   * Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.
    */
   requiredClaims?: ClaimType[];
   /**
@@ -90,7 +94,7 @@ export interface VettingRequirements {
    */
   eligibleVetters: {
     /**
-     * The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count.
+     * The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count (normally `vetter`).
      */
     role: string;
   };
@@ -105,7 +109,7 @@ export interface VettingRequirements {
       [k: string]: number | undefined;
     };
     /**
-     * When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity.
+     * When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.
      */
     requireConsistentIdentityCommitment?: boolean;
   };
@@ -113,28 +117,17 @@ export interface VettingRequirements {
    * Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.
    */
   invitation?: "required" | "optional" | "none";
-  /**
-   * Whether a request to a vetter must carry a ticket that vetter issued. `vetterPolicy` leaves it to each vetter; `required` means the community expects every vetter to demand one.
-   */
-  tickets?: "vetterPolicy" | "required";
-  /**
-   * Whether this community offers a directory in which vetters may opt to be listed.
-   */
-  vetterDirectory?: boolean;
-  /**
-   * When true, a statement counts only where vetter and applicant also hold a verifiable relationship credential pair.
-   */
-  requireVrc?: boolean;
   decisionSla?: Duration1;
   requirementsGrace?: Duration2;
   /**
    * Where the community's vetting governance — including the attestation text vetters sign — is published.
    */
   governanceFrameworkUrl?: string;
+  [k: string]: unknown | undefined;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, DigestMultibase, Ext, VettingDocumentClass, VettingMethod };
+export type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMethod };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2" as const;
@@ -161,7 +154,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2",
   "title": "VTC Join-Requests Manifest — payload",
-  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirement object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.",
+  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -173,10 +166,9 @@ export const PAYLOAD_SCHEMA = {
     "Duration": {
       "title": "Duration",
       "type": "string",
-      "minLength": 3,
       "maxLength": 32,
-      "pattern": "^P([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$",
-      "description": "An ISO 8601 duration (e.g. `P120D`, `PT8H`)."
+      "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$",
+      "description": "An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit."
     },
     "Criterion": {
       "title": "Criterion",
@@ -218,15 +210,21 @@ export const PAYLOAD_SCHEMA = {
     "VettingRequirements": {
       "title": "VettingRequirements",
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
+        "version",
         "statementType",
         "minStatements",
         "acceptedMethods",
         "eligibleVetters"
       ],
-      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies.",
+      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.",
       "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "Version of this requirements object's shape. `0.1` for the members defined here."
+        },
         "statementType": {
           "type": "string",
           "format": "uri",
@@ -246,9 +244,9 @@ export const PAYLOAD_SCHEMA = {
           },
           "additionalProperties": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 0
           },
-          "description": "Per-method floors within `minStatements` — e.g. `{ \"inPerson\": 1 }`. Absent: no method floor."
+          "description": "Per-method floors within `minStatements` — e.g. `{ \"in-person\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor."
         },
         "acceptedMethods": {
           "type": "array",
@@ -264,9 +262,9 @@ export const PAYLOAD_SCHEMA = {
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/VettingDocumentClass"
+            "$ref": "#/$defs/VettingDocumentation"
           },
-          "description": "Document classes a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
+          "description": "Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
         },
         "requiredClaims": {
           "type": "array",
@@ -274,7 +272,7 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ClaimType"
           },
-          "description": "Claim types the applicant's Vetting Card must carry and a counted statement must list as verified. Absent: none."
+          "description": "Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none."
         },
         "optionalClaims": {
           "type": "array",
@@ -286,7 +284,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "maxStatementAge": {
           "$ref": "#/$defs/Duration",
-          "description": "A statement older than this at submission does not count. Absent: no age limit."
+          "description": "A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period."
         },
         "eligibleVetters": {
           "type": "object",
@@ -300,7 +298,7 @@ export const PAYLOAD_SCHEMA = {
               "minLength": 1,
               "maxLength": 128,
               "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count."
+              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count (normally `vetter`)."
             }
           },
           "description": "How a vetter's eligibility is established."
@@ -322,7 +320,7 @@ export const PAYLOAD_SCHEMA = {
             },
             "requireConsistentIdentityCommitment": {
               "type": "boolean",
-              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity."
+              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false."
             }
           },
           "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps."
@@ -336,25 +334,9 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs."
         },
-        "tickets": {
-          "type": "string",
-          "enum": [
-            "vetterPolicy",
-            "required"
-          ],
-          "description": "Whether a request to a vetter must carry a ticket that vetter issued. `vetterPolicy` leaves it to each vetter; `required` means the community expects every vetter to demand one."
-        },
-        "vetterDirectory": {
-          "type": "boolean",
-          "description": "Whether this community offers a directory in which vetters may opt to be listed."
-        },
-        "requireVrc": {
-          "type": "boolean",
-          "description": "When true, a statement counts only where vetter and applicant also hold a verifiable relationship credential pair."
-        },
         "decisionSla": {
           "$ref": "#/$defs/Duration",
-          "description": "How long after submission the community undertakes to reach a decision, including a referral to human review."
+          "description": "How long after submission the community undertakes to reach a decision, including on an application referred to human review."
         },
         "requirementsGrace": {
           "$ref": "#/$defs/Duration",
@@ -409,10 +391,10 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "enum": [
         "none",
-        "communityColleague",
-        "sameEmployer",
+        "community-colleague",
+        "same-employer",
         "family",
-        "otherPersonal"
+        "other-personal"
       ],
       "description": "The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act."
     },
@@ -424,26 +406,23 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     },
-    "VettingDocumentClass": {
-      "title": "VettingDocumentClass",
+    "VettingDocumentation": {
+      "title": "VettingDocumentation",
       "type": "string",
-      "enum": [
-        "passport",
-        "nationalId",
-        "driverLicence",
-        "other"
-      ],
-      "description": "A class of identity document a vetter looked at. Only the class travels — never a document number, an image, an issuing authority or an expiry date. `other` covers documentation the vetter accepts that none of the named classes describes; what it was stays with the vetter. Each vetter decides which classes they accept; a community MAY restrict which classes count, and by default does not."
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "A class of documentation, named in lowercase words joined by hyphens. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `national-id`, `driver-licence`, and `none` — the vetter will attest without a document, which is the `prior-acquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
     },
     "VettingMethod": {
       "title": "VettingMethod",
       "type": "string",
       "enum": [
-        "inPerson",
+        "in-person",
         "video",
-        "priorAcquaintance"
+        "prior-acquaintance"
       ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
+      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     },
     "DigestMultibase": {
       "title": "DigestMultibase",
@@ -466,10 +445,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     "Duration": {
       "title": "Duration",
       "type": "string",
-      "minLength": 3,
       "maxLength": 32,
-      "pattern": "^P([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+S)?)?$",
-      "description": "An ISO 8601 duration (e.g. `P120D`, `PT8H`)."
+      "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$",
+      "description": "An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit."
     },
     "Criterion": {
       "title": "Criterion",
@@ -511,15 +489,21 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     "VettingRequirements": {
       "title": "VettingRequirements",
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
+        "version",
         "statementType",
         "minStatements",
         "acceptedMethods",
         "eligibleVetters"
       ],
-      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies.",
+      "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest.",
       "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "description": "Version of this requirements object's shape. `0.1` for the members defined here."
+        },
         "statementType": {
           "type": "string",
           "format": "uri",
@@ -539,9 +523,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           },
           "additionalProperties": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 0
           },
-          "description": "Per-method floors within `minStatements` — e.g. `{ \"inPerson\": 1 }`. Absent: no method floor."
+          "description": "Per-method floors within `minStatements` — e.g. `{ \"in-person\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor."
         },
         "acceptedMethods": {
           "type": "array",
@@ -557,9 +541,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/VettingDocumentClass"
+            "$ref": "#/$defs/VettingDocumentation"
           },
-          "description": "Document classes a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
+          "description": "Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest."
         },
         "requiredClaims": {
           "type": "array",
@@ -567,7 +551,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ClaimType"
           },
-          "description": "Claim types the applicant's Vetting Card must carry and a counted statement must list as verified. Absent: none."
+          "description": "Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none."
         },
         "optionalClaims": {
           "type": "array",
@@ -579,7 +563,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "maxStatementAge": {
           "$ref": "#/$defs/Duration",
-          "description": "A statement older than this at submission does not count. Absent: no age limit."
+          "description": "A statement older than this at decision time does not count. Absent: no age limit beyond the statement's own validity period."
         },
         "eligibleVetters": {
           "type": "object",
@@ -593,7 +577,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "minLength": 1,
               "maxLength": 128,
               "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count."
+              "description": "The community role a statement's issuer must hold, as a community-issued role credential, for the statement to count (normally `vetter`)."
             }
           },
           "description": "How a vetter's eligibility is established."
@@ -615,7 +599,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "requireConsistentIdentityCommitment": {
               "type": "boolean",
-              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity."
+              "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false."
             }
           },
           "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps."
@@ -629,25 +613,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           ],
           "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs."
         },
-        "tickets": {
-          "type": "string",
-          "enum": [
-            "vetterPolicy",
-            "required"
-          ],
-          "description": "Whether a request to a vetter must carry a ticket that vetter issued. `vetterPolicy` leaves it to each vetter; `required` means the community expects every vetter to demand one."
-        },
-        "vetterDirectory": {
-          "type": "boolean",
-          "description": "Whether this community offers a directory in which vetters may opt to be listed."
-        },
-        "requireVrc": {
-          "type": "boolean",
-          "description": "When true, a statement counts only where vetter and applicant also hold a verifiable relationship credential pair."
-        },
         "decisionSla": {
           "$ref": "#/$defs/Duration",
-          "description": "How long after submission the community undertakes to reach a decision, including a referral to human review."
+          "description": "How long after submission the community undertakes to reach a decision, including on an application referred to human review."
         },
         "requirementsGrace": {
           "$ref": "#/$defs/Duration",
@@ -702,10 +670,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "enum": [
         "none",
-        "communityColleague",
-        "sameEmployer",
+        "community-colleague",
+        "same-employer",
         "family",
-        "otherPersonal"
+        "other-personal"
       ],
       "description": "The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act."
     },
@@ -717,26 +685,23 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     },
-    "VettingDocumentClass": {
-      "title": "VettingDocumentClass",
+    "VettingDocumentation": {
+      "title": "VettingDocumentation",
       "type": "string",
-      "enum": [
-        "passport",
-        "nationalId",
-        "driverLicence",
-        "other"
-      ],
-      "description": "A class of identity document a vetter looked at. Only the class travels — never a document number, an image, an issuing authority or an expiry date. `other` covers documentation the vetter accepts that none of the named classes describes; what it was stays with the vetter. Each vetter decides which classes they accept; a community MAY restrict which classes count, and by default does not."
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "A class of documentation, named in lowercase words joined by hyphens. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `national-id`, `driver-licence`, and `none` — the vetter will attest without a document, which is the `prior-acquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
     },
     "VettingMethod": {
       "title": "VettingMethod",
       "type": "string",
       "enum": [
-        "inPerson",
+        "in-person",
         "video",
-        "priorAcquaintance"
+        "prior-acquaintance"
       ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
+      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     },
     "DigestMultibase": {
       "title": "DigestMultibase",
