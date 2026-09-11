@@ -31,6 +31,169 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.20.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.20.3...trust-tasks-rs-v0.20.4) — 2026-09-11
+
+
+### Added
+
+- **vtc/vetting/vetters**: Vetter profile, listing and grant resend; manifest branding; ticket URI ([#453](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/453))
+
+Applicants need to find vetters without the community publishing its vetters
+  by fiat. A grant still lists nobody; a vetter opts in.
+
+  vtc/vetting/vetters/profile/0.1 — vetter -> community. Replaces the sender's
+  whole profile: `listed` (required), `displayName?` (1-128), `languages` (0-16
+  BCP 47 tags, 2-35), `location?` ({ country alpha-2 upper case, region?,
+  city? }), `methods` (1-3 VettingMethod), `acceptsDocumentation` (0-16
+  VettingDocumentation), `availability?` (1-500), `contactHint?` (1-300),
+  `events` (0-32 of { name 1-200, startDate, endDate, location?, https url? }),
+  `ext?`. Returns `{ listed, updatedAt }`. Refuses a sender without a live vetter
+  grant, or not an active member, with `vtc/vetting/vetters/profile:notEligible`;
+  an event ending before it starts or more than 31 days after it with
+  `malformedRequest`. Idempotent replace; deleted when the grant is revoked or
+  the member leaves. issuedAt REQUIRED, proof RECOMMENDED.
+
+  vtc/vetting/vetters/list/0.1 — any identified applicant or member ->
+  community, read-only. Filters `language` (tag or `-` prefix), `country`,
+  `region`, `city`, `method`, `eventFrom`/`eventTo`/`eventName`, `limit`
+  (1-100, default 50), `cursor` (<= 512), `ext`. Returns `vetters`
+  (ListedVetter: vetterDid, displayName?, languages, location?, methods,
+  acceptsDocumentation, availability?, contactHint?, events with endDate >= today
+  UTC, grantValidUntil, updatedAt) and `nextCursor?`. Only active members with a
+  live grant and `listed: true`. States why the family has no `show`: a lookup by
+  DID would reveal unlisted vetters.
+
+  vtc/vetting/vetters/resend/0.1 — vetter -> community. Empty payload; the
+  community re-delivers the sender's live vetter role credential, unchanged, over
+  credential-exchange/issue and returns `{ credentialId, validUntil }`.
+  `vtc/vetting/vetters/resend:notGranted` when there is no live grant.
+
+  The shared profile pieces live in vtc/_shared/0.1/vetter-profile.
+
+  vtc/join-requests/manifest/0.2 — the response gains optional `branding`
+  (CommunityBranding: displayName 1-128, accentColor #rrggbb, https logoUrl
+  <= 2048, ext). Additive, outside every criterion, so no requirementsDigest
+  covers it. Example added.
+
+  vetting/request/0.1 — informative "Ticket URI" section for the QR payload:
+  vetting-ticket:?v=1&community=..&vetter=..&ticket=..&secret=.. or ..&code=..
+
+  vtc/vetting/vetters/grant/0.1 — links profile, list and resend; revoking a
+  grant deletes the profile; the consent text now says a grant alone lists
+  nobody. The identity-vetting ceremony relates vtc/vetting/vetters/list.
+
+  Rust and TS bindings regenerated.
+
+- **vtc/vetting/vetters**: Grant the vetter role, and pin the eligibility presentation ([#452](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/452))
+
+Vetter eligibility is a community-issued role credential, and this adds the
+  task that issues it.
+
+  vtc/vetting/vetters/grant/0.1 — community administrator -> community, proof
+  REQUIRED. `{ memberDid, validitySeconds? (86400..=63072000) }` returns
+  `{ endorsementId, credentialId, validFrom, validUntil }`. The community issues
+  the member an EndorsementCredential whose endorsement is
+  `{ type: CommunityRole, role: vetter, communityDid }`, with a revocation
+  credentialStatus entry and 365 days' validity by default, and delivers it
+  over credential-exchange/issue. A member with a live grant gets that grant
+  back. Revocation is vtc/endorsements/revoke; removing a member revokes their
+  grants. Administrator capability only; `notMember` for a non-member.
+
+  vetting/request/0.1 — `eligibilityVp` is now a documented, still-optional
+  presentation: W3C v2 `@context` first, `VerifiablePresentation` type,
+  `holder` the vetter, `nonce` the request document id, `domain` the
+  applicant's joinDid, an `authentication` Data Integrity proof, and the
+  community's CommunityRole credential for the manifest's
+  eligibleVetters.role among its credentials. The applicant's check is
+  advisory; the community is authoritative.
+
+  vtc/join-requests/manifest/0.2 — `eligibleVetters.role` names the role in a
+  community-issued CommunityRole endorsement credential.
+
+- **vtc/vetting**: Withdraw a vetting statement, and the identity-vetting ceremony ([#451](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/451))
+
+* feat(vetting): peer identity-vetting request, session and decline
+
+  A community that admits people on peer identity vetting needs its members
+  to check applicants before it decides: in person or on a call, against
+  whatever documentation each vetter accepts, ending in a signed statement
+  the applicant later submits. That exchange runs between two people's
+  agents, with no community service party to it, so it gets its own
+  top-level family.
+
+  - vetting/request/0.1 — applicant -> vetter. Carries the community, the
+    requirementsDigest being gathered for, the join DID (equal to the
+    issuer), and a ticket or an introduction. The response accepts with a
+    requestId and a presentation of the vetter's membership and role.
+    Refusals are trust-task-error codes; a wrong short ticket code gets no
+    reply at all, so guessing learns nothing.
+  - vetting/session/0.1 — vetter -> applicant, opened while the two are
+    together. Issues the challenge and required claims; the response is the
+    signed Vetting Card. The session document's id is the statement's
+    taskContext and its task digest binds it, mirroring witness/session. The
+    spoken match code is derived from that id so both agents compute it.
+  - vetting/decline/0.1 — vetter -> applicant, reason optional, never sent to
+    the community.
+
+- **vetting**: Peer identity-vetting request, session and decline ([#450](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/450))
+
+* feat(vetting): peer identity-vetting request, session and decline
+
+  A community that admits people on peer identity vetting needs its members
+  to check applicants before it decides: in person or on a call, against
+  whatever documentation each vetter accepts, ending in a signed statement
+  the applicant later submits. That exchange runs between two people's
+  agents, with no community service party to it, so it gets its own
+  top-level family.
+
+  - vetting/request/0.1 — applicant -> vetter. Carries the community, the
+    requirementsDigest being gathered for, the join DID (equal to the
+    issuer), and a ticket or an introduction. The response accepts with a
+    requestId and a presentation of the vetter's membership and role.
+    Refusals are trust-task-error codes; a wrong short ticket code gets no
+    reply at all, so guessing learns nothing.
+  - vetting/session/0.1 — vetter -> applicant, opened while the two are
+    together. Issues the challenge and required claims; the response is the
+    signed Vetting Card. The session document's id is the statement's
+    taskContext and its task digest binds it, mirroring witness/session. The
+    spoken match code is derived from that id so both agents compute it.
+  - vetting/decline/0.1 — vetter -> applicant, reason optional, never sent to
+    the community.
+
+
+
+### Specifications
+
+- **vtc/join-requests/manifest**: Advertise identity-vetting requirements per criterion ([#449](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/449))
+
+* spec(vtc/join-requests/manifest): advertise identity-vetting requirements per criterion
+
+  A community that admits people on peer identity vetting has to say what it
+  needs before anyone applies: how many statements, from distinct eligible
+  vetters, by which methods, with what independence. A presentation-definition
+  can ask for "credentials of type EndorsementCredential"; it cannot count
+  issuers, cap relationships, or require that an issuer holds a role.
+
+  0.2 adds an optional `vetting` object beside each criterion's
+  presentation-definition, and a `requirementsDigest` (JCS -> multihash ->
+  multibase over the criterion) that names one version of it, so an applicant
+  who started under older requirements can be evaluated under them within the
+  community's `requirementsGrace`.
+
+  Every number is community policy. The schema carries no defaults: an absent
+  member means no constraint of that kind. `acceptedDocumentClasses` is
+  optional and absent by default, because each vetter decides what
+  documentation they accept.
+
+  The shared vocabulary (method, document class, accepted documentation,
+  declared relationship) lands in `vetting/_shared/0.1`, so the manifest and
+  the vetting/* peer tasks that follow compare values rather than translate
+  them. Claim types reuse persona's `ClaimType` rather than redefining it.
+
+  0.1 is untouched.
+
+
+
 ## [0.20.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.20.2...trust-tasks-rs-v0.20.3) — 2026-09-10
 
 
