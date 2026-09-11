@@ -105,7 +105,7 @@ The statement below is the one Carol issues for the session in this document's e
       "livenessConfirmed": true,
       "identityCommitment": "zQmT7GFcSjCY7YwuK5RP3TNNF8wp7fnCfMMYjMeatbbWo7b",
       "cardDigestMultibase": "zQmYn4rU7vALWT8K9nC4vD8EcSZXFh8ZrCBDFUXgXo2pcH5",
-      "declaredRelationship": "community-colleague",
+      "declaredRelationship": "communityColleague",
       "attestationTextDigest": "zQmappH2ogZX2jVEmxitPLHKtA82EmxJjkPWo3szBErmNFj"
     }
   },

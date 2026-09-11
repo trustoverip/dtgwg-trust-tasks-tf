@@ -358,11 +358,11 @@ export const PAYLOAD_SCHEMA = {
       "title": "VettingMethod",
       "type": "string",
       "enum": [
-        "in-person",
+        "inPerson",
         "video",
-        "prior-acquaintance"
+        "priorAcquaintance"
       ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
+      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     }
   }
 } as const;
@@ -590,11 +590,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "title": "VettingMethod",
       "type": "string",
       "enum": [
-        "in-person",
+        "inPerson",
         "video",
-        "prior-acquaintance"
+        "priorAcquaintance"
       ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
+      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     }
   }
 } as const;

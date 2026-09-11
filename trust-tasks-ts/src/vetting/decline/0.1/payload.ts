@@ -15,9 +15,9 @@ export interface VettingDeclinePayload {
    */
   requestId: string;
   /**
-   * OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these.
+   * OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.
    */
-  code?: "could-not-verify" | "document-mismatch" | "liveness-failed" | "not-comfortable" | "other";
+  code?: "couldNotVerify" | "documentMismatch" | "livenessFailed" | "notComfortable" | "other";
   /**
    * OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.
    */
@@ -63,13 +63,13 @@ export const PAYLOAD_SCHEMA = {
     "code": {
       "type": "string",
       "enum": [
-        "could-not-verify",
-        "document-mismatch",
-        "liveness-failed",
-        "not-comfortable",
+        "couldNotVerify",
+        "documentMismatch",
+        "livenessFailed",
+        "notComfortable",
         "other"
       ],
-      "description": "OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these."
+      "description": "OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these."
     },
     "message": {
       "type": "string",

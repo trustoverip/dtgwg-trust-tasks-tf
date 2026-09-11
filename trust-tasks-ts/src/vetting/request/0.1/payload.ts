@@ -124,7 +124,7 @@ export interface VettingRequestResponsePayload {
    */
   requestId: string;
   /**
-   * RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to `requestId` and `domain` equal to the request's `community`.
+   * RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`.
    */
   eligibilityVp?: {};
   /**
@@ -305,7 +305,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "eligibilityVp": {
           "type": "object",
-          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to `requestId` and `domain` equal to the request's `community`."
+          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`."
         },
         "acceptsDocumentation": {
           "type": "array",
@@ -342,18 +342,18 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 64,
-      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-      "description": "A class of documentation, named in lowercase words joined by hyphens. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `national-id`, `driver-licence`, and `none` — the vetter will attest without a document, which is the `prior-acquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
+      "pattern": "^[a-z][a-zA-Z0-9]*$",
+      "description": "A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
     },
     "VettingMethod": {
       "title": "VettingMethod",
       "type": "string",
       "enum": [
-        "in-person",
+        "inPerson",
         "video",
-        "prior-acquaintance"
+        "priorAcquaintance"
       ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
+      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     },
     "DigestMultibase": {
       "title": "DigestMultibase",
@@ -440,7 +440,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "eligibilityVp": {
           "type": "object",
-          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to `requestId` and `domain` equal to the request's `community`."
+          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`."
         },
         "acceptsDocumentation": {
           "type": "array",
@@ -477,18 +477,18 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 64,
-      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-      "description": "A class of documentation, named in lowercase words joined by hyphens. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `national-id`, `driver-licence`, and `none` — the vetter will attest without a document, which is the `prior-acquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
+      "pattern": "^[a-z][a-zA-Z0-9]*$",
+      "description": "A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
     },
     "VettingMethod": {
       "title": "VettingMethod",
       "type": "string",
       "enum": [
-        "in-person",
+        "inPerson",
         "video",
-        "prior-acquaintance"
+        "priorAcquaintance"
       ],
-      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `in-person` — both people were physically together. `video` — a live, two-way video call. `prior-acquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
+      "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy."
     },
     "DigestMultibase": {
       "title": "DigestMultibase",

@@ -86,10 +86,10 @@ The authority to decline is the **accepted request**. The vetter that accepted `
 
 **`code`** — optional:
 
-- `could-not-verify` — the vetter could not establish the claimed identity;
-- `document-mismatch` — the documentation did not match the card or the person;
-- `liveness-failed` — the match code could not be confirmed with the person;
-- `not-comfortable` — the vetter prefers not to attest;
+- `couldNotVerify` — the vetter could not establish the claimed identity;
+- `documentMismatch` — the documentation did not match the card or the person;
+- `livenessFailed` — the match code could not be confirmed with the person;
+- `notComfortable` — the vetter prefers not to attest;
 - `other` — none of these.
 
 **`message`** — optional free text from the vetter to the applicant, at most 500 characters.
@@ -110,7 +110,7 @@ The vetter sends the decline to the applicant. See the top-level schema in [`pay
   "issuedAt": "2026-09-17T15:12:00Z",
   "payload": {
     "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
-    "code": "document-mismatch",
+    "code": "documentMismatch",
     "message": "The name on the document you showed did not match the card. Happy to try again another day."
   },
   "proof": {

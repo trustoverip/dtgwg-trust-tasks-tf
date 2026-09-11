@@ -93,10 +93,10 @@ A conforming **vetter** (`recipient`):
 2. **MUST** decide whether the request passes its own gate — a valid ticket it issued for `community`, an introduction it accepts, or a policy of taking requests without either — **before** anything about the request reaches a person. A request that fails the gate **MUST NOT** produce a notification.
 3. **MUST NOT** answer a request whose short `code` matches no active ticket — not with a response, and not with a `trust-task-error`. A scanned ticket whose `secret` does not match is refused with `vetting/request:invalidTicket`.
 4. **MUST** compare ticket codes and secrets in constant time, count one use of a ticket per accepted request, and treat the first `issuer` to redeem a ticket as the only party later documents of that vetting may come from.
-5. On accepting, returns the `#response` with a `requestId` unique among its open requests. It **SHOULD** include `eligibilityVp`: a presentation, held by the vetter's DID (the response's `issuer`), of the membership credential and the role credential the community issued it, with `challenge` equal to `requestId` and `domain` equal to `community`. It **SHOULD** include `acceptsDocumentation`.
+5. On accepting, returns the `#response` with a `requestId` unique among its open requests. It **SHOULD** include `eligibilityVp`: a presentation, held by the vetter's DID (the response's `issuer`), of the membership credential and the role credential the community issued it, with `challenge` equal to the request document's `id` and `domain` equal to `community`. The applicant chose that `id`, so the presentation is fresh to this request: one the vetter made while it still held the role cannot be replayed after it lost it. It **SHOULD** include `acceptsDocumentation`.
 6. Otherwise returns a `trust-task-error` carrying one of this specification's codes. A refusal is never a `#response`.
 
-A conforming **applicant**, on receiving a response carrying `eligibilityVp`, **SHOULD** check that its holder is the response's `issuer`; that its `challenge` and `domain` are `requestId` and `community`; that both credentials are issued by `community` and name the vetter; that the role credential names the role the community's manifest requires; and that neither is expired or revoked. The check is advisory: the community evaluates eligibility again when it decides, and a statement from a vetter that was not eligible does not count.
+A conforming **applicant**, on receiving a response carrying `eligibilityVp`, **SHOULD** check that its holder is the response's `issuer`; that its `challenge` is the `id` of the request document it sent and its `domain` is `community`; that both credentials are issued by `community` and name the vetter; that the role credential names the role the community's manifest requires; and that neither is expired or revoked. The check is advisory: the community evaluates eligibility again when it decides, and a statement from a vetter that was not eligible does not count.
 
 ## Authorization
 
@@ -138,7 +138,7 @@ The applicant sends the request to the vetter. See the top-level schema in [`pay
   "issuedAt": "2026-09-14T09:00:00Z",
   "payload": {
     "community": "did:webvh:QmVtcScid:kernel-vtc.example",
-    "requirementsDigest": "zQmfJG5HsnXfn2PtAh8hhcbHL41fKjN5pPmoHtnb2uUPSGs",
+    "requirementsDigest": "zQmYZQN9M169SXXg1sZdpNCDAjoVajkrPLaFhJ6A4mecQfC",
     "joinDid": "did:webvh:QmAliceScid1:alice.example",
     "ticket": { "code": "K7QF-2M9X" },
     "preferredMethod": "video",
@@ -199,12 +199,12 @@ The presentation is abridged; its credentials are the community's membership cre
         "cryptosuite": "eddsa-jcs-2022",
         "verificationMethod": "did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1",
         "proofPurpose": "authentication",
-        "challenge": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
+        "challenge": "urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01",
         "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
         "proofValue": "z5k2pxtz3XrdADnsNJ1XQiZ4oj7XHVqTamscwe3Wir6JjjNKp6mJZZTmynBW32NBmWCxjs5g8Xmjck9ZLfPKtU5G4"
       }
     },
-    "acceptsDocumentation": ["passport", "national-id", "none"],
+    "acceptsDocumentation": ["passport", "nationalId", "none"],
     "sessionHint": "Video, Thursday 17 September at 15:00 UTC. I will email you a link."
   },
   "proof": {

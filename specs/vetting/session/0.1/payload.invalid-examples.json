@@ -78,12 +78,12 @@
     }
   },
   {
-    "note": "Methods are the hyphenated forms the vetting vocabulary defines: `prior-acquaintance`, not `priorAcquaintance`.",
+    "note": "Methods are lowerCamelCase (SPEC §4.10): `priorAcquaintance`, not `prior-acquaintance`.",
     "payload": {
       "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
       "challenge": "Xq3v9bT0cN2mR8sLk4Jw7pYh1eZa6uGd5fQi0oVxWnE",
       "domain": "did:webvh:QmVtcScid:kernel-vtc.example",
-      "method": "priorAcquaintance",
+      "method": "prior-acquaintance",
       "requiredClaims": [
         "name.legal"
       ],

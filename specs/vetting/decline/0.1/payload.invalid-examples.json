@@ -6,10 +6,10 @@
     }
   },
   {
-    "note": "Reason codes are the hyphenated forms this specification defines: `could-not-verify`, not `couldNotVerify`.",
+    "note": "Reason codes are lowerCamelCase (SPEC §4.10): `couldNotVerify`, not `could-not-verify`.",
     "payload": {
       "requestId": "urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01",
-      "code": "couldNotVerify"
+      "code": "could-not-verify"
     }
   },
   {

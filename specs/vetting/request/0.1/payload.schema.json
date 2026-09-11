@@ -139,7 +139,7 @@
         },
         "eligibilityVp": {
           "type": "object",
-          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to `requestId` and `domain` equal to the request's `community`."
+          "description": "RECOMMENDED. A W3C Verifiable Presentation (opaque here) held by the vetter, containing the community-issued membership credential and the community-issued role credential that make the vetter eligible, with `challenge` equal to the `id` of the vetting request document it answers — a value the applicant chose, so a presentation made while the vetter still held the role cannot be replayed after it lost it — and `domain` equal to the request's `community`."
         },
         "acceptsDocumentation": {
           "type": "array",

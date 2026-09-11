@@ -41,7 +41,7 @@
           "items": {
             "$ref": "vetting.schema.json#/$defs/VettingDocumentation"
           },
-          "description": "The documentation the vetter relied on, from their own accepted list. Empty, or absent, where they relied on none — expected with `prior-acquaintance`. `none` is never listed: 'no document' is the empty list."
+          "description": "The documentation the vetter relied on, from their own accepted list. Empty, or absent, where they relied on none — expected with `priorAcquaintance`. `none` is never listed: 'no document' is the empty list."
         },
         "claimsVerified": {
           "type": "array",

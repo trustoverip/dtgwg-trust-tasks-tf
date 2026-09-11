@@ -7,7 +7,7 @@
     "note": "`joinDid` is required even though it repeats the issuer: it is what a vetter's client checks the document issuer against, so a request relayed under another identity is refused rather than silently re-attributed.",
     "payload": {
       "community": "did:webvh:QmVtcScid:kernel-vtc.example",
-      "requirementsDigest": "zQmfJG5HsnXfn2PtAh8hhcbHL41fKjN5pPmoHtnb2uUPSGs"
+      "requirementsDigest": "zQmYZQN9M169SXXg1sZdpNCDAjoVajkrPLaFhJ6A4mecQfC"
     }
   },
   {
@@ -59,11 +59,11 @@
     }
   },
   {
-    "note": "Methods are the hyphenated forms the vetting vocabulary defines: `in-person`, not `inPerson`.",
+    "note": "Methods are lowerCamelCase (SPEC §4.10): `inPerson`, not `in-person`.",
     "payload": {
       "community": "did:webvh:QmVtcScid:kernel-vtc.example",
       "joinDid": "did:webvh:QmAliceScid1:alice.example",
-      "preferredMethod": "inPerson"
+      "preferredMethod": "in-person"
     }
   },
   {

@@ -152,13 +152,13 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "code": {
-///      "description": "OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these.",
+///      "description": "OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.",
 ///      "type": "string",
 ///      "enum": [
-///        "could-not-verify",
-///        "document-mismatch",
-///        "liveness-failed",
-///        "not-comfortable",
+///        "couldNotVerify",
+///        "documentMismatch",
+///        "livenessFailed",
+///        "notComfortable",
 ///        "other"
 ///      ]
 ///    },
@@ -186,7 +186,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these.
+    ///OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub code: ::std::option::Option<PayloadCode>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -203,19 +203,19 @@ impl Payload {
         Default::default()
     }
 }
-///OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these.
+///OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these.",
+///  "description": "OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.",
 ///  "type": "string",
 ///  "enum": [
-///    "could-not-verify",
-///    "document-mismatch",
-///    "liveness-failed",
-///    "not-comfortable",
+///    "couldNotVerify",
+///    "documentMismatch",
+///    "livenessFailed",
+///    "notComfortable",
 ///    "other"
 ///  ]
 ///}
@@ -235,13 +235,13 @@ impl Payload {
 )]
 #[non_exhaustive]
 pub enum PayloadCode {
-    #[serde(rename = "could-not-verify")]
+    #[serde(rename = "couldNotVerify")]
     CouldNotVerify,
-    #[serde(rename = "document-mismatch")]
+    #[serde(rename = "documentMismatch")]
     DocumentMismatch,
-    #[serde(rename = "liveness-failed")]
+    #[serde(rename = "livenessFailed")]
     LivenessFailed,
-    #[serde(rename = "not-comfortable")]
+    #[serde(rename = "notComfortable")]
     NotComfortable,
     #[serde(rename = "other")]
     Other,
@@ -249,10 +249,10 @@ pub enum PayloadCode {
 impl ::std::fmt::Display for PayloadCode {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
-            Self::CouldNotVerify => f.write_str("could-not-verify"),
-            Self::DocumentMismatch => f.write_str("document-mismatch"),
-            Self::LivenessFailed => f.write_str("liveness-failed"),
-            Self::NotComfortable => f.write_str("not-comfortable"),
+            Self::CouldNotVerify => f.write_str("couldNotVerify"),
+            Self::DocumentMismatch => f.write_str("documentMismatch"),
+            Self::LivenessFailed => f.write_str("livenessFailed"),
+            Self::NotComfortable => f.write_str("notComfortable"),
             Self::Other => f.write_str("other"),
         }
     }
@@ -261,10 +261,10 @@ impl ::std::str::FromStr for PayloadCode {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
-            "could-not-verify" => Ok(Self::CouldNotVerify),
-            "document-mismatch" => Ok(Self::DocumentMismatch),
-            "liveness-failed" => Ok(Self::LivenessFailed),
-            "not-comfortable" => Ok(Self::NotComfortable),
+            "couldNotVerify" => Ok(Self::CouldNotVerify),
+            "documentMismatch" => Ok(Self::DocumentMismatch),
+            "livenessFailed" => Ok(Self::LivenessFailed),
+            "notComfortable" => Ok(Self::NotComfortable),
             "other" => Ok(Self::Other),
             _ => Err("invalid value".into()),
         }
@@ -531,7 +531,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vetting/decline/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter tells an applicant it will not issue a Vetting Statement for an accepted request. The reason code is optional: a vetter never has to justify declining. Sent to the applicant only — never to the community.\",\n  \"properties\": {\n    \"code\": {\n      \"description\": \"OPTIONAL. `could-not-verify` — the vetter could not establish the claimed identity. `document-mismatch` — the documentation did not match the card or the person. `liveness-failed` — the match code could not be confirmed with the person. `not-comfortable` — the vetter prefers not to attest. `other` — none of these.\",\n      \"enum\": [\n        \"could-not-verify\",\n        \"document-mismatch\",\n        \"liveness-failed\",\n        \"not-comfortable\",\n        \"other\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"message\": {\n      \"description\": \"OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"requestId\": {\n      \"description\": \"The `requestId` from the vetter's acceptance of the applicant's vetting request.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"requestId\"\n  ],\n  \"title\": \"Vetting Decline — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vetting/decline/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter tells an applicant it will not issue a Vetting Statement for an accepted request. The reason code is optional: a vetter never has to justify declining. Sent to the applicant only — never to the community.\",\n  \"properties\": {\n    \"code\": {\n      \"description\": \"OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.\",\n      \"enum\": [\n        \"couldNotVerify\",\n        \"documentMismatch\",\n        \"livenessFailed\",\n        \"notComfortable\",\n        \"other\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"message\": {\n      \"description\": \"OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"requestId\": {\n      \"description\": \"The `requestId` from the vetter's acceptance of the applicant's vetting request.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"requestId\"\n  ],\n  \"title\": \"Vetting Decline — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 #[cfg(test)]
@@ -541,7 +541,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:3c5a7e9b-2d4f-4a6c-8e1b-5f7d9a2c4e01\",\n  \"type\": \"https://trusttasks.org/spec/vetting/decline/0.1\",\n  \"parentThreadId\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmAliceScid1:alice.example\",\n  \"issuedAt\": \"2026-09-17T15:12:00Z\",\n  \"payload\": {\n    \"requestId\": \"urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01\",\n    \"code\": \"document-mismatch\",\n    \"message\": \"The name on the document you showed did not match the card. Happy to try again another day.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-09-17T15:12:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:3c5a7e9b-2d4f-4a6c-8e1b-5f7d9a2c4e01\",\n  \"type\": \"https://trusttasks.org/spec/vetting/decline/0.1\",\n  \"parentThreadId\": \"urn:uuid:6f1c2b0a-3d4e-4f5a-8b6c-7d8e9f0a1b01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmAliceScid1:alice.example\",\n  \"issuedAt\": \"2026-09-17T15:12:00Z\",\n  \"payload\": {\n    \"requestId\": \"urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01\",\n    \"code\": \"documentMismatch\",\n    \"message\": \"The name on the document you showed did not match the card. Happy to try again another day.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-09-17T15:12:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -563,8 +563,8 @@ mod conformance {
                 "{\n  \"code\": \"couldNotVerify\"\n}",
             ),
             (
-                "Reason codes are the hyphenated forms this specification defines: `could-not-verify`, not `couldNotVerify`.",
-                "{\n  \"code\": \"couldNotVerify\",\n  \"requestId\": \"urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01\"\n}",
+                "Reason codes are lowerCamelCase (SPEC §4.10): `couldNotVerify`, not `could-not-verify`.",
+                "{\n  \"code\": \"could-not-verify\",\n  \"requestId\": \"urn:uuid:4b2e8f10-7a6c-4d3b-9e21-0f5a6b7c8d01\"\n}",
             ),
             (
                 "Reason codes are a closed set. An open code is a free-text field by another name, and a decline reason is the last place that belongs.",
