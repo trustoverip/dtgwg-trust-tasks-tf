@@ -41,6 +41,7 @@ errorCodes: []
 related:
   - vtc/join-requests/submit
   - vtc/endorsement-types/register
+  - vetting/request
 ---
 
 ## Abstract
@@ -78,7 +79,7 @@ A conforming **community** (`recipient`):
 A conforming **applicant**:
 
 1. **MUST** ignore members of `vetting` it does not recognise, and **MUST** treat a `vetting` object that fails item 3 above as unsatisfiable rather than guess at its meaning. A client's reading of the requirements is advisory in any case: the community's decision is authoritative, and some of what it evaluates — current vetter eligibility, for one — is visible only to the community.
-2. On starting an application under a criterion carrying `vetting`, **SHOULD** record the `requirementsDigest` at that moment, cite it in every request it makes to a vetter and at submission, and recompute it from the criterion before relying on it.
+2. On starting an application under a criterion carrying `vetting`, **SHOULD** record the `requirementsDigest` at that moment, cite it in every [`vetting/request`](../../../../vetting/request/0.1/spec.md) and at submission, and recompute it from the criterion before relying on it.
 
 ### Computing `requirementsDigest`
 

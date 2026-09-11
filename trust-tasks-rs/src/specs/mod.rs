@@ -109,6 +109,8 @@ pub mod trust_task_next_step;
 pub mod trust_task_ok;
 #[cfg(feature = "vault")]
 pub mod vault;
+#[cfg(feature = "vetting")]
+pub mod vetting;
 #[cfg(feature = "vrc")]
 pub mod vrc;
 #[cfg(feature = "vta")]

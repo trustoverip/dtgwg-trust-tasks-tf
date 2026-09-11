@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vetting/_shared/0.1/identity-vetting",
+  "title": "Identity-vetting endorsement — shared definition",
+  "description": "The `credentialSubject.endorsement` body of a Vetting Statement: a Verifiable Endorsement Credential issued by a vetter's member DID about an applicant's DID, attesting that the vetter checked the applicant's claimed identity in a vetting session. A community registers this shape as the `claimSchema` of its identity-vetting endorsement type (vtc/endorsement-types/register), and names that type in its manifest as `vetting.statementType`. The credential envelope — issuer, validity, `taskContext`, proof — belongs to DTG credentials; only the body is defined here. It records what the vetter did and relied on, never what they saw: no document number, no image, no claimed name. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "IdentityVettingEndorsement": {
+      "title": "IdentityVettingEndorsement",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "community",
+        "method",
+        "claimsVerified",
+        "livenessConfirmed",
+        "identityCommitment",
+        "cardDigestMultibase",
+        "declaredRelationship"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The registered endorsement type URI, equal to the community's `vetting.statementType` (e.g. `https://firstperson.network/endorsements/identity-vetting/0.1`)."
+        },
+        "community": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The one community this statement is for — the vetting session's `domain`. Another community does not count it without an explicit recognition policy of its own."
+        },
+        "method": {
+          "$ref": "vetting.schema.json#/$defs/VettingMethod",
+          "description": "The session's method."
+        },
+        "documentClasses": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "vetting.schema.json#/$defs/VettingDocumentation"
+          },
+          "description": "The documentation the vetter relied on, from their own accepted list. Empty, or absent, where they relied on none — expected with `priorAcquaintance`. `none` is never listed: 'no document' is the empty list."
+        },
+        "claimsVerified": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType",
+            "not": {
+              "const": "person.portrait"
+            }
+          },
+          "description": "The claim types on the card the vetter marked as verified. Types only — never values."
+        },
+        "livenessConfirmed": {
+          "type": "boolean",
+          "description": "True only where the vetter and the applicant read each other the same session match code, establishing that the person the vetter checked controls the applicant's DID in this session."
+        },
+        "identityCommitment": {
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The card's `identityCommitment`, copied verbatim. Equal across every statement of one application; the salt that opens it is never in the statement."
+        },
+        "cardDigestMultibase": {
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 canonicalization of the Vetting Card exactly as the vetter received it, `proof` included. Lets the applicant confirm the statement is about the card they sent, and lets a dispute establish which card a statement rests on, without the community ever holding the card."
+        },
+        "declaredRelationship": {
+          "$ref": "vetting.schema.json#/$defs/VettingRelationship",
+          "description": "The vetter's own declaration of how they relate to the applicant."
+        },
+        "attestationTextDigest": {
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "RECOMMENDED. Digest over the UTF-8 bytes of the attestation text the vetter was shown and signed, as published under the community's governance framework — so which wording a vetter agreed to is provable after that wording changes."
+        }
+      }
+    }
+  }
+}

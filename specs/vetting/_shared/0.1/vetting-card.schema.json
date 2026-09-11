@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vetting/_shared/0.1/vetting-card",
+  "title": "Vetting Card — shared definition",
+  "description": "The Vetting Card: a signed, audience-bound profile of the relationship card (r-card) an applicant presents to one vetter in one vetting session. A Verifiable Data Structure — its publisher signs it so the recipient can verify it — bound by `audience`, `challenge` and `domain` to exactly one vetter and one session, and valid for minutes. It carries the identity claims the vetter checks against the person and their documentation, and a salted `identityCommitment` over the required claims so a community can later confirm every vetter checked the same claimed identity without ever seeing it. It never carries a document number, a document image, or a portrait. Returned by vetting/session#response; its digest is carried in the identity-vetting endorsement. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "VettingCard": {
+      "title": "VettingCard",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id",
+        "publisher",
+        "cardVersion",
+        "audience",
+        "community",
+        "challenge",
+        "domain",
+        "issuedAt",
+        "expiresAt",
+        "claims",
+        "identityCommitment",
+        "commitmentSalt",
+        "proof"
+      ],
+      "properties": {
+        "type": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "VerifiableDataStructure",
+              "RelationshipCard",
+              "VettingCard"
+            ]
+          },
+          "description": "Exactly `VerifiableDataStructure`, `RelationshipCard` and `VettingCard`, in any order."
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Fresh per card. A card is never re-sent to a second session under the same id."
+        },
+        "publisher": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The applicant's DID — the issuer of the vetting request and the subject every resulting statement names. The card is signed with this DID's assertion key."
+        },
+        "cardVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "audience": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The vetter's DID — the issuer of the vetting session. A card addressed to anyone else is refused."
+        },
+        "community": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The community the applicant is being vetted for."
+        },
+        "challenge": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$",
+          "description": "The session's challenge, copied verbatim."
+        },
+        "domain": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The session's domain, copied verbatim."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "No later than the session's `expiresAt`."
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/VettingCardClaim"
+          }
+        },
+        "identityCommitment": {
+          "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "digestMultibase over the RFC 8785 canonicalization of `{ \"salt\": commitmentSalt, \"claims\": R }`, where R is `{ \"type\", \"value\" }` for every card claim whose type the session lists in `requiredClaims`, ordered by `type` then `value` (code-point order). SHA-256 RECOMMENDED. Because the applicant uses one salt per application, every vetter of that application sees the same value."
+        },
+        "commitmentSalt": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$",
+          "description": "32 random bytes, base64url without padding, generated once per application. Goes to vetters inside the card and to nobody else: a party holding the commitment without the salt cannot test guesses at the claimed name."
+        },
+        "proof": {
+          "$ref": "#/$defs/DataIntegrityProof"
+        }
+      }
+    },
+    "VettingCardClaim": {
+      "title": "VettingCardClaim",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value",
+        "provenance"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType",
+          "not": {
+            "const": "person.portrait"
+          },
+          "description": "The claim type. `person.portrait` is refused: identity vetting works by a vetter looking at the person, not by transmitting their image."
+        },
+        "value": {
+          "description": "The claimed value, exactly as rendered from the applicant's persona — a string for most claim types, structured JSON for some (e.g. a postal address). Authored by the applicant and asserted under their signature; the vetter's check is what gives it any assurance."
+        },
+        "provenance": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-zA-Z0-9]*$",
+          "description": "Where the value's assurance comes from. `selfAsserted` — the applicant says so, and the vetter's human check is the only assurance added — is the only value this version defines; a verifier MUST NOT treat any other value as adding assurance it does not understand."
+        }
+      }
+    },
+    "DataIntegrityProof": {
+      "title": "DataIntegrityProof",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "type",
+        "cryptosuite",
+        "verificationMethod",
+        "proofPurpose",
+        "proofValue"
+      ],
+      "description": "A W3C Data Integrity proof by the card's publisher. Additional Data Integrity members (e.g. `created`) are permitted and are covered as the cryptosuite defines.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "DataIntegrityProof"
+        },
+        "cryptosuite": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "e.g. `eddsa-jcs-2022`."
+        },
+        "verificationMethod": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "A verification method of `publisher`, authorized for `assertionMethod`."
+        },
+        "proofPurpose": {
+          "type": "string",
+          "const": "assertionMethod"
+        },
+        "proofValue": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    }
+  }
+}

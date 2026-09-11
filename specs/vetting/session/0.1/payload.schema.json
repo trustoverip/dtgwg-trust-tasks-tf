@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vetting/session/0.1",
+  "title": "Vetting Session — payload",
+  "description": "A vetter opens a vetting session with an applicant whose request it accepted, while the two are together in person or on a call. The request issues the session challenge and names the claims to present; the applicant's response is the signed Vetting Card. This document's `id` is the value the resulting Vetting Statement carries as `taskContext`, and its task digest is what binds the statement to it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestId", "challenge", "domain", "method", "requiredClaims", "expiresAt"],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The `requestId` from the vetter's acceptance of the applicant's vetting request."
+    },
+    "challenge": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$",
+      "description": "32 fresh random bytes, base64url without padding. The card binds to it. Never reused across sessions."
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The community DID the applicant is being vetted for. The card binds to it alongside `challenge`."
+    },
+    "method": {
+      "$ref": "../../_shared/0.1/vetting.schema.json#/$defs/VettingMethod",
+      "description": "How this session is conducted."
+    },
+    "requiredClaims": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType",
+        "not": { "const": "person.portrait" }
+      },
+      "description": "Claim types the card must carry. The community criterion's `requiredClaims`; the identity commitment is computed over exactly these."
+    },
+    "optionalClaims": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../persona/_shared/0.1/persona-record.schema.json#/$defs/ClaimType",
+        "not": { "const": "person.portrait" }
+      },
+      "description": "Claim types the applicant may add. Never part of the commitment."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the session lapses: no card is accepted for it afterwards, and the card's own `expiresAt` may not be later."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vetting Session — response payload",
+      "description": "The applicant's signed Vetting Card, bound to this session.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["card"],
+      "properties": {
+        "card": { "$ref": "../../_shared/0.1/vetting-card.schema.json#/$defs/VettingCard" },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

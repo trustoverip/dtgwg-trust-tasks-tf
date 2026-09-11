@@ -58,6 +58,7 @@ all-specs = [
     "sync",
     "task-consent",
     "vault",
+    "vetting",
     "vrc",
     "vta",
     "vtc",
@@ -88,6 +89,7 @@ rooms = []
 sync = []
 task-consent = []
 vault = []
+vetting = []
 vrc = []
 vta = []
 vtc = []
