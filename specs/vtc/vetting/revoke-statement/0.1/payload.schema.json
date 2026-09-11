@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1",
+  "title": "VTC Vetting — Revoke Statement — payload",
+  "description": "A vetter tells the community it withdraws a Vetting Statement it issued. The community records the notice against the statement's id and digest, and from then on that statement does not count. The response is the time the community recorded the notice; repeating a notice returns the original time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["statementId", "statementDigestMultibase"],
+  "properties": {
+    "statementId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+      "description": "The withdrawn statement's `id`, a URI (e.g. `urn:uuid:…`)."
+    },
+    "statementDigestMultibase": {
+      "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "Digest over the RFC 8785 canonicalization of the withdrawn statement exactly as issued, `proof` included (SHA-256 RECOMMENDED). Pins the notice to one credential, so it cannot be aimed at a different statement that reuses the id."
+    },
+    "reason": {
+      "type": "string",
+      "enum": ["mistake", "new-information", "key-compromise", "other"],
+      "description": "OPTIONAL. `mistake` — the vetter attested in error. `new-information` — the vetter learned something that changes its view. `key-compromise` — the key that signed the statement may be in someone else's hands. `other` — none of these."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Revoke Statement — response payload",
+      "description": "The community recorded the notice.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordedAt"],
+      "properties": {
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community recorded the notice. A repeated notice for the same statement returns the time the first was recorded: revocation converges, and a vetter retrying cannot move it."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "slug": "vetting/identity-vetting",
+  "version": "0.1",
+  "title": "Identity vetting",
+  "summary": "One vetter checks one applicant's identity for one community: the applicant asks, the two meet in a session, and the vetter issues a Vetting Statement or declines. An applicant runs one enactment per vetter.",
+  "status": "draft",
+  "targetFrameworkVersion": "0.5",
+  "authors": [
+    "Glenn Gore (https://github.com/stormer78)"
+  ],
+  "keywords": [
+    "vetting",
+    "identity-vetting",
+    "onboarding",
+    "vtc",
+    "web-of-trust"
+  ],
+  "roles": {
+    "applicant": {
+      "description": "The person being vetted, acting through the agent that holds their join DID. The same DID throughout, and the subject of the statement.",
+      "cardinality": "one",
+      "vidSchemes": ["did:webvh"]
+    },
+    "vetter": {
+      "description": "An existing member the community has made eligible to vet, acting under their member DID in that community.",
+      "cardinality": "one",
+      "vidSchemes": ["did:webvh"]
+    }
+  },
+  "steps": {
+    "request": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/vetting/request/0.1",
+      "issuer": "applicant",
+      "recipient": "vetter",
+      "description": "The applicant asks to be vetted for one community. Opens the enactment: its issuedAt starts the maxDuration clock. A refused request ends the exchange with an error and never completes the enactment.",
+      "prev": []
+    },
+    "session": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/vetting/session/0.1",
+      "issuer": "vetter",
+      "recipient": "applicant",
+      "description": "Opened while the two people are together; the response is the signed Vetting Card. A session that lapses, or whose match code does not match, may be re-opened — bounded repetition, discriminated by ceremony.round.",
+      "maxRounds": 3,
+      "prev": ["request"]
+    },
+    "attest": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/credential-exchange/issue/0.1",
+      "issuer": "vetter",
+      "recipient": "applicant",
+      "description": "Delivers the Vetting Statement: an EndorsementCredential whose identity-vetting endorsement cites the session by taskContext. One of the two ways the enactment ends.",
+      "optional": true,
+      "prev": ["session"],
+      "terminal": true,
+      "compensatable": false
+    },
+    "decline": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/vetting/decline/0.1",
+      "issuer": "vetter",
+      "recipient": "applicant",
+      "description": "The vetter will not issue a statement. The other way the enactment ends. A vetter may also decline before any session; that exchange is conforming, but the enactment it belongs to is not complete, because no identity was checked.",
+      "optional": true,
+      "prev": ["session"],
+      "terminal": true,
+      "compensatable": false
+    }
+  },
+  "completion": {
+    "allOf": [
+      "request",
+      "session",
+      {
+        "anyOf": ["attest", "decline"]
+      }
+    ]
+  },
+  "evidence": {
+    "level": "countersigned"
+  },
+  "maxDuration": "P30D",
+  "enactmentPrivacy": "blinded",
+  "sideEffects": {
+    "level": "mutating",
+    "rationale": "Opens a request, produces a signed card, and either issues a credential or closes the request. No step is destructive. A statement is withdrawn later, outside this ceremony, by vtc/vetting/revoke-statement."
+  },
+  "exposure": {
+    "discloses": "secret",
+    "actsAsSubject": true,
+    "rationale": "max() over the steps: session and attest each disclose secret (the Vetting Card; the issued credential), and session acts as the subject (the applicant signs the card in their own name). enactmentPrivacy is blinded because the only party that needs the whole flow is the pair who ran it; the community relies on the statement, never on receipts, and an enactment identifier shared across steps would be a durable correlation handle between an applicant and a vetter."
+  },
+  "related": [
+    "vetting/request",
+    "vetting/session",
+    "vetting/decline",
+    "credential-exchange/issue",
+    "vtc/vetting/revoke-statement",
+    "vtc/join-requests/submit"
+  ]
+}
