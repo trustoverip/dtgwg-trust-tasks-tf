@@ -326,6 +326,7 @@ export * as VaultUpsert_v0_2 from "./vault/upsert/0.2/payload.js";
 export * as VaultUpsert_v0_3 from "./vault/upsert/0.3/payload.js";
 export * as VaultUsage_v0_1 from "./vault/usage/0.1/payload.js";
 export * as VaultUsage_v0_2 from "./vault/usage/0.2/payload.js";
+export * as VettingShared_v0_1 from "./vetting/_shared/0.1/vetting.js";
 export * as VrcRelationshipsIssue_v0_1 from "./vrc/relationships/issue/0.1/payload.js";
 export * as VrcRelationshipsPropose_v0_1 from "./vrc/relationships/propose/0.1/payload.js";
 export * as AppStateRecordShared_v0_1 from "./vta/_shared/0.1/app-state-record.js";
@@ -455,6 +456,7 @@ export * as VtcJoinRequestsApprove_v0_1 from "./vtc/join-requests/approve/0.1/pa
 export * as VtcJoinRequestsDecide_v0_1 from "./vtc/join-requests/decide/0.1/payload.js";
 export * as VtcJoinRequestsList_v0_1 from "./vtc/join-requests/list/0.1/payload.js";
 export * as VtcJoinRequestsManifest_v0_1 from "./vtc/join-requests/manifest/0.1/payload.js";
+export * as VtcJoinRequestsManifest_v0_2 from "./vtc/join-requests/manifest/0.2/payload.js";
 export * as VtcJoinRequestsReject_v0_1 from "./vtc/join-requests/reject/0.1/payload.js";
 export * as VtcJoinRequestsShow_v0_1 from "./vtc/join-requests/show/0.1/payload.js";
 export * as VtcJoinRequestsStatus_v0_1 from "./vtc/join-requests/status/0.1/payload.js";
