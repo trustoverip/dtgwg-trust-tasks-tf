@@ -407,6 +407,7 @@ export * as VtaWebvhDidsCreate_v1_0 from "./vta/webvh/dids/create/1.0/payload.js
 export * as VtaWebvhDidsDelete_v1_0 from "./vta/webvh/dids/delete/1.0/payload.js";
 export * as VtaWebvhDidsGet_v1_0 from "./vta/webvh/dids/get/1.0/payload.js";
 export * as VtaWebvhDidsList_v1_0 from "./vta/webvh/dids/list/1.0/payload.js";
+export * as VtaWebvhDidsRealignKeys_v1_0 from "./vta/webvh/dids/realign-keys/1.0/payload.js";
 export * as VtaWebvhDidsRegisterWithServer_v1_0 from "./vta/webvh/dids/register-with-server/1.0/payload.js";
 export * as VtaWebvhDidsRotateKeys_v1_0 from "./vta/webvh/dids/rotate-keys/1.0/payload.js";
 export * as VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload.js";
