@@ -1,0 +1,39 @@
+[
+  {
+    "note": "No DID. The subject is the one thing the producer must supply, and there is no useful default \u2014 an agent asked to realign 'everything' would rewrite key custody across every context the caller can reach.",
+    "payload": {
+      "dryRun": true
+    }
+  },
+  {
+    "note": "A caller-supplied target name. The whole point of the task is that the recipient derives every identifier from the published document; a member for naming one would be a surface for writing chosen identifiers into a key store, which `keys/rename` deliberately is not.",
+    "payload": {
+      "did": "did:webvh:QmScidAbCdEfGh:example.com:rooms:northwind",
+      "newKeyId": "did:webvh:QmScidAbCdEfGh:example.com:rooms:northwind#key-1"
+    }
+  },
+  {
+    "note": "An empty DID string passes `type: string` and names nothing.",
+    "payload": {
+      "did": ""
+    }
+  },
+  {
+    "note": "dryRun as the string \"true\" \u2014 a truthiness bug that would turn an asked-for plan into a performed rename.",
+    "payload": {
+      "did": "did:webvh:QmScidAbCdEfGh:example.com:rooms:northwind",
+      "dryRun": "true"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key \u2014 SPEC \u00a74.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "did": "did:webvh:QmScidAbCdEfGh:example.com:rooms:northwind",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]
