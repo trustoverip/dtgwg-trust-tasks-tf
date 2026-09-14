@@ -11,6 +11,54 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.19.5 — 2026-09-14
+
+
+### Added
+
+- **vta/webvh/dids/realign-keys**: A DID's key records follow the methods it publishes (#456)
+
+A key record's identifier *is* a verification-method identifier: it is what a
+  mediator matches an inbound JWE recipient against, and what a caller reading a
+  DID document would naturally hand to a signing task. An agent that names a
+  record when it mints a key — rather than reading the document it has just
+  published — names it correctly only for documents shaped the way it assumed.
+  A document supplied by a caller or rendered from a template is free to identify
+  its methods any way it likes, and then the agent holds a key the document
+  addresses under a name the agent does not answer to.
+
+  `keys/rename` cannot repair that, and should not be able to: its identifier gate
+  exists so that a rename is not a way to write verification-method-shaped or
+  namespace-colliding names into a key store. So the repair has to be a task whose
+  **request carries no names at all** — the producer identifies a DID, and every
+  identifier in the outcome is derived by the recipient from that DID's own
+  published document. That is the whole design, and it is why this is a Trust Task
+  rather than a parameterised rename.
+
+  Three things the conformance section pins that an implementer would otherwise
+  get wrong:
+
+  - **Match records to methods by key material, never by position or by a `#key-N`
+    pattern.** A record is what it is because of the key it holds; its current name
+    is the thing being repaired and so cannot be an input to deciding what it
+    should be. This is also what lets the repair reach a record someone has already
+    renamed away from its method identifier, which is otherwise unreachable.
+  - **All or nothing.** The renames interleave — one record's destination is
+    another's current name — and in the general case form a cycle, so an
+    implementation that requires each destination to be free before moving
+    anything refuses the very shape the task exists for. The response example
+    shows that case rather than a tidy one.
+  - **A method whose key the recipient does not hold is reported, not an error.**
+    "Nothing to move" and "that key is not here" are different answers and only
+    the first means the DID is now consistent.
+
+  Sits in the `vta/webvh/dids/*` family beside `rotate-keys`, and squarely in the
+  "genuinely VTA-side" row of the two-ends-of-one-wire question: a hosting server
+  has no notion of the key custody this renames, so there is no `did-management/*`
+  counterpart to reuse.
+
+  Bindings regenerated for both libraries.
+
 ## 0.19.4 — 2026-09-11
 
 
