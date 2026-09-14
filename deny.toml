@@ -37,6 +37,20 @@ ignore = [
     # links it. No active CVE, maintenance status only. It goes when
     # json-syntax drops it or the SSI stack moves off json-ld 0.21.
     "RUSTSEC-2026-0215",
+    # clear_on_drop 0.2.5 is unmaintained, and the advisory is explicit that
+    # there is no safe upgrade: 0.2.5 IS the last release, and the replacement
+    # is a different crate with a different API (zeroize's `Zeroizing`).
+    #
+    # It arrives by the same chain as the h2 0.3 entry below — ssi-jws 0.3.1 →
+    # ssi-dids-core 0.1.3 → affinidi-did-resolver-cache-sdk — and so reaches
+    # crates we publish (trust-tasks-tsp via affinidi-tsp, and
+    # trust-tasks-proof) as a normal dependency rather than a dev one. Nothing
+    # in this repo can shorten it: our requirement on the resolver SDK is
+    # already open, and every 0.8.x pulls ssi-dids-core 0.1.3.
+    #
+    # No CVE — maintenance status only. It goes when the SSI stack moves
+    # ssi-jws off clear_on_drop.
+    "RUSTSEC-2026-0283",
     # im 15.1.0, and the two crates it exists to use — bitmaps 2.1.0 and
     # sized-chunks 0.6.5 — are unmaintained. All three were flagged on the same
     # day and are one finding: `im` is the immutable-collections crate,
