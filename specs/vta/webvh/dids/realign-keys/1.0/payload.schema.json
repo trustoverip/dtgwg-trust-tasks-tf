@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0",
+  "title": "VTA WebVH DIDs Realign-Keys — payload",
+  "description": "Rename a did:webvh's key records so each is addressed by the verification-method identifier its published document declares. The payload names no identifier but the DID: every target is derived by the recipient from that DID's own document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did"],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID whose key records are to be realigned. The only identifier the producer chooses."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and report the realignment without performing it. Absent reads as false."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Realign-Keys — response payload",
+      "description": "Success response to vta/webvh/dids/realign-keys. Type https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "moved", "alreadyAligned", "unmatched", "nextFragmentId", "dryRun"],
+      "properties": {
+        "did": { "type": "string" },
+        "moved": {
+          "type": "array",
+          "description": "The renames performed, or in a dry run the ones that would be.",
+          "items": { "$ref": "#/$defs/RealignedKey" }
+        },
+        "alreadyAligned": {
+          "type": "array",
+          "description": "Verification-method identifiers whose record was already correct.",
+          "items": { "type": "string" }
+        },
+        "unmatched": {
+          "type": "array",
+          "description": "Verification-method identifiers the recipient holds no key for. Not a failure — a DID may publish a method whose private half lives elsewhere — but the difference between this being empty and not is the difference between the DID being consistent and merely unchanged.",
+          "items": { "type": "string" }
+        },
+        "nextFragmentId": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Where the recipient will allocate the next identifier it mints for this DID. Past everything the document already publishes, so a later rotation cannot reissue a published identifier under new key material."
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "True when nothing was written. Echoed so a report is self-describing: a plan and a receipt are otherwise the same shape."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "RealignedKey": {
+      "title": "A record renamed onto the identifier its key is published under",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "publicKey"],
+      "properties": {
+        "from": { "type": "string", "minLength": 1, "description": "The identifier the record had." },
+        "to": { "type": "string", "minLength": 1, "description": "The verification-method identifier it takes." },
+        "publicKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Multibase public half of the key, which is what identified the record. Reported so the producer can check the rename against the published document rather than trusting this report."
+        }
+      }
+    }
+  }
+}

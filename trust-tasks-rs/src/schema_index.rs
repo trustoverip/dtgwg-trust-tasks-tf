@@ -1332,6 +1332,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response" => <crate::specs::vta::webvh::dids::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0" => <crate::specs::vta::webvh::dids::realign_keys::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0#response" => <crate::specs::vta::webvh::dids::realign_keys::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0" => <crate::specs::vta::webvh::dids::register_with_server::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0#response" => <crate::specs::vta::webvh::dids::register_with_server::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3315,6 +3319,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vta/webvh/dids/list/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::webvh::dids::list::v1_0::Payload,
         >()),
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webvh::dids::realign_keys::v1_0::Payload,
+            >())
+        }
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0" => {
             Some(crate::SpecPolicy::of::<
