@@ -31,6 +31,55 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.20.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.20.5...trust-tasks-rs-v0.20.6) — 2026-09-15
+
+
+### Added
+
+- **vtc/registry**: An operator surface for the trust-registry reconciler ([#460](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/460))
+
+A Verifiable Trust Community publishes its membership to a trust registry
+  through a queue, because the registry is a separate party that can be
+  unreachable, unauthorised, or running an incompatible version at the moment a
+  member joins. Today there is no specified way to look at that queue, and no
+  specified way to act on it — so a membership change that never landed is
+  invisible, and stays invisible until someone reads a log.
+
+  Four tasks, one family:
+
+  - `vtc/registry/sync-jobs/list/0.1` — enumerate the queue: which member, which
+    mutation, how many attempts, and the registry's own last answer verbatim.
+    `attempts` discriminates the two unrelated failures that look identical from
+    outside: a registry that answered and refused, versus one that never answered.
+  - `vtc/registry/sync-jobs/retry/0.1` — requeue an abandoned job. The only thing
+    that re-drives one: the audit position that produced it has long since moved
+    past. Bulk retry is spelled `allFailed: true` rather than an absent `jobId`,
+    so a client that drops the identifier cannot silently become a bulk operation.
+  - `vtc/registry/sync-jobs/discard/0.1` — delete one without dispatching it.
+    Destructive, single-target by construction: a bulk form would let one request
+    erase every record of a systemic failure.
+  - `vtc/registry/records/list/0.1` — enumerate the recognition graph itself,
+    from the registry (`source: "registry"`) or from what the community believes
+    it published (`source: "local"`). The two are different questions and the
+    answer worth having is the difference, so a consumer must not serve the
+    registry view from a local cache — a stale local answer presented as the
+    registry's is the exact fault an operator is looking for.
+
+  Recognition has been specified only as a per-DID probe, which is the right
+  shape for a decision and the wrong one for an operator: it cannot show that a
+  member is missing from the registry, because you have to already suspect the
+  member to ask.
+
+  Both list tasks state that a nullable response member may be sent as `null` or
+  omitted and that a producer must treat the two identically. That is not
+  pedantry — the generated Rust bindings skip `None`, so an implementation built
+  on them omits where the prose would say null, and a consumer that distinguished
+  them would break against a conforming producer.
+
+  Bindings regenerated; 896 trust-tasks-rs tests pass.
+
+
+
 ## [0.20.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.20.4...trust-tasks-rs-v0.20.5) — 2026-09-14
 
 
