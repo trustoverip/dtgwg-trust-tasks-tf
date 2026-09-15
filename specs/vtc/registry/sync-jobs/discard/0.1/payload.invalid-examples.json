@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Missing jobId. Discard is irreversible and single-target; an absent identifier must never be readable as a bulk discard.",
+    "payload": {}
+  },
+  {
+    "note": "Empty jobId. minLength 1 stops a dropped identifier arriving as a well-formed request naming nothing.",
+    "payload": { "jobId": "" }
+  },
+  {
+    "note": "jobIds array. A caller reaching for a bulk form must fail loudly rather than have the first element silently honoured — the single-target constraint is a safety property, not an ergonomic one.",
+    "payload": { "jobIds": ["07c6c189-8272-4761-96e9-0ef869380665"] }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "ext": { "note": "superseded" } }
+  }
+]

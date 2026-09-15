@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/registry/sync-jobs/discard/0.1",
+  "title": "VTC Registry Sync Jobs Discard — payload",
+  "description": "Delete an abandoned trust-registry reconciliation job without dispatching it. The registry's record for that member is left exactly as it is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jobId"],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The job to delete, from `vtc/registry/sync-jobs/list`. Required and single: discard is irreversible, so there is deliberately no bulk form."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Registry Sync Jobs Discard — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "memberDid"],
+      "properties": {
+        "jobId": { "type": "string", "minLength": 1, "description": "The deleted job, echoed." },
+        "memberDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member whose pending change was dropped. Returned because the caller is discarding by identifier and this names what it actually cost."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

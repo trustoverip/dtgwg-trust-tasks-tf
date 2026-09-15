@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Neither jobId nor allFailed. The oneOf makes the discriminator mandatory — an empty payload must not be readable as 'retry everything'.",
+    "payload": {}
+  },
+  {
+    "note": "Both jobId and allFailed. Ambiguous intent: a consumer would have to choose between one job and all of them, so the schema refuses rather than letting each implementation pick.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "allFailed": true }
+  },
+  {
+    "note": "allFailed: false. The const pins it to true so the member means 'do the bulk operation' and never 'do something else'; a false here is a client that meant to send jobId.",
+    "payload": { "allFailed": false }
+  },
+  {
+    "note": "Empty jobId. minLength 1 stops a dropped identifier arriving as a well-formed request naming nothing.",
+    "payload": { "jobId": "" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `force`, which a caller might assume exists by analogy with other queue operations.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "force": true }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "ext": { "reason": "operator retry" } }
+  }
+]

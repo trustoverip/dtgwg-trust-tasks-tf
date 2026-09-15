@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Unknown source. The enum is exactly the two views that exist; anything else would have to be served from one of them and misreported.",
+    "payload": { "source": "cache" }
+  },
+  {
+    "note": "Empty entityId. minLength 1 stops a dropped identifier arriving as a filter that silently matches nothing.",
+    "payload": { "entityId": "" }
+  },
+  {
+    "note": "limit above the ceiling — 200 is the maximum, and a refusal is safer than a silent reduction that reads as a complete page.",
+    "payload": { "limit": 500 }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `recognized`, which a caller might assume filters to recognised records only. Filtering on the assertion is deliberately absent: a consumer must not be able to ask for a graph with the negatives hidden.",
+    "payload": { "recognized": true }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "source": "registry" } }
+  }
+]

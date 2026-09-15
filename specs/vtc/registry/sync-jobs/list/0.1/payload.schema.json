@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/registry/sync-jobs/list/0.1",
+  "title": "VTC Registry Sync Jobs List — payload",
+  "description": "Enumerate the community's trust-registry reconciliation queue. Each job is one pending or abandoned attempt to publish a membership change to the registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "state": {
+      "$ref": "#/$defs/State",
+      "description": "Filter to jobs in this state. Omit for every state."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Page size; the maintainer clamps to 1..=200 (default 50)."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "State": {
+      "type": "string",
+      "enum": ["pending", "inFlight", "failed"],
+      "description": "`failed` is terminal: the reconciler has abandoned the job and will not retry it without an operator. `pending` and `inFlight` are moving on their own."
+    },
+    "Kind": {
+      "type": "string",
+      "enum": ["publishMember", "updateMember", "deleteMember", "markDeparted"],
+      "description": "Which mutation the job carries to the registry."
+    },
+    "Job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "kind", "memberDid", "state", "attempts", "createdAt"],
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the queued job. The handle `vtc/registry/sync-jobs/retry` and `.../discard` take."
+        },
+        "kind": { "$ref": "#/$defs/Kind" },
+        "memberDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member whose registry record the job carries. In the clear, because an operator holding a hash cannot tell who stopped publishing."
+        },
+        "state": { "$ref": "#/$defs/State" },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Attempts made so far. `1` on a failed job means the registry answered and refused; a value at the maintainer's retry ceiling means it never answered."
+        },
+        "lastError": {
+          "type": ["string", "null"],
+          "maxLength": 1024,
+          "description": "The registry's last answer, verbatim. Diagnostic prose for an operator; a consumer MUST NOT parse it."
+        },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the job was enqueued." },
+        "lastAttemptedAt": { "type": ["string", "null"], "format": "date-time", "description": "When it was last dispatched." },
+        "nextAttemptAt": { "type": ["string", "null"], "format": "date-time", "description": "When it is next due. Null on a failed job: nothing is scheduled." },
+        "purgeDueAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the maintainer's retention sweep will delete this row. A deadline, not a fix — the member stays unpublished."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Registry Sync Jobs List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Job" }
+        },
+        "nextCursor": {
+          "type": ["string", "null"],
+          "description": "Continuation token for the next page, or null when this is the last."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
