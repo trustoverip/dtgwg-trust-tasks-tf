@@ -68,23 +68,30 @@ fn nested_roundtrip_through_intermediary() {
     )
     .expect("pack nested");
 
-    // On the wire it is a Nested message addressed to the intermediary, not bob —
-    // bob's identity stays hidden from anyone but the intermediary.
+    // On the wire it is addressed to the intermediary, not bob — bob's identity
+    // stays hidden from anyone but the intermediary.
+    //
+    // The *kind* is hidden too, and that is a Rev 3 change rather than a
+    // weaker assertion. Rev 2 carried the message type in the cleartext
+    // envelope, so a relay could tell a nested message from a direct one
+    // without holding any key. Rev 3 encrypts it: `MetaEnvelope::message_type`
+    // is documented as a keys-free placeholder that always reads `Direct`, and
+    // a relay needing the real kind has to open the message. Asserting `Nested`
+    // here would be asserting the leak.
     let meta = MetaEnvelope::parse(&wire).expect("parse meta");
-    assert_eq!(meta.message_type, MessageType::Nested);
+    assert_eq!(
+        meta.message_type,
+        MessageType::Direct,
+        "the real kind is encrypted; a keys-free parse must not reveal it"
+    );
     assert_eq!(meta.receiver, mediator.id);
     assert_eq!(meta.sender, p.alice.id);
 
     // Intermediary unwraps its outer layer (sealed to it) to reveal the inner Direct
     // message — exactly what the messaging mediator does on the wire.
     let alice_resolved = p.alice.to_resolved();
-    let unwrapped = direct::unpack(
-        &wire,
-        &mediator.decryption_key,
-        &alice_resolved.encryption_key,
-        &alice_resolved.signing_key,
-    )
-    .expect("intermediary unwrap");
+    let unwrapped = direct::unpack(&wire, &mediator.decryption_key, &alice_resolved.signing_key)
+        .expect("intermediary unwrap");
     let inner = unwrapped.payload;
 
     // Consumer opens the innermost Direct exactly as in the direct case — the binding
@@ -117,23 +124,25 @@ fn routed_roundtrips_through_a_relay() {
     )
     .expect("pack routed");
 
-    // On the wire it is a Routed message addressed to the first hop, not bob.
+    // On the wire it is addressed to the first hop, not bob — and as with the
+    // nested case above, Rev 3 encrypts the message kind, so a keys-free parse
+    // reads the `Direct` placeholder rather than `Routed`. The hop learns it is
+    // routing by opening the message, not by reading the envelope.
     let meta = MetaEnvelope::parse(&wire).expect("parse meta");
-    assert_eq!(meta.message_type, MessageType::Routed);
+    assert_eq!(
+        meta.message_type,
+        MessageType::Direct,
+        "the real kind is encrypted; a keys-free parse must not reveal it"
+    );
     assert_eq!(meta.receiver, mediator.id);
     assert_eq!(meta.sender, p.alice.id);
 
     // The first hop unwraps its routing layer (sealed to it) and reads the next hop —
     // exactly what the messaging mediator does on the wire.
     let alice_resolved = p.alice.to_resolved();
-    let unwrapped = direct::unpack(
-        &wire,
-        &mediator.decryption_key,
-        &alice_resolved.encryption_key,
-        &alice_resolved.signing_key,
-    )
-    .expect("relay unwrap");
-    let inner = match next_hop(&unwrapped.payload).expect("decode route") {
+    let unwrapped = direct::unpack(&wire, &mediator.decryption_key, &alice_resolved.signing_key)
+        .expect("relay unwrap");
+    let inner = match next_hop(&unwrapped).expect("decode route") {
         RouteStep::Forward {
             next,
             remaining,
@@ -239,7 +248,6 @@ fn rejects_a_non_trust_task_envelope() {
         &p.alice.id,
         &p.bob.id,
         &p.alice.signing_key,
-        &p.alice.decryption_key,
         &p.bob.to_resolved().encryption_key,
     )
     .unwrap()

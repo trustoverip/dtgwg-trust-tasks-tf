@@ -68,7 +68,6 @@ where
         &sender.id,
         &intermediary.id,
         &sender.signing_key,
-        &sender.decryption_key,
         &intermediary.encryption_key,
     )?;
     Ok(outer.bytes)
@@ -102,7 +101,6 @@ where
         &sender.id,
         &first_hop.id,
         &sender.signing_key,
-        &sender.decryption_key,
         &first_hop.encryption_key,
     )?;
     Ok(routed.bytes)
@@ -128,7 +126,6 @@ where
         &sender.id,
         &recipient.id,
         &sender.signing_key,
-        &sender.decryption_key,
         &recipient.encryption_key,
     )?)
 }
@@ -153,12 +150,7 @@ pub fn unpack_trust_task<P>(
 where
     P: Payload + DeserializeOwned,
 {
-    let unpacked = direct::unpack(
-        wire,
-        &recipient.decryption_key,
-        &sender.encryption_key,
-        &sender.signing_key,
-    )?;
+    let unpacked = direct::unpack(wire, &recipient.decryption_key, &sender.signing_key)?;
 
     if unpacked.message_type != MessageType::Direct {
         return Err(TspError::UnsupportedCarriage(unpacked.message_type));
