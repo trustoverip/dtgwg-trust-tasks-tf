@@ -1626,6 +1626,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1#response" => <crate::specs::vtc::registry::diagnostics::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/records/list/0.1" => <crate::specs::vtc::registry::records::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/records/list/0.1#response" => <crate::specs::vtc::registry::records::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/discard/0.1" => <crate::specs::vtc::registry::sync_jobs::discard::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/discard/0.1#response" => <crate::specs::vtc::registry::sync_jobs::discard::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/list/0.1" => <crate::specs::vtc::registry::sync_jobs::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/list/0.1#response" => <crate::specs::vtc::registry::sync_jobs::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1" => <crate::specs::vtc::registry::sync_jobs::retry::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1#response" => <crate::specs::vtc::registry::sync_jobs::retry::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/relationships/graph/0.1" => <crate::specs::vtc::relationships::graph::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/relationships/graph/0.1#response" => <crate::specs::vtc::relationships::graph::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3685,6 +3701,30 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::registry::diagnostics::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/records/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::registry::records::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/discard/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::registry::sync_jobs::discard::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::registry::sync_jobs::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::registry::sync_jobs::retry::v0_1::Payload,
             >())
         }
         #[cfg(feature = "vtc")]

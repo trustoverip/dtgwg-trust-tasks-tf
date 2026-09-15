@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Unknown state. The enum is the vocabulary a consumer can answer for; `complete` is not in it, because a completed job is deleted rather than listed.",
+    "payload": { "state": "complete" }
+  },
+  {
+    "note": "Snake_case state — SPEC §4.10 makes wire enums lowerCamelCase, and `in_flight` is the spelling an implementation reading its own internal enum would send.",
+    "payload": { "state": "in_flight" }
+  },
+  {
+    "note": "limit above the ceiling. 200 is the maximum the maintainer clamps to; a request for more must be refused rather than silently reduced, so a caller cannot believe it received a complete page.",
+    "payload": { "limit": 500 }
+  },
+  {
+    "note": "limit of zero. minimum 1 stops a page request that can only return nothing.",
+    "payload": { "limit": 0 }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `memberDid`, which a caller might assume filters the list.",
+    "payload": { "memberDid": "did:example:member" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "page": 2 } }
+  }
+]

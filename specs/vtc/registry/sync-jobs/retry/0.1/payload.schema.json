@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1",
+  "title": "VTC Registry Sync Jobs Retry — payload",
+  "description": "Requeue an abandoned trust-registry reconciliation job so the community's reconciler dispatches it again.",
+  "type": "object",
+  "additionalProperties": false,
+  "oneOf": [
+    { "required": ["jobId"], "not": { "required": ["allFailed"] } },
+    { "required": ["allFailed"], "not": { "required": ["jobId"] } }
+  ],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The single job to requeue, from `vtc/registry/sync-jobs/list`."
+    },
+    "allFailed": {
+      "type": "boolean",
+      "const": true,
+      "description": "Requeue every job in the terminal `failed` state. Spelled as its own member rather than an absent `jobId` so that a client bug which drops the identifier cannot silently become a bulk operation."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Requeued": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId"],
+      "properties": {
+        "jobId": { "type": "string", "minLength": 1 },
+        "memberDid": { "type": "string", "minLength": 1, "description": "The member whose record the requeued job carries." },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "Skipped": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "reason"],
+      "properties": {
+        "jobId": { "type": "string", "minLength": 1 },
+        "reason": {
+          "type": "string",
+          "enum": ["notFailed", "notFound"],
+          "description": "`notFailed` — the reconciler still owns the job, so requeueing it would dispatch the same mutation twice. `notFound` — no such job; it may already have been retried, discarded, or swept."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Registry Sync Jobs Retry — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requeued", "skipped"],
+      "properties": {
+        "requeued": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Requeued" },
+          "description": "Jobs now scheduled for dispatch. Empty is a valid answer and is not an error."
+        },
+        "skipped": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Skipped" },
+          "description": "Jobs the maintainer declined to requeue, each with why. Reported rather than failing the task, so a bulk retry is not defeated by one ineligible row."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
