@@ -147,9 +147,11 @@ export const PAYLOAD_SCHEMA = {
       "enum": [
         "ed25519",
         "x25519",
-        "p256"
+        "p256",
+        "mldsa44",
+        "mldsa65"
       ],
-      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256)."
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     }
   }
 } as const;
@@ -199,9 +201,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "enum": [
         "ed25519",
         "x25519",
-        "p256"
+        "p256",
+        "mldsa44",
+        "mldsa65"
       ],
-      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256)."
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     }
   }
 } as const;
