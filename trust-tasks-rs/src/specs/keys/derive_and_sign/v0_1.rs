@@ -137,19 +137,21 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-///Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).
+///Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "KeyType",
-///  "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).",
+///  "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.",
 ///  "type": "string",
 ///  "enum": [
 ///    "ed25519",
 ///    "x25519",
-///    "p256"
+///    "p256",
+///    "mldsa44",
+///    "mldsa65"
 ///  ]
 ///}
 /// ```
@@ -174,6 +176,10 @@ pub enum KeyType {
     X25519,
     #[serde(rename = "p256")]
     P256,
+    #[serde(rename = "mldsa44")]
+    Mldsa44,
+    #[serde(rename = "mldsa65")]
+    Mldsa65,
 }
 impl ::std::fmt::Display for KeyType {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -181,6 +187,8 @@ impl ::std::fmt::Display for KeyType {
             Self::Ed25519 => f.write_str("ed25519"),
             Self::X25519 => f.write_str("x25519"),
             Self::P256 => f.write_str("p256"),
+            Self::Mldsa44 => f.write_str("mldsa44"),
+            Self::Mldsa65 => f.write_str("mldsa65"),
         }
     }
 }
@@ -191,6 +199,8 @@ impl ::std::str::FromStr for KeyType {
             "ed25519" => Ok(Self::Ed25519),
             "x25519" => Ok(Self::X25519),
             "p256" => Ok(Self::P256),
+            "mldsa44" => Ok(Self::Mldsa44),
+            "mldsa65" => Ok(Self::Mldsa65),
             _ => Err("invalid value".into()),
         }
     }
@@ -405,18 +415,20 @@ impl Response {
         Default::default()
     }
 }
-///`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
+///`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "SignAlgorithm",
-///  "description": "`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.",
+///  "description": "`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.",
 ///  "type": "string",
 ///  "enum": [
 ///    "EdDSA",
-///    "ES256"
+///    "ES256",
+///    "ML-DSA-44",
+///    "ML-DSA-65"
 ///  ]
 ///}
 /// ```
@@ -439,12 +451,18 @@ pub enum SignAlgorithm {
     EdDsa,
     #[serde(rename = "ES256")]
     Es256,
+    #[serde(rename = "ML-DSA-44")]
+    MlDsa44,
+    #[serde(rename = "ML-DSA-65")]
+    MlDsa65,
 }
 impl ::std::fmt::Display for SignAlgorithm {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
             Self::EdDsa => f.write_str("EdDSA"),
             Self::Es256 => f.write_str("ES256"),
+            Self::MlDsa44 => f.write_str("ML-DSA-44"),
+            Self::MlDsa65 => f.write_str("ML-DSA-65"),
         }
     }
 }
@@ -454,6 +472,8 @@ impl ::std::str::FromStr for SignAlgorithm {
         match value {
             "EdDSA" => Ok(Self::EdDsa),
             "ES256" => Ok(Self::Es256),
+            "ML-DSA-44" => Ok(Self::MlDsa44),
+            "ML-DSA-65" => Ok(Self::MlDsa65),
             _ => Err("invalid value".into()),
         }
     }
@@ -663,7 +683,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"$ref\": \"#/$defs/SignAlgorithm\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publicKey\": {\n          \"description\": \"Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"Signature bytes, base64url-encoded without padding.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"publicKey\",\n        \"signature\",\n        \"algorithm\"\n      ],\n      \"title\": \"Keys Derive-and-Sign — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignAlgorithm\": {\n      \"description\": \"`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.\",\n      \"enum\": [\n        \"EdDSA\",\n        \"ES256\"\n      ],\n      \"title\": \"SignAlgorithm\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/derive-and-sign/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Derive a key at a path and sign with it in one step, without adding a stored key record.\",\n  \"properties\": {\n    \"algorithm\": {\n      \"$ref\": \"#/$defs/SignAlgorithm\",\n      \"description\": \"Signature algorithm. MUST be compatible with the derived key's type.\"\n    },\n    \"derivationPath\": {\n      \"description\": \"Hierarchical-deterministic path to derive at. The same path against the same seed always yields the same key, which is what makes this reproducible rather than ephemeral.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"keyType\": {\n      \"$ref\": \"#/$defs/KeyType\",\n      \"description\": \"Algorithm to derive. MUST be one that can sign.\"\n    },\n    \"payload\": {\n      \"description\": \"The exact bytes to sign, base64url-encoded without padding. Signed verbatim — not parsed, canonicalized or wrapped.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyType\",\n    \"derivationPath\",\n    \"payload\",\n    \"algorithm\"\n  ],\n  \"title\": \"Keys Derive-and-Sign — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\",\n        \"mldsa44\",\n        \"mldsa65\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"$ref\": \"#/$defs/SignAlgorithm\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publicKey\": {\n          \"description\": \"Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"Signature bytes, base64url-encoded without padding.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"publicKey\",\n        \"signature\",\n        \"algorithm\"\n      ],\n      \"title\": \"Keys Derive-and-Sign — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignAlgorithm\": {\n      \"description\": \"`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.\",\n      \"enum\": [\n        \"EdDSA\",\n        \"ES256\",\n        \"ML-DSA-44\",\n        \"ML-DSA-65\"\n      ],\n      \"title\": \"SignAlgorithm\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/derive-and-sign/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Derive a key at a path and sign with it in one step, without adding a stored key record.\",\n  \"properties\": {\n    \"algorithm\": {\n      \"$ref\": \"#/$defs/SignAlgorithm\",\n      \"description\": \"Signature algorithm. MUST be compatible with the derived key's type.\"\n    },\n    \"derivationPath\": {\n      \"description\": \"Hierarchical-deterministic path to derive at. The same path against the same seed always yields the same key, which is what makes this reproducible rather than ephemeral.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"keyType\": {\n      \"$ref\": \"#/$defs/KeyType\",\n      \"description\": \"Algorithm to derive. MUST be one that can sign.\"\n    },\n    \"payload\": {\n      \"description\": \"The exact bytes to sign, base64url-encoded without padding. Signed verbatim — not parsed, canonicalized or wrapped.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyType\",\n    \"derivationPath\",\n    \"payload\",\n    \"algorithm\"\n  ],\n  \"title\": \"Keys Derive-and-Sign — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -672,7 +692,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"$ref\": \"#/$defs/SignAlgorithm\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publicKey\": {\n          \"description\": \"Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"Signature bytes, base64url-encoded without padding.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"publicKey\",\n        \"signature\",\n        \"algorithm\"\n      ],\n      \"title\": \"Keys Derive-and-Sign — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignAlgorithm\": {\n      \"description\": \"`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.\",\n      \"enum\": [\n        \"EdDSA\",\n        \"ES256\"\n      ],\n      \"title\": \"SignAlgorithm\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\",\n        \"mldsa44\",\n        \"mldsa65\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/derive-and-sign request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/derive-and-sign/0.1#response.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"$ref\": \"#/$defs/SignAlgorithm\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publicKey\": {\n          \"description\": \"Public half of the derived key, multibase-encoded — so the producer learns the identity it just signed as, which it could not otherwise know for a key that was never stored.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"Signature bytes, base64url-encoded without padding.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"publicKey\",\n        \"signature\",\n        \"algorithm\"\n      ],\n      \"title\": \"Keys Derive-and-Sign — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignAlgorithm\": {\n      \"description\": \"`EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.\",\n      \"enum\": [\n        \"EdDSA\",\n        \"ES256\",\n        \"ML-DSA-44\",\n        \"ML-DSA-65\"\n      ],\n      \"title\": \"SignAlgorithm\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

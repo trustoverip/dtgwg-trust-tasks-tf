@@ -210,9 +210,9 @@ export type KeyOrigin = "derived" | "imported" | "internal";
  */
 export type KeyStatus = "active" | "revoked";
 /**
- * Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256).
+ * Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
  */
-export type KeyType = "ed25519" | "x25519" | "p256";
+export type KeyType = "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65";
 /**
  * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
  */
@@ -459,9 +459,9 @@ export type Sensitivity = "normal" | "high";
  */
 export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
 /**
- * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. The enumeration is closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
+ * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
  */
-export type SignAlgorithm = "EdDSA" | "ES256";
+export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
 /**
  * A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
  */
