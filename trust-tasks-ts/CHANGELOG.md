@@ -11,6 +11,61 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.19.7 — 2026-09-15
+
+
+### Added
+
+- **keys**: ML-DSA key types and signature algorithms (#463)
+
+`keyType` gains `mldsa44` and `mldsa65`; `SignAlgorithm` gains `ML-DSA-44` and
+  `ML-DSA-65`. Both are edits in place on the existing `keys/_shared/0.1`
+  components — adding a permitted enumeration value to a non-discriminating field
+  is backwards-compatible under SPEC.md §5.2, so it relaxes a constraint rather
+  than narrowing one and mints no new component or specification version.
+
+  ## Why two ML-DSA parameter sets
+
+  They are not redundant and should not be harmonised. W3C Quantum-Resistant
+  Cryptosuites v1.0 defines Data Integrity suites only for ML-DSA-44
+  (`mldsa44-jcs-2024`, `mldsa44-rdfc-2024`), while Trust Spanning Protocol Rev 3
+  §8.1 mandates ML-DSA-65. The parameter set is chosen by whatever consumes the
+  key, never by the holder, so a custodian serving both has to hold both. The
+  descriptions say so, because the natural instinct on seeing two adjacent
+  parameter sets is to delete one.
+
+  ## Casing, which differs between the two enumerations on purpose
+
+  `keyType` values are specification-defined and stay lowercase beside `ed25519`
+  and `p256`. `SignAlgorithm` values are JOSE algorithm identifiers — externally
+  owned, carried verbatim, never re-cased (§4.10 rule 5) — so they are the exact
+  strings RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms
+  registry, hyphens and all. The descriptions explain the mismatch so it does not
+  read as a normalization defect and get "fixed".
+
+  ## Growth
+
+  The set is expected to grow, and the generated libraries already anticipate it:
+  `trust-tasks-codegen` marks every generated enum `#[non_exhaustive]` precisely
+  "so that a value added to a schema's `enum` is not a break either", following
+  the `StandardCode` precedent from 0.7.0. So a Rust consumer absorbs these two
+  and the next ones without a compile error.
+
+  The TypeScript side is a string-literal union, which widens rather than breaks
+  for a consumer reading a value — but a consumer with an exhaustive `switch` and
+  a `never` check will need a new arm. That is the same trade every enum addition
+  in this registry has made, and it follows the precedent of #344, which added
+  four `Capability` values as a `feat` without `!`. Flagging it so a reviewer can
+  disagree rather than discover it.
+
+  Both descriptions also carry the consumer rule the framework already applies to
+  hash agility: a consumer that does not implement a value it receives MUST refuse
+  the document rather than substitute one it does support.
+
+  Bindings regenerated (`trust-tasks-codegen`, `build-ts-bindings`); 44 Rust test
+  suites green under `--no-fail-fast`; `cargo fmt --all --check` clean. No version
+  or changelog edited.
+
 ## 0.19.6 — 2026-09-15
 
 
