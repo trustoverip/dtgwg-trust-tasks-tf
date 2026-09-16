@@ -91,6 +91,8 @@ no hand-written entries.
 > once per package (keyed on its directory and `<prefix>-v` tag), and the first
 > *automated* release is the version after the manual one.
 | `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
+| `trust-tasks-go/proof` | none — a **separate** nested Go module (Data Integrity proofs), released on its own `trust-tasks-go/proof/vX.Y.Z` tag, independently of the core. It has a `version.go`, a `publish-go` matrix leg and a `release-go-pr` leg like the core. No manual first publish — a Go tag is self-bootstrapping. |
+| `trust-tasks-go/didcomm` | none — a **separate** nested Go module (DIDComm v2 binding), released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag, the same way as `proof`. |
 | `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
 | `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
@@ -134,6 +136,14 @@ from the conventional commits since the `trust-tasks-go/v*` tag that touched
 Go has no manifest to bump, so the PR moves `const Version` in
 `trust-tasks-go/trusttasks/version.go`, which stands in for one. The tag is what
 actually publishes.
+
+The two nested modules (`trust-tasks-go/proof`, `trust-tasks-go/didcomm`) each get
+their **own** `chore: release trust-tasks-go/<name>` PR on a `release-go-<name>`
+branch, from the same `release-go-pr.sh` (it takes the module as an argument, like
+the TS/Dart scripts) and the same `publish-go` matrix. They version on their own
+`trust-tasks-go/<name>/vX.Y.Z` tags, and the **core's** watch set excludes them,
+so a change under a nested module releases that module, not the core. `tsp` is the
+exception — still unreleased, see the table above.
 
 **`chore: release trust_tasks <version>`** — the Dart package, on the
 `release-dart` branch, computed by `scripts/release-dart-pr.sh` from the

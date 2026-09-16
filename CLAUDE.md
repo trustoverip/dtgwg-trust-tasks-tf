@@ -357,11 +357,13 @@ written in the module. Its only requirement is the core module whose
   nested module); a dedicated `proof` job in `go.yml` builds/vets/tests it on its
   `go 1.22` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
   so keep these files gofmt-clean.
-- **Not wired into a release yet** — but unlike `tsp` there is no blocker (no
-  unpublished dependency), so a `publish-go`-style tag job for
-  `trust-tasks-go/proof/vX.Y.Z` is a clean follow-up. `go get` of the module
-  works today via the proxy's pseudo-version, which is why the website matrix
-  lists it as shipped.
+- **Released on its own `trust-tasks-go/proof/vX.Y.Z` tag**, independently of the
+  core. It carries a `version.go` with a `const Version` (the manifest surrogate,
+  as the core's does), a matrix leg in `publish-go`, and a `release-go-pr` leg
+  (`release-go-pr.sh trust-tasks-go/proof`). The core's release WATCH **excludes**
+  the nested modules, so a change under `trust-tasks-go/proof` releases proof, not
+  the core. Like every Go tag it is irreversible, so `publish-go` builds/vets/tests
+  the module before tagging.
 
 ### The `trust-tasks-go/didcomm` nested module
 
@@ -395,10 +397,12 @@ authcrypt on the standard library.
   routed to the sender, never `identityMismatch`.
 - **Core CI does not reach it**; a `didcomm` job in `go.yml` builds/vets/tests on
   the `go 1.22` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
-  recurses in). **Not release-wired yet**, and a shared cross-library authcrypt
-  fixture with the Rust/Dart bindings is a documented follow-up — the profile is
-  spec-standard and the primitives are vector-pinned, but byte-for-byte interop
-  is not yet asserted the way the sealed TSP/proof envelopes are.
+  recurses in). **Released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag** the
+  same way `proof` is — a `version.go`, a `publish-go` matrix leg, and a
+  `release-go-pr` leg — independent of the core. A shared cross-library authcrypt
+  fixture with the Rust/Dart bindings is still a documented follow-up — the
+  profile is spec-standard and the primitives are vector-pinned, but byte-for-byte
+  interop is not yet asserted the way the sealed TSP/proof envelopes are.
 
 ### The `trust-tasks-go/capabilityclient` nested module
 
