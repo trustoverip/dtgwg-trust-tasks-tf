@@ -183,14 +183,19 @@ window.TT_LIBRARIES = [
     registry: "npm",
     packageUrl: "https://www.npmjs.com/package/@openvtc/trust-tasks",
     install: "npm install @openvtc/trust-tasks",
-    tagline: "Types and the §7.2 pipeline, for Node, browsers and workers.",
+    tagline: "Types, the §7.2 pipeline, a TSP binding and a Data Integrity proof backend, for Node, browsers and workers.",
     summary:
-      "Generated types for every specification plus the hand-written §7.2 consumer pipeline. Zero runtime dependencies — the cryptosuite and the JSON Schema engine are interfaces you supply, which is what keeps it usable in a browser or a worker.",
+      "Generated types for every specification plus the hand-written §7.2 consumer pipeline. The core has zero runtime dependencies — the cryptosuite and the JSON Schema engine are interfaces you supply, which is what keeps it usable in a browser or a worker. Two sibling packages build on it and interoperate with their Rust counterparts: @openvtc/trust-tasks-proof puts a W3C Data Integrity verifier and signer — rolled on @noble, byte-compatible with the Rust proof library — behind the ProofVerifier seam, and @openvtc/trust-tasks-tsp is the TSP binding on @openvtc/vti-tsp-js, sealing a document into a Trust Spanning Protocol message and running the pipeline over it with the duplicate-execution guard a mediated transport needs on by default.",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
+      "binding:tsp",
+      "proof",
     ],
-    transports: {},
+    transports: {
+      "binding:tsp": { package: "@openvtc/trust-tasks-tsp", dir: "trust-tasks-ts-tsp" },
+      proof: { package: "@openvtc/trust-tasks-proof", dir: "trust-tasks-ts-proof" },
+    },
     foundations: {
       "binding:https": { package: "fetch (built in)", url: "https://developer.mozilla.org/docs/Web/API/Fetch_API" },
       "binding:didcomm": { package: "didcomm", url: "https://www.npmjs.com/package/didcomm" },
