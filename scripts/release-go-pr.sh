@@ -64,7 +64,15 @@ fi
 # rather than lexically, so v0.10.0 sorts above v0.9.0.
 tag=$(git tag -l 'trust-tasks-go/v*' --sort=-version:refname | head -1)
 if [ -z "$tag" ]; then
-  echo "::error::No trust-tasks-go/v* tag exists, so there is no anchor to measure this release from. Seed it once at the current version — see RELEASING.md, 'One-time migration'."
+  # Reaching here means `publish-go` did not run or did not finish — this job
+  # has `needs: publish-go`, and that job writes `trust-tasks-go/v<Version>` the
+  # first time it sees a version with no matching tag. So the module seeds its
+  # own anchor and there is nothing to seed by hand.
+  #
+  # Do NOT tag from a local checkout to clear this. A Go tag IS the publication
+  # and cannot be retracted, and tagging locally skips the build/vet/test that
+  # `publish-go` runs before it tags. Re-run `publish-go` instead.
+  echo "::error::No trust-tasks-go/v* tag exists. publish-go writes it — re-run that job rather than tagging by hand; a Go tag is a permanent publication. See RELEASING.md, 'The Go module seeds itself'."
   exit 1
 fi
 last="${tag#trust-tasks-go/v}"
