@@ -212,19 +212,20 @@ window.TT_LIBRARIES = [
     install: "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
     tagline: "Types, the §7.2 pipeline, TSP and DIDComm v2 transport bindings, and a Data Integrity proof backend.",
     summary:
-      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Three separate nested modules keep the core dependency-free: trust-tasks-go/tsp seals a document into a ToIP Trust Spanning Protocol message; trust-tasks-go/didcomm carries one in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); and trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library. Each interoperates with its Rust counterpart.",
+      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Three separate nested modules keep the core dependency-free: trust-tasks-go/tsp seals a document into a ToIP Trust Spanning Protocol message; trust-tasks-go/didcomm carries one in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); and trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library. A fourth nested module, trust-tasks-go/capabilityclient, builds and parses the governance/capability/* and git-trust/* documents (no crypto). Each interoperates with its Rust counterpart.",
     detail: "go",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
       "binding:tsp", "binding:didcomm",
-      "proof",
+      "proof", "capability-client",
     ],
     transports: {
       // Separate nested modules, so the core stays dependency-free.
       "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp" },
       "binding:didcomm": { package: "trust-tasks-go/didcomm", dir: "trust-tasks-go/didcomm" },
       proof: { package: "trust-tasks-go/proof", dir: "trust-tasks-go/proof" },
+      "capability-client": { package: "trust-tasks-go/capabilityclient", dir: "trust-tasks-go/capabilityclient" },
     },
     foundations: {
       "binding:https": { package: "net/http (standard library)", url: "https://pkg.go.dev/net/http" },
