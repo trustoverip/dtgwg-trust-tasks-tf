@@ -199,19 +199,40 @@ usually fixes it, because the missing crate is on crates.io by then.
   filename `publish.yml`.** Renaming that file breaks the OIDC exchange before
   any release logic runs. See the comment at the top of it.
 - **`RELEASE_PLZ_TOKEN`** — a PAT (contents + pull-requests write) or GitHub App
-  token. **Not currently set.** GitHub suppresses workflow runs for events
-  authored by the default `GITHUB_TOKEN`, so without it a Release PR opens with
-  no CI on it — meaning the one commit that publishes would be the one commit CI
-  never built. Until the token exists, **close and reopen the Release PR** to
-  trigger CI before merging it. This applies to all four Release PRs — and for
-  Dart it is worse than cosmetic, because the same token limitation stops the
-  release tag from triggering the publish workflow at all.
+  token. **Set**, as of the `trust-tasks-dart-v0.1.0` tag on 2026-09-16: that tag
+  was pushed by `tag-dart` and *did* trigger `publish-dart.yml`, which the
+  default token cannot do. (This entry previously said "Not currently set"; that
+  was stale.)
+
+  Why it matters: GitHub suppresses workflow runs for events authored by the
+  default `GITHUB_TOKEN`. Without this token a Release PR opens with no CI on it
+  — meaning the one commit that publishes would be the one commit CI never built
+  — and, on the Dart side, the release tag would not trigger the publish workflow
+  at all. If it is ever unset, **close and reopen the Release PR** to trigger CI
+  before merging, and re-push the Dart tag from a workstation to publish.
 - **pub.dev automated publishing** — a one-time setup on the package's Admin
   tab: "Enable publishing from GitHub Actions", repository
   `trustoverip/dtgwg-trust-tasks-tf`, tag pattern
-  `trust-tasks-dart-v{{version}}`. ⚠️ **The first version must be published by
-  hand** (`dart pub publish` from `trust-tasks-dart/`, signed in as a publisher):
-  a package that does not exist yet has no Admin tab to configure.
+  `trust-tasks-dart-v{{version}}`.
+
+  ⚠️ **The first version must be published by hand**, and this is not a guess:
+  merging #470 tagged `trust-tasks-dart-v0.1.0`, `publish-dart.yml` triggered and
+  ran the whole pipeline correctly — dry run clean, 853 KB archive validated,
+  upload attempted — and pub.dev refused with
+
+  ```
+  Message from server: Only users are allowed to upload new packages.
+  ```
+
+  So run `dart pub publish` from `trust-tasks-dart/` signed in as a user, then
+  configure the Admin tab. A package that does not exist has no Admin tab to
+  configure, which is the chicken-and-egg the message is describing.
+
+  Note that the first *automated* publish will therefore be the version after the
+  one published by hand: `trust-tasks-dart-v0.1.0` already exists and pub.dev
+  will not accept a second upload of a version it already has, so re-pushing that
+  tag proves nothing. `0.1.1` is the first release the automation actually
+  performs end to end.
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to
   own, no token to rotate and no Trusted Publisher to misconfigure. The one
