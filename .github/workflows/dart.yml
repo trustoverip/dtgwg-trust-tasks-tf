@@ -137,7 +137,15 @@ jobs:
       - run: npm run check-dart-packages
 
   # The hand-written packages built on trust_tasks: the Data Integrity proofs
-  # and the HTTPS and DIDComm bindings. Each is held to the same bar as the core — analysis with
+  # and the HTTPS, DIDComm and TSP bindings.
+  #
+  # trust_tasks_tsp is tested here but is NOT in the release matrices in
+  # publish.yml: it depends on affinidi_tsp, which is not on pub.dev yet, so it
+  # cannot be published (its pubspec_overrides.yaml supplies affinidi_tsp from
+  # git). CI resolves that override; a release, which deletes it, cannot. When
+  # affinidi_tsp publishes, a follow-up flips the dep to hosted and adds the
+  # release entries. `check-dart-packages` allows a package tested here that is
+  # not (yet) in the release matrices. Each is held to the same bar as the core — analysis with
   # --fatal-infos, formatting at its own SDK floor, and its tests on that floor
   # and on stable.
   #
@@ -172,6 +180,12 @@ jobs:
           - package: trust-tasks-dart-didcomm
             sdk: "3.6"
           - package: trust-tasks-dart-didcomm
+            sdk: stable
+          # affinidi_tsp's floor is 3.8. Resolves affinidi_tsp from git via the
+          # package's committed pubspec_overrides.yaml.
+          - package: trust-tasks-dart-tsp
+            sdk: "3.8"
+          - package: trust-tasks-dart-tsp
             sdk: stable
     steps:
       - uses: actions/checkout@v6

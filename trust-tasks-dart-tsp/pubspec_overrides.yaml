@@ -1,0 +1,16 @@
+# Build and test against the in-tree `trust_tasks`, and against the
+# affinidi_tsp repository until it is published to pub.dev — pinned to a commit
+# for reproducibility. The Dart form of the Rust `path =` dependencies.
+#
+# ⚠️ trust_tasks_tsp CANNOT be published while this override supplies
+# affinidi_tsp: pub.dev requires every dependency in the published closure to be
+# on pub.dev. `tag-dart` deletes this file before verifying a release, so the
+# release fails until affinidi_tsp reaches pub.dev and pubspec.yaml's
+# `affinidi_tsp: ^0.1.0` resolves against it. See RELEASING.md.
+dependency_overrides:
+  trust_tasks:
+    path: ../trust-tasks-dart
+  affinidi_tsp:
+    git:
+      url: https://github.com/affinidi/affinidi-tsp-dart
+      ref: 5b1cb003fc12a9364a556f102374e367dd8f5daf
