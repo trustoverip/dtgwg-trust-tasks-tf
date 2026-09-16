@@ -11,6 +11,38 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.1.4 — 2026-09-16
+
+
+### Added
+
+- **go-didcomm**: DIDComm v2.1 transport binding for Go (trust-tasks-go/didcomm) (#495)
+
+The bindings/didcomm/0.2 binding for Go, rolled on the standard library. A
+  separate nested module like tsp and proof so the core stays dependency-free,
+  and like proof it pulls in no third-party code: DIDComm v2.1 authcrypt
+  (ECDH-1PU key agreement + A256KW key wrapping + A256CBC-HS512 content
+  encryption, over X25519) on crypto/ecdh, with the RFC 3394 key-wrap (pinned to
+  the RFC's test vector) and RFC 7518 content encryption written in-module.
+
+  aries-framework-go was evaluated and rejected: its packer is a low-level JWE
+  primitive needing a full KMS/Crypto/Storage/VDR provider and raw key bytes, it
+  does not build/parse the v2 message envelope or verify sender_kid, and the
+  framework is archived. Rolling our own keeps the four bindings aligned and
+  PQC-extensible.
+
+  The verified skid is authenticated by the ECDH-1PU static secret (a forged
+  skid fails the key unwrap) and becomes the §4.8.1 transport-authenticated
+  sender; anoncrypt/plaintext are rejected (binding §2/§4). Key-based like tsp
+  (a ResolveSender callback, no DID resolution); the consumer keeps the §7.2
+  item-11 duplicate-execution record on by default (binding §6) and routes a
+  thread-header disagreement as malformedRequest (binding §3.1).
+
+  Adds a didcomm job to go.yml, the Go implementation to the didcomm/0.2 binding
+  registry, the Go binding:didcomm cell to the capability matrix, and documents
+  the module in CLAUDE.md. Not release-wired yet; a shared cross-library authcrypt
+  fixture is a follow-up.
+
 ## 0.1.3 — 2026-09-16
 
 
