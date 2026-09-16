@@ -238,22 +238,38 @@ jobs:
   # It gets its own Release PR instead, computed the same way (conventional
   # commits since the package's last release tag) and merged the same way.
   # See scripts/release-ts-pr.sh and RELEASING.md.
+  # One matrix entry per npm package. The core is @openvtc/trust-tasks; the
+  # sibling packages (-proof, -tsp) publish from their own directories under
+  # their own tag prefix. Each is skipped when its version is already on npm, so
+  # a feature merge is a no-op and the first publish of a new package (which npm
+  # trusted publishing cannot bootstrap) is done by hand — see RELEASING.md.
   publish-npm:
-    name: Publish @openvtc/trust-tasks to npm
+    name: Publish ${{ matrix.name }} to npm
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       # `contents: write` so the tag can be pushed after a successful publish —
-      # `trust-tasks-ts-v<version>` is what the next Release PR measures from,
-      # the npm mirror of the `<crate>-v<version>` tags release-plz writes.
+      # `<prefix>-v<version>` is what the next Release PR measures from, the npm
+      # mirror of the `<crate>-v<version>` tags release-plz writes.
       contents: write
       id-token: write # required for npm trusted publishing (OIDC) + provenance
-    outputs:
-      published: ${{ steps.decide.outputs.should_publish }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "@openvtc/trust-tasks"
+            dir: trust-tasks-ts
+            prefix: trust-tasks-ts-v
+          - name: "@openvtc/trust-tasks-proof"
+            dir: trust-tasks-ts-proof
+            prefix: trust-tasks-ts-proof-v
+          - name: "@openvtc/trust-tasks-tsp"
+            dir: trust-tasks-ts-tsp
+            prefix: trust-tasks-ts-tsp-v
     concurrency:
       # Two pushes landing close together would both see the version as absent
       # from npm and both try to publish it; the loser fails on a duplicate.
-      group: publish-npm-${{ github.ref }}
+      group: publish-npm-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
@@ -272,7 +288,7 @@ jobs:
 
       - name: Decide whether to publish
         id: decide
-        working-directory: trust-tasks-ts
+        working-directory: ${{ matrix.dir }}
         run: |
           set -euo pipefail
           name=$(node -p "require('./package.json').name")
@@ -288,7 +304,7 @@ jobs:
 
       - name: Install deps & build
         if: steps.decide.outputs.should_publish == 'true'
-        working-directory: trust-tasks-ts
+        working-directory: ${{ matrix.dir }}
         run: |
           npm ci
           npm run build
@@ -297,7 +313,7 @@ jobs:
       # token via OIDC and attaches build provenance automatically.
       - name: npm publish (trusted publishing)
         if: steps.decide.outputs.should_publish == 'true'
-        working-directory: trust-tasks-ts
+        working-directory: ${{ matrix.dir }}
         run: npm publish --access public
 
       # The tag is the anchor for the NEXT Release PR: release-ts-pr reads
@@ -308,16 +324,18 @@ jobs:
         if: steps.decide.outputs.should_publish == 'true'
         env:
           VERSION: ${{ steps.decide.outputs.version }}
+          PREFIX: ${{ matrix.prefix }}
+          NAME: ${{ matrix.name }}
         run: |
           set -euo pipefail
-          tag="trust-tasks-ts-v$VERSION"
+          tag="${PREFIX}$VERSION"
           if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
             echo "::notice::$tag already exists"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$tag" -m "@openvtc/trust-tasks $VERSION"
+          git tag -a "$tag" -m "$NAME $VERSION"
           git push origin "$tag"
 
   # ── Go ───────────────────────────────────────────────────────────────────
@@ -614,20 +632,28 @@ jobs:
         run: ./scripts/release-dart-pr.sh ${{ matrix.name }}
 
   release-ts-pr:
-    name: Release PR (@openvtc/trust-tasks)
+    name: Release PR (${{ matrix.name }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # MUST run after publish-npm, not beside it. Both jobs fire on the same
     # push, and the tag that this job measures from is written by publish-npm.
     # Running them in parallel means the run that merges a TS release computes
     # its next bump against the PREVIOUS tag and immediately reopens a Release
-    # PR for a release that just went out.
+    # PR for a release that just went out. (matrix needs matrix: every
+    # publish-npm leg finishes before any release-ts-pr leg.)
     needs: publish-npm
     permissions:
       contents: write
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - "@openvtc/trust-tasks"
+          - "@openvtc/trust-tasks-proof"
+          - "@openvtc/trust-tasks-tsp"
     concurrency:
-      group: release-ts-pr-${{ github.ref }}
+      group: release-ts-pr-${{ matrix.name }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
@@ -648,7 +674,7 @@ jobs:
       - name: Install git-cliff
         uses: taiki-e/install-action@git-cliff
 
-      - name: Open or update the @openvtc/trust-tasks Release PR
+      - name: Open or update the ${{ matrix.name }} Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-ts-pr.sh
+        run: ./scripts/release-ts-pr.sh "${{ matrix.name }}"
