@@ -1,0 +1,8 @@
+# Build and test against the in-tree `trust_tasks`, not the published one — the
+# Dart counterpart of the `path =` dependencies between the Rust crates, so a
+# change to the core and its consumer here can land in one PR.
+#
+# Never published: `dart pub publish` excludes this file.
+dependency_overrides:
+  trust_tasks:
+    path: ../trust-tasks-dart
