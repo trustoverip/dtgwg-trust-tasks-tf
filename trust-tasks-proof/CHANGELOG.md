@@ -6,6 +6,75 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.21.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.20.7...trust-tasks-proof-v0.21.0) — 2026-09-16
+
+
+### Added
+
+- **tsp**: The Trust Tasks TSP binding speaks spec Rev 3 ([#466](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/466))
+
+`affinidi-tsp` 0.1 -> 0.2. Rev 3 and Rev 2 do not interoperate in either
+  direction, so a consumer of this binding moves with its peers or goes silent —
+  hence the `!`.
+
+  ## The API change is one idea, applied four times
+
+  HPKE-**Base** replaces HPKE-Auth, and Base does not use the sender's KEM key.
+  So `pack`, `pack_nested`, `pack_routed` and `unpack` each lost their
+  sender-encryption-key argument: packing now needs only the sender's *signing*
+  secret. Nothing else in `pack.rs` moved.
+
+  `next_hop` also now takes the whole `UnpackedMessage` rather than a payload
+  slice, because Rev 3 carries the route in the payload frame.
+
+  ## Two tests asserted a leak that Rev 3 closes
+
+  `nested_roundtrip_through_intermediary` and `routed_roundtrips_through_a_relay`
+  checked that a keys-free `MetaEnvelope::parse` reports `Nested` / `Routed`.
+  That was true in Rev 2, which carried the message type in the *cleartext*
+  envelope — so any relay could tell a nested message from a direct one without
+  holding a key.
+
+  Rev 3 encrypts it. `MetaEnvelope::message_type` is documented as a keys-free
+  placeholder that always reads `Direct`, and a relay needing the real kind must
+  open the message. Both tests now assert exactly that, and say why: the old
+  assertion was asserting the leak, and the nested test's own comment — "bob's
+  identity stays hidden from anyone but the intermediary" — is better served by
+  the new behaviour than by the one it was checking.
+
+  ## The dependency refresh this needed, and why it is in the same commit
+
+  Bumping `affinidi-tsp` alone does not build. It pulls `affinidi-did-common`
+  0.4, and this workspace's lockfile held a stale patch of nearly every
+  `affinidi-*` crate, several of which were pinned down by dev-dependencies that
+  had not moved in a long time:
+
+    trust-tasks-didcomm  affinidi-tdk 0.7 -> 0.15, messaging-sdk 0.18 -> 0.25,
+                         messaging-test-mediator 0.2 -> 0.8
+    trust-tasks-proof    affinidi-did-common 0.3 -> 0.4
+
+  Those three dev-pins were holding `affinidi-did-resolver-cache-sdk` at 0.8.13
+  when 0.8.37 was current, which in turn kept the `affinidi-did-common` 0.3 line
+  alive beside the 0.4 one. With them moved, the whole family floats to its
+  current patches and **no `affinidi-*` crate is duplicated in the graph any
+  more** — which is the property that matters here, since two `affinidi-tsp`
+  nodes would mean two TSP revisions in one binary.
+
+  Worth recording because the diagnosis was wrong twice before it was right. The
+  compile error is `JWK::new` / `OctectParams::new` not found *in
+  affinidi-did-common*, which reads as "did-common is broken" and is not: it was
+  an `affinidi-crypto` patch old enough to predate those constructors. A `cargo
+  check` that fails inside a dependency is not evidence about that dependency.
+
+  Unblocks `verifiable-trust-infrastructure`, which cannot cut over to Rev 3
+  while this binding still resolves `affinidi-tsp` 0.1 beside the 0.2 its own
+  dependencies now pull.
+
+  44 test suites green under `--no-fail-fast`; clippy clean under `-D warnings`;
+  `cargo fmt --all --check` clean.
+
+
+
 ## [0.20.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.20.6...trust-tasks-proof-v0.20.7) — 2026-09-15
 
 
