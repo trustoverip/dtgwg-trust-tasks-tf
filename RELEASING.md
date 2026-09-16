@@ -208,24 +208,43 @@ for c in trust-tasks trust-tasks-rs trust-tasks-https trust-tasks-didcomm \
 done
 v=$(node -p "require('./trust-tasks-ts/package.json').version")
 git tag -s "trust-tasks-ts-v$v" -m "@openvtc/trust-tasks $v"
-v=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' trust-tasks-go/trusttasks/version.go)
-git tag -s "trust-tasks-go/v$v" -m "trust-tasks-go $v"
 git push origin --tags
 ```
 
-⚠️ The Go tag is the **only** one of these that is itself a publication: pushing
-`trust-tasks-go/v0.1.0` is what makes `go get …/trust-tasks-go@v0.1.0` resolve.
-Seed it only when the tree at that commit is the release you mean to ship —
-`proxy.golang.org` caches it permanently. The crate and npm tags are inert
-anchors by comparison; a wrong one can simply be moved.
+**Do not hand-seed the Go tag.** It is not in the list above on purpose — see
+the next section.
 
 Without these:
 
 - the first crates Release PR bumps versions correctly but produces **empty
   changelog sections** — there is no range for it to read commits from;
 - the `release-ts-pr` job **fails loudly** with "No trust-tasks-ts-v\* tag
-  exists", by design, rather than proposing a bump from nothing;
-- the `release-go-pr` job fails the same way, for the same reason.
+  exists", by design, rather than proposing a bump from nothing.
+
+### The Go module seeds itself — do not tag it by hand
+
+`trust-tasks-go` needs no seeding step, and adding one is actively dangerous.
+
+`publish-go` does not measure from a prior tag the way `release-go-pr` does. It
+reads `const Version` from `trust-tasks-go/trusttasks/version.go`, asks whether
+`trust-tasks-go/v<Version>` exists, and tags when it does not — so the very
+first push to `main` that carries the module publishes it and writes the anchor
+in one step. `release-go-pr` runs `needs: publish-go`, so by the time it looks
+there is always a tag to measure from. This is exactly what happened on #468:
+`publish-go` verified the tree, pushed `trust-tasks-go/v0.1.0`, and
+`release-go-pr` then correctly reported nothing to release.
+
+⚠️ **A Go tag is itself a publication, and it cannot be retracted.** Pushing
+`trust-tasks-go/v0.1.0` is what makes `go get …/trust-tasks-go@v0.1.0` resolve,
+and `proxy.golang.org` caches it permanently by design. The crate and npm tags
+are inert anchors by comparison — a wrong one can simply be moved. A Go one can
+only be superseded by a higher version.
+
+That asymmetry is why `publish-go` runs `go build`, `go vet` and `go test`
+*before* tagging, and why tagging by hand is the wrong instinct here: doing it
+from a local checkout skips those checks and can publish a tree that was never
+verified. If a release is genuinely stuck, fix `Version` and let the workflow
+tag it.
 
 At the time of writing the tree and both registries agree exactly, which is what
 makes this migration clean:

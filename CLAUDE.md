@@ -189,7 +189,8 @@ crate's Trusted Publisher is registered against the workflow **filename**
 `publish.yml` — renaming that file breaks the OIDC exchange before any release
 logic runs.
 
-Full details, including the one-time tag seeding the first release depends on:
+Full details, including the one-time tag seeding the crate and npm releases
+depend on (the Go module seeds its own — never tag it by hand):
 **`RELEASING.md`**.
 
 ### ⚠️ Library versions are semver over the *library's* API, not the framework's
