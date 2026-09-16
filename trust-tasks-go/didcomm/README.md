@@ -63,7 +63,18 @@ sender (binding §3.1).
 
 ## Interop
 
-The authcrypt profile (ECDH-1PU + A256KW + A256CBC-HS512, X25519) is the DIDComm
-v2 default, and the key-wrap and content-encryption primitives are pinned to
-their RFC test vectors. A shared cross-library fixture with the Rust and Dart
-DIDComm bindings is a follow-up.
+The authcrypt profile (ECDH-1PU + A256KW + A256CBC-HS512, X25519) matches the
+DIDComm v2 ecosystem exactly: the **tag-in-KDF** ECDH-1PU key derivation (the
+content-encryption tag as a length-prefixed `SuppPrivInfo`) and `apv =
+base64url(SHA-256(sorted recipient kids))` that `aries-askar`, `didcomm-python`,
+`didcomm-rust` and `affinidi` all use.
+
+Interop is asserted **both directions** against `affinidi-messaging-didcomm` (the
+library the Rust and Dart Trust Tasks DIDComm bindings are built on):
+
+- **affinidi → Go**: `interop_test.go` unpacks a JWE packed by affinidi
+  (`testdata/authcrypt-interop.fixture.json`).
+- **Go → affinidi**: `trust-tasks-didcomm/tests/interop.rs` unpacks a JWE packed
+  by this binding with affinidi.
+
+See `testdata/README.md` for the fixtures and how to regenerate them.

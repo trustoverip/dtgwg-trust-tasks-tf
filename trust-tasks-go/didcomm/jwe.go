@@ -6,6 +6,7 @@ import (
 	"crypto/ecdh"
 	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/subtle"
 	"encoding/base64"
@@ -13,6 +14,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 )
 
 // This file rolls the one DIDComm v2.1 authcrypt profile the binding uses:
@@ -84,18 +87,11 @@ func packAuthcrypt(plaintext []byte, senderPriv *ecdh.PrivateKey, senderKid stri
 	if err != nil {
 		return nil, err
 	}
-	ze, err := ephemeral.ECDH(recipientPub)
-	if err != nil {
-		return nil, fmt.Errorf("didcomm: ephemeral ECDH: %w", err)
-	}
-	zs, err := senderPriv.ECDH(recipientPub)
-	if err != nil {
-		return nil, fmt.Errorf("didcomm: static ECDH: %w", err)
-	}
-	z := append(append([]byte{}, ze...), zs...)
 
+	// apu is the sender kid; apv is SHA-256 of the sorted, dot-joined recipient
+	// kids (the DIDComm v2 convention — matches affinidi/askar/didcomm-python).
 	apu := []byte(senderKid)
-	apv := []byte(recipientKid)
+	apv := computeAPV([]string{recipientKid})
 	header := protectedHeader{
 		Alg:  algAuthcrypt,
 		Enc:  encA256CBC,
@@ -111,17 +107,29 @@ func packAuthcrypt(plaintext []byte, senderPriv *ecdh.PrivateKey, senderKid stri
 	}
 	protectedB64 := b64.EncodeToString(protectedJSON)
 
-	kek := concatKDF(z, []byte(algAuthcrypt), apu, apv, kekBits)
+	// ECDH-1PU authcrypt is tag-in-KDF: encrypt the content FIRST, then derive
+	// the key-wrapping KEK with the content-encryption tag as SuppPrivInfo, then
+	// wrap the CEK. The AAD is the base64url protected header.
 	cek := make([]byte, cekLen)
 	if _, err := rand.Read(cek); err != nil {
 		return nil, err
 	}
-	wrapped, err := aesKeyWrap(kek, cek)
+	iv, ciphertext, tag, err := encryptA256CBCHS512(cek, plaintext, []byte(protectedB64))
 	if err != nil {
 		return nil, err
 	}
 
-	iv, ciphertext, tag, err := encryptA256CBCHS512(cek, plaintext, []byte(protectedB64))
+	ze, err := ephemeral.ECDH(recipientPub)
+	if err != nil {
+		return nil, fmt.Errorf("didcomm: ephemeral ECDH: %w", err)
+	}
+	zs, err := senderPriv.ECDH(recipientPub)
+	if err != nil {
+		return nil, fmt.Errorf("didcomm: static ECDH: %w", err)
+	}
+	z := append(append([]byte{}, ze...), zs...)
+	kek := concatKDF(z, []byte(algAuthcrypt), apu, apv, kekBits, tag)
+	wrapped, err := aesKeyWrap(kek, cek)
 	if err != nil {
 		return nil, err
 	}
@@ -134,6 +142,15 @@ func packAuthcrypt(plaintext []byte, senderPriv *ecdh.PrivateKey, senderKid stri
 		Tag:        b64.EncodeToString(tag),
 	}
 	return json.Marshal(out)
+}
+
+// computeAPV is the DIDComm v2 PartyVInfo: SHA-256 of the recipient key ids,
+// sorted and joined by ".". For this binding there is always one recipient.
+func computeAPV(kids []string) []byte {
+	sorted := append([]string(nil), kids...)
+	sort.Strings(sorted)
+	sum := sha256.Sum256([]byte(strings.Join(sorted, ".")))
+	return sum[:]
 }
 
 // resolveSenderKey maps a sender key id (a DID URL) to its X25519 public key.
@@ -205,10 +222,15 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 
 	// PartyUInfo/PartyVInfo are the raw (base64url-decoded) apu/apv the header
 	// carries, so the KDF input matches the sender's regardless of how it chose
-	// to fill them.
+	// to fill them. The content-encryption tag is fed into the KDF as
+	// SuppPrivInfo (ECDH-1PU tag-in-KDF), so it must be decoded before the KEK.
 	apu, _ := b64.DecodeString(header.Apu)
 	apv, _ := b64.DecodeString(header.Apv)
-	kek := concatKDF(z, []byte(algAuthcrypt), apu, apv, kekBits)
+	tag, err := b64.DecodeString(env.Tag)
+	if err != nil {
+		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: "tag is not base64url", Sender: header.Skid}
+	}
+	kek := concatKDF(z, []byte(algAuthcrypt), apu, apv, kekBits, tag)
 
 	cek, err := aesKeyUnwrap(kek, wrapped)
 	if err != nil {
@@ -223,10 +245,6 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 	ciphertext, err := b64.DecodeString(env.Ciphertext)
 	if err != nil {
 		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: "ciphertext is not base64url", Sender: header.Skid}
-	}
-	tag, err := b64.DecodeString(env.Tag)
-	if err != nil {
-		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: "tag is not base64url", Sender: header.Skid}
 	}
 	plaintext, err := decryptA256CBCHS512(cek, iv, ciphertext, tag, []byte(env.Protected))
 	if err != nil {
