@@ -49,6 +49,7 @@ on:
       - "trust-tasks-dart-proof-v[0-9]+.[0-9]+.[0-9]+"
       - "trust-tasks-dart-https-v[0-9]+.[0-9]+.[0-9]+"
       - "trust-tasks-dart-didcomm-v[0-9]+.[0-9]+.[0-9]+"
+      - "trust-tasks-dart-capability-client-v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   # Which package the tag names, and whether that version is already on pub.dev.
@@ -72,6 +73,7 @@ jobs:
             trust-tasks-dart-proof-v*) dir=trust-tasks-dart-proof; name=trust_tasks_proof; version=${TAG#trust-tasks-dart-proof-v} ;;
             trust-tasks-dart-https-v*) dir=trust-tasks-dart-https; name=trust_tasks_https; version=${TAG#trust-tasks-dart-https-v} ;;
             trust-tasks-dart-didcomm-v*) dir=trust-tasks-dart-didcomm; name=trust_tasks_didcomm; version=${TAG#trust-tasks-dart-didcomm-v} ;;
+            trust-tasks-dart-capability-client-v*) dir=trust-tasks-dart-capability-client; name=trust_tasks_capability_client; version=${TAG#trust-tasks-dart-capability-client-v} ;;
             trust-tasks-dart-v*)       dir=trust-tasks-dart;       name=trust_tasks;       version=${TAG#trust-tasks-dart-v} ;;
             *) echo "::error::$TAG names no known Dart package"; exit 1 ;;
           esac

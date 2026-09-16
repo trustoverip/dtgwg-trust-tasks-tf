@@ -515,6 +515,9 @@ jobs:
           - name: trust_tasks_didcomm
             dir: trust-tasks-dart-didcomm
             prefix: trust-tasks-dart-didcomm-v
+          - name: trust_tasks_capability_client
+            dir: trust-tasks-dart-capability-client
+            prefix: trust-tasks-dart-capability-client-v
     concurrency:
       group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
@@ -612,6 +615,7 @@ jobs:
           - name: trust_tasks_proof
           - name: trust_tasks_https
           - name: trust_tasks_didcomm
+          - name: trust_tasks_capability_client
     concurrency:
       group: release-dart-pr-${{ matrix.name }}-${{ github.ref }}
       cancel-in-progress: false

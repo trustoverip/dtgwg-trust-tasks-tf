@@ -76,6 +76,12 @@ case "$PKG" in
     VERSION_FILE=""
     WATCH=("$PKG_DIR")
     ;;
+  trust_tasks_capability_client)
+    PKG_DIR="trust-tasks-dart-capability-client"
+    BRANCH="release-dart-capability-client"
+    VERSION_FILE=""
+    WATCH=("$PKG_DIR")
+    ;;
   *)
     echo "::error::unknown Dart package '$PKG'"
     exit 1
