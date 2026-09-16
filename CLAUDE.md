@@ -92,14 +92,14 @@ defects three times.
 
 | Check | Asserts | Cannot see |
 |---|---|---|
-| `codegen-drift`, `bindings-drift` (×2: TS and Go) | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
-| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS and Go agree with each spec's front matter, its `$defs.Response`, and each other | anything not expressible from front matter + schema |
-| `node --test (runtime)`, `cargo test`, `go test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
-| `npm run smoke`, `go test ./smoke` | the built npm package imports as a consumer imports it; the Go module drives a *generated* package through the real pipeline | |
+| `codegen-drift`, `bindings-drift` (×3: TS, Go and Dart) | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
+| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
+| `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
+| `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
 | `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
-| the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI` and `TrustTaskErrorTypeURI` all name the same version | whether that version is the right one to have adopted |
+| the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI`, `TrustTaskErrorTypeURI` and `trustTaskErrorTypeUri` all name the same version | whether that version is the right one to have adopted |
 
 The fourth instance of the hand-maintained-list failure mode was binding *prose*:
 #308 moved `targetFrameworkVersion` to `0.5` in five bindings and updated none of
@@ -115,33 +115,38 @@ front-matter → policy derivation rather than importing the generator's. Do not
 DRY it up: sharing the helper would make it assert that the generator agrees
 with itself, which is the property that already held while both defects shipped.
 
-`scripts/build-go-bindings.mjs` is duplicated from `build-ts-bindings.mjs` in the
-same deliberate way, and its file header says so. Its `$ref` inliner and its
-policy derivation are third independent implementations, and `check-bindings`
-compares the emitted schema text of all three languages against each other.
-Three resolvers that agree is evidence; one resolver quoted three times is
-decoration. **Do not factor the two generators together**, tempting as the
-overlap looks.
+`scripts/build-go-bindings.mjs` and `scripts/build-dart-bindings.mjs` are
+duplicated from `build-ts-bindings.mjs` in the same deliberate way, and their
+file headers say so. Their `$ref` inliners and policy derivations are third and
+fourth independent implementations, and `check-bindings` compares the emitted
+schema text of all four languages against each other. Four resolvers that agree
+is evidence; one resolver quoted four times is decoration. **Do not factor the
+generators together**, tempting as the overlap looks.
 
 ## ⚠️ Changing a spec or payload schema — regenerate the libraries
 
-The Rust, TS and Go client libraries are generated from the specs. When you add
-or change anything under `specs/` (a new task, a schema edit, a new category used
-by a task), you MUST regenerate **all three** in the same PR. Drift CI guards all
-three — `codegen.yml` has `codegen-drift`, `ts.yml` has `bindings-drift` (added
-after PR #85 → #86, where only Rust was regenerated) and `go.yml` has its own
-`bindings-drift`. All three workflows are deliberately unfiltered so those checks
-always report — a path-filtered job cannot be a required check.
+The Rust, TS, Go and Dart client libraries are generated from the specs. When
+you add or change anything under `specs/` (a new task, a schema edit, a new
+category used by a task), you MUST regenerate **all four** in the same PR. Drift
+CI guards all four — `codegen.yml` has `codegen-drift`, and `ts.yml`, `go.yml`
+and `dart.yml` each have their own `bindings-drift` (the TS one was added after
+PR #85 → #86, where only Rust was regenerated). All four workflows are
+deliberately unfiltered so those checks always report — a path-filtered job
+cannot be a required check.
 
 1. **Regenerate Rust bindings:** `cargo run -p trust-tasks-codegen && cargo fmt --all`
    (commit the diff — CI fails on drift).
 2. **Regenerate TS bindings:** `npm run build-ts-bindings`
    (updates `trust-tasks-ts/src/<slug>/...` + `src/index.ts` exports).
 3. **Regenerate Go bindings:** `npm run build-go-bindings`
-   (updates `trust-tasks-go/specs/<slug>/v<MAJOR>_<MINOR>/payload.go`). Unlike the
-   Rust step this needs no separate format command — the generator runs `gofmt`
-   itself and **fails** if it is not on PATH, because a contributor without Go
-   installed would otherwise commit unformatted output and discover it in CI.
+   (updates `trust-tasks-go/specs/<slug>/v<MAJOR>_<MINOR>/payload.go`).
+4. **Regenerate Dart bindings:** `npm run build-dart-bindings`
+   (updates `trust-tasks-dart/lib/specs/<slug>/v<MAJOR>_<MINOR>/payload.dart`).
+
+   Neither of the last two needs a separate format command, unlike the Rust step:
+   each generator runs `gofmt` / `dart format` on its own output and **fails** if
+   the toolchain is not on PATH, because a contributor without it installed would
+   otherwise commit unformatted output and discover it in CI.
 
 **Do NOT bump a version or write a CHANGELOG entry.** That changed — see below.
 What you owe the release instead is a conventional-commit PR title: `feat(<slug>):`
@@ -161,16 +166,19 @@ recollection that "your job is just to bump the versions in the PR; the merge to
 than the registry. It runs [release-plz](https://release-plz.dev), which keeps a
 single **Release PR** up to date with the version bumps and changelog entries the
 merged commits imply; merging *that* PR is the release. Companion jobs do the
-same for `@openvtc/trust-tasks` via `scripts/release-ts-pr.sh` and for
-`trust-tasks-go` via `scripts/release-go-pr.sh`, because release-plz is Rust-only
-and cannot bump a `package.json` — and the Go module has no manifest at all.
+same for `@openvtc/trust-tasks`, `trust-tasks-go` and `trust_tasks` via
+`scripts/release-ts-pr.sh`, `release-go-pr.sh` and `release-dart-pr.sh`, because
+release-plz is Rust-only and cannot bump a `package.json` or a `pubspec.yaml` —
+and the Go module has no manifest at all.
 
 Consequences for anything you do in this repo:
 
 - **Never edit a `version = ` in a `Cargo.toml`, `"version"` in
-  `trust-tasks-ts/package.json`, or `const Version` in
-  `trust-tasks-go/trusttasks/version.go`.** They are assigned by the Release PR.
-  A version in a feature PR collides with every other open PR touching that
+  `trust-tasks-ts/package.json`, `const Version` in
+  `trust-tasks-go/trusttasks/version.go`, or `version:` in
+  `trust-tasks-dart/pubspec.yaml` (and its mirror `packageVersion` in
+  `lib/src/runtime/version.dart`).** They are assigned by the Release PR. A
+  version in a feature PR collides with every other open PR touching that
   package.
 - **Never hand-write a `CHANGELOG.md` entry.** They are generated from
   conventional commits by `cliff.toml`. The commit body is included verbatim.
@@ -224,9 +232,10 @@ side too. A break in `trust-tasks-rs` is usually a break in both libraries.
 
 **`StandardCode` is `#[non_exhaustive]` as of 0.7.0.** Adding a framework
 standard error code (SPEC §8.3) is therefore no longer breaking for downstream
-`match` expressions. Go's `StandardCode` is a named string type, which is open
-by construction and so sits with Rust here; TypeScript's is a closed union and is
-the one side where adding a code is a **breaking** change. It still requires a new `trust-task-error` spec version —
+`match` expressions. Go's `StandardCode` is a named string type and Dart's is an
+`extension type` over `String`, both open by construction, so they sit with Rust
+here; TypeScript's is a closed union and is the one side where adding a code is a
+**breaking** change. It still requires a new `trust-task-error` spec version —
 the code enum lives in that payload schema, so a document carrying a code the
 declared version doesn't list will not validate — and both SDKs must be pointed
 at the new version (`trust_task_error_type_uri()` in `trust-tasks-rs`,
@@ -293,6 +302,43 @@ And the one that has no undo: **a Go release cannot be retracted.**
 vets and tests *before* tagging for that reason. crates.io and npm both have a
 retraction window; Go does not.
 
+## ⚠️ The Dart package — where it differs from the other three
+
+`trust-tasks-dart` publishes to pub.dev as `trust_tasks`. It follows the
+TypeScript shape — one library per schema, each free to declare its own `Ext`,
+because a Dart library is a file and not a directory. Four things are its own:
+
+1. **The barrel exports the runtime ONLY.** Dart's `export` is flat; there is no
+   `export * as Foo`. Exporting 500 generated libraries from
+   `lib/trust_tasks.dart` would collide on the first shared definition. A
+   consumer imports one specification directly and prefixes it. Do not "fix"
+   this by adding spec exports to the barrel.
+
+2. **Closed value sets are `extension type`s, not `enum`s.** A Dart `enum`
+   throws on a value it does not know, so a peer on a newer MINOR would crash the
+   parse — squarely against SPEC §5.2. An extension type over `String` is
+   zero-cost, erases to `String`, and carries an unrecognised value through. This
+   puts Dart with Rust's `#[non_exhaustive]` and Go's named string type.
+
+3. **Two version declarations must move together** — `version:` in
+   `pubspec.yaml` and `packageVersion` in `lib/src/runtime/version.dart`.
+   Nothing at runtime reads both, so a release that moved one and not the other
+   would ship a package misreporting its own version. `npm run check-bindings`
+   fails when they disagree; the first draft of the rewrite in
+   `release-dart-pr.sh` did exactly that, because its regex could not match a
+   version containing dots.
+
+4. **pub.dev only publishes from a TAG-TRIGGERED workflow.** It checks that in
+   the OIDC token's claims, so unlike the other three there is no publishing from
+   the push-to-`main` trigger. `tag-dart` in `publish.yml` writes
+   `trust-tasks-dart-v<version>`, and `publish-dart.yml` — triggered by that tag
+   — publishes. ⚠️ A tag pushed by the default `GITHUB_TOKEN` does **not**
+   trigger a workflow, so without `RELEASE_PLZ_TOKEN` the tag lands and the
+   publish does not; `tag-dart` warns when that happens.
+
+Paths are snake_cased for Dart's `file_names` lint, so the slug
+`acl/change-role` becomes `lib/specs/acl/change_role/v0_1/payload.dart`.
+
 ## Build / validate / publish
 
 ```sh
@@ -301,6 +347,7 @@ npm run build                     # validate specs + regenerate website registry
 npm run validate                  # validate only, no website writes
 npm run build-ts-bindings         # regenerate TS bindings
 npm run build-go-bindings         # regenerate Go bindings (gofmts itself)
+npm run build-dart-bindings       # regenerate Dart bindings (dart formats itself)
 cargo run -p trust-tasks-codegen  # regenerate Rust bindings (then `cargo fmt --all`)
 ```
 

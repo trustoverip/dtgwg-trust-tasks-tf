@@ -1,0 +1,42 @@
+name: Publish Dart
+
+# A SEPARATE FILE FROM publish.yml, and it has to be.
+#
+# pub.dev only accepts an automated publish when the workflow run was triggered
+# by pushing a git tag — it verifies that in the GitHub OIDC token's claims, so
+# there is no way to publish from the `push: branches: [main]` trigger the other
+# three registries use. Hence a workflow whose only trigger is the tag.
+#
+# ── One-time setup on pub.dev ───────────────────────────────────────────────
+#
+# 1. Publish `trust_tasks` 0.1.0 by hand once (`dart pub publish` from
+#    trust-tasks-dart, signed in as a publisher). A package that does not exist
+#    yet has no Admin tab to configure, so the first release cannot be automated.
+# 2. On pub.dev: the package's Admin tab -> "Enable publishing from GitHub
+#    Actions" -> repository `trustoverip/dtgwg-trust-tasks-tf`, tag pattern
+#    `trust-tasks-dart-v{{version}}`.
+#
+# After that, pushing `trust-tasks-dart-v<version>` publishes that version, and
+# pub.dev refuses if the tag's version does not match `pubspec.yaml`.
+#
+# ⚠ A tag pushed by the default GITHUB_TOKEN does NOT trigger this workflow —
+# GitHub suppresses workflow runs for events authored by it. The `tag-dart` job
+# in publish.yml warns when it had only that token to push with. In that case
+# delete and re-push the tag from a workstation, which is an ordinary
+# authenticated push and does trigger this.
+
+on:
+  push:
+    tags:
+      - "trust-tasks-dart-v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  publish:
+    # The Dart team's own reusable workflow, which they strongly encourage over
+    # a hand-rolled `dart pub publish`: it does the OIDC exchange, verifies the
+    # tag against pubspec.yaml, and runs a dry run before the real publish.
+    permissions:
+      id-token: write # required for OIDC; no long-lived pub.dev credential exists
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: trust-tasks-dart

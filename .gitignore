@@ -36,3 +36,11 @@ infra/cloudfront/dist*.json
 
 # Agent scratch worktrees — never part of a spec change.
 .claude/worktrees/
+
+# Dart bindings package build state. `pubspec.lock` is deliberately NOT
+# committed: Dart's convention is that an application pins its lockfile and a
+# library does not, because a library's constraints are resolved against the
+# consuming app's. `trust_tasks` is a library.
+trust-tasks-dart/.dart_tool/
+trust-tasks-dart/pubspec.lock
+trust-tasks-dart/build/

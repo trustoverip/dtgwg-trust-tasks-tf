@@ -1,0 +1,28 @@
+name: trust_tasks
+description: >-
+  Dart bindings for the Trust Tasks framework: a generated payload type for
+  every specification in the registry, plus the SPEC.md section 7.2 consumer
+  pipeline that makes those types mean something.
+version: 0.1.0
+repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
+issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
+documentation: https://trusttasks.org
+
+environment:
+  # 3.3 is the floor: the generated closed-value types are extension types,
+  # which landed in that release. See scripts/build-dart-bindings.mjs.
+  sdk: ^3.3.0
+
+# No dependencies, deliberately. The cryptosuite and the JSON Schema engine are
+# the consumer's to choose, so this package declares interfaces for them and
+# implements neither — the same stance as @openvtc/trust-tasks and
+# trust-tasks-go.
+dependencies:
+
+dev_dependencies:
+  # ^4, not ^6: lints 6 requires SDK >= 3.5, and this package's floor is 3.3
+  # (the release that introduced extension types, which the generated
+  # closed-value types use). A dev dependency must not narrow what consumers
+  # can build against — 3.3 is Flutter 3.19, 3.5 is Flutter 3.24.
+  lints: ^4.0.0
+  test: ^1.25.0

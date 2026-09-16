@@ -1,0 +1,15 @@
+# The generated tree under lib/specs/ is held to the same bar as the
+# hand-written runtime: there is no exclusion here, and `dart analyze` runs over
+# everything in CI. A generator that emits code failing the project's own lints
+# is a generator to fix, not a tree to exempt.
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-raw-types: true
+  errors:
+    # Generated doc comments are lifted verbatim from schema descriptions, which
+    # are prose written for spec readers. They occasionally mention a member name
+    # that Dartdoc cannot resolve to a symbol; that is not worth failing a build.
+    comment_references: ignore
