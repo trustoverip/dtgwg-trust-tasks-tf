@@ -23,6 +23,7 @@
   <script src="/assets/tasks.generated.js"></script>
   <script src="/assets/ecosystem.js"></script>
   <script src="/assets/bindings.js"></script>
+  <script src="/assets/libraries.js"></script>
   <script src="/assets/ceremonies.js"></script>
 </head>
 <body data-bg="paper" data-density="default" data-type="editorial">
@@ -80,6 +81,14 @@
         if (rest.length === 0) return { name: "schemas" };
         return { name: "schema", slug: rest.join("/") };
       }
+      if (name === "implementations") {
+        // /implementations is the index across every library; /implementations/rust
+        // is one library's deep dive. Structurally the same split /bindings and
+        // /binding/<slug> make, with the plural kept for both because the
+        // singular carries no canonical URI here the way a bindingURI does.
+        if (rest.length === 0) return { name: "implementations" };
+        return { name: "implementation", id: rest[0] };
+      }
       if (name === "registry" && rest[0]) return { name: "registry", cat: rest[0] };
       return { name };
     }
@@ -121,6 +130,8 @@
           // Singular /binding/ per SPEC §9.3; matches the canonical bindingURI
           // shown on each binding's spec page.
           path = `/binding/${r.slug}${v ? "/" + v : ""}`;
+        } else if (r.name === "implementation") {
+          path = `/implementations/${r.id}`;
         } else if (r.name === "registry" && r.cat) {
           path = `/registry/${r.cat}`;
         } else if (r.name === "home") {
@@ -173,6 +184,13 @@
         case "ceremonies":    view = <CeremoniesPage setRoute={setRoute} />; break;
         case "ceremony":      view = <CeremonyPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "implementations": view = <ImplementationsPage setRoute={setRoute} />; break;
+        // Only Rust has a deep dive today; an unknown id falls back to the index
+        // rather than rendering a blank page.
+        case "implementation":
+          view = route.id === "rust"
+            ? <RustImplementationPage setRoute={setRoute} />
+            : <ImplementationsPage setRoute={setRoute} />;
+          break;
         case "categories":    view = <CategoriesPage setRoute={setRoute} />; break;
         case "ecosystem":     view = <EcosystemPage setRoute={setRoute} />; break;
         case "about":         view = <AboutPage />; break;

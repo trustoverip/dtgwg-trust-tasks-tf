@@ -39,6 +39,7 @@ const WEBSITE_DIR = path.join(ROOT, 'website');
 const META_SCHEMA_PATH = path.join(SPECS_DIR, 'spec.meta.schema.json');
 const DATA_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'data.js');
 const BINDINGS_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'bindings.js');
+const LIBRARIES_JS_PATH = path.join(WEBSITE_DIR, 'assets', 'libraries.js');
 
 const validateOnly = process.argv.includes('--validate-only');
 // Maintenance affordance for the Security & Privacy backlog: rewrite the
@@ -1518,6 +1519,146 @@ function checkCommittedRecordMirror() {
  * an entry with no binding on disk warns (a stale row renders a dead page, but
  * does not hide anything).
  */
+/**
+ * Cross-check `website/assets/libraries.js` against the source tree.
+ *
+ * The fifth hand-maintained list on the site, and the one making the strongest
+ * claim: the capability matrix tells a reader choosing a language what each
+ * library can do. A wrong tick there is worse than a missing page, because it is
+ * believed.
+ *
+ * Three things are checked, each corresponding to a way the list could lie:
+ *
+ *   1. Every library's `dir`, and every package it names under `transports`,
+ *      exists in the tree. A library claiming a transport it does not ship is
+ *      the headline defect.
+ *   2. Every `binding:<slug>` capability a library claims is backed by a
+ *      `transports` entry naming the package that provides it — a bare tick with
+ *      nothing behind it is unverifiable, so it is not allowed.
+ *   3. Every binding published under `bindings/<slug>/` has a capability row.
+ *      Without this, a new binding would be invisible in the matrix — which is
+ *      exactly how `didcomm/0.2` and `didcomm-v1/0.1` stayed invisible on this
+ *      site until `checkBindingRegistry()` was written.
+ *
+ * Deliberately NOT checked: version numbers. `libraries.js` carries none — every
+ * install line uses its registry's "latest" idiom — because the entry this
+ * replaced claimed "Tracking framework 0.2 (0.2.x crate line)" while the
+ * workspace was at 0.21. A list that cannot state a version cannot state a stale
+ * one.
+ */
+function checkLibraryRegistry() {
+  if (!fs.existsSync(LIBRARIES_JS_PATH)) {
+    warn(`${path.relative(ROOT, LIBRARIES_JS_PATH)} not found — skipping library registry cross-check`);
+    return;
+  }
+
+  let libraries;
+  let capabilities;
+  try {
+    const sandbox = { window: {} };
+    vm.createContext(sandbox);
+    vm.runInContext(fs.readFileSync(LIBRARIES_JS_PATH, 'utf8'), sandbox, { filename: 'libraries.js' });
+    libraries = sandbox.window.TT_LIBRARIES;
+    capabilities = sandbox.window.TT_LIBRARY_CAPABILITIES;
+  } catch (e) {
+    fail(path.relative(ROOT, LIBRARIES_JS_PATH), `failed to evaluate: ${e.message}`);
+    return;
+  }
+  const rel = path.relative(ROOT, LIBRARIES_JS_PATH);
+  if (!Array.isArray(libraries)) {
+    fail(rel, 'window.TT_LIBRARIES is not an array');
+    return;
+  }
+  if (!Array.isArray(capabilities)) {
+    fail(rel, 'window.TT_LIBRARY_CAPABILITIES is not an array');
+    return;
+  }
+
+  const capById = new Map(capabilities.filter(Boolean).map((c) => [c.id, c]));
+
+  for (const lib of libraries.filter(Boolean)) {
+    const where = `${rel} (${lib.id})`;
+
+    if (!lib.dir || !fs.existsSync(path.join(ROOT, lib.dir))) {
+      fail(where, `declares dir '${lib.dir}', which does not exist in the source tree`);
+    }
+
+    for (const capId of lib.capabilities || []) {
+      if (!capById.has(capId)) {
+        fail(where, `claims capability '${capId}', which is not declared in window.TT_LIBRARY_CAPABILITIES`);
+        continue;
+      }
+      // Rule 2: a transport tick must name the package behind it.
+      if (capId.startsWith('binding:')) {
+        const impl = (lib.transports || {})[capId];
+        if (!impl || !impl.package || !impl.dir) {
+          fail(
+            where,
+            `claims transport '${capId}' but names no package for it under \`transports\`. ` +
+            `A tick the build cannot trace to a directory is a claim nobody verified — ` +
+            `add { package, dir } or drop the capability.`
+          );
+        }
+      }
+    }
+
+    // Rule 4: `foundations` — the "could be built on" state — is evidence, not
+    // aspiration. Each entry must name a real capability, must NOT also be a
+    // shipped one (a cell cannot be both), and must name the package and a URL
+    // a reader can follow to check the claim. The build cannot resolve npm or
+    // pub.dev offline, so the URL is what keeps the claim honest in review.
+    for (const [capId, found] of Object.entries(lib.foundations || {})) {
+      if (!capById.has(capId)) {
+        fail(where, `lists a foundation for '${capId}', which is not declared in window.TT_LIBRARY_CAPABILITIES`);
+        continue;
+      }
+      if ((lib.capabilities || []).includes(capId)) {
+        fail(
+          where,
+          `lists '${capId}' as both shipped (capabilities) and merely reachable (foundations). ` +
+          `A cell is one or the other — once the library ships it, remove the foundation.`
+        );
+      }
+      if (!found || !found.package || !found.url) {
+        fail(
+          where,
+          `lists a foundation for '${capId}' without both a package and a url. ` +
+          `A "could be built on" claim with nothing named behind it is exactly the unverifiable ` +
+          `tick this guard exists to refuse.`
+        );
+      }
+    }
+
+    // Rule 1, second half: every named package exists.
+    for (const [capId, impl] of Object.entries(lib.transports || {})) {
+      if (!(lib.capabilities || []).includes(capId)) {
+        fail(where, `names a package for '${capId}' but does not list that capability — the matrix would not render it`);
+      }
+      if (impl && impl.dir && !fs.existsSync(path.join(ROOT, impl.dir))) {
+        fail(where, `names package '${impl.package}' at '${impl.dir}', which does not exist in the source tree`);
+      }
+    }
+  }
+
+  // Rule 3: every published binding has a row.
+  if (fs.existsSync(BINDINGS_DIR)) {
+    const rowFor = new Set(
+      capabilities.filter((c) => c && c.binding).map((c) => c.binding)
+    );
+    for (const slug of fs.readdirSync(BINDINGS_DIR, { withFileTypes: true })) {
+      if (!slug.isDirectory() || slug.name.startsWith('_') || slug.name.startsWith('.')) continue;
+      if (!rowFor.has(slug.name)) {
+        fail(
+          rel,
+          `binding '${slug.name}' is published under bindings/${slug.name}/ but has no row in ` +
+          `window.TT_LIBRARY_CAPABILITIES — it would be missing from the capability matrix entirely. ` +
+          `Add { id: "binding:${slug.name}", group: "Transports", binding: "${slug.name}", label, note }.`
+        );
+      }
+    }
+  }
+}
+
 function checkBindingRegistry() {
   if (!fs.existsSync(BINDINGS_DIR)) return;
   if (!fs.existsSync(BINDINGS_JS_PATH)) {
@@ -1701,6 +1842,7 @@ function main() {
   const validate = loadMetaValidator();
   checkCategoryTaxonomy();
   checkBindingRegistry();
+  checkLibraryRegistry();
   checkCommittedRecordMirror();
   checkBindingFrameworkTarget();
   checkBindingErrorSpecPin();
