@@ -31,7 +31,9 @@ function TTNav({ route, setRoute }) {
     // layer is optional (SPEC §4.11.1) and its evidence machinery is not yet
     // specified. Revisit the site's top-level story when that lands.
     { id: "ceremonies",      label: "Ceremonies" },
-    { id: "implementations", label: "Implementations" },
+    // `also` keeps the tab lit on the per-library deep dives, which route as
+    // `implementation` (singular) rather than the index's `implementations`.
+    { id: "implementations", label: "Implementations", also: ["implementation"] },
     { id: "registry",        label: "Registry" },
     { id: "schemas",         label: "Schemas", path: "schema" },
     { id: "categories",      label: "Categories" },
@@ -52,7 +54,7 @@ function TTNav({ route, setRoute }) {
               <li key={l.id}>
                 <a
                   href={l.id === "home" ? "/" : `/${l.path || l.id}`}
-                  className={route.name === l.id ? "active" : ""}
+                  className={route.name === l.id || (l.also || []).includes(route.name) ? "active" : ""}
                   onClick={(e) => { e.preventDefault(); setRoute({ name: l.id }); }}
                 >{l.label}</a>
               </li>

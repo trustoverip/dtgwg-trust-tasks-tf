@@ -2090,10 +2090,258 @@ function FrameworkSpecPage({ setRoute }) {
 /* ============================================================
    IMPLEMENTATIONS — reference Rust crates + quickstart
    ============================================================ */
+/* The library index at /implementations — all four reference libraries, and a
+ * matrix of what each one can actually do.
+ *
+ * The matrix is the point of the page. "Which languages are there" is a list;
+ * "can I do TSP from Dart" is the question a reader arrives with, and until this
+ * page existed the honest answer — no, transports are Rust-only today — was
+ * discoverable only by reading the source tree.
+ *
+ * Both lists come from assets/libraries.js and are checked against the source
+ * tree by `checkLibraryRegistry()` at build time, so a library cannot claim a
+ * transport it does not ship and a published binding cannot go unlisted.
+ */
 function ImplementationsPage({ setRoute }) {
+  const accent = (c) => `var(--tt-${c})`;
+  const libs = window.TT_LIBRARIES || [];
+  const caps = window.TT_LIBRARY_CAPABILITIES || [];
+
+  // Row groups, in first-seen order, so the matrix keeps the ordering
+  // libraries.js declares rather than an alphabetical one nobody chose.
+  const groups = [];
+  for (const c of caps) if (!groups.includes(c.group)) groups.push(c.group);
+
+  const has = (lib, capId) => (lib.capabilities || []).includes(capId);
+
+  const bindingHref = (slug) => {
+    const all = (window.TT_BINDINGS || []).filter(b => b.slug === slug);
+    if (all.length === 0) return null;
+    const latest = all.slice().sort((a, b) => {
+      const pa = a.version.split(".").map(Number), pb = b.version.split(".").map(Number);
+      return (pb[0] - pa[0]) || (pb[1] - pa[1]);
+    })[0];
+    return { slug, version: latest.version };
+  };
+
+  const cellStyle = {
+    padding: "var(--tt-space-3) var(--tt-space-4)",
+    borderTop: "1px solid var(--tt-border)",
+    textAlign: "center",
+    verticalAlign: "middle",
+  };
+
+  return (
+    <React.Fragment>
+      <PageHero
+        eyebrow="Reference libraries"
+        title="Four languages, one contract."
+        lede="Trust Tasks has four reference client libraries. All four generate a typed payload for every specification in the registry and implement the SPEC §7.2 consumer pipeline, and a cross-language conformance check holds them to the same verdict on the same document. Transport bindings are where they differ."
+      >
+        <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
+          <a className="btn btn--ghost" href="/bindings" onClick={(e) => { e.preventDefault(); setRoute({ name: "bindings" }); }}>Transport bindings →</a>
+          <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
+        </div>
+      </PageHero>
+
+      {/* THE LIBRARIES */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Published libraries</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>{libs.length} reference {libs.length === 1 ? "library" : "libraries"}.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            Each is generated from the same registry and published to its own language's package registry. Pick the one your consumer is written in; the wire format is identical either way.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
+            {libs.map(lib => (
+              <article
+                key={lib.id}
+                style={{
+                  border: "1px solid var(--tt-border)",
+                  borderLeft: `3px solid ${accent(lib.accent)}`,
+                  padding: "var(--tt-space-5) var(--tt-space-6)",
+                  background: "var(--tt-surface-elev)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
+                  <div>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(lib.accent), marginBottom: "var(--tt-space-1)" }}>
+                      {lib.language} · {lib.registry}
+                    </div>
+                    <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{lib.name}</h3>
+                    <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)" }}>
+                      {lib.tagline}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "var(--tt-space-4)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                    {lib.docsUrl && (
+                      <a href={lib.docsUrl} target="_blank" rel="noreferrer" style={{ color: accent(lib.accent), borderBottom: 0 }}>Docs →</a>
+                    )}
+                    <a href={lib.packageUrl} target="_blank" rel="noreferrer" style={{ color: accent(lib.accent), borderBottom: 0 }}>{lib.registry} →</a>
+                    <a href={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/${lib.dir}`} target="_blank" rel="noreferrer" style={{ color: accent(lib.accent), borderBottom: 0 }}>Source →</a>
+                  </div>
+                </div>
+
+                <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{linkifySpec(lib.summary, setRoute)}</p>
+
+                <CodeBlock json={lib.install} language="sh" />
+
+                {lib.detail === "rust" && (
+                  <p style={{ marginTop: "var(--tt-space-4)", marginBottom: 0, fontSize: "var(--tt-text-sm)" }}>
+                    <a href="/implementations/rust" onClick={(e) => { e.preventDefault(); setRoute({ name: "implementation", id: "rust" }); }}>
+                      Crate-by-crate walkthrough, with worked examples →
+                    </a>
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* CAPABILITY MATRIX */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>What supports what</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Capability matrix.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            The core rows are deliberately uniform — a document that one library accepts, all four accept, and <code>check-bindings</code> fails the build if they diverge. The transport rows are where the libraries genuinely differ, and the honest summary today is that <strong>transport bindings ship in Rust only</strong>. Every library carries the transport seam, so a binding can be written against any of them.
+          </p>
+
+          <div style={{ overflowX: "auto", marginTop: "var(--tt-space-6)", border: "1px solid var(--tt-border)", background: "var(--tt-surface-elev)" }}>
+            <table style={{ borderCollapse: "collapse", width: "100%", minWidth: "42rem" }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "var(--tt-space-4)", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--tt-text-muted)", fontWeight: 400 }}>
+                    Capability
+                  </th>
+                  {libs.map(lib => (
+                    <th key={lib.id} style={{ padding: "var(--tt-space-4)", textAlign: "center", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(lib.accent), fontWeight: 400, whiteSpace: "nowrap" }}>
+                      {lib.language}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {groups.map(group => (
+                  <React.Fragment key={group}>
+                    <tr>
+                      <td
+                        colSpan={libs.length + 1}
+                        style={{
+                          padding: "var(--tt-space-4) var(--tt-space-4) var(--tt-space-2)",
+                          borderTop: "1px solid var(--tt-border)",
+                          fontFamily: "var(--tt-font-mono)",
+                          fontSize: "var(--tt-text-xs)",
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "var(--tt-text-muted)",
+                          background: "var(--tt-surface)",
+                        }}
+                      >
+                        {group}
+                      </td>
+                    </tr>
+                    {caps.filter(c => c.group === group).map(cap => {
+                      const link = cap.binding ? bindingHref(cap.binding) : null;
+                      return (
+                        <tr key={cap.id}>
+                          <th scope="row" style={{ textAlign: "left", padding: "var(--tt-space-3) var(--tt-space-4)", borderTop: "1px solid var(--tt-border)", fontWeight: 400, verticalAlign: "top" }}>
+                            <div>
+                              {link ? (
+                                <a href={`/binding/${link.slug}/${link.version}`} onClick={(e) => { e.preventDefault(); setRoute({ name: "binding", slug: link.slug, version: link.version }); }}>
+                                  {cap.label}
+                                </a>
+                              ) : cap.label}
+                            </div>
+                            <div style={{ color: "var(--tt-text-muted)", fontSize: "var(--tt-text-sm)", marginTop: "var(--tt-space-1)", maxWidth: "46ch" }}>
+                              {linkifySpec(cap.note, setRoute)}
+                            </div>
+                          </th>
+                          {libs.map(lib => {
+                            const supported = has(lib, cap.id);
+                            const impl = (lib.transports || {})[cap.id];
+                            return (
+                              <td key={lib.id} style={cellStyle}>
+                                {supported ? (
+                                  <React.Fragment>
+                                    <span aria-label={`${lib.language}: supported`} title={`${lib.language}: supported`} style={{ color: accent(lib.accent), fontSize: "1.1em" }}>●</span>
+                                    {impl && (
+                                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)", whiteSpace: "nowrap" }}>
+                                        {impl.package}
+                                      </div>
+                                    )}
+                                  </React.Fragment>
+                                ) : (
+                                  <span aria-label={`${lib.language}: not available`} title={`${lib.language}: not available`} style={{ color: "var(--tt-border)" }}>—</span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-5)", fontSize: "var(--tt-text-sm)", maxWidth: "62ch" }}>
+            A dash means the library does not ship that capability — not that the capability is unreachable from it. Where a library ships no Data Integrity verifier, for instance, the <code>ProofVerifier</code> seam is still there and you supply the backend; that is deliberate, because the cryptosuite is the consumer's choice rather than the framework's.
+          </p>
+        </div>
+      </section>
+
+      <hr className="protocol-rule container" aria-hidden="true" />
+
+      {/* CONFORMANCE */}
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Why the core rows are identical</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>The libraries are checked against each other.</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            Each library is generated by its own generator, with its own <code>$ref</code> inliner and its own reading of a specification's front matter. That duplication is deliberate: a build step compares every specification's declared policy and shipped schema across all four, so a mistake in one generator shows up as a disagreement with the other three rather than as output that is consistently wrong and consistently clean.
+          </p>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
+            The hand-written §7.2 pipelines are held together the same way — each mirrors the others check for check, with the same test set in four languages, because two reference implementations that disagree about what conforms are worse than one.
+          </p>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+/* The Rust deep dive, at /implementations/rust.
+ *
+ * This page used to BE /implementations, titled "trust-tasks for Rust." — which
+ * was accurate when Rust was the only library and became a quiet lie once
+ * TypeScript, Go and Dart shipped: the nav said "Implementations" and the page
+ * described one. /implementations is now the index across all four, and this is
+ * what it links to for the workspace that has the transports.
+ */
+function RustImplementationPage({ setRoute }) {
   const accent = (c) => `var(--tt-${c})`;
 
   const crates = [
+    {
+      name: "trust-tasks",
+      accent: "navy",
+      role: "Facade · start here",
+      tagline: "One dependency line for the whole framework.",
+      summary:
+        "The front door. The framework ships as independently-versioned crates because each transport binding drags in a different and heavy dependency tree, and you should only pay for the one you use. This crate re-exports the rest behind Cargo features, so you pick a transport rather than a set of version numbers. Everything in it is a `pub use` — dropping the facade later is a find-and-replace, not a migration.",
+      bullets: [
+        "features = [\"tsp\"] / [\"https\"] / [\"didcomm\"] / [\"didcomm-v1\"]",
+        "features = [\"proof-affinidi\"] — W3C Data Integrity verification",
+        "features = [\"ceremony\"], [\"capability-client\"]",
+        "trust_tasks::TrustTask IS trust_tasks_rs::TrustTask",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks",
+    },
     {
       name: "trust-tasks-tsp",
       accent: "sky",
@@ -2158,6 +2406,36 @@ function ImplementationsPage({ setRoute }) {
       repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm",
     },
     {
+      name: "trust-tasks-didcomm-v1",
+      accent: "coral",
+      role: "DIDComm v1 binding",
+      tagline: "Carriage to Aries-lineage agents.",
+      summary:
+        "The framework's other DIDComm binding targets v2.1. Credo — and therefore essentially every Aries-lineage wallet — speaks v1 and only v1, so without this there is no way for those stacks to carry a Trust Task at all. Maps the connection's theirDid into the framework's §4.8.1 identity precedence.",
+      bullets: [
+        "pack_trust_task / unpack_trust_task over the v1 envelope",
+        "Connection theirDid → transport-authenticated peer",
+        "Built on affinidi-messaging-didcomm-v1",
+        "For peers that have not moved to DIDComm v2",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm-v1",
+    },
+    {
+      name: "trust-tasks-ceremony",
+      accent: "amber",
+      role: "Trust Ceremony verification",
+      tagline: "Receipt checking over a ceremony definition.",
+      summary:
+        "Verification for the flow layer of SPEC §4.11. A ceremony composes several Trust Tasks into one flow, a trust-ceremony-receipt attests that one enactment of it completed, and this crate checks that attestation — salted step digests, receipt checking, and completion-rule evaluation against the definition.",
+      bullets: [
+        "Salted per-enactment step digests (§4.11)",
+        "Receipt verification against a ceremony definition",
+        "Completion-rule evaluation",
+        "Independent of trust-tasks-rs — no transport, no envelope",
+      ],
+      repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-ceremony",
+    },
+    {
       name: "trust-tasks-proof",
       accent: "amber",
       role: "Proof verifiers",
@@ -2191,18 +2469,24 @@ function ImplementationsPage({ setRoute }) {
     },
   ];
 
-  const cargoToml = `[dependencies]
-trust-tasks-rs = "0.2"
+  // No version numbers: `cargo add` resolves the current one, and a pinned
+  // literal here went stale the moment the workspace moved past 0.2 — this
+  // snippet still claimed "0.2" at 0.21.
+  const cargoToml = `# The facade re-exports every crate behind a feature, so you pick a
+# transport rather than a set of version numbers. TSP is preferred.
+cargo add trust-tasks --features tsp,proof-affinidi
 
-# Pick the transport binding(s) you need. TSP is the preferred binding:
-trust-tasks-tsp     = "0.2"
-trust-tasks-https   = "0.2"
-trust-tasks-didcomm = "0.2"
+# Or depend on the crates directly:
+cargo add trust-tasks-rs
+cargo add trust-tasks-tsp        # preferred transport binding
+cargo add trust-tasks-https
+cargo add trust-tasks-didcomm
+cargo add trust-tasks-didcomm-v1
 
 # Optional: W3C Data Integrity proof verification. The default feature
-# pulls in the Affinidi backend; use default-features = false for a bare
+# pulls in the Affinidi backend; use --no-default-features for a bare
 # umbrella ready to receive other backends.
-trust-tasks-proof = "0.2"`;
+cargo add trust-tasks-proof`;
 
   const loopbackSnippet = `use chrono::Utc;
 use trust_tasks_rs::{
@@ -2354,10 +2638,11 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
       <PageHero
         eyebrow="Reference implementation · Rust"
         title="trust-tasks for Rust."
-        lede="A reference Rust implementation of the Trust Tasks framework — seven crates that together cover the framework envelope, three transport bindings, a W3C Data Integrity proof verifier, a shared capability wire client, and a codegen tool that turns registry specs into typed payload modules."
+        lede="A reference Rust implementation of the Trust Tasks framework — nine published crates covering the framework envelope, four transport bindings, a W3C Data Integrity proof verifier, Trust Ceremony helpers and a shared capability wire client, plus a codegen tool that turns registry specs into typed payload modules."
       >
         <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
           <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
+          <a className="btn btn--ghost" href="/implementations" onClick={(e) => { e.preventDefault(); setRoute({ name: "implementations" }); }}>← All reference libraries</a>
           <a className="btn btn--ghost" href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>Read the framework specification →</a>
         </div>
       </PageHero>
@@ -2366,7 +2651,7 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
       <section style={{ paddingBlock: "var(--tt-space-7)" }}>
         <div className="container">
           <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>Workspace at a glance</span>
-          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Six publishable crates, one codegen tool.</h2>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>Nine published crates, one codegen tool.</h2>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>
             Each crate is independently usable. <code>trust-tasks-tsp</code> is the preferred
             transport binding; the core <code>trust-tasks-rs</code> library underpins every
@@ -2420,10 +2705,12 @@ let resolved = handler.resolve_parties(&received)?;     // §4.8.1 cross-check
           <span className="eyebrow">Quickstart</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Add to your Cargo.toml.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
-            The crates are published on crates.io and track framework 0.2. Add the core library plus the
-            transport binding(s) you need — <code>trust-tasks-tsp</code> is the preferred binding. MSRV is 1.95.
+            The crates are published on crates.io. Add the core library plus the transport
+            binding(s) you need — <code>trust-tasks-tsp</code> is the preferred binding.
+            The crates version over their own API rather than over the framework, so take
+            the current version from crates.io rather than pinning what this page says.
           </p>
-          <CodeBlock json={cargoToml} language="toml" />
+          <CodeBlock json={cargoToml} language="sh" />
 
           <h2 style={{ marginTop: "var(--tt-space-7)" }}>Minimal loopback: producer ↔ consumer in-process.</h2>
           <p style={{ color: "var(--tt-text-muted)" }}>
@@ -3074,5 +3361,5 @@ function CeremonyPage({ slug, version, setRoute }) {
 }
 
 Object.assign(window, {
-  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, BindingsPage, BindingSpecPage, CeremoniesPage, CeremonyPage
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, RustImplementationPage, BindingsPage, BindingSpecPage, CeremoniesPage, CeremonyPage
 });
