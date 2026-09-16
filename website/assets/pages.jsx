@@ -2264,16 +2264,21 @@ function ImplementationsPage({ setRoute }) {
                           {libs.map(lib => {
                             const supported = has(lib, cap.id);
                             const impl = (lib.transports || {})[cap.id];
+                            const found = !supported ? (lib.foundations || {})[cap.id] : null;
+                            const pkgLabel = { fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)", whiteSpace: "nowrap" };
                             return (
                               <td key={lib.id} style={cellStyle}>
                                 {supported ? (
                                   <React.Fragment>
-                                    <span aria-label={`${lib.language}: supported`} title={`${lib.language}: supported`} style={{ color: accent(lib.accent), fontSize: "1.1em" }}>●</span>
-                                    {impl && (
-                                      <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)", whiteSpace: "nowrap" }}>
-                                        {impl.package}
-                                      </div>
-                                    )}
+                                    <span aria-label={`${lib.language}: ships`} title={`${lib.language}: ships`} style={{ color: accent(lib.accent), fontSize: "1.1em" }}>●</span>
+                                    {impl && <div style={pkgLabel}>{impl.package}</div>}
+                                  </React.Fragment>
+                                ) : found ? (
+                                  <React.Fragment>
+                                    <span aria-label={`${lib.language}: not built yet — could be built on ${found.package}`} title={`Not built yet — could be built on ${found.package}`} style={{ color: accent(lib.accent), fontSize: "1.1em" }}>◐</span>
+                                    <div style={pkgLabel}>
+                                      <a href={found.url} target="_blank" rel="noreferrer" style={{ color: "var(--tt-text-muted)" }}>{found.package}</a>
+                                    </div>
                                   </React.Fragment>
                                 ) : (
                                   <span aria-label={`${lib.language}: not available`} title={`${lib.language}: not available`} style={{ color: "var(--tt-border)" }}>—</span>
@@ -2290,8 +2295,17 @@ function ImplementationsPage({ setRoute }) {
             </table>
           </div>
 
+          <div style={{ display: "flex", gap: "var(--tt-space-6)", flexWrap: "wrap", marginTop: "var(--tt-space-4)", fontSize: "var(--tt-text-sm)", color: "var(--tt-text-muted)" }}>
+            <span><span style={{ color: "var(--tt-accent)" }}>●</span> &nbsp;Ships — install it today</span>
+            <span><span style={{ color: "var(--tt-accent)" }}>◐</span> &nbsp;Not built yet — a published package exists to build it on</span>
+            <span><span style={{ color: "var(--tt-border)" }}>—</span> &nbsp;Neither</span>
+          </div>
+
           <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-5)", fontSize: "var(--tt-text-sm)", maxWidth: "62ch" }}>
-            A dash means the library does not ship that capability — not that the capability is unreachable from it. Where a library ships no Data Integrity verifier, for instance, the <code>ProofVerifier</code> seam is still there and you supply the backend; that is deliberate, because the cryptosuite is the consumer's choice rather than the framework's.
+            A half circle is <strong>evidence, not a roadmap</strong>. It means a published package in that language already provides the underlying protocol — named beneath the mark, and linked so you can check — so a binding is a matter of writing the adapter rather than implementing the protocol. It does not mean anyone has committed to building it.
+          </p>
+          <p style={{ color: "var(--tt-text-muted)", fontSize: "var(--tt-text-sm)", maxWidth: "62ch" }}>
+            A dash means neither a shipped binding nor a known foundation. TSP is dashed everywhere outside Rust for that reason: there is no Trust Spanning Protocol implementation published for TypeScript, Go or Dart. And where a library ships no Data Integrity verifier, the <code>ProofVerifier</code> seam is still there and you supply the backend — deliberately, because the cryptosuite is the consumer's choice rather than the framework's.
           </p>
         </div>
       </section>

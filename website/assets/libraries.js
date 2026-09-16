@@ -20,6 +20,19 @@
       incomplete, which is how `didcomm/0.2` and `didcomm-v1/0.1`
       stayed invisible on this site (see CLAUDE.md).
 
+   ── Three states, not two ───────────────────────────────
+   `capabilities` is what a library SHIPS — you can install it
+   today. `foundations` is what a library could be BUILT ON:
+   a published package in that language that provides the
+   underlying protocol, named so the claim is checkable rather
+   than aspirational. A dash means neither.
+
+   A `foundations` entry is evidence, NOT a roadmap commitment.
+   Only add one where the named package genuinely exists and
+   does the thing — `tsp` on pub.dev is the Travelling
+   Salesperson Problem and `tsp-sdk` on npm is an empty security
+   placeholder, which is why TSP is dashed everywhere but Rust.
+
    ⚠️ NO VERSION NUMBERS LIVE HERE. Every install line uses its
    registry's own "latest" idiom, so the page cannot go stale
    between releases — the previous ecosystem entry claimed
@@ -176,6 +189,10 @@ window.TT_LIBRARIES = [
       "transport-seam",
     ],
     transports: {},
+    foundations: {
+      "binding:https": { package: "fetch (built in)", url: "https://developer.mozilla.org/docs/Web/API/Fetch_API" },
+      "binding:didcomm": { package: "didcomm", url: "https://www.npmjs.com/package/didcomm" },
+    },
   },
   {
     id: "go",
@@ -194,6 +211,9 @@ window.TT_LIBRARIES = [
       "transport-seam",
     ],
     transports: {},
+    foundations: {
+      "binding:https": { package: "net/http (standard library)", url: "https://pkg.go.dev/net/http" },
+    },
   },
   {
     id: "dart",
@@ -213,5 +233,12 @@ window.TT_LIBRARIES = [
       "transport-seam",
     ],
     transports: {},
+    // Verified against pub.dev: these packages exist and provide the protocol.
+    // Nothing in trust_tasks uses them yet — see the note under the matrix.
+    foundations: {
+      "binding:https": { package: "package:http", url: "https://pub.dev/packages/http" },
+      "binding:didcomm": { package: "didcomm", url: "https://pub.dev/packages/didcomm" },
+      proof: { package: "ssi", url: "https://pub.dev/packages/ssi" },
+    },
   },
 ];

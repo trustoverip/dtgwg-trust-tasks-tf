@@ -1602,6 +1602,33 @@ function checkLibraryRegistry() {
       }
     }
 
+    // Rule 4: `foundations` — the "could be built on" state — is evidence, not
+    // aspiration. Each entry must name a real capability, must NOT also be a
+    // shipped one (a cell cannot be both), and must name the package and a URL
+    // a reader can follow to check the claim. The build cannot resolve npm or
+    // pub.dev offline, so the URL is what keeps the claim honest in review.
+    for (const [capId, found] of Object.entries(lib.foundations || {})) {
+      if (!capById.has(capId)) {
+        fail(where, `lists a foundation for '${capId}', which is not declared in window.TT_LIBRARY_CAPABILITIES`);
+        continue;
+      }
+      if ((lib.capabilities || []).includes(capId)) {
+        fail(
+          where,
+          `lists '${capId}' as both shipped (capabilities) and merely reachable (foundations). ` +
+          `A cell is one or the other — once the library ships it, remove the foundation.`
+        );
+      }
+      if (!found || !found.package || !found.url) {
+        fail(
+          where,
+          `lists a foundation for '${capId}' without both a package and a url. ` +
+          `A "could be built on" claim with nothing named behind it is exactly the unverifiable ` +
+          `tick this guard exists to refuse.`
+        );
+      }
+    }
+
     // Rule 1, second half: every named package exists.
     for (const [capId, impl] of Object.entries(lib.transports || {})) {
       if (!(lib.capabilities || []).includes(capId)) {
