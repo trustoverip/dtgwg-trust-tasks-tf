@@ -26,26 +26,50 @@
 
 set -euo pipefail
 
-PKG_DIR="trust-tasks-ts"
+# Which npm package to release. The core defaults; the sibling packages
+# (@openvtc/trust-tasks-proof, @openvtc/trust-tasks-tsp) pass their own name.
+# Each has its own directory, release branch, tag prefix and watch set — the one
+# place they differ — mirroring scripts/release-dart-pr.sh.
+PKG="${1:-@openvtc/trust-tasks}"
+case "$PKG" in
+  @openvtc/trust-tasks)
+    PKG_DIR="trust-tasks-ts"
+    BRANCH="release-ts"
+    TAG_PREFIX="trust-tasks-ts-v"
+    # specs/** and the generator because the bindings under trust-tasks-ts/src
+    # are generated from them.
+    WATCH=("specs" "$PKG_DIR" "scripts/build-ts-bindings.mjs")
+    ;;
+  @openvtc/trust-tasks-proof)
+    PKG_DIR="trust-tasks-ts-proof"
+    BRANCH="release-ts-proof"
+    TAG_PREFIX="trust-tasks-ts-proof-v"
+    WATCH=("$PKG_DIR")
+    ;;
+  @openvtc/trust-tasks-tsp)
+    PKG_DIR="trust-tasks-ts-tsp"
+    BRANCH="release-ts-tsp"
+    TAG_PREFIX="trust-tasks-ts-tsp-v"
+    WATCH=("$PKG_DIR")
+    ;;
+  *)
+    echo "::error::unknown TS package '$PKG'"
+    exit 1
+    ;;
+esac
 MANIFEST="$PKG_DIR/package.json"
 CHANGELOG="$PKG_DIR/CHANGELOG.md"
-BRANCH="release-ts"
-
-# Everything that can change what this package publishes. `specs/**` is here
-# because the bindings under `trust-tasks-ts/src` are generated from it, and
-# `scripts/build-ts-bindings.mjs` because it is the generator.
-WATCH=("specs" "$PKG_DIR" "scripts/build-ts-bindings.mjs")
 
 name=$(node -p "require('./$MANIFEST').name")
 current=$(node -p "require('./$MANIFEST').version")
 
 # ── Where the last release was ───────────────────────────────────────────────
-tag=$(git tag -l 'trust-tasks-ts-v*' --sort=-version:refname | head -1)
+tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
 if [ -z "$tag" ]; then
-  echo "::error::No trust-tasks-ts-v* tag exists, so there is no anchor to measure this release from. Seed it once at the currently-published version — see RELEASING.md, 'One-time migration'."
+  echo "::error::No ${TAG_PREFIX}* tag exists, so there is no anchor to measure this release from. Seed it once at the currently-published version — see RELEASING.md, 'One-time migration'."
   exit 1
 fi
-last="${tag#trust-tasks-ts-v}"
+last="${tag#"$TAG_PREFIX"}"
 
 if [ "$current" != "$last" ]; then
   # main already carries a version newer than the last tag: a release is merged
@@ -140,13 +164,15 @@ fi
 # load-bearing part of this PR — it is what reaches npm — and a git-cliff
 # hiccup must not be able to block a release. A missing section is visible in
 # the PR diff and can be written by hand.
+cliff_paths=()
+for w in "${WATCH[@]}"; do
+  if [ -d "$w" ]; then cliff_paths+=(--include-path "$w/**"); else cliff_paths+=(--include-path "$w"); fi
+done
 if section=$(git-cliff --config cliff.toml \
   --strip header \
   --tag "v$next" \
   --unreleased \
-  --include-path 'trust-tasks-ts/**' \
-  --include-path 'specs/**' \
-  --include-path 'scripts/build-ts-bindings.mjs' \
+  "${cliff_paths[@]}" \
   "$range" 2>/dev/null) && [ -n "$section" ]; then
   SECTION="$section" node -e '
     const fs = require("fs");
@@ -175,6 +201,7 @@ git push --force origin "$BRANCH"
 
 # ── Open or refresh the PR ───────────────────────────────────────────────────
 title="chore: release $name $next"
+watched=$(printf '`%s`, ' "${WATCH[@]}"); watched=${watched%, }
 # Written to a file rather than captured in `$(cat <<EOF)`: bash scans a
 # command substitution for quote balance, and an apostrophe in the heredoc body
 # ("publish.yml\'s") makes it read to end-of-file looking for a closing quote.
@@ -183,11 +210,10 @@ cat >"$body_file" <<EOF
 Release PR for the npm package, the counterpart to the release-plz PR for the
 crates. **Merging this is the release**: the \`publish-npm\` job in
 \`publish.yml\` sees a version that is not on npm, publishes it with OIDC
-provenance, and tags \`trust-tasks-ts-v$next\`.
+provenance, and tags \`${TAG_PREFIX}$next\`.
 
 - \`$name\`: \`$last\` → \`$next\` (\`$level\`)
-- derived from the conventional commits in \`$range\` touching \`specs/\`,
-  \`trust-tasks-ts/\` or \`scripts/build-ts-bindings.mjs\`
+- derived from the conventional commits in \`$range\` touching $watched
 
 This branch is regenerated from \`main\` on every push, so do not commit to it —
 edits are force-pushed away. See RELEASING.md.

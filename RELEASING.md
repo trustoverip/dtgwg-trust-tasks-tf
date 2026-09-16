@@ -73,10 +73,21 @@ no hand-written entries.
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
 
-> ⚠️ **The two sibling TS packages (`-proof`, `-tsp`) are built and tested but
-> not auto-published yet.** Generalising `publish-npm`/`release-ts-pr` into a
-> package matrix (as the Dart side did) is a dedicated follow-up; each also needs
-> npm trusted-publishing set up on its first publish, like every registry here.
+> ⚠️ **First publish of each new npm package is manual**, the same chicken-and-egg
+> as pub.dev: npm trusted publishing cannot create a package that does not exist.
+> Once per new package (`@openvtc/trust-tasks-proof`, `@openvtc/trust-tasks-tsp`):
+> 1. `cd <dir> && npm ci && npm run build && npm publish --access public` (scoped
+>    packages default to private; `--access public` is required).
+> 2. On npmjs.com, the package → **Settings → Trusted Publisher → GitHub Actions**,
+>    repo `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
+> 3. Seed the release anchor tag once, at the published version:
+>    `git tag -a <prefix>-v<version> -m "<name> <version>" && git push origin <prefix>-v<version>`
+>    (e.g. `trust-tasks-ts-proof-v0.1.0`). `release-ts-pr.sh` measures the next
+>    bump from it.
+>
+> After that the package rides the matrix: `publish-npm` and `release-ts-pr` run
+> once per package (keyed on its directory and `<prefix>-v` tag), and the first
+> *automated* release is the version after the manual one.
 | `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
 | `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
