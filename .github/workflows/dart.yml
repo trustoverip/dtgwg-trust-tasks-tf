@@ -120,3 +120,59 @@ jobs:
       - name: Run the runtime conformance tests and the smoke test
         working-directory: trust-tasks-dart
         run: dart test
+
+  # The hand-written packages built on trust_tasks: at present the Data
+  # Integrity verifier. Each is held to the same bar as the core — analysis with
+  # --fatal-infos, formatting at its own SDK floor, and its tests on that floor
+  # and on stable.
+  #
+  # They resolve `trust_tasks` from the tree (pubspec_overrides.yaml), so a PR
+  # that changes the core and its consumer together is tested together. Whether
+  # a package also works against the *published* core is a release question,
+  # asked by `tag-dart` in publish.yml.
+  packages:
+    name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 3.6 is the floor ssi 3.9 sets; see the pubspec.
+          - package: trust-tasks-dart-proof
+            sdk: "3.6"
+          - package: trust-tasks-dart-proof
+            sdk: stable
+          # The pubspec accepts ssi 3.9.6 up to, not including, 5 — deliberately,
+          # so it can share a graph with package:didcomm, which pins ssi 3. pub
+          # picks 4.x above, so pin the other major here or it is never tested.
+          - package: trust-tasks-dart-proof
+            sdk: stable
+            ssi: "3.9.6"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Pin ssi
+        if: matrix.ssi
+        working-directory: ${{ matrix.package }}
+        run: |
+          printf '  ssi: %s\n' "${{ matrix.ssi }}" >> pubspec_overrides.yaml
+      - name: Install dependencies
+        working-directory: ${{ matrix.package }}
+        run: |
+          dart pub get
+          dart pub deps --style=compact | grep -E '^- (ssi|trust_tasks) '
+      - name: Analyze
+        working-directory: ${{ matrix.package }}
+        run: dart analyze --fatal-infos
+      - name: Check formatting
+        if: matrix.sdk == 'stable' && !matrix.ssi
+        working-directory: ${{ matrix.package }}
+        run: |
+          floor=$(sed -n 's/^ *sdk: *^\{0,1\}\([0-9]*\.[0-9]*\).*/\1/p' pubspec.yaml | head -1)
+          echo "formatting at language version $floor"
+          dart format --output=none --set-exit-if-changed --language-version="$floor" .
+      - name: Test
+        working-directory: ${{ matrix.package }}
+        run: dart test

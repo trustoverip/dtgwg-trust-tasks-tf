@@ -1,0 +1,42 @@
+name: trust_tasks_proof
+# 60-180 characters: pub.dev scores a description outside that window as a
+# failed pubspec check, because search results only show the first part of it.
+description: >-
+  W3C Data Integrity proof verification for Trust Tasks: a ProofVerifier for
+  package:trust_tasks, built on Affinidi's ssi library.
+version: 0.1.0
+repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
+issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
+documentation: https://trusttasks.org/implementations
+
+environment:
+  # 3.6 is the floor ssi 3.9 sets, and 3.9 is the ssi major package:didcomm
+  # depends on. See the `ssi` constraint below.
+  sdk: ^3.6.0
+
+dependencies:
+  trust_tasks: ^0.1.0
+
+  # A range spanning two majors, deliberately.
+  #
+  # package:didcomm 2.3.4 pins ssi ^3.9.4. If this package required ssi ^4, a
+  # consumer adding both trust_tasks_proof and trust_tasks_didcomm would fail to
+  # resolve at all. Spanning both lets pub pick 3.9 when didcomm is present and
+  # 4.x when it is not.
+  #
+  # It is safe only because every ssi API this package calls is identical in
+  # both majors — verified by a sign/verify/tamper/spoof round trip on 3.9.6 and
+  # 4.2.0 before this was written. The cost is ML-DSA: its verifiers exist only
+  # in ssi 4, so they cannot be called here. See the README.
+  #
+  # The floor is 3.9.6, not didcomm's 3.9.4: ssi 3.9.0-3.9.5 allow x25519
+  # 0.1.2, which removed functions they call, so they no longer compile.
+  ssi: ">=3.9.6 <5.0.0"
+
+  # SHA-256 and SHA-384 for the JCS hash data signTrustTask builds. ssi already
+  # depends on it, so this adds nothing to a consumer's graph.
+  crypto: ^3.0.6
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.26.3

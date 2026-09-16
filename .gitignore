@@ -37,10 +37,15 @@ infra/cloudfront/dist*.json
 # Agent scratch worktrees — never part of a spec change.
 .claude/worktrees/
 
-# Dart bindings package build state. `pubspec.lock` is deliberately NOT
-# committed: Dart's convention is that an application pins its lockfile and a
-# library does not, because a library's constraints are resolved against the
-# consuming app's. `trust_tasks` is a library.
-trust-tasks-dart/.dart_tool/
-trust-tasks-dart/pubspec.lock
-trust-tasks-dart/build/
+# Dart package build state, for trust-tasks-dart and every trust-tasks-dart-*
+# package beside it. `pubspec.lock` is deliberately NOT committed: Dart's
+# convention is that an application pins its lockfile and a library does not,
+# because a library's constraints are resolved against the consuming app's.
+# Every package here is a library.
+#
+# `pubspec_overrides.yaml` IS committed, in the packages that depend on
+# `trust_tasks`: it points them at the in-tree core, the way the Rust crates use
+# `path =` dependencies. `dart pub publish` leaves it out of the archive.
+trust-tasks-dart*/.dart_tool/
+trust-tasks-dart*/pubspec.lock
+trust-tasks-dart*/build/

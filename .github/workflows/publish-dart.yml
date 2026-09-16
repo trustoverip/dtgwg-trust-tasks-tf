@@ -19,6 +19,20 @@ name: Publish Dart
 # After that, pushing `trust-tasks-dart-v<version>` publishes that version, and
 # pub.dev refuses if the tag's version does not match `pubspec.yaml`.
 #
+# ── More than one package ───────────────────────────────────────────────────
+#
+# Every Dart package in this repository publishes from this one workflow, each
+# under its own tag prefix, and each needs the two steps above done for it —
+# with ITS tag pattern:
+#
+#   trust_tasks        trust-tasks-dart/         trust-tasks-dart-v{{version}}
+#   trust_tasks_proof  trust-tasks-dart-proof/   trust-tasks-dart-proof-v{{version}}
+#
+# The patterns cannot collide: `trust-tasks-dart-v` never prefixes
+# `trust-tasks-dart-proof-v`. Adding a package means a row here, a tag pattern
+# below, a `case` arm in `resolve`, and an entry in the `tag-dart` and
+# `release-dart-pr` matrices in publish.yml.
+#
 # ⚠ A tag pushed by the default GITHUB_TOKEN does NOT trigger this workflow —
 # GitHub suppresses workflow runs for events authored by it. The `tag-dart` job
 # in publish.yml warns when it had only that token to push with. In that case
@@ -29,9 +43,44 @@ on:
   push:
     tags:
       - "trust-tasks-dart-v[0-9]+.[0-9]+.[0-9]+"
+      - "trust-tasks-dart-proof-v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
+  # Which package the tag names, and whether that version is already on pub.dev.
+  #
+  # The second question exists because of the first publish. A new package must
+  # be uploaded by hand (see step 1 above), after which merging it still writes
+  # its tag — and without this check that tag would run a publish pub.dev is
+  # certain to refuse, leaving a red run on a release that in fact succeeded.
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      directory: ${{ steps.pkg.outputs.directory }}
+      published: ${{ steps.pkg.outputs.published }}
+    steps:
+      - id: pkg
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          case "$TAG" in
+            trust-tasks-dart-proof-v*) dir=trust-tasks-dart-proof; name=trust_tasks_proof; version=${TAG#trust-tasks-dart-proof-v} ;;
+            trust-tasks-dart-v*)       dir=trust-tasks-dart;       name=trust_tasks;       version=${TAG#trust-tasks-dart-v} ;;
+            *) echo "::error::$TAG names no known Dart package"; exit 1 ;;
+          esac
+          echo "directory=$dir" >> "$GITHUB_OUTPUT"
+          status=$(curl -s -o /dev/null -w '%{http_code}' "https://pub.dev/api/packages/$name/versions/$version")
+          if [ "$status" = "200" ]; then
+            echo "::notice::$name $version is already on pub.dev (published by hand?) — nothing to do."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::publishing $name $version from $dir/"
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
   publish:
+    needs: resolve
+    if: needs.resolve.outputs.published != 'true'
     # The Dart team's own reusable workflow, which they strongly encourage over
     # a hand-rolled `dart pub publish`: it does the OIDC exchange, verifies the
     # tag against pubspec.yaml, and runs a dry run before the real publish.
@@ -39,4 +88,4 @@ jobs:
       id-token: write # required for OIDC; no long-lived pub.dev credential exists
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
     with:
-      working-directory: trust-tasks-dart
+      working-directory: ${{ needs.resolve.outputs.directory }}
