@@ -121,6 +121,21 @@ jobs:
         working-directory: trust-tasks-dart
         run: dart test
 
+  # Five hand-maintained files each list the Dart packages (see the script's
+  # header). #483 left the tag-dart matrix with an entry that had no `dir`; the
+  # YAML was valid, so only a failed release showed it.
+  package-lists:
+    name: Dart package lists agree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check-dart-packages
+
   # The hand-written packages built on trust_tasks: the Data Integrity proofs
   # and the HTTPS and DIDComm bindings. Each is held to the same bar as the core — analysis with
   # --fatal-infos, formatting at its own SDK floor, and its tests on that floor

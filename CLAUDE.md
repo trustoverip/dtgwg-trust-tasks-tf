@@ -98,6 +98,7 @@ defects three times.
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
+| `npm run check-dart-packages` | the five files naming the Dart packages (`publish.yml`'s two matrices, `publish-dart.yml`, `release-dart-pr.sh`, `dart.yml`) name the same packages with the same dirs and tag prefixes | whether a package's first manual publish and trusted-publishing setup happened |
 | `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
 | the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI`, `TrustTaskErrorTypeURI` and `trustTaskErrorTypeUri` all name the same version | whether that version is the right one to have adopted |
 
@@ -367,7 +368,8 @@ are not obvious:
   dartdoc fails for every package that depends on it — ssi itself included.
   The lost 10 are the documentation check, and nothing here can recover them.
 - A new Dart package needs entries in five places and a manual first publish;
-  RELEASING.md lists them.
+  RELEASING.md lists them, and `npm run check-dart-packages` fails until the
+  five agree.
 
 `trust-tasks-dart-https` publishes as `trust_tasks_https`, the HTTPS binding.
 

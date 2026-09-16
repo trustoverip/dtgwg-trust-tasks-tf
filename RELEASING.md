@@ -271,6 +271,8 @@ usually fixes it, because the missing crate is on crates.io by then.
   `release-dart-pr` in `publish.yml`, a tag pattern and a `case` arm in
   `publish-dart.yml`, a `case` arm in `scripts/release-dart-pr.sh`, a matrix
   entry in the `packages` job in `dart.yml`, and the manual first publish above.
+  `npm run check-dart-packages` (a required-able job in `dart.yml`) fails until
+  the five agree.
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to
   own, no token to rotate and no Trusted Publisher to misconfigure. The one

@@ -16,6 +16,7 @@
     "test:infra": "node --test infra/cloudfront/*.test.mjs",
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",
+    "check-dart-packages": "node scripts/check-dart-packages.mjs",
     "check-bindings": "node scripts/check-bindings-conformance.mjs"
   },
   "engines": {
