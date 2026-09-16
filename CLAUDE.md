@@ -583,6 +583,26 @@ binding on Affinidi's `package:didcomm`.
   payload is the same `{type, document}` envelope object the Rust crate seals —
   a test pins the two shapes equal.
 
+`trust-tasks-dart-capability-client` publishes as `trust_tasks_capability_client`,
+the Dart port of the Rust `trust-tasks-capability-client` crate: **pure wire
+logic, no crypto** — document builders for the `governance/capability/*` and
+`git-trust/*` families, envelope parsing, and reply classification. Notes:
+
+- **Outcomes and replies are sealed hierarchies** (`WriteOutcome`,
+  `CapabilityReply`), like the core's, so a `switch` is exhaustive. Idempotent
+  success is keyed on the SPEC §8.5 extended error **code** (both snake_case and
+  lowerCamelCase spellings), never the non-normative free-text `message` — the
+  free-text path is opt-in via `ReplyPolicy`, matching the Rust/TS/Go ports.
+- **It reuses the core's `slugFromTypeUri`** (which throws on a non-Trust-Task
+  URI, so `slugOf` wraps it and returns `null`); the response-variant check is a
+  `#response` suffix test. Sign built documents with `package:trust_tasks_proof`.
+- **Like `trust_tasks_tsp` it is tested but not released yet** — it is in the
+  `dart.yml` `packages` job but deliberately absent from the release matrices
+  (`tag-dart`, `release-dart-pr`), `publish-dart.yml` and `release-dart-pr.sh`,
+  which `check-dart-packages` permits. Unlike `tsp`, nothing blocks it (it has no
+  unpublished dependency): the first pub.dev publish is manual, and adding the
+  five release entries + flipping the website matrix cell is a clean follow-up.
+
 ## Build / validate / publish
 
 ```sh

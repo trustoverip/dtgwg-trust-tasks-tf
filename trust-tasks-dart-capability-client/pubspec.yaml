@@ -1,0 +1,20 @@
+name: trust_tasks_capability_client
+# 60-180 characters: pub.dev scores a description outside that window as a
+# failed pubspec check, because search results only show the first part of it.
+description: >-
+  Client-side wire helpers for the capability Trust Task families: document
+  builders and reply classification for governance/capability and git-trust.
+version: 0.1.0
+repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
+issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
+documentation: https://trusttasks.org/implementations
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  trust_tasks: ^0.1.0
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.26.3

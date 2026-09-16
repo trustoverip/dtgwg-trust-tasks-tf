@@ -187,6 +187,13 @@ jobs:
             sdk: "3.8"
           - package: trust-tasks-dart-tsp
             sdk: stable
+          # Pure wire logic, no crypto or transport dep — 3.4 is its own floor.
+          # Tested here but NOT in the release matrices yet: its first pub.dev
+          # publish is manual, and the release wiring + website flip follow that.
+          - package: trust-tasks-dart-capability-client
+            sdk: "3.4"
+          - package: trust-tasks-dart-capability-client
+            sdk: stable
     steps:
       - uses: actions/checkout@v6
       - uses: dart-lang/setup-dart@v1

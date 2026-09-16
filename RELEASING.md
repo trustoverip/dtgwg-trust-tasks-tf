@@ -302,6 +302,13 @@ usually fixes it, because the missing crate is on crates.io by then.
   would fail on the unpublished hosted dependency. When `affinidi_tsp` reaches
   pub.dev: remove the git override from `trust-tasks-dart-tsp/pubspec_overrides.yaml`,
   add the four release entries, and do the manual first publish.
+
+  **`trust_tasks_capability_client` is also tested-but-unreleased**, but for a
+  different reason: nothing blocks it (it depends only on the published
+  `trust_tasks`). It is in the `dart.yml` `packages` job and left out of the
+  release entries purely because its first pub.dev publish is manual — do that
+  publish, add the five entries above, and flip its website matrix cell to
+  shipped, as one follow-up.
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to
   own, no token to rotate and no Trusted Publisher to misconfigure. The one
