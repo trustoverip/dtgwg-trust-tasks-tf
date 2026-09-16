@@ -2,7 +2,7 @@
 #
 # Opens or updates the Release PR for one Dart package.
 #
-#   scripts/release-dart-pr.sh [trust_tasks|trust_tasks_proof|trust_tasks_https]
+#   scripts/release-dart-pr.sh [trust_tasks|trust_tasks_proof|trust_tasks_https|trust_tasks_didcomm]
 #
 # Defaults to `trust_tasks`. Each package has its own tag prefix, its own
 # release branch and its own PR, because each is published to pub.dev on its
@@ -68,6 +68,12 @@ case "$PKG" in
     BRANCH="release-dart-https"
     VERSION_FILE=""
     # Only its own tree, for the same reason as trust_tasks_proof.
+    WATCH=("$PKG_DIR")
+    ;;
+  trust_tasks_didcomm)
+    PKG_DIR="trust-tasks-dart-didcomm"
+    BRANCH="release-dart-didcomm"
+    VERSION_FILE=""
     WATCH=("$PKG_DIR")
     ;;
   *)

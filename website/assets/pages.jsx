@@ -2095,7 +2095,7 @@ function FrameworkSpecPage({ setRoute }) {
  *
  * The matrix is the point of the page. "Which languages are there" is a list;
  * "can I do TSP from Dart" is the question a reader arrives with, and until this
- * page existed the honest answer — no, transports are Rust-only today — was
+ * page existed the honest answer — no, TSP is Rust-only — was
  * discoverable only by reading the source tree.
  *
  * Both lists come from assets/libraries.js and are checked against the source

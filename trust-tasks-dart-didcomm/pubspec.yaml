@@ -1,0 +1,28 @@
+name: trust_tasks_didcomm
+# 60-180 characters: pub.dev scores a description outside that window as a
+# failed pubspec check, because search results only show the first part of it.
+description: >-
+  The Trust Tasks DIDComm v2.1 transport binding for Dart: authcrypt envelopes
+  in and out, and the SPEC section 7.2 pipeline with duplicate-execution guard.
+version: 0.1.0
+repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
+issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
+documentation: https://trusttasks.org/implementations
+
+environment:
+  # The floor package:didcomm sets.
+  sdk: ^3.6.0
+
+dependencies:
+  trust_tasks: ^0.1.0
+  # Affinidi's DIDComm v2.1 implementation: ECDH-1PU authcrypt, and the
+  # addressing-consistency checks between the envelope and the message.
+  didcomm: ^2.3.4
+  # For DidManager and DidDocument, which didcomm's API is expressed in. The
+  # range matches trust_tasks_proof's, so the two share one resolution;
+  # didcomm 2.3 itself pins ssi 3.
+  ssi: ">=3.9.6 <5.0.0"
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.26.3

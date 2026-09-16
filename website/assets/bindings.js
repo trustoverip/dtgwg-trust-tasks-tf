@@ -47,6 +47,11 @@ window.TT_BINDINGS = [
         href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-https",
         language: "Rust",
       },
+      {
+        name: "trust_tasks_https",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-https",
+        language: "Dart",
+      },
     ],
   },
   {
@@ -106,6 +111,11 @@ window.TT_BINDINGS = [
         name: "trust-tasks-didcomm",
         href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm",
         language: "Rust",
+      },
+      {
+        name: "trust_tasks_didcomm",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-didcomm",
+        language: "Dart",
       },
     ],
   },

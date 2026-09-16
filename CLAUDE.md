@@ -386,6 +386,23 @@ are not obvious:
 - It deliberately has no dependency on `trust_tasks_proof`: its SDK floor is
   3.3, the proof package's is 3.6, and a server takes any `ProofVerifier`.
 
+`trust-tasks-dart-didcomm` publishes as `trust_tasks_didcomm`, the DIDComm v2.1
+binding on Affinidi's `package:didcomm`.
+
+- **The sender is the `skid` of the ECDH-1PU layer**, found in the layers
+  `unpackToPlainTextMessage` reports; the wrapping is judged from those layers,
+  not from didcomm's error text. A fragment-less `skid` is an error, never a
+  silent "no sender".
+- **`allowedSenders` is checked before decryption.** Opening an envelope
+  resolves the sender's DID, which for `did:web` is a fetch from a host the
+  sender picked.
+- **An authenticated body that does not deserialise is answered**
+  (`malformedRequest`, §4) rather than thrown, because the sender is known.
+  Only an envelope-layer failure throws.
+- `package:didcomm` 2.3 pins ssi 3, so this package resolves ssi 3.9.x whatever
+  its own range says; the range matches `trust_tasks_proof`'s so the two share
+  one graph.
+
 ## Build / validate / publish
 
 ```sh
