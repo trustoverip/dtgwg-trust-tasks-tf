@@ -426,6 +426,18 @@ consumer takes the recipient's raw Ed25519/X25519 private keys and a
 Its sealed `{type, document}` envelope matches the Rust/Dart/Go bindings; refusals
 are `ErrorResponse` returns, not throws (the TS core's convention).
 
+`@openvtc/trust-tasks-capability-client` (dir `trust-tasks-ts-capability-client`)
+is the TypeScript port of the Rust `trust-tasks-capability-client` crate: **pure
+wire logic, no crypto and no transport** — document builders for the
+`governance/capability/*` and `git-trust/*` families, envelope parsing, and reply
+classification. It computes a Type URI's slug/response-variant from the string
+(the version is always the final path segment), rather than importing a parser.
+Idempotent success is keyed on the SPEC §8.5 extended error **code**, never the
+non-normative free-text `message` — the deprecated free-text path is opt-in via
+`ReplyPolicy`. Sign built documents with `@openvtc/trust-tasks-proof`. Like the
+other siblings, its first npm publish is manual and its publish wiring + website
+"shipped" flip follow that (RELEASING.md).
+
 ## ⚠️ The Dart package — where it differs from the other three
 
 `trust-tasks-dart` publishes to pub.dev as `trust_tasks`. It follows the
