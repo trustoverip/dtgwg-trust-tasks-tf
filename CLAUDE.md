@@ -339,6 +339,32 @@ because a Dart library is a file and not a directory. Four things are its own:
 Paths are snake_cased for Dart's `file_names` lint, so the slug
 `acl/change-role` becomes `lib/specs/acl/change_role/v0_1/payload.dart`.
 
+### The hand-written Dart packages beside it
+
+`trust-tasks-dart-proof` publishes as `trust_tasks_proof`: a Data Integrity
+`ProofVerifier` on Affinidi's `package:ssi`. Things that are not obvious:
+
+- **`pubspec_overrides.yaml` is committed** and points `trust_tasks` at
+  `../trust-tasks-dart`, the Dart form of a Rust `path =` dependency. pub never
+  publishes it. `tag-dart` deletes it before verifying a release, so the release
+  is checked against the *published* core.
+- **`ssi: ">=3.9.6 <5.0.0"` spans two majors on purpose.** `package:didcomm`
+  pins ssi 3, so requiring ssi 4 would make this package impossible to use
+  beside a DIDComm transport. The `packages` job in `dart.yml` tests with ssi
+  3.9.6 pinned as well as with whatever resolves. Do not narrow the range to get
+  ML-DSA without deciding that trade explicitly. The floor is 3.9.6 because
+  3.9.0–3.9.5 no longer compile against `x25519` 0.1.2.
+- **`created` without a zone designator is refused**, as `trust-tasks-proof`
+  refuses it. ssi's own generators emit exactly that (fixed upstream in
+  affinidi-ssi-dart#305, unreleased at the time of writing), which is why the
+  tests sign with their own helper and why the package does not sign yet.
+- **Expect 150/160 on pub.dev, not 160.** `pqcrypto` 0.4.1, a dependency of
+  ssi 4, ships a `dartdoc_options.yaml` naming a file it does not publish, so
+  dartdoc fails for every package that depends on it — ssi itself included.
+  The lost 10 are the documentation check, and nothing here can recover them.
+- A new Dart package needs entries in five places and a manual first publish;
+  RELEASING.md lists them.
+
 ## Build / validate / publish
 
 ```sh

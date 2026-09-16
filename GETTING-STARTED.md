@@ -439,7 +439,22 @@ Three Dart-specific things worth knowing:
 - **Absent and empty stay distinct for free** — `List<String>?` is null when
   absent and `[]` when present-and-empty, which several specs make load-bearing.
 
-Full detail is in [`trust-tasks-dart/README.md`](./trust-tasks-dart/README.md).
+`myVerifier` does not have to be yours to write. `trust_tasks_proof` is a
+Data Integrity verifier for `eddsa-jcs-2022` and `ecdsa-jcs-2019`, and it
+verifies what the Rust `trust-tasks-proof` crate signs:
+
+```console
+dart pub add trust_tasks_proof
+```
+
+```dart
+import 'package:trust_tasks_proof/trust_tasks_proof.dart';
+
+final myVerifier = DataIntegrityProofVerifier.forDidKey(); // did:key, no I/O
+```
+
+Full detail is in [`trust-tasks-dart/README.md`](./trust-tasks-dart/README.md)
+and [`trust-tasks-dart-proof/README.md`](./trust-tasks-dart-proof/README.md).
 
 ---
 

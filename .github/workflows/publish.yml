@@ -465,16 +465,31 @@ jobs:
   # run was triggered by a TAG push, which it checks in the OIDC token's claims.
   # So this job does not publish — it only writes the tag, and
   # `publish-dart.yml` (triggered by that tag) does the publishing.
+  #
+  # One matrix entry per Dart package. `max-parallel: 1` and the core first:
+  # a package built on `trust_tasks` is verified against the *published* core
+  # (below), so the core's tag has to have gone out before its consumers are
+  # judged. Adding a package: an entry here, one in `release-dart-pr`, and the
+  # tag pattern and `case` arm in publish-dart.yml.
   tag-dart:
-    name: Tag trust_tasks for pub.dev
+    name: Tag ${{ matrix.name }} for pub.dev
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
-    outputs:
-      tagged: ${{ steps.decide.outputs.should_tag }}
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        include:
+          - name: trust_tasks
+            dir: trust-tasks-dart
+            prefix: trust-tasks-dart-v
+          - name: trust_tasks_proof
+            dir: trust-tasks-dart-proof
+            prefix: trust-tasks-dart-proof-v
     concurrency:
-      group: tag-dart-${{ github.ref }}
+      group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
@@ -487,19 +502,22 @@ jobs:
 
       - name: Decide whether to tag
         id: decide
+        env:
+          DIR: ${{ matrix.dir }}
+          PREFIX: ${{ matrix.prefix }}
         run: |
           set -euo pipefail
-          version=$(sed -n 's/^version: *//p' trust-tasks-dart/pubspec.yaml | head -1 | tr -d '\r')
+          version=$(sed -n 's/^version: *//p' "$DIR/pubspec.yaml" | head -1 | tr -d '\r')
           if [ -z "$version" ]; then
-            echo "::error::Could not read \`version\` from trust-tasks-dart/pubspec.yaml"
+            echo "::error::Could not read \`version\` from $DIR/pubspec.yaml"
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          if git rev-parse -q --verify "refs/tags/trust-tasks-dart-v$version" >/dev/null; then
-            echo "::notice::trust-tasks-dart-v$version already tagged — skipping."
+          if git rev-parse -q --verify "refs/tags/$PREFIX$version" >/dev/null; then
+            echo "::notice::$PREFIX$version already tagged — skipping."
             echo "should_tag=false" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::trust-tasks-dart-v$version is new — tagging."
+            echo "::notice::$PREFIX$version is new — tagging."
             echo "should_tag=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -510,10 +528,16 @@ jobs:
 
       # Verify before tagging, not after: the tag is what pub.dev publishes from,
       # and a published version cannot be replaced — only superseded.
+      #
+      # pubspec_overrides.yaml is deleted first. In CI it points a package at
+      # the in-tree `trust_tasks`; a consumer gets the published one, so that is
+      # what a release must pass against. A package that needs core API nobody
+      # has released yet fails here, and the fix is to release the core first.
       - name: Verify the package before tagging
         if: steps.decide.outputs.should_tag == 'true'
-        working-directory: trust-tasks-dart
+        working-directory: ${{ matrix.dir }}
         run: |
+          rm -f pubspec_overrides.yaml
           dart pub get
           dart analyze --fatal-infos
           dart test
@@ -524,21 +548,23 @@ jobs:
       - name: Tag the release
         if: steps.decide.outputs.should_tag == 'true'
         env:
+          NAME: ${{ matrix.name }}
+          PREFIX: ${{ matrix.prefix }}
           VERSION: ${{ steps.decide.outputs.version }}
           HAVE_PAT: ${{ secrets.RELEASE_PLZ_TOKEN != '' }}
         run: |
           set -euo pipefail
-          tag="trust-tasks-dart-v$VERSION"
+          tag="$PREFIX$VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$tag" -m "trust_tasks $VERSION"
+          git tag -a "$tag" -m "$NAME $VERSION"
           git push origin "$tag"
           if [ "$HAVE_PAT" != "true" ]; then
             echo "::warning::$tag was pushed with the default GITHUB_TOKEN, so publish-dart.yml will NOT have been triggered and $VERSION is NOT on pub.dev. Delete and re-push the tag from a workstation to publish it: git push --delete origin $tag && git push origin $tag"
           fi
 
   release-dart-pr:
-    name: Release PR (trust_tasks)
+    name: Release PR (${{ matrix.name }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # MUST run after tag-dart, for the same reason release-ts-pr runs after
@@ -547,8 +573,14 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: trust_tasks
+          - name: trust_tasks_proof
     concurrency:
-      group: release-dart-pr-${{ github.ref }}
+      group: release-dart-pr-${{ matrix.name }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
@@ -564,10 +596,10 @@ jobs:
       - name: Install git-cliff
         uses: taiki-e/install-action@git-cliff
 
-      - name: Open or update the trust_tasks Release PR
+      - name: Open or update the ${{ matrix.name }} Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-dart-pr.sh
+        run: ./scripts/release-dart-pr.sh ${{ matrix.name }}
 
   release-ts-pr:
     name: Release PR (@openvtc/trust-tasks)

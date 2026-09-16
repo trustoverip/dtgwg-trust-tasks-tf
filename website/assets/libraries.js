@@ -227,18 +227,21 @@ window.TT_LIBRARIES = [
     install: "dart pub add trust_tasks",
     tagline: "Types and the §7.2 pipeline, for Dart and Flutter.",
     summary:
-      "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2).",
+      "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2). A separate package, trust_tasks_proof, puts a Data Integrity verifier built on Affinidi's ssi behind the ProofVerifier seam, and verifies what the Rust crate signs.",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
+      "proof",
     ],
-    transports: {},
+    transports: {
+      proof: { package: "trust_tasks_proof", dir: "trust-tasks-dart-proof" },
+    },
     // Verified against pub.dev: these packages exist and provide the protocol.
-    // Nothing in trust_tasks uses them yet — see the note under the matrix.
+    // Nothing in this repository uses them for a transport yet — see the note
+    // under the matrix.
     foundations: {
       "binding:https": { package: "package:http", url: "https://pub.dev/packages/http" },
       "binding:didcomm": { package: "didcomm", url: "https://pub.dev/packages/didcomm" },
-      proof: { package: "ssi", url: "https://pub.dev/packages/ssi" },
     },
   },
 ];

@@ -57,7 +57,7 @@ no hand-written entries.
 
 ## What gets published
 
-**Nine crates, one npm package, one Go module and one Dart package.**
+**Nine crates, one npm package, one Go module and two Dart packages.**
 `trust-tasks-codegen` sets
 `publish = false` in its own `Cargo.toml` — it is the internal generator.
 
@@ -72,6 +72,7 @@ no hand-written entries.
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
+| `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
 
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
@@ -118,6 +119,12 @@ conventional commits since the `trust-tasks-dart-v*` tag that touched `specs/`,
 declarations that must stay equal: `version:` in `pubspec.yaml` and
 `packageVersion` in `lib/src/runtime/version.dart`.
 
+**`chore: release trust_tasks_proof <version>`** — the same script run as
+`scripts/release-dart-pr.sh trust_tasks_proof`, on the `release-dart-proof`
+branch, measured from the `trust-tasks-dart-proof-v*` tag and watching only
+`trust-tasks-dart-proof/`. It moves `version:` alone; the package has no version
+constant.
+
 > ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
 > Dart bumps are only as accurate as the commit subjects: if a change breaks one
 > of those APIs and nobody wrote `!` in the PR title, the package ships a patch.
@@ -131,7 +138,7 @@ declarations that must stay equal: `version:` in `pubspec.yaml` and
 > exactly this reason. npm and crates.io both allow a short retraction window;
 > Go does not.
 
-The `release-ts`, `release-go` and `release-dart` branches are **regenerated
+The `release-ts`, `release-go`, `release-dart` and `release-dart-proof` branches are **regenerated
 from `main` on every push**. Do not commit to them — a force-push will take your
 work.
 
@@ -153,6 +160,16 @@ triggers `publish-dart.yml`, which publishes to pub.dev over OIDC. **pub.dev onl
 accepts a publish from a tag-triggered workflow** — it checks that in the OIDC
 token's claims — which is why Dart needs two workflows where the others need one.
 
+`tag-dart` is a matrix with one entry per Dart package, run one at a time with
+`trust_tasks` first. Each package is verified with its `pubspec_overrides.yaml`
+**deleted** — in CI that file points a package at the in-tree `trust_tasks`, but
+a consumer gets the published one. So a `trust_tasks_proof` release that relies
+on core API nobody has released yet fails verification and is not tagged;
+release the core first. `publish-dart.yml` looks up the tag's version on
+pub.dev before publishing and does nothing when it is already there, which is
+what keeps the tag written after a hand-published first version from turning
+into a failed run.
+
 > ⚠️ A tag pushed by the default `GITHUB_TOKEN` does **not** trigger a workflow.
 > Without `RELEASE_PLZ_TOKEN` set, `trust-tasks-dart-v<version>` lands and
 > nothing publishes. `tag-dart` prints a warning saying exactly that; the fix is
@@ -173,8 +190,8 @@ nothing, because every version is already on its registry.
 
 Re-run the job. All four sides are idempotent: `cargo publish` skips a crate
 already at that version, `publish-npm` skips a version already on npm,
-`publish-go` skips a version already tagged, and `tag-dart` skips a version whose
-tag exists. A re-run resumes rather than duplicating.
+`publish-go` skips a version already tagged, `tag-dart` skips a version whose
+tag exists, and `publish-dart.yml` skips a version already on pub.dev. A re-run resumes rather than duplicating.
 
 If the crates release dies mid-way with
 
@@ -233,6 +250,23 @@ usually fixes it, because the missing crate is on crates.io by then.
   will not accept a second upload of a version it already has, so re-pushing that
   tag proves nothing. `0.1.1` is the first release the automation actually
   performs end to end.
+
+  **The same applies to every new Dart package.** For `trust_tasks_proof`: once
+  its PR has merged, run `dart pub publish` from `trust-tasks-dart-proof/`
+  signed in as a user — it resolves `trust_tasks` from pub.dev, since
+  `pubspec_overrides.yaml` is not published, but locally that file still points
+  at the tree, so delete it first (and restore it with `git checkout`) to publish
+  against what consumers will get. Then enable publishing from GitHub Actions on
+  its Admin tab with tag pattern `trust-tasks-dart-proof-v{{version}}`. Merging
+  also tags `trust-tasks-dart-proof-v0.1.0`; whether that happens before or after
+  your manual upload, `publish-dart.yml` either finds the version already
+  published and skips, or fails with the message above and the manual upload
+  follows.
+
+  Adding another Dart package means: an entry in `tag-dart` and in
+  `release-dart-pr` in `publish.yml`, a tag pattern and a `case` arm in
+  `publish-dart.yml`, a `case` arm in `scripts/release-dart-pr.sh`, a matrix
+  entry in the `packages` job in `dart.yml`, and the manual first publish above.
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to
   own, no token to rotate and no Trusted Publisher to misconfigure. The one

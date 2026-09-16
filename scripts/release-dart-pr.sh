@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 #
-# Opens or updates the Release PR for the `trust_tasks` Dart package.
+# Opens or updates the Release PR for one Dart package.
+#
+#   scripts/release-dart-pr.sh [trust_tasks|trust_tasks_proof]
+#
+# Defaults to `trust_tasks`. Each package has its own tag prefix, its own
+# release branch and its own PR, because each is published to pub.dev on its
+# own schedule; the package table below is the single place they differ.
 #
 # The fourth of four. release-plz keeps the Release PR for the Rust crates;
 # scripts/release-ts-pr.sh does it for `@openvtc/trust-tasks`;
@@ -21,9 +27,10 @@
 # publish does not. `tag-dart` warns loudly in that case and the fix is to
 # re-push the tag from a workstation.
 #
-# Two versions must move together: `version:` in pubspec.yaml (what pub.dev
-# publishes) and `packageVersion` in lib/src/runtime/version.dart (what a
-# consumer can log). `npm run check-bindings` fails if they disagree.
+# For `trust_tasks`, two versions must move together: `version:` in pubspec.yaml
+# (what pub.dev publishes) and `packageVersion` in lib/src/runtime/version.dart
+# (what a consumer can log). `npm run check-bindings` fails if they disagree.
+# The other packages carry no version constant.
 #
 # It is idempotent: the target version is computed from the last TAG, never from
 # the branch, so re-running recomputes the same answer and force-pushes an
@@ -34,16 +41,37 @@
 
 set -euo pipefail
 
-PKG_DIR="trust-tasks-dart"
-PUBSPEC="$PKG_DIR/pubspec.yaml"
-VERSION_FILE="$PKG_DIR/lib/src/runtime/version.dart"
-CHANGELOG="$PKG_DIR/CHANGELOG.md"
-BRANCH="release-dart"
+PKG="${1:-trust_tasks}"
 
-# Everything that can change what this package publishes. `specs/**` is here
-# because the libraries under `trust-tasks-dart/lib/specs` are generated from it,
-# and `scripts/build-dart-bindings.mjs` because it is the generator.
-WATCH=("specs" "$PKG_DIR" "scripts/build-dart-bindings.mjs")
+# WATCH is everything that can change what the package publishes.
+case "$PKG" in
+  trust_tasks)
+    PKG_DIR="trust-tasks-dart"
+    BRANCH="release-dart"
+    VERSION_FILE="$PKG_DIR/lib/src/runtime/version.dart"
+    # `specs/**` because the libraries under `trust-tasks-dart/lib/specs` are
+    # generated from it, and `scripts/build-dart-bindings.mjs` because it is the
+    # generator.
+    WATCH=("specs" "$PKG_DIR" "scripts/build-dart-bindings.mjs")
+    ;;
+  trust_tasks_proof)
+    PKG_DIR="trust-tasks-dart-proof"
+    BRANCH="release-dart-proof"
+    VERSION_FILE=""
+    # Only its own tree. A core change that alters this package's behaviour
+    # reaches consumers through the core's release, not this one — the same
+    # separation as between trust-tasks-rs and trust-tasks-proof.
+    WATCH=("$PKG_DIR")
+    ;;
+  *)
+    echo "::error::unknown Dart package '$PKG'"
+    exit 1
+    ;;
+esac
+
+PUBSPEC="$PKG_DIR/pubspec.yaml"
+CHANGELOG="$PKG_DIR/CHANGELOG.md"
+TAG_PREFIX="$PKG_DIR-v"
 
 current=$(sed -n 's/^version: *//p' "$PUBSPEC" | head -1 | tr -d '\r')
 if [ -z "$current" ]; then
@@ -52,12 +80,12 @@ if [ -z "$current" ]; then
 fi
 
 # ── Where the last release was ───────────────────────────────────────────────
-tag=$(git tag -l 'trust-tasks-dart-v*' --sort=-version:refname | head -1)
+tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
 if [ -z "$tag" ]; then
-  echo "::error::No trust-tasks-dart-v* tag exists. tag-dart writes it once the package has a version with no matching tag — re-run that job rather than tagging by hand, because the tag is what pub.dev publishes from. See RELEASING.md."
+  echo "::error::No ${TAG_PREFIX}* tag exists. tag-dart writes it once the package has a version with no matching tag — re-run that job rather than tagging by hand, because the tag is what pub.dev publishes from. See RELEASING.md."
   exit 1
 fi
-last="${tag#trust-tasks-dart-v}"
+last="${tag#"$TAG_PREFIX"}"
 
 if [ "$current" != "$last" ]; then
   # main already carries a version newer than the last tag: a release is merged
@@ -69,7 +97,7 @@ fi
 
 # ── Is there anything to release? ────────────────────────────────────────────
 if git diff --quiet "$tag" HEAD -- "${WATCH[@]}"; then
-  echo "::notice::No changes to trust_tasks since $tag — nothing to release."
+  echo "::notice::No changes to $PKG since $tag — nothing to release."
   exit 0
 fi
 
@@ -97,7 +125,7 @@ next=$(LEVEL="$level" CURRENT="$last" node -e '
   else { console.log(`${maj + 1}.0.0`); }
 ')
 
-echo "::notice::trust_tasks $last -> $next ($level)"
+echo "::notice::$PKG $last -> $next ($level)"
 
 # ── Build the release commit ─────────────────────────────────────────────────
 # Author as the identity behind the release token, not as the bot: EasyCLA
@@ -129,33 +157,40 @@ NEXT="$next" node -e '
   if (out === raw) { console.error(`could not rewrite version in ${pubspec}`); process.exit(1); }
   fs.writeFileSync(pubspec, out);
 
-  // And the constant that mirrors it, leaving its doc comment untouched.
+  // And the constant that mirrors it, leaving its doc comment untouched —
+  // where the package has one. (An `if` block, not an early `return`: `node -e`
+  // runs this as a script, where a top-level return is a syntax error.)
   //
   // \x27 is a single quote: the JS below is already inside single quotes in the
   // shell, so a literal one would end the argument. The first attempt at this
   // regex used `[^.]*` for the version, which cannot match `0.1.0` at all — it
   // silently rewrote nothing, which at release time would have shipped a
   // pubspec and a constant that disagreed.
-  const src = fs.readFileSync(versionFile, "utf8");
-  const next = src.replace(
-    /^(const String packageVersion = \x27)[^\x27]*(\x27;)$/m,
-    `$1${v}$2`,
-  );
-  if (next === src) { console.error(`could not rewrite packageVersion in ${versionFile}`); process.exit(1); }
-  fs.writeFileSync(versionFile, next);
+  if (versionFile) {
+    const src = fs.readFileSync(versionFile, "utf8");
+    const next = src.replace(
+      /^(const String packageVersion = \x27)[^\x27]*(\x27;)$/m,
+      `$1${v}$2`,
+    );
+    if (next === src) { console.error(`could not rewrite packageVersion in ${versionFile}`); process.exit(1); }
+    fs.writeFileSync(versionFile, next);
+  }
 ' "$PUBSPEC" "$VERSION_FILE"
 
 # Changelog generation is best-effort ON PURPOSE. The version bump is the
 # load-bearing part of this PR — it is what decides the tag — and a git-cliff
 # hiccup must not be able to block a release. A missing section is visible in
 # the PR diff and can be written by hand.
+# The same paths as WATCH, as git-cliff globs.
+cliff_paths=()
+for w in "${WATCH[@]}"; do
+  if [ -d "$w" ]; then cliff_paths+=(--include-path "$w/**"); else cliff_paths+=(--include-path "$w"); fi
+done
 if section=$(git-cliff --config cliff.toml \
   --strip header \
   --tag "v$next" \
   --unreleased \
-  --include-path 'trust-tasks-dart/**' \
-  --include-path 'specs/**' \
-  --include-path 'scripts/build-dart-bindings.mjs' \
+  "${cliff_paths[@]}" \
   "$range" 2>/dev/null) && [ -n "$section" ]; then
   SECTION="$section" node -e '
     const fs = require("fs");
@@ -174,25 +209,25 @@ if git diff --quiet; then
   exit 0
 fi
 
-git add "$PUBSPEC" "$VERSION_FILE" "$CHANGELOG"
+git add "$PUBSPEC" "$CHANGELOG" ${VERSION_FILE:+"$VERSION_FILE"}
 # -s: DCO sign-off is mandatory on every commit in this repo.
-git commit -s -m "chore: release trust_tasks $next" -m \
-  "Automated by scripts/release-dart-pr.sh. Merging this PR tags trust-tasks-dart-v$next, and that tag is what publishes the package to pub.dev."
+git commit -s -m "chore: release $PKG $next" -m \
+  "Automated by scripts/release-dart-pr.sh. Merging this PR tags $TAG_PREFIX$next, and that tag is what publishes the package to pub.dev."
 git push --force origin "$BRANCH"
 
 # ── Open or refresh the PR ───────────────────────────────────────────────────
-title="chore: release trust_tasks $next"
+title="chore: release $PKG $next"
+watched=$(printf '`%s`, ' "${WATCH[@]}"); watched=${watched%, }
 body_file="$(mktemp)"
 cat >"$body_file" <<EOF
-Release PR for the Dart package, the counterpart to the release-plz PR for the
+Release PR for the Dart package \`$PKG\`, the counterpart to the release-plz PR for the
 crates and the \`release-ts\` / \`release-go\` PRs. **Merging this starts the
 release**: the \`tag-dart\` job in \`publish.yml\` verifies the package and pushes
-\`trust-tasks-dart-v$next\`, and that tag triggers \`publish-dart.yml\`, which
+\`$TAG_PREFIX$next\`, and that tag triggers \`publish-dart.yml\`, which
 publishes to pub.dev over OIDC.
 
-- \`trust_tasks\`: \`$last\` → \`$next\` (\`$level\`)
-- derived from the conventional commits in \`$range\` touching \`specs/\`,
-  \`trust-tasks-dart/\` or \`scripts/build-dart-bindings.mjs\`
+- \`$PKG\`: \`$last\` → \`$next\` (\`$level\`)
+- derived from the conventional commits in \`$range\` touching $watched
 
 Unlike the other three, pub.dev refuses a publish that was not triggered by a tag
 push — so the tag is a step in the chain rather than a record of one. If
