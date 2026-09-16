@@ -31,6 +31,40 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.0...trust-tasks-rs-v0.21.1) — 2026-09-16
+
+
+### Added
+
+- **vta/backup**: Chunked transfer over Trust Tasks for DIDComm/TSP-only agents ([#474](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/474))
+
+`vta/backup/*/1.0` required every descriptor to carry `transportUrl` and
+  `transportToken`, so an agent reachable only over DIDComm or TSP could
+  answer an export or import with nothing but `transportUnavailable`. This
+  specifies the `chunkedTrustTask` algorithm the 1.0 prose anticipated.
+
+  - `vta/backup/get-chunk/1.0` (client-pulled, non-consuming) and
+    `vta/backup/put-chunk/1.0` (idempotent per index, checked against a
+    pre-committed manifest).
+  - `initiate-export/1.1` and `initiate-import/1.1`: the descriptor is a
+    `oneOf` of the unchanged stream shape and a chunked shape carrying a
+    manifest (chunkSize, chunkCount, per-chunk DigestMultibase) instead of
+    an address and a bearer token. Released as a MINOR under SPEC §5.2's
+    draft rule; a recipient must not return a chunked descriptor unless it
+    was asked for one, so a stream exchange is wire-identical to 1.0.
+  - `finalize-import/1.1`: completeness and whole-bundle integrity are
+    checked before the password is used; adds `incompleteUpload` (with the
+    missing indices, for resume) and `bundleDigestMismatch`.
+  - `specs/vta/_shared/0.1/backup-transfer.schema.json` holds the shapes
+    the four tasks share.
+
+  The chunk-size ceiling is normative at 262144 bytes: the largest power
+  of two whose chunk document survives base64url, DIDComm authcrypt and
+  two nested forward wrappers under a 1 MiB mediator message limit.
+  chunkCount is capped at 4096 so the manifest fits in one message too.
+
+
+
 ## [0.21.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.20.7...trust-tasks-rs-v0.21.0) — 2026-09-16
 
 

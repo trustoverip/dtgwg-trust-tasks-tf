@@ -5042,7 +5042,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "affinidi-secrets-resolver",
  "chrono",
@@ -5053,21 +5053,21 @@ dependencies = [
  "trust-tasks-didcomm-v1",
  "trust-tasks-https",
  "trust-tasks-proof",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
  "trust-tasks-tsp",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "chrono",
  "serde",
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
  "uuid",
 ]
 
@@ -5104,7 +5104,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "affinidi-messaging-didcomm",
  "affinidi-messaging-sdk",
@@ -5119,13 +5119,13 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
  "async-trait",
@@ -5135,13 +5135,13 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",
@@ -5155,13 +5155,13 @@ dependencies = [
  "tokio",
  "tower",
  "trust-tasks-proof",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "affinidi-crypto",
  "affinidi-data-integrity",
@@ -5175,7 +5175,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
 ]
 
 [[package]]
@@ -5195,7 +5195,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5211,7 +5211,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "affinidi-tsp",
  "async-trait",
@@ -5220,7 +5220,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.21.0",
+ "trust-tasks-rs 0.21.1",
 ]
 
 [[package]]
