@@ -37,6 +37,6 @@ affinidi-did-resolver-cache-sdk = { version = "0.8", optional = true }
 
 [dev-dependencies]
 affinidi-secrets-resolver = "0.5"
-affinidi-did-common = "0.3"
+affinidi-did-common = "0.4"
 tokio = { version = "1", features = ["macros", "rt"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
