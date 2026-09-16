@@ -369,6 +369,23 @@ are not obvious:
 - A new Dart package needs entries in five places and a manual first publish;
   RELEASING.md lists them.
 
+`trust-tasks-dart-https` publishes as `trust_tasks_https`, the HTTPS binding.
+
+- **`HttpsServer.handle` is framework-agnostic** (`HttpsRequest` in,
+  `HttpsReply` out); `dart:io` lives only in `lib/io.dart`. Keep it that way:
+  importing `dart:io` from the main library would take the web away from the
+  client, which is the half a Flutter web app wants.
+- **Its request pipeline mirrors `trust-tasks-https/src/server.rs` step for
+  step**, including running identity, expiry and freshness *before* the
+  attribution gate — `consumeInbound` repeats them afterwards, harmlessly. A
+  reorder changes which code a document that fails two checks is refused with,
+  and the two servers would then disagree.
+- **Proofs are verified over the JSON as received**, not the typed re-encoding
+  `consumeInbound` would hand the verifier, which drops payload members the
+  generated type does not model and so breaks valid signatures.
+- It deliberately has no dependency on `trust_tasks_proof`: its SDK floor is
+  3.3, the proof package's is 3.6, and a server takes any `ProofVerifier`.
+
 ## Build / validate / publish
 
 ```sh

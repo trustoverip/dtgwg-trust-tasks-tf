@@ -488,6 +488,9 @@ jobs:
           - name: trust_tasks_proof
             dir: trust-tasks-dart-proof
             prefix: trust-tasks-dart-proof-v
+          - name: trust_tasks_https
+            dir: trust-tasks-dart-https
+            prefix: trust-tasks-dart-https-v
     concurrency:
       group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
@@ -583,6 +586,7 @@ jobs:
         include:
           - name: trust_tasks
           - name: trust_tasks_proof
+          - name: trust_tasks_https
     concurrency:
       group: release-dart-pr-${{ matrix.name }}-${{ github.ref }}
       cancel-in-progress: false
