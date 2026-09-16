@@ -173,3 +173,43 @@ jobs:
       - name: Test
         working-directory: trust-tasks-go/tsp
         run: go test -race ./...
+
+  # The Data Integrity proof backend is a SEPARATE Go module (trust-tasks-go/proof)
+  # like tsp — the core `./...` jobs above do not reach it. Unlike tsp it pulls in
+  # no third-party code (it rolls the cryptosuites on the standard library), so its
+  # only requirement is the core module, and there is no unpublished dependency
+  # blocking a release; wiring one is a follow-up.
+  proof:
+    name: go test trust-tasks-go/proof (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.22 is the `go` directive in proof/go.mod.
+        go: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Build
+        working-directory: trust-tasks-go/proof
+        run: go build ./...
+      - name: Vet
+        working-directory: trust-tasks-go/proof
+        run: go vet ./...
+      - name: gofmt
+        if: matrix.go == 'stable'
+        working-directory: trust-tasks-go/proof
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Test
+        working-directory: trust-tasks-go/proof
+        run: go test -race ./...
