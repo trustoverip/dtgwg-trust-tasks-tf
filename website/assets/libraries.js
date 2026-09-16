@@ -153,7 +153,7 @@ window.TT_LIBRARIES = [
     packageUrl: "https://crates.io/crates/trust-tasks-rs",
     docsUrl: "https://docs.rs/trust-tasks-rs",
     install: "cargo add trust-tasks --features https,proof-affinidi",
-    tagline: "The reference implementation, and the only one with transports today.",
+    tagline: "The reference implementation, and the only one with TSP and DIDComm v1.",
     summary:
       "A workspace of nine published crates: the core library and its generated payload types, four transport bindings, a W3C Data Integrity proof backend, and a shared capability wire client. The trust-tasks facade re-exports the rest behind Cargo features, so you pick a transport rather than a set of version numbers.",
     detail: "rust",
@@ -227,22 +227,17 @@ window.TT_LIBRARIES = [
     install: "dart pub add trust_tasks",
     tagline: "Types and the §7.2 pipeline, for Dart and Flutter.",
     summary:
-      "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2). Two packages build on it and interoperate with their Rust counterparts: trust_tasks_proof puts a Data Integrity verifier and signer built on Affinidi's ssi behind the ProofVerifier seam, and trust_tasks_https is the HTTPS binding — a client that runs on the web and a server that runs the §7.2 pipeline per request.",
+      "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2). Two packages build on it and interoperate with their Rust counterparts: trust_tasks_proof puts a Data Integrity verifier and signer built on Affinidi's ssi behind the ProofVerifier seam, trust_tasks_https is the HTTPS binding — a client that runs on the web and a server that runs the §7.2 pipeline per request — and trust_tasks_didcomm is the DIDComm v2.1 binding on Affinidi's didcomm, with the duplicate-execution guard a mediated transport needs on by default.",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
-      "binding:https",
+      "binding:https", "binding:didcomm",
       "proof",
     ],
     transports: {
       "binding:https": { package: "trust_tasks_https", dir: "trust-tasks-dart-https" },
+      "binding:didcomm": { package: "trust_tasks_didcomm", dir: "trust-tasks-dart-didcomm" },
       proof: { package: "trust_tasks_proof", dir: "trust-tasks-dart-proof" },
-    },
-    // Verified against pub.dev: these packages exist and provide the protocol.
-    // Nothing in this repository uses them for a transport yet — see the note
-    // under the matrix.
-    foundations: {
-      "binding:didcomm": { package: "didcomm", url: "https://pub.dev/packages/didcomm" },
     },
   },
 ];
