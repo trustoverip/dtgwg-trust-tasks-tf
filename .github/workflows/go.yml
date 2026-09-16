@@ -253,3 +253,42 @@ jobs:
       - name: Test
         working-directory: trust-tasks-go/didcomm
         run: go test -race ./...
+
+  # The capability wire client is a SEPARATE Go module
+  # (trust-tasks-go/capabilityclient) like tsp/proof/didcomm, but pure wire logic
+  # — no crypto, no transport, and no third-party dependency (only the core
+  # module). The core `./...` jobs do not reach a nested module.
+  capabilityclient:
+    name: go test trust-tasks-go/capabilityclient (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.22 is the `go` directive in capabilityclient/go.mod.
+        go: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Build
+        working-directory: trust-tasks-go/capabilityclient
+        run: go build ./...
+      - name: Vet
+        working-directory: trust-tasks-go/capabilityclient
+        run: go vet ./...
+      - name: gofmt
+        if: matrix.go == 'stable'
+        working-directory: trust-tasks-go/capabilityclient
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Test
+        working-directory: trust-tasks-go/capabilityclient
+        run: go test -race ./...

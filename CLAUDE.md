@@ -400,6 +400,31 @@ authcrypt on the standard library.
   spec-standard and the primitives are vector-pinned, but byte-for-byte interop
   is not yet asserted the way the sealed TSP/proof envelopes are.
 
+### The `trust-tasks-go/capabilityclient` nested module
+
+The capability wire client is a **separate Go module** under
+`trust-tasks-go/capabilityclient`, like `tsp`/`proof`/`didcomm`, but it is
+**pure wire logic** — no crypto, no transport — the Go port of the Rust
+`trust-tasks-capability-client` crate. Document builders for the
+`governance/capability/*` and `git-trust/*` families, envelope parsing, and reply
+classification. No third-party dependency (only the core, for `Document` and
+`SlugFromTypeURI`).
+
+- **It reuses the core's `SlugFromTypeURI`** for a Type URI's slug (the core
+  strips the `#request`/`#response` fragment and validates the namespace); the
+  response-variant check is a `#response` suffix test.
+- **Idempotent success is keyed on the SPEC §8.5 extended error code**
+  (`git-trust/grant:already_granted` etc., both snake_case and lowerCamelCase),
+  never the non-normative free-text `message` — the free-text path is opt-in via
+  `ReplyPolicy`, matching the Rust and TypeScript ports.
+- **`NewAttempt` clears `proof` and re-stamps `id`/`issuedAt`** — a SPEC §8.4 new
+  attempt, distinct from a bit-for-bit retry the consumer's item-11 record
+  absorbs. Sign built documents with `trust-tasks-go/proof`.
+- **Core CI does not reach it**; a `capabilityclient` job in `go.yml` builds/vets/
+  tests it on the `go 1.22` floor. Keep the files gofmt-clean. `go get` works via
+  the proxy, so the website matrix lists the Go `capability-client` cell as
+  shipped.
+
 ## ⚠️ The hand-written TypeScript packages
 
 `@openvtc/trust-tasks-proof` (dir `trust-tasks-ts-proof`) is the first sibling
