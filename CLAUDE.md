@@ -340,9 +340,17 @@ package to the core `@openvtc/trust-tasks`. Notes:
 - **Tests compile to `.test-build/` and import from `../src`** (the core's
   convention), run with `node --test`. The npm package ships `dist/` only.
 - **Release wiring is not generalised yet.** `publish-npm` and `release-ts-pr`
-  are single-package; the next TS package (TSP) turns them into a matrix, the way
-  the Dart side did. Until then the proof package is tested in `ts.yml` but not
-  auto-published.
+  are single-package; a dedicated follow-up turns them into a matrix over
+  `trust-tasks-ts`, `trust-tasks-ts-proof` and `trust-tasks-ts-tsp` (the way the
+  Dart side did, parameterising `release-ts-pr.sh` like `release-dart-pr.sh`).
+  Until then the sibling packages are tested in `ts.yml` but not auto-published.
+
+`@openvtc/trust-tasks-tsp` (dir `trust-tasks-ts-tsp`) is the TSP binding on
+`@openvtc/vti-tsp-js`, which is **key-based and does no DID resolution** — the
+consumer takes the recipient's raw Ed25519/X25519 private keys and a
+`resolveSender(vid)` callback for the sender's public keys (the Go-style model).
+Its sealed `{type, document}` envelope matches the Rust/Dart/Go bindings; refusals
+are `ErrorResponse` returns, not throws (the TS core's convention).
 
 ## ⚠️ The Dart package — where it differs from the other three
 
