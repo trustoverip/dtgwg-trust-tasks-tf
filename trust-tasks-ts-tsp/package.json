@@ -1,0 +1,28 @@
+{
+  "name": "@openvtc/trust-tasks-tsp",
+  "version": "0.1.0",
+  "description": "The ToIP Trust Spanning Protocol transport binding for Trust Tasks: HPKE-sealed envelopes and the SPEC 7.2 pipeline, on @openvtc/vti-tsp-js.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "git+https://github.com/trustoverip/dtgwg-trust-tasks-tf.git", "directory": "trust-tasks-ts-tsp" },
+  "homepage": "https://trusttasks.org/implementations",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
+  },
+  "dependencies": {
+    "@openvtc/trust-tasks": "^0.19.0",
+    "@openvtc/vti-tsp-js": "^0.2.0"
+  },
+  "devDependencies": {
+    "@noble/curves": "^2.0.0",
+    "@noble/hashes": "^2.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
