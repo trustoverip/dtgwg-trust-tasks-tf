@@ -187,11 +187,13 @@ jobs:
             sdk: "3.8"
           - package: trust-tasks-dart-tsp
             sdk: stable
-          # Pure wire logic, no crypto or transport dep — 3.4 is its own floor.
-          # Tested here but NOT in the release matrices yet: its first pub.dev
-          # publish is manual, and the release wiring + website flip follow that.
+          # Pure wire logic, no crypto or transport dep. 3.6 is its floor — the
+          # minimum `lints` 5.1 (its only dev dependency) allows, same as
+          # trust-tasks-dart-proof. Tested here but NOT in the release matrices
+          # yet: its first pub.dev publish is manual, and the release wiring +
+          # website flip follow that.
           - package: trust-tasks-dart-capability-client
-            sdk: "3.4"
+            sdk: "3.6"
           - package: trust-tasks-dart-capability-client
             sdk: stable
     steps:
