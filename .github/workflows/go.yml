@@ -1,0 +1,131 @@
+name: Go
+
+on:
+  push:
+    branches: [main]
+  # No `branches:` filter, and no `paths:` filter, for the reasons spelled out at
+  # length in ts.yml: a stacked PR would otherwise run none of these jobs and
+  # report a green board made entirely of DCO and licence checks, and a
+  # path-filtered job cannot be made a *required* check — on a PR touching none
+  # of the listed paths it never runs, reports no status, and a required check
+  # blocks that PR forever waiting for something that will never arrive.
+  #
+  # These jobs are the guards that stop trust-tasks-go disagreeing with
+  # trust-tasks-rs and trust-tasks-ts about the wire contract, so they are worth
+  # being able to make required.
+  pull_request:
+
+env:
+  # The toolchain the single-version jobs use. The *minimum* the module supports
+  # is the `go` directive in trust-tasks-go/go.mod, and the build/test matrix
+  # below pins that value explicitly so the declared floor is proven rather than
+  # asserted — a module that says `go 1.22` and only ever builds on stable will
+  # happily accumulate a 1.25-ism nobody notices.
+  GO_VERSION: "stable"
+
+jobs:
+  # The Go mirror of codegen.yml's `codegen-drift` and ts.yml's `bindings-drift`:
+  # regenerate and fail if the committed output differs. A spec change that
+  # regenerated only two of the three libraries is exactly the defect this
+  # catches — it is what happened between Rust and TypeScript in #85 → #86.
+  #
+  # The generator gofmts its own output (see the note at the end of
+  # scripts/build-go-bindings.mjs), so this compares like with like and a
+  # contributor cannot introduce drift merely by not having Go installed.
+  bindings-drift:
+    name: build-go-bindings drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          # The module has no dependencies, so there is no go.sum to key a cache on.
+          cache: false
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Regenerate Go bindings
+        run: npm run build-go-bindings
+      - name: Check for drift
+        run: |
+          if ! git diff --quiet trust-tasks-go/specs; then
+            echo "::error::Go bindings are stale. Run \`npm run build-go-bindings\` and commit the diff. Do NOT bump a version — the Release PR does that; see RELEASING.md."
+            git diff --stat trust-tasks-go/specs
+            git diff trust-tasks-go/specs | head -200
+            exit 1
+          fi
+
+  build:
+    name: go build + vet (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.22 is the `go` directive in go.mod — the floor a consumer may be on.
+        # `stable` is what most will actually use. Bump the first only together
+        # with go.mod.
+        go: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          # The module has no dependencies, so there is no go.sum to key a cache on.
+          cache: false
+      - name: Build every generated package
+        working-directory: trust-tasks-go
+        run: go build ./...
+      - name: Vet
+        working-directory: trust-tasks-go
+        run: go vet ./...
+      # `gofmt -l` prints the files that are not formatted and exits 0 either
+      # way, so the emptiness of its output is the assertion. Only on `stable`:
+      # gofmt's output can differ between major Go versions, and the committed
+      # tree is formatted by whatever the generator ran, so checking it on the
+      # floor toolchain would assert something nobody promised.
+      - name: gofmt
+        if: matrix.go == 'stable'
+        working-directory: trust-tasks-go
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+  # The generated packages are only types and constants; the SPEC §7.2 consumer
+  # pipeline in trusttasks/ is hand-written, so unlike the rest of the module it
+  # can regress without the drift guard noticing. These are its conformance
+  # tests, and they mirror the sets in trust-tasks-rs/src/consume.rs and
+  # trust-tasks-ts/test/ — the three reference implementations must reach the
+  # same verdict on the same document.
+  #
+  # `./smoke` is the counterpart of `npm run smoke`: it imports a *generated*
+  # package and drives the real pipeline with it, which is the one thing neither
+  # the drift check nor the runtime tests do.
+  test:
+    name: go test (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          # The module has no dependencies, so there is no go.sum to key a cache on.
+          cache: false
+      - name: Run the runtime conformance tests and the smoke test
+        working-directory: trust-tasks-go
+        run: go test -race ./...

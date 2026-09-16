@@ -57,7 +57,7 @@ no hand-written entries.
 
 ## What gets published
 
-**Nine crates and one npm package.** `trust-tasks-codegen` sets
+**Nine crates, one npm package and one Go module.** `trust-tasks-codegen` sets
 `publish = false` in its own `Cargo.toml` — it is the internal generator.
 
 | Package | Registry |
@@ -69,6 +69,7 @@ no hand-written entries.
 | `trust-tasks-ceremony` | crates.io — Trust Ceremony helpers |
 | `trust-tasks-capability-client` | crates.io |
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
+| `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
 
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
@@ -80,7 +81,7 @@ published crate's whole dependency closure to be published too.
 
 ### 1. Review the Release PR(s)
 
-Two can be open at once. They are independent — merge either, both, or neither.
+Three can be open at once. They are independent — merge any, all, or none.
 
 **`chore: release` (release-plz, label `release`)** — the crates. It updates on
 every merge to `main` and contains the version bump for each changed crate and
@@ -99,14 +100,30 @@ is not.
 conventional commits since the `trust-tasks-ts-v*` tag that touched `specs/`,
 `trust-tasks-ts/` or `scripts/build-ts-bindings.mjs`.
 
-> ⚠️ **The npm side has no `cargo-semver-checks` equivalent.** Its bump is only
-> as accurate as the commit subjects: if a change breaks the TypeScript API and
-> nobody wrote `!` in the PR title, the package ships a patch. Check the diff
-> before merging. This is the one place the two halves of a release differ in
-> rigour.
+**`chore: release trust-tasks-go <version>`** — the Go module, on the
+`release-go` branch. Same shape again, computed by `scripts/release-go-pr.sh`
+from the conventional commits since the `trust-tasks-go/v*` tag that touched
+`specs/`, `trust-tasks-go/` or `scripts/build-go-bindings.mjs`.
 
-The `release-ts` branch is **regenerated from `main` on every push**. Do not
-commit to it — a force-push will take your work.
+Go has no manifest to bump, so the PR moves `const Version` in
+`trust-tasks-go/trusttasks/version.go`, which stands in for one. The tag is what
+actually publishes.
+
+> ⚠️ **Neither the npm nor the Go side has a `cargo-semver-checks` equivalent.**
+> Their bumps are only as accurate as the commit subjects: if a change breaks the
+> TypeScript or Go API and nobody wrote `!` in the PR title, the package ships a
+> patch. Check the diff before merging. This is the one place the three parts of
+> a release differ in rigour.
+
+> ⚠️ **A Go release cannot be unpublished.** `proxy.golang.org` caches a tag
+> permanently and by design, so a tag pushed over a tree that does not build is
+> served to every consumer forever and can only be superseded, never retracted.
+> `publish-go` runs `go build`, `go vet` and `go test` *before* tagging for
+> exactly this reason. npm and crates.io both allow a short retraction window;
+> Go does not.
+
+The `release-ts` and `release-go` branches are **regenerated from `main` on
+every push**. Do not commit to them — a force-push will take your work.
 
 ### 2. Merge it
 
@@ -120,14 +137,22 @@ Merging the npm PR triggers `publish-npm`, which builds the package, publishes
 it with OIDC provenance, and pushes the `trust-tasks-ts-v<version>` tag that the
 *next* npm Release PR measures from.
 
+Merging the Go PR triggers `publish-go`, which verifies the module builds and
+its tests pass, pushes the `trust-tasks-go/v<version>` tag, and asks
+`proxy.golang.org` to index it. That tag is both the publication and the anchor
+the *next* Go Release PR measures from — unlike the other two, there is no
+separate release tag, because the go tooling requires this exact spelling for a
+module in a subdirectory.
+
 Nothing else publishes. An ordinary feature merge runs the same jobs and they do
 nothing, because every version is already on its registry.
 
 ### 3. If it fails partway
 
-Re-run the job. Both sides are idempotent: `cargo publish` skips a crate already
-at that version, and `publish-npm` skips a version already on npm. A re-run
-resumes rather than duplicating.
+Re-run the job. All three sides are idempotent: `cargo publish` skips a crate
+already at that version, `publish-npm` skips a version already on npm, and
+`publish-go` skips a version already tagged. A re-run resumes rather than
+duplicating.
 
 If the crates release dies mid-way with
 
@@ -156,7 +181,13 @@ usually fixes it, because the missing crate is on crates.io by then.
   authored by the default `GITHUB_TOKEN`, so without it a Release PR opens with
   no CI on it — meaning the one commit that publishes would be the one commit CI
   never built. Until the token exists, **close and reopen the Release PR** to
-  trigger CI before merging it. This applies to both Release PRs.
+  trigger CI before merging it. This applies to all three Release PRs.
+- **Nothing at all for Go.** A Go module is published by pushing a tag to a
+  public repository; `proxy.golang.org` does the rest. There is no account to
+  own, no token to rotate and no Trusted Publisher to misconfigure. The one
+  thing it does require is that the repository stay **public** — the proxy
+  cannot fetch a private one, and `go get` would fall back to a direct clone
+  that most consumers cannot authenticate.
 
 ### One-time migration
 
@@ -177,15 +208,24 @@ for c in trust-tasks trust-tasks-rs trust-tasks-https trust-tasks-didcomm \
 done
 v=$(node -p "require('./trust-tasks-ts/package.json').version")
 git tag -s "trust-tasks-ts-v$v" -m "@openvtc/trust-tasks $v"
+v=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' trust-tasks-go/trusttasks/version.go)
+git tag -s "trust-tasks-go/v$v" -m "trust-tasks-go $v"
 git push origin --tags
 ```
+
+⚠️ The Go tag is the **only** one of these that is itself a publication: pushing
+`trust-tasks-go/v0.1.0` is what makes `go get …/trust-tasks-go@v0.1.0` resolve.
+Seed it only when the tree at that commit is the release you mean to ship —
+`proxy.golang.org` caches it permanently. The crate and npm tags are inert
+anchors by comparison; a wrong one can simply be moved.
 
 Without these:
 
 - the first crates Release PR bumps versions correctly but produces **empty
   changelog sections** — there is no range for it to read commits from;
 - the `release-ts-pr` job **fails loudly** with "No trust-tasks-ts-v\* tag
-  exists", by design, rather than proposing a bump from nothing.
+  exists", by design, rather than proposing a bump from nothing;
+- the `release-go-pr` job fails the same way, for the same reason.
 
 At the time of writing the tree and both registries agree exactly, which is what
 makes this migration clean:
@@ -205,7 +245,7 @@ makes this migration clean:
 
 ---
 
-## Why the npm package is released separately
+## Why the npm package and the Go module are released separately
 
 release-plz manages Rust and only Rust. It has **no pre- or post-release hook**
 and will not write a non-Rust manifest, so there is no supported way to make it
@@ -222,11 +262,18 @@ that a TypeScript-only change (a fix in the hand-written `src/_runtime`
 pipeline, which touches no crate) still gets a release, which it could not if it
 depended on release-plz having found something to do.
 
-`release-ts-pr` runs `needs: publish-npm` — **not** beside it. Both fire on the
-same push, and the tag `release-ts-pr` measures from is written by
-`publish-npm`. In parallel, the run that merges a TS release would compute its
-next bump against the *previous* tag and immediately reopen a Release PR for the
-release that had just gone out.
+The Go module is separate for a stronger reason still: it has no manifest at
+all. A Go module's version *is* its git tag, so there is nothing for release-plz
+or for a manifest-bumping script to write, and `scripts/release-go-pr.sh` moves
+a `const Version` that exists precisely to give the Release PR something to
+carry. See the comment on that constant.
+
+`release-ts-pr` runs `needs: publish-npm`, and `release-go-pr` runs
+`needs: publish-go` — **not** beside them. Both fire on the same push, and the
+tag each Release-PR job measures from is written by the publish job before it.
+In parallel, the run that merges a release would compute its next bump against
+the *previous* tag and immediately reopen a Release PR for the release that had
+just gone out.
 
 ---
 

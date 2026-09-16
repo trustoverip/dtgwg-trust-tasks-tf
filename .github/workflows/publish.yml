@@ -320,6 +320,145 @@ jobs:
           git tag -a "$tag" -m "@openvtc/trust-tasks $VERSION"
           git push origin "$tag"
 
+  # ── Go ───────────────────────────────────────────────────────────────────
+  #
+  # The third registry, and the only one with no registry at all: a Go module is
+  # published by pushing a tag to a public repository, after which
+  # proxy.golang.org fetches and serves it. There is no account, no token and no
+  # OIDC exchange — which also means nothing here can be "configured wrong" in
+  # the way the crates.io and npm Trusted Publishers can.
+  #
+  # The tag MUST be `trust-tasks-go/vX.Y.Z`. For a module in a subdirectory the
+  # go tooling derives the tag prefix from the subdirectory, so this spelling is
+  # a requirement rather than a convention — unlike the `trust-tasks-ts-v*` and
+  # `<crate>-v*` tags elsewhere in this file, which are ours to choose.
+  publish-go:
+    name: Publish trust-tasks-go (tag + module proxy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # The tag IS the publication, so this is the one permission that matters.
+      contents: write
+    outputs:
+      published: ${{ steps.decide.outputs.should_publish }}
+    concurrency:
+      group: publish-go-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to publish
+        id: decide
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' trust-tasks-go/trusttasks/version.go)
+          if [ -z "$version" ]; then
+            echo "::error::Could not read \`const Version\` from trust-tasks-go/trusttasks/version.go"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/trust-tasks-go/v$version" >/dev/null; then
+            echo "::notice::trust-tasks-go/v$version already tagged — skipping."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::trust-tasks-go/v$version is new — publishing."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-go@v6
+        if: steps.decide.outputs.should_publish == 'true'
+        with:
+          go-version: "1.24"
+          # The module has no dependencies, so there is no go.sum to key a cache on.
+          cache: false
+
+      # Publishing is irreversible in a way npm and crates.io are not: the module
+      # proxy caches a tag permanently and by design, so a tag pushed over a tree
+      # that does not build is served to every consumer forever and cannot be
+      # retracted, only superseded. Build and test before tagging, not after.
+      - name: Verify the module before tagging
+        if: steps.decide.outputs.should_publish == 'true'
+        working-directory: trust-tasks-go
+        run: |
+          go build ./...
+          go vet ./...
+          go test ./...
+
+      - name: Tag the release
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="trust-tasks-go/v$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "trust-tasks-go $VERSION"
+          git push origin "$tag"
+
+      # Ask the module proxy for the version so it fetches and caches it now.
+      # Without this the first consumer to run `go get` pays the fetch, and a
+      # failure there surfaces to them rather than here. GOFLAGS=-mod=mod and an
+      # empty GONOSUMDB keep this a plain proxy request from a temp directory,
+      # not a build of this module.
+      - name: Warm proxy.golang.org
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+          GOPROXY: https://proxy.golang.org
+        run: |
+          set -euo pipefail
+          module="github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go"
+          # The proxy polls for new tags; it can take a minute to see one.
+          for attempt in 1 2 3 4 5 6; do
+            if go list -m "$module@v$VERSION" 2>/dev/null; then
+              echo "::notice::proxy.golang.org is serving $module@v$VERSION"
+              exit 0
+            fi
+            echo "attempt $attempt: not yet indexed, waiting 20s"
+            sleep 20
+          done
+          # Not a failure: the tag is pushed, which IS the publication, and the
+          # proxy will index it on its own schedule.
+          echo "::warning::proxy.golang.org has not indexed $module@v$VERSION yet. The tag is pushed; the proxy will pick it up. Verify with: go list -m $module@v$VERSION"
+
+  release-go-pr:
+    name: Release PR (trust-tasks-go)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # MUST run after publish-go, for the same reason release-ts-pr runs after
+    # publish-npm: the tag this job measures from is written by publish-go, so
+    # running them in parallel means the run that merges a Go release computes
+    # its next bump against the PREVIOUS tag and immediately reopens a Release
+    # PR for a release that just went out.
+    needs: publish-go
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-go-pr-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      # Same cliff.toml release-plz uses for the crates, so all three sides of a
+      # release read identically.
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
+
+      - name: Open or update the trust-tasks-go Release PR
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+        run: ./scripts/release-go-pr.sh
+
   release-ts-pr:
     name: Release PR (@openvtc/trust-tasks)
     runs-on: ubuntu-latest

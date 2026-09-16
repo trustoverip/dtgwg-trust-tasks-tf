@@ -11,6 +11,7 @@
     "codemod:spec-links": "node scripts/codemod-spec-links.mjs",
     "serve": "node scripts/serve-website.mjs",
     "build-ts-bindings": "node scripts/build-ts-bindings.mjs",
+    "build-go-bindings": "node scripts/build-go-bindings.mjs",
     "test:infra": "node --test infra/cloudfront/*.test.mjs",
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",

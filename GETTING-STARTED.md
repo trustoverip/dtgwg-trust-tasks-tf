@@ -23,6 +23,10 @@ trust-tasks = { version = "0.1", features = ["https", "proof-affinidi"] }
 npm install @openvtc/trust-tasks
 ```
 
+```sh
+go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go
+```
+
 `trust-tasks` is a facade: it re-exports the framework's eight crates behind
 Cargo features so you pick a transport rather than a set of version numbers.
 Everything in it is a `pub use` — `trust_tasks::TrustTask` **is**
@@ -302,6 +306,72 @@ no record and is conformant only where repeated execution is safe and intended.
 Items 1 and 3 (framework schema, unknown `type`) belong to your parse and
 dispatch and have already succeeded by the time you hold a typed document. Full
 detail is in [`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).
+
+---
+
+## 3a. The same round trip in Go
+
+The Go module is
+`github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go`. It mirrors the
+TypeScript shape — generated types plus a hand-written §7.2 pipeline — with the
+differences Go's type system forces.
+
+```go
+import (
+    aclgrantv0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_1"
+    "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+)
+
+// The guard IS the duplicate-execution record — one per consumer, held for the
+// process's lifetime. Back it with a shared store if you run replicas.
+guard := trusttasks.NewInMemoryReplayGuard(0)
+
+outcome, err := trusttasks.ConsumeInbound(ctx,
+    trusttasks.ConsumeOptions[aclgrantv0_1.Payload, aclgrantv0_1.Response]{
+        Transport:     trusttasks.StaticTransport{Context: trusttasks.TransportContext{Issuer: &peerVID}},
+        Spec:          aclgrantv0_1.Spec,
+        ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
+        PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
+        // acl/grant is consequential: a replayed envelope must not grant twice.
+        Checks:     trusttasks.ConsequentialChecks(guard),
+        Doc:        doc,
+        MyVID:      "did:web:maintainer.example",
+        Now:        time.Now(),
+        NewErrorID: uuid.NewString,
+        Handler: func(
+            ctx context.Context,
+            accepted *trusttasks.Document[aclgrantv0_1.Payload],
+            parties trusttasks.ResolvedParties,
+        ) (*trusttasks.Document[aclgrantv0_1.Response], error) {
+            entry, err := applyGrant(ctx, accepted.Payload.Entry, parties)
+            if err != nil {
+                return nil, err
+            }
+            return trusttasks.RespondWith[aclgrantv0_1.Payload, aclgrantv0_1.Response](
+                accepted, uuid.NewString(), aclgrantv0_1.Response{Entry: entry}, nil), nil
+        },
+    })
+```
+
+`err` is non-nil only for a caller mistake or an error your handler returned —
+every *framework* rejection is an `outcome`, switched on exactly as in
+TypeScript (`OutcomeHandled`, `OutcomeRejected`, `OutcomeSuppressed`,
+`OutcomeAccepted`, `OutcomeDuplicate`).
+
+Three Go-specific things worth knowing before you write the handler:
+
+- **`encoding/json` enforces less than it looks like it does.** It ignores
+  unknown members and does not require a single REQUIRED one, so a payload
+  missing everything unmarshals cleanly. Pass a real `PayloadValidator`; the
+  schema ships as `aclgrantv0_1.PayloadSchemaJSON`.
+- **Optional members are pointers, including slices** — `*[]string`. That is how
+  "present and empty" stays distinguishable from "absent", which several specs
+  make load-bearing.
+- **`ProofVerifier` takes the document as JSON**, not as a `Document[P]`: a Go
+  interface cannot carry a method that is generic over the payload, and a Data
+  Integrity verifier works over the serialization anyway.
+
+Full detail is in [`trust-tasks-go/README.md`](./trust-tasks-go/README.md).
 
 ---
 

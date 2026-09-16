@@ -58,6 +58,7 @@ const ROOT = path.resolve(__dirname, "..");
 const SPECS_DIR = path.join(ROOT, "specs");
 const TS_DIR = path.join(ROOT, "trust-tasks-ts", "src");
 const RS_DIR = path.join(ROOT, "trust-tasks-rs", "src", "specs");
+const GO_DIR = path.join(ROOT, "trust-tasks-go", "specs");
 
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
@@ -229,6 +230,48 @@ function rustPolicy(src, ident) {
   };
 }
 
+/** The fields inside `var <name> = trusttasks.SpecPolicy{ … }`. */
+function goPolicy(src, name) {
+  const block = new RegExp(`var ${name} = trusttasks\\.SpecPolicy\\{([\\s\\S]*?)\\n\\}`, "m").exec(src);
+  if (!block) return null;
+  const read = (field, dflt) => {
+    const m = new RegExp(`${field}:\\s*(true|false),`).exec(block[1]);
+    return m ? m[1] === "true" : dflt;
+  };
+  const uri = /TypeURI:\s*(\w+),/.exec(block[1]);
+  // The policy references the package's own TypeURI / ResponseTypeURI const
+  // rather than repeating the literal, so resolve one level to compare it.
+  let typeUri = null;
+  if (uri) {
+    const decl = new RegExp(`const ${uri[1]} = "([^"]+)"`).exec(src);
+    typeUri = decl ? decl[1] : null;
+  }
+  return {
+    typeUri,
+    // Go's zero value for a bool is false and the generator emits every field
+    // explicitly, so an absent one would be a generator bug, not a default.
+    isBearer: read("IsBearer", false),
+    isProofRequired: read("IsProofRequired", false),
+    isRecipientRequired: read("IsRecipientRequired", false),
+    isIssuedAtRequired: read("IsIssuedAtRequired", false),
+  };
+}
+
+/** Parse `const <name> = "…"` — a Go interpreted string literal — out of a module. */
+function goSchemaConst(src, name) {
+  const m = new RegExp(`const ${name} = ("(?:[^"\\\\]|\\\\.)*")`).exec(src);
+  if (!m) return null;
+  try {
+    // Go and JSON agree on every escape this generator emits (it escapes only
+    // \", \\, \n, \r, \t and \xNN, and writes everything else as raw UTF-8),
+    // except \xNN, which JSON spells \u00NN.
+    const goLiteral = m[1].replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) => `\\u00${hex}`);
+    return JSON.parse(JSON.parse(goLiteral));
+  } catch {
+    return null;
+  }
+}
+
 function comparePolicy(where, variant, expected, actual, lang) {
   if (!actual) {
     fail(where, `${lang} declares no ${variant} policy block`);
@@ -336,9 +379,11 @@ function rustSchemaConst(src, ident) {
 const specs = discoverSpecs();
 const tsByUri = indexGenerated(TS_DIR, /^payload\.ts$/, /export const TYPE_URI = "([^"]+)"/);
 const rsByUri = indexGenerated(RS_DIR, /^v\d+_\d+\.rs$/, /const TYPE_URI: &'static str =\s*"([^"]+)"/);
+const goByUri = indexGenerated(GO_DIR, /^payload\.go$/, /const TypeURI = "([^"]+)"/);
 
 const seenTs = new Set();
 const seenRs = new Set();
+const seenGo = new Set();
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
 const rustHandWrittenSrc = (function read(dir, acc = []) {
@@ -424,6 +469,59 @@ for (const spec of specs) {
     }
   }
 
+  /* — Go — */
+  const go = goByUri.get(typeUri);
+  if (!go) {
+    fail(where, `no generated Go package declares TypeURI ${typeUri}`);
+  } else {
+    seenGo.add(typeUri);
+
+    // SPEC §4.4.1, as for the other two: a specification with no success
+    // response MUST NOT emit a #response document, so a ResponseTypeURI for one
+    // is an invitation to violate it. Checked in both directions.
+    const hasResponseUri = /^const ResponseTypeURI = /m.test(go.src);
+    const hasResponseType = /^type Response\b/m.test(go.src);
+    if (hasResponse && !(hasResponseUri && hasResponseType)) {
+      fail(
+        where,
+        `payload.schema.json declares $defs.Response, but the Go package exports ` +
+          `${hasResponseUri ? "" : "no ResponseTypeURI"}${!hasResponseUri && !hasResponseType ? " and " : ""}` +
+          `${hasResponseType ? "" : "no Response type"} — the response half of the specification is unreachable.`,
+      );
+    }
+    if (!hasResponse && (hasResponseUri || hasResponseType)) {
+      fail(
+        where,
+        `this specification declares no success response, but the Go package exports a response ` +
+          `constant or type. SPEC §4.4.1 says its consumers MUST NOT emit a #response document.`,
+      );
+    }
+
+    // Every payload root in the registry is `type: object`, so `Payload` must be
+    // a struct. A scalar alias there would mean the emitter fell through to its
+    // json.RawMessage fallback and the specification's members are unreachable.
+    if (schema?.type === "object" && !/^type Payload struct \{/m.test(go.src)) {
+      fail(
+        where,
+        `this schema's root is an object, but the Go package does not declare \`type Payload struct\` — ` +
+          `the emitter fell back to an untyped representation and the payload's members are unreachable.`,
+      );
+    }
+
+    const goReq = goPolicy(go.src, "Spec");
+    if (goReq && goReq.typeUri !== typeUri) {
+      fail(where, `Go Spec.TypeURI is ${goReq.typeUri}, expected ${typeUri}.`);
+    }
+    comparePolicy(where, "request", expected.request, goReq, "Go");
+    if (hasResponse) {
+      const goResp = goPolicy(go.src, "ResponseSpec");
+      if (goResp && goResp.typeUri !== `${typeUri}#response`) {
+        fail(where, `Go ResponseSpec.TypeURI is ${goResp.typeUri}, expected ${typeUri}#response.`);
+      }
+      comparePolicy(where, "response", expected.response, goResp, "Go");
+    }
+  }
+
   /* — Rust — */
   const rs = rsByUri.get(typeUri);
   if (!rs && RUST_HAND_WRITTEN.has(spec.slug)) {
@@ -464,46 +562,61 @@ for (const spec of specs) {
       comparePolicy(where, "response", expected.response, respPolicy, "Rust");
     }
 
-    /* — The two shipped schemas must be the same document — */
+    /* — The three shipped schemas must be the same document — */
     //
     // Each generator inlines cross-file `$ref`s itself: `resolve_cross_file_refs`
-    // in Rust, `inlineCrossFileRefs` in the TS script. Two independent
-    // implementations of the same splice, and SPEC §7.2 item 2 is only
-    // well-defined if they agree — a consumer validating in Rust and one
-    // validating in TypeScript must accept and reject the same payloads.
+    // in Rust, `inlineCrossFileRefs` in the TS script, and a third copy of the
+    // same walk in the Go script. Three independent implementations of the same
+    // splice, and SPEC §7.2 item 2 is only well-defined if they agree — a
+    // consumer validating in Rust, one in TypeScript and one in Go must accept
+    // and reject the same payloads.
     //
     // Compared as parsed JSON, so formatting differences between
-    // `serde_json::to_string_pretty` and `JSON.stringify` are not failures.
-    // Nothing here re-derives the expected schema: this asserts the two
-    // generators agree with *each other*, which is the property neither can
-    // establish alone.
+    // `serde_json::to_string_pretty`, `JSON.stringify` and the Go string literal
+    // are not failures. Nothing here re-derives the expected schema: this asserts
+    // the generators agree with *each other*, which is the property none can
+    // establish alone. That is also why the Go generator was written with its own
+    // resolver rather than importing the TypeScript one — see its file header.
     if (ts) {
-      for (const [variant, tsConst, rsConst] of [
-        ["request", "PAYLOAD_SCHEMA", "Payload"],
-        ["response", "RESPONSE_PAYLOAD_SCHEMA", "Response"],
+      for (const [variant, tsConst, rsConst, goConst] of [
+        ["request", "PAYLOAD_SCHEMA", "Payload", "PayloadSchemaJSON"],
+        ["response", "RESPONSE_PAYLOAD_SCHEMA", "Response", "ResponsePayloadSchemaJSON"],
       ]) {
         if (variant === "response" && !hasResponse) continue;
-        const tsSchema = tsSchemaConst(ts.src, tsConst);
-        const rsSchema = rustSchemaConst(rs.src, rsConst);
-        if (!tsSchema) {
-          fail(where, `the TypeScript module exports no ${tsConst} — §7.2 item 2 has no artifact to run against.`);
-          continue;
-        }
-        if (!rsSchema) {
-          fail(where, `the Rust ${rsConst} impl carries no PAYLOAD_SCHEMA — §7.2 item 2 has no artifact to run against.`);
-          continue;
-        }
-        if (stableJson(tsSchema) !== stableJson(rsSchema)) {
+
+        const shipped = [
+          ["TypeScript", tsConst, tsSchemaConst(ts.src, tsConst)],
+          ["Rust", rsConst, rustSchemaConst(rs.src, rsConst)],
+        ];
+        if (go) shipped.push(["Go", goConst, goSchemaConst(go.src, goConst)]);
+
+        const missing = shipped.filter(([, , doc]) => !doc);
+        for (const [lang, constName] of missing) {
           fail(
             where,
-            `the ${variant} schema shipped by trust-tasks-ts and the one shipped by trust-tasks-rs are not the ` +
-              `same document. The two $ref inliners have diverged, so the two libraries would disagree about ` +
-              `which payloads conform.`,
+            `the ${lang} binding exports no ${constName} — §7.2 item 2 has no artifact to run against.`,
           );
         }
+        if (missing.length > 0) continue;
+
+        // Compare every binding against the first, so a disagreement names both
+        // sides rather than only reporting that "something" differs.
+        const [refLang, , refSchema] = shipped[0];
+        const refJson = stableJson(refSchema);
+        for (const [lang, , doc] of shipped.slice(1)) {
+          if (stableJson(doc) !== refJson) {
+            fail(
+              where,
+              `the ${variant} schema shipped by the ${lang} binding and the one shipped by the ${refLang} ` +
+                `binding are not the same document. The $ref inliners have diverged, so the two libraries ` +
+                `would disagree about which payloads conform.`,
+            );
+          }
+        }
+
         // An un-inlined cross-file $ref is unresolvable at runtime: the
         // consumer has no filesystem to walk and no base URI to resolve against.
-        for (const [lang, doc] of [["TypeScript", tsSchema], ["Rust", rsSchema]]) {
+        for (const [lang, , doc] of shipped) {
           const external = collectExternalRefs(doc);
           if (external.length > 0) {
             fail(
@@ -528,6 +641,11 @@ for (const [uri, mod] of tsByUri) {
 for (const [uri, mod] of rsByUri) {
   if (!seenRs.has(uri)) {
     fail(path.relative(ROOT, mod.file), `declares TYPE_URI ${uri}, which matches no specification under specs/`);
+  }
+}
+for (const [uri, mod] of goByUri) {
+  if (!seenGo.has(uri)) {
+    fail(path.relative(ROOT, mod.file), `declares TypeURI ${uri}, which matches no specification under specs/`);
   }
 }
 
@@ -555,17 +673,24 @@ for (const [uri, mod] of rsByUri) {
 
   const RS_DOC = path.join(ROOT, "trust-tasks-rs", "src", "document.rs");
   const TS_DOC = path.join(ROOT, "trust-tasks-ts", "src", "_runtime", "document.ts");
+  const GO_DOC = path.join(ROOT, "trust-tasks-go", "trusttasks", "document.go");
 
   const rsSrc = fs.readFileSync(RS_DOC, "utf8");
   const tsSrc = fs.readFileSync(TS_DOC, "utf8");
+  const goSrc = fs.readFileSync(GO_DOC, "utf8");
 
   const rsMatch = rsSrc.match(/TypeUri::canonical\("trust-task-error",\s*(\d+),\s*(\d+)\)/);
   const tsMatch = tsSrc.match(
     /TRUST_TASK_ERROR_TYPE_URI\s*=\s*"https:\/\/trusttasks\.org\/spec\/trust-task-error\/(\d+\.\d+)"/,
   );
 
+  const goMatch = goSrc.match(
+    /TrustTaskErrorTypeURI\s*=\s*"https:\/\/trusttasks\.org\/spec\/trust-task-error\/(\d+\.\d+)"/,
+  );
+
   const rsVersion = rsMatch ? `${rsMatch[1]}.${rsMatch[2]}` : null;
   const tsVersion = tsMatch ? tsMatch[1] : null;
+  const goVersion = goMatch ? goMatch[1] : null;
 
   if (!rsVersion) {
     fail(path.relative(ROOT, RS_DOC), "no TypeUri::canonical(\"trust-task-error\", MAJOR, MINOR) found — trust_task_error_type_uri() is the crate's only statement of which error specification it emits");
@@ -574,27 +699,40 @@ for (const [uri, mod] of rsByUri) {
     fail(path.relative(ROOT, TS_DOC), "no TRUST_TASK_ERROR_TYPE_URI found — it is the package's only statement of which error specification it emits");
   }
 
-  if (rsVersion && tsVersion && rsVersion !== tsVersion) {
+  if (!goVersion) {
+    fail(path.relative(ROOT, GO_DOC), "no TrustTaskErrorTypeURI found — it is the module's only statement of which error specification it emits");
+  }
+
+  const emitted = [
+    ["trust-tasks-rs", rsVersion, "document.rs, trust_task_error_type_uri"],
+    ["@openvtc/trust-tasks", tsVersion, "_runtime/document.ts, TRUST_TASK_ERROR_TYPE_URI"],
+    ["trust-tasks-go", goVersion, "trusttasks/document.go, TrustTaskErrorTypeURI"],
+  ].filter(([, version]) => version !== null);
+
+  const distinct = new Set(emitted.map(([, version]) => version));
+  if (distinct.size > 1) {
     fail(
-      "trust-tasks-rs / trust-tasks-ts",
-      `the two SDKs emit different error documents: trust-tasks-rs sends trust-task-error/${rsVersion} ` +
-        `(document.rs, trust_task_error_type_uri) and @openvtc/trust-tasks sends trust-task-error/${tsVersion} ` +
-        `(_runtime/document.ts, TRUST_TASK_ERROR_TYPE_URI). A new error specification version must be adopted ` +
-        `in both or neither.`,
+      "trust-tasks-rs / trust-tasks-ts / trust-tasks-go",
+      `the SDKs emit different error documents: ` +
+        emitted.map(([name, version, where]) => `${name} sends trust-task-error/${version} (${where})`).join("; ") +
+        `. A new error specification version must be adopted in all of them or none.`,
     );
   }
 
-  if (rsVersion && rsVersion === tsVersion && !fs.existsSync(path.join(SPECS_DIR, "trust-task-error", rsVersion))) {
+  const agreed = distinct.size === 1 ? [...distinct][0] : null;
+
+  if (agreed && !fs.existsSync(path.join(SPECS_DIR, "trust-task-error", agreed))) {
     fail(
-      "trust-tasks-rs / trust-tasks-ts",
-      `both SDKs emit trust-task-error/${rsVersion}, which does not exist under specs/trust-task-error/`,
+      "trust-tasks-rs / trust-tasks-ts / trust-tasks-go",
+      `every SDK emits trust-task-error/${agreed}, which does not exist under specs/trust-task-error/`,
     );
-  } else if (rsVersion && rsVersion === tsVersion && rsVersion !== newest) {
+  } else if (agreed && agreed !== newest) {
     // Lagging is a decision, not necessarily a defect — a published version may
     // be deliberately unadopted — so this is a note, not a failure.
     console.log(
-      `  note: both SDKs emit trust-task-error/${rsVersion}; specs/trust-task-error/${newest} is published. ` +
-        `Adopt it in trust_task_error_type_uri() and TRUST_TASK_ERROR_TYPE_URI together, or leave both.`,
+      `  note: every SDK emits trust-task-error/${agreed}; specs/trust-task-error/${newest} is published. ` +
+        `Adopt it in trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI and TrustTaskErrorTypeURI ` +
+        `together, or leave all three.`,
     );
   }
 }
@@ -614,5 +752,5 @@ if (problems.length > 0) {
 
 console.log(
   `Bindings conformance: ${specs.length} specifications checked against ` +
-    `${tsByUri.size} TypeScript and ${rsByUri.size} Rust modules — all agree.`,
+    `${tsByUri.size} TypeScript, ${rsByUri.size} Rust and ${goByUri.size} Go modules — all agree.`,
 );
