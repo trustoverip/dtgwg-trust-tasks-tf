@@ -29,9 +29,11 @@
 
    A `foundations` entry is evidence, NOT a roadmap commitment.
    Only add one where the named package genuinely exists and
-   does the thing — `tsp` on pub.dev is the Travelling
-   Salesperson Problem and `tsp-sdk` on npm is an empty security
-   placeholder, which is why TSP is dashed everywhere but Rust.
+   does the thing. `tsp` on pub.dev is the Travelling Salesperson
+   Problem and `tsp-sdk` on npm is an empty security placeholder,
+   so a TSP foundation points at the affinidi-tsp-<lang> repo, not
+   a registry package — and only where a binding is actually built
+   on it (Dart today).
 
    ⚠️ NO VERSION NUMBERS LIVE HERE. Every install line uses its
    registry's own "latest" idiom, so the page cannot go stale
@@ -153,7 +155,7 @@ window.TT_LIBRARIES = [
     packageUrl: "https://crates.io/crates/trust-tasks-rs",
     docsUrl: "https://docs.rs/trust-tasks-rs",
     install: "cargo add trust-tasks --features https,proof-affinidi",
-    tagline: "The reference implementation, and the only one with TSP and DIDComm v1.",
+    tagline: "The reference implementation, and the only one with DIDComm v1 and the capability client.",
     summary:
       "A workspace of nine published crates: the core library and its generated payload types, four transport bindings, a W3C Data Integrity proof backend, and a shared capability wire client. The trust-tasks facade re-exports the rest behind Cargo features, so you pick a transport rather than a set of version numbers.",
     detail: "rust",
@@ -203,14 +205,19 @@ window.TT_LIBRARIES = [
     registry: "Go module proxy",
     packageUrl: "https://pkg.go.dev/github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
     install: "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
-    tagline: "Types and the §7.2 pipeline, generics-typed over the payload.",
+    tagline: "Types, the §7.2 pipeline, and a ToIP TSP transport binding.",
     summary:
-      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package. No dependencies beyond the standard library. Optional members are pointers throughout — including slices — so a member that is present and empty stays distinguishable from one that is absent.",
+      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. The trust-tasks-go/tsp module is a separate module — keeping the core dependency-free — that seals a document into a ToIP Trust Spanning Protocol message and runs the pipeline over it, interoperating with the Rust crate.",
+    detail: "go",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
+      "binding:tsp",
     ],
-    transports: {},
+    transports: {
+      // A separate nested module, so the core stays dependency-free.
+      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp" },
+    },
     foundations: {
       "binding:https": { package: "net/http (standard library)", url: "https://pkg.go.dev/net/http" },
     },
@@ -225,6 +232,7 @@ window.TT_LIBRARIES = [
     packageUrl: "https://pub.dev/packages/trust_tasks",
     docsUrl: "https://pub.dev/documentation/trust_tasks/latest/",
     install: "dart pub add trust_tasks",
+    detail: "dart",
     tagline: "Types and the §7.2 pipeline, for Dart and Flutter.",
     summary:
       "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2). Two packages build on it and interoperate with their Rust counterparts: trust_tasks_proof puts a Data Integrity verifier and signer built on Affinidi's ssi behind the ProofVerifier seam, trust_tasks_https is the HTTPS binding — a client that runs on the web and a server that runs the §7.2 pipeline per request — and trust_tasks_didcomm is the DIDComm v2.1 binding on Affinidi's didcomm, with the duplicate-execution guard a mediated transport needs on by default.",
@@ -238,6 +246,12 @@ window.TT_LIBRARIES = [
       "binding:https": { package: "trust_tasks_https", dir: "trust-tasks-dart-https" },
       "binding:didcomm": { package: "trust_tasks_didcomm", dir: "trust-tasks-dart-didcomm" },
       proof: { package: "trust_tasks_proof", dir: "trust-tasks-dart-proof" },
+    },
+    // trust_tasks_tsp is built and tested (bindings/tsp) but not on pub.dev yet
+    // — affinidi_tsp, the library it seals with, is not published — so it is a
+    // foundation, not a shipped cell. The named evidence is the repo.
+    foundations: {
+      "binding:tsp": { package: "affinidi-tsp-dart", url: "https://github.com/affinidi/affinidi-tsp-dart" },
     },
   },
 ];

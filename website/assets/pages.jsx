@@ -2094,9 +2094,9 @@ function FrameworkSpecPage({ setRoute }) {
  * matrix of what each one can actually do.
  *
  * The matrix is the point of the page. "Which languages are there" is a list;
- * "can I do TSP from Dart" is the question a reader arrives with, and until this
- * page existed the honest answer — no, TSP is Rust-only — was
- * discoverable only by reading the source tree.
+ * "can I do TSP from Dart" is the question a reader arrives with, and the
+ * matrix answers it — TSP over Rust or Go today, Dart to follow — instead of
+ * leaving it discoverable only by reading the source tree.
  *
  * Both lists come from assets/libraries.js and are checked against the source
  * tree by `checkLibraryRegistry()` at build time, so a library cannot claim a
@@ -2187,10 +2187,10 @@ function ImplementationsPage({ setRoute }) {
 
                 <CodeBlock json={lib.install} language="sh" />
 
-                {lib.detail === "rust" && (
+                {lib.detail && (
                   <p style={{ marginTop: "var(--tt-space-4)", marginBottom: 0, fontSize: "var(--tt-text-sm)" }}>
-                    <a href="/implementations/rust" onClick={(e) => { e.preventDefault(); setRoute({ name: "implementation", id: "rust" }); }}>
-                      Crate-by-crate walkthrough, with worked examples →
+                    <a href={`/implementations/${lib.detail}`} onClick={(e) => { e.preventDefault(); setRoute({ name: "implementation", id: lib.detail }); }}>
+                      {lib.detail === "rust" ? "Crate-by-crate walkthrough, with worked examples →" : "Package-by-package walkthrough →"}
                     </a>
                   </p>
                 )}
@@ -2208,7 +2208,7 @@ function ImplementationsPage({ setRoute }) {
           <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>What supports what</span>
           <h2 style={{ marginTop: "var(--tt-space-2)" }}>Capability matrix.</h2>
           <p style={{ color: "var(--tt-text-muted)", maxWidth: "62ch" }}>
-            The core rows are deliberately uniform — a document that one library accepts, all four accept, and <code>check-bindings</code> fails the build if they diverge. The transport rows are where the libraries genuinely differ, and the honest summary today is that <strong>transport bindings ship in Rust only</strong>. Every library carries the transport seam, so a binding can be written against any of them.
+            The core rows are deliberately uniform — a document that one library accepts, all four accept, and <code>check-bindings</code> fails the build if they diverge. The transport rows are where the libraries genuinely differ: <strong>Rust ships all four bindings, Dart ships HTTPS, DIDComm v2 and a proof backend, and Go ships TSP</strong>. Every library carries the transport seam, so a binding can be written against any of them.
           </p>
 
           <div style={{ overflowX: "auto", marginTop: "var(--tt-space-6)", border: "1px solid var(--tt-border)", background: "var(--tt-surface-elev)" }}>
@@ -2305,7 +2305,7 @@ function ImplementationsPage({ setRoute }) {
             A half circle is <strong>evidence, not a roadmap</strong>. It means a published package in that language already provides the underlying protocol — named beneath the mark, and linked so you can check — so a binding is a matter of writing the adapter rather than implementing the protocol. It does not mean anyone has committed to building it.
           </p>
           <p style={{ color: "var(--tt-text-muted)", fontSize: "var(--tt-text-sm)", maxWidth: "62ch" }}>
-            A dash means neither a shipped binding nor a known foundation. TSP is dashed everywhere outside Rust for that reason: there is no Trust Spanning Protocol implementation published for TypeScript, Go or Dart. And where a library ships no Data Integrity verifier, the <code>ProofVerifier</code> seam is still there and you supply the backend — deliberately, because the cryptosuite is the consumer's choice rather than the framework's.
+            A dash means neither a shipped binding nor a known foundation. TSP is dashed for TypeScript because no Trust Spanning Protocol library is published for it; Go ships a TSP binding and Dart has one built on the affinidi-tsp-dart library, which is why Dart's TSP cell is a half circle until that library reaches pub.dev. And where a library ships no Data Integrity verifier, the <code>ProofVerifier</code> seam is still there and you supply the backend — deliberately, because the cryptosuite is the consumer's choice rather than the framework's.
           </p>
         </div>
       </section>
@@ -3374,6 +3374,187 @@ function CeremonyPage({ slug, version, setRoute }) {
   );
 }
 
+
+/* ============================================================
+   IMPLEMENTATION DETAIL — generic package walkthrough
+   ------------------------------------------------------------
+   Rust has its own bespoke page (RustImplementationPage) with
+   worked code. Go and Dart get this data-driven page: a hero
+   plus one card per published (or in-flight) package. Add a
+   library here and set `detail: "<id>"` on its libraries.js
+   entry to light up the card link on /implementations.
+   ============================================================ */
+const IMPLEMENTATION_DETAILS = {
+  go: {
+    accent: "sky",
+    eyebrow: "Reference implementation · Go",
+    title: "trust-tasks for Go.",
+    lede: "A reference Go implementation: one package per specification and the SPEC §7.2 consumer pipeline, with no dependencies beyond the standard library — plus a ToIP TSP transport binding shipped as a separate module so the core stays dependency-free.",
+    heading: "Two modules, one dependency-free core.",
+    blurb: "The core module has zero dependencies — its selling point. The TSP binding lives in a separate nested module so a consumer who only wants the types and the pipeline never pulls the transport's cryptography.",
+    packages: [
+      {
+        name: "trust-tasks-go", accent: "sky", role: "Core · types + pipeline",
+        tagline: "Generics-typed over the payload, standard library only.",
+        summary: "One self-contained package per specification version, plus the hand-written §7.2 pipeline in the trusttasks package. Optional members are pointers throughout — including slices and maps — so a member that is present and empty stays distinguishable from one that is absent, which acl's allowedKeys makes load-bearing.",
+        bullets: [
+          "Document[P] envelopes, generics-typed over the payload",
+          "ConsumeInbound[P, R] — the §7.2 pipeline, guard and freshness wired",
+          "One package per spec: specs/<slug>/v<MAJOR>_<MINOR>",
+          "No dependencies beyond the standard library",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go",
+      },
+      {
+        name: "trust-tasks-go/tsp", accent: "violet", role: "TSP binding · separate module",
+        tagline: "Seal a document into a ToIP TSP message.",
+        summary: "A separate nested Go module — so the core stays dependency-free — built on affinidi-tsp-go. PackTrustTask seals a document into a Direct TSP message whose HPKE authenticated encryption binds the sender's VID; UnpackTrustTask returns the document with the authenticated peer, and Consumer.Receive runs the §7.2 pipeline with the item-11 duplicate-execution record on by default. The sealed {type, document} envelope matches the Rust crate byte-for-byte.",
+        bullets: [
+          "PackTrustTask / UnpackTrustTask over a Direct TSP message",
+          "Consumer.Receive — guarded §7.2, replay record on by default",
+          "AdvertisedSender lets the caller resolve the sender VID",
+          "Envelope type: https://trusttasks.org/binding/tsp/0.1/envelope",
+          "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/tsp",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/tsp",
+      },
+    ],
+  },
+  dart: {
+    accent: "coral",
+    eyebrow: "Reference implementation · Dart",
+    title: "trust-tasks for Dart.",
+    lede: "A reference Dart implementation: a typed payload for every specification and the SPEC §7.2 pipeline, dependency-free — with four companion packages for proofs and transports, each interoperating with its Rust counterpart.",
+    heading: "A dependency-free core, four companions.",
+    blurb: "The core is dependency-free — the cryptosuite and the JSON Schema engine are interfaces you supply. Each companion package fills one of those seams or adds a transport, and each is tested against the Rust implementation on the same document.",
+    packages: [
+      {
+        name: "trust_tasks", accent: "coral", role: "Core · types + pipeline",
+        tagline: "For Dart and Flutter, dependency-free.",
+        summary: "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2).",
+        bullets: [
+          "TrustTaskDocument<P>, the sealed ConsumeOutcome hierarchy",
+          "consumeInbound — the §7.2 pipeline, guard and freshness wired",
+          "Import one spec: package:trust_tasks/specs/<slug>/v0_1/payload.dart",
+          "No dependencies — you supply the cryptosuite and schema engine",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart",
+      },
+      {
+        name: "trust_tasks_proof", accent: "amber", role: "Data Integrity · proofs",
+        tagline: "Verify and sign, on Affinidi's ssi.",
+        summary: "A ProofVerifier behind the framework's seam, for eddsa-jcs-2022 and ecdsa-jcs-2019, with issuer binding — and signTrustTask, which produces what it verifies. For the same Ed25519 key, document and created it reproduces the Rust crate's proofValue byte for byte.",
+        bullets: [
+          "DataIntegrityProofVerifier — did:key offline, or any resolver",
+          "signTrustTask — the producing side, refusing what can't verify",
+          "Spans ssi 3 and 4, so it sits beside the DIDComm transport",
+          "dart pub add trust_tasks_proof",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-proof",
+      },
+      {
+        name: "trust_tasks_https", accent: "teal", role: "HTTPS binding",
+        tagline: "A client for the web, a server for anywhere.",
+        summary: "A typed HttpsClient that runs on the web and in Flutter, and a framework-agnostic HttpsServer that runs the §7.2 pipeline per request. The server takes a plain request and returns a reply, so any Dart HTTP framework can host it; a dart:io adapter is a separate library so the client keeps web support. Interoperates with the Rust server and client in both directions.",
+        bullets: [
+          "HttpsClient.send — only a response that belongs to the request",
+          "HttpsServer.handle — framework-agnostic; io.dart serves it",
+          "Attribution gate, DID-method screen, duplicate guard on by default",
+          "dart pub add trust_tasks_https",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-https",
+      },
+      {
+        name: "trust_tasks_didcomm", accent: "violet", role: "DIDComm v2.1 binding",
+        tagline: "Authcrypt envelopes on Affinidi's didcomm.",
+        summary: "packTrustTask / unpackTrustTask over authcrypt DIDComm v2.1 envelopes, and DidcommConsumer, the guarded inbound path. The sender is the verified skid of the ECDH-1PU layer; the duplicate-execution record a mediated transport needs is on by default and keyed on the document id, never the DIDComm message id. Interoperates with the Rust crate in both directions.",
+        bullets: [
+          "packTrustTask / unpackTrustTask over authcrypt JWEs",
+          "DidcommConsumer — guarded §7.2, replay record on by default",
+          "allowedSenders checked before decryption",
+          "dart pub add trust_tasks_didcomm",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-didcomm",
+      },
+      {
+        name: "trust_tasks_tsp", accent: "sky", role: "TSP binding · not yet on pub.dev",
+        tagline: "Seal a document into a ToIP TSP message.",
+        summary: "packTrustTask / unpackTrustTask over HPKE-sealed Direct TSP messages, and TspConsumer, the guarded inbound path. Built and tested — the sealed {type, document} envelope matches the Rust crate and the Go module byte for byte — but not on pub.dev yet, because affinidi_tsp, the TSP library it seals with, is not published. That is the half circle on the matrix; it becomes a full one when affinidi_tsp reaches pub.dev.",
+        bullets: [
+          "packTrustTask / unpackTrustTask over a Direct TSP message",
+          "TspConsumer — guarded §7.2, replay record on by default",
+          "Built on affinidi-tsp-dart; Ed25519 VIDs",
+          "Depend on it via git until affinidi_tsp is published",
+        ],
+        repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-tsp",
+      },
+    ],
+  },
+};
+
+function ImplementationDetailPage({ id, setRoute }) {
+  const accent = (c) => `var(--tt-${c})`;
+  const detail = IMPLEMENTATION_DETAILS[id];
+  if (!detail) return <ImplementationsPage setRoute={setRoute} />;
+
+  return (
+    <React.Fragment>
+      <PageHero eyebrow={detail.eyebrow} title={detail.title} lede={detail.lede}>
+        <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
+          <a className="btn btn--primary" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf" target="_blank" rel="noreferrer">Source on GitHub →</a>
+          <a className="btn btn--ghost" href="/implementations" onClick={(e) => { e.preventDefault(); setRoute({ name: "implementations" }); }}>← All reference libraries</a>
+          <a className="btn btn--ghost" href="/specification" onClick={(e) => { e.preventDefault(); setRoute({ name: "specification" }); }}>Read the framework specification →</a>
+        </div>
+      </PageHero>
+
+      <section style={{ paddingBlock: "var(--tt-space-7)" }}>
+        <div className="container">
+          <span className="eyebrow" style={{ marginBottom: "var(--tt-space-4)", display: "inline-flex" }}>At a glance</span>
+          <h2 style={{ marginTop: "var(--tt-space-2)" }}>{detail.heading}</h2>
+          <p style={{ color: "var(--tt-text-muted)", maxWidth: "60ch" }}>{linkifySpec(detail.blurb, setRoute)}</p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--tt-space-4)", marginTop: "var(--tt-space-6)" }}>
+            {detail.packages.map(pkg => (
+              <article
+                key={pkg.name}
+                style={{
+                  border: "1px solid var(--tt-border)",
+                  borderLeft: `3px solid ${accent(pkg.accent)}`,
+                  padding: "var(--tt-space-5) var(--tt-space-6)",
+                  background: "var(--tt-surface-elev)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "var(--tt-space-4)", flexWrap: "wrap", marginBottom: "var(--tt-space-3)" }}>
+                  <div>
+                    <div style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(pkg.accent), marginBottom: "var(--tt-space-1)" }}>
+                      {pkg.role}
+                    </div>
+                    <h3 style={{ margin: 0, fontFamily: "var(--tt-font-mono)" }}>{pkg.name}</h3>
+                    <div style={{ fontFamily: "var(--tt-font-serif, var(--tt-font-display))", fontStyle: "italic", color: "var(--tt-text-muted)", marginTop: "var(--tt-space-1)" }}>
+                      {pkg.tagline}
+                    </div>
+                  </div>
+                  <a href={pkg.repo} target="_blank" rel="noreferrer" style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: accent(pkg.accent), borderBottom: 0, whiteSpace: "nowrap" }}>
+                    Source →
+                  </a>
+                </div>
+                <p style={{ color: "var(--tt-text-muted)", marginTop: 0 }}>{linkifySpec(pkg.summary, setRoute)}</p>
+                <ul style={{ margin: "var(--tt-space-3) 0 0", paddingLeft: "1.1em", color: "var(--tt-text-muted)", lineHeight: 1.7 }}>
+                  {pkg.bullets.map(b => <li key={b}>{linkifySpec(b, setRoute)}</li>)}
+                </ul>
+              </article>
+            ))}
+          </div>
+
+          <p style={{ color: "var(--tt-text-muted)", marginTop: "var(--tt-space-6)", fontSize: "var(--tt-text-sm)" }}>
+            <a href="/implementations" onClick={(e) => { e.preventDefault(); setRoute({ name: "implementations" }); }}>← Back to the capability matrix</a>
+          </p>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
 Object.assign(window, {
-  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, RustImplementationPage, BindingsPage, BindingSpecPage, CeremoniesPage, CeremonyPage
+  HomePage, RegistryPage, RegistryCard, SpecPage, CategoriesPage, AboutPage, ContributingPage, GlossaryPage, FrameworkSpecPage, ImplementationsPage, RustImplementationPage, ImplementationDetailPage, BindingsPage, BindingSpecPage, CeremoniesPage, CeremonyPage
 });

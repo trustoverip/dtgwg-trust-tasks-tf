@@ -34,7 +34,7 @@ window.TT_ECOSYSTEM = [
     tier: "reference",
     accent: "violet",
     summary:
-      "Four reference client libraries, each generated from the same registry and published to its own language's package registry. All four carry a typed payload for every specification and implement the SPEC §7.2 consumer pipeline; a cross-language conformance check holds them to the same verdict on the same document. Transport bindings ship in Rust (TSP, HTTPS, DIDComm v2 and v1) and in Dart (HTTPS, DIDComm v2), each with a Data Integrity proof backend, and the two interoperate.",
+      "Four reference client libraries, each generated from the same registry and published to its own language's package registry. All four carry a typed payload for every specification and implement the SPEC §7.2 consumer pipeline; a cross-language conformance check holds them to the same verdict on the same document. Transport bindings ship in Rust (TSP, HTTPS, DIDComm v2 and v1) and Dart (HTTPS, DIDComm v2), each with a Data Integrity proof backend, and Go ships a TSP binding as a separate module; the implementations interoperate across languages.",
     // No version numbers: the previous entry said "Tracking framework 0.2
     // (0.2.x crate line)" while the workspace was at 0.21. Each registry states
     // its own current version, and the capability matrix states what each

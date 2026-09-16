@@ -184,12 +184,13 @@
         case "ceremonies":    view = <CeremoniesPage setRoute={setRoute} />; break;
         case "ceremony":      view = <CeremonyPage slug={route.slug} version={route.version} setRoute={setRoute} />; break;
         case "implementations": view = <ImplementationsPage setRoute={setRoute} />; break;
-        // Only Rust has a deep dive today; an unknown id falls back to the index
-        // rather than rendering a blank page.
+        // Rust has a bespoke deep dive; Go and Dart use the generic
+        // package walkthrough. An unknown id falls back to the index rather
+        // than rendering a blank page (ImplementationDetailPage does that).
         case "implementation":
           view = route.id === "rust"
             ? <RustImplementationPage setRoute={setRoute} />
-            : <ImplementationsPage setRoute={setRoute} />;
+            : <ImplementationDetailPage id={route.id} setRoute={setRoute} />;
           break;
         case "categories":    view = <CategoriesPage setRoute={setRoute} />; break;
         case "ecosystem":     view = <EcosystemPage setRoute={setRoute} />; break;
