@@ -326,6 +326,43 @@ its crypto. Keeping them apart is the whole point.
   in your own store). The sealed `{type, document}` envelope matches the Rust
   crate and the Dart package byte-for-byte, pinned by a test in each.
 
+### The `trust-tasks-go/proof` nested module
+
+The Data Integrity proof backend is a **separate Go module** under
+`trust-tasks-go/proof`, like `tsp`, so the core stays dependency-free. Unlike
+`tsp` it pulls in **no third-party code**: it rolls `eddsa-jcs-2022` (Ed25519)
+and `ecdsa-jcs-2019` (P-256/P-384) on the standard library — `crypto/ed25519`,
+`crypto/ecdsa`, the SHA-2 family — with a JCS canonicaliser and a base58btc codec
+written in the module. Its only requirement is the core module whose
+`trusttasks.ProofVerifier` interface it satisfies (required at the published
+`v0.1.2`, no `replace`, exactly as `tsp` requires the core).
+
+- **Do NOT use the core's `CanonicalJSON` here.** It documents itself as only
+  *equality-equivalent* to RFC 8785 (byte-wise member ordering, `encoding/json`
+  number formatting) and explicitly warns it must not be used for the
+  eddsa-jcs-2022 proof input. `proof/jcs.go` is a real JCS — UTF-16 code-unit
+  member ordering and the ECMAScript Number-to-String number form — because for
+  a proof the *bytes* are the interoperable artifact, not just the equality they
+  induce.
+- **A test reproduces the shared `eddsa-jcs-2022` fixture's `proofValue` byte for
+  byte** (Ed25519 is deterministic; the fixture is signed with seed `[7; 32]`),
+  so a document signed by any of the Rust/TS/Dart/Go backends verifies with the
+  others. The fixture is a copy of `trust-tasks-ts-proof`'s in `proof/testdata/`.
+  Keep that test when touching either the canonicaliser or the signer. `created`
+  is written the way chrono does (UTC, `Z`, no `.000`).
+- **The verifier binds the proof to the in-band `issuer`** and returns a typed
+  `*proof.Error` whose `Kind` is for logs only — every failure reaches the wire
+  as `proofInvalid` (§10.4). `did:key` only, no network.
+- **The core CI jobs do not reach it** (`./...` in `trust-tasks-go` excludes a
+  nested module); a dedicated `proof` job in `go.yml` builds/vets/tests it on its
+  `go 1.22` floor. `gofmt -l .` in the core job **does** recurse into the subdir,
+  so keep these files gofmt-clean.
+- **Not wired into a release yet** — but unlike `tsp` there is no blocker (no
+  unpublished dependency), so a `publish-go`-style tag job for
+  `trust-tasks-go/proof/vX.Y.Z` is a clean follow-up. `go get` of the module
+  works today via the proxy's pseudo-version, which is why the website matrix
+  lists it as shipped.
+
 ## ⚠️ The hand-written TypeScript packages
 
 `@openvtc/trust-tasks-proof` (dir `trust-tasks-ts-proof`) is the first sibling
