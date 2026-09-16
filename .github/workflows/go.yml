@@ -213,3 +213,43 @@ jobs:
       - name: Test
         working-directory: trust-tasks-go/proof
         run: go test -race ./...
+
+  # The DIDComm v2 transport binding is a SEPARATE Go module
+  # (trust-tasks-go/didcomm) like tsp and proof — the core `./...` jobs do not
+  # reach it. It rolls DIDComm v2.1 authcrypt (ECDH-1PU + A256KW + A256CBC-HS512)
+  # on the standard library's crypto/ecdh, so like proof it pulls in no
+  # third-party code and needs only the core module. Not release-wired yet.
+  didcomm:
+    name: go test trust-tasks-go/didcomm (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.22 is the `go` directive in didcomm/go.mod.
+        go: ["1.22", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Build
+        working-directory: trust-tasks-go/didcomm
+        run: go build ./...
+      - name: Vet
+        working-directory: trust-tasks-go/didcomm
+        run: go vet ./...
+      - name: gofmt
+        if: matrix.go == 'stable'
+        working-directory: trust-tasks-go/didcomm
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Test
+        working-directory: trust-tasks-go/didcomm
+        run: go test -race ./...

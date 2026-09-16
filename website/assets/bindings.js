@@ -117,6 +117,11 @@ window.TT_BINDINGS = [
         href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-dart-didcomm",
         language: "Dart",
       },
+      {
+        name: "trust-tasks-go/didcomm",
+        href: "https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-go/didcomm",
+        language: "Go",
+      },
     ],
   },
   {

@@ -210,19 +210,20 @@ window.TT_LIBRARIES = [
     registry: "Go module proxy",
     packageUrl: "https://pkg.go.dev/github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
     install: "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
-    tagline: "Types, the §7.2 pipeline, a ToIP TSP transport binding and a Data Integrity proof backend.",
+    tagline: "Types, the §7.2 pipeline, TSP and DIDComm v2 transport bindings, and a Data Integrity proof backend.",
     summary:
-      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Two separate nested modules keep the core dependency-free: trust-tasks-go/tsp seals a document into a ToIP Trust Spanning Protocol message and runs the pipeline over it, and trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites rolled on the standard library, so it too adds no third-party dependency. Both interoperate with their Rust counterparts byte for byte.",
+      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Three separate nested modules keep the core dependency-free: trust-tasks-go/tsp seals a document into a ToIP Trust Spanning Protocol message; trust-tasks-go/didcomm carries one in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); and trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library. Each interoperates with its Rust counterpart.",
     detail: "go",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
-      "binding:tsp",
+      "binding:tsp", "binding:didcomm",
       "proof",
     ],
     transports: {
       // Separate nested modules, so the core stays dependency-free.
       "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp" },
+      "binding:didcomm": { package: "trust-tasks-go/didcomm", dir: "trust-tasks-go/didcomm" },
       proof: { package: "trust-tasks-go/proof", dir: "trust-tasks-go/proof" },
     },
     foundations: {

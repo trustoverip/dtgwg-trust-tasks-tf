@@ -363,6 +363,43 @@ written in the module. Its only requirement is the core module whose
   works today via the proxy's pseudo-version, which is why the website matrix
   lists it as shipped.
 
+### The `trust-tasks-go/didcomm` nested module
+
+The DIDComm v2.1 transport binding (`bindings/didcomm/0.2`) is a **separate Go
+module** under `trust-tasks-go/didcomm`, like `tsp` and `proof`. Like `proof`,
+and unlike `tsp`, it pulls in **no third-party code**: it rolls DIDComm v2.1
+authcrypt on the standard library.
+
+- **`aries-framework-go` was evaluated and rejected.** Its DIDComm packer is a
+  low-level JWE primitive (`Pack(contentType, payload, senderID, recipientsPubKeys)`
+  on raw key bytes, needing a full KMS/Crypto/Storage/VDR provider) that does not
+  build or parse the v2 message envelope or surface a verified `sender_kid`→DID,
+  and the framework is archived (last release 2023). Rolling our own — the same
+  call the user made for `proof` and TSP — keeps the four bindings structurally
+  aligned and PQC-extensible.
+- **The one authcrypt profile it implements** is the DIDComm v2 default:
+  ECDH-1PU key agreement + `A256KW` key wrapping + `A256CBC-HS512`, over X25519.
+  `crypto/ecdh` does the key agreement; `kdf.go` (Concat KDF), `keywrap.go`
+  (RFC 3394, **pinned to the RFC's own test vector**) and the RFC 7518
+  content-encryption in `jwe.go` are hand-rolled. anoncrypt and any other
+  alg/enc are rejected on unpack — no authenticated sender (binding §2/§4).
+- **`skid` is authenticated by the ECDH-1PU static secret, not trusted on its
+  face.** The recipient resolves the sender's key *from* `skid` and derives the
+  KEK with it; a forged `skid` yields a KEK that fails the key unwrap. So there
+  is no separate skid-mismatch check like the Rust binding's (that existed only
+  because the affinidi API separated the lookup key from `skid`).
+- **Key-based like `tsp`** — the consumer holds the recipient's X25519 private
+  key and takes a `ResolveSender(did) → *PeerKey` callback; no DID resolution.
+  The §3.1 thread cross-check lives in the consumer (it needs both the envelope
+  header and the parsed document), and a disagreement is `malformedRequest`
+  routed to the sender, never `identityMismatch`.
+- **Core CI does not reach it**; a `didcomm` job in `go.yml` builds/vets/tests on
+  the `go 1.22` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
+  recurses in). **Not release-wired yet**, and a shared cross-library authcrypt
+  fixture with the Rust/Dart bindings is a documented follow-up — the profile is
+  spec-standard and the primitives are vector-pinned, but byte-for-byte interop
+  is not yet asserted the way the sealed TSP/proof envelopes are.
+
 ## ⚠️ The hand-written TypeScript packages
 
 `@openvtc/trust-tasks-proof` (dir `trust-tasks-ts-proof`) is the first sibling
