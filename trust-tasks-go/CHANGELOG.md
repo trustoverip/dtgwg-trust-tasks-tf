@@ -11,6 +11,34 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.1.5 — 2026-09-16
+
+
+### Added
+
+- **go-capability-client**: Capability wire client for Go (trust-tasks-go/capabilityclient) (#498)
+
+The Go port of the Rust trust-tasks-capability-client crate: pure wire logic,
+  no crypto and no transport. Document builders for the governance/capability/*
+  (list/enable/disable) and git-trust/* (grant/revoke) families, DIDComm envelope
+  parsing, and reply classification — so a capability producer and a management UI
+  cannot drift on the contract.
+
+  A separate nested module like tsp/proof/didcomm, but with no third-party
+  dependency at all (only the core, for Document and SlugFromTypeURI).
+
+  - Builders mint a fresh id + issuedAt per call; NewAttempt() re-stamps a built
+    document under a fresh id and clears proof (a SPEC §8.4 new attempt, distinct
+    from a bit-for-bit retry the consumer's item-11 record absorbs).
+  - ClassifyGitTrustReply / ParseCapabilityReply correlate on threadId first
+    (§4.9) and key idempotent success on the SPEC §8.5 extended error code (both
+    spellings), never the non-normative free-text message; the free-text path is
+    opt-in via ReplyPolicy.
+
+  Adds a capabilityclient job to go.yml, the Go capability-client cell to the
+  capability matrix, and documents the module in CLAUDE.md. 12 tests, go 1.22 +
+  stable, gofmt clean.
+
 ## 0.1.4 — 2026-09-16
 
 
