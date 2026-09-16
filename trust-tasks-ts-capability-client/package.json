@@ -1,0 +1,25 @@
+{
+  "name": "@openvtc/trust-tasks-capability-client",
+  "version": "0.1.0",
+  "description": "Client-side wire helpers for the capability Trust Task families (governance/capability/* and git-trust/*): document builders and reply classification, no crypto.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "git+https://github.com/trustoverip/dtgwg-trust-tasks-tf.git", "directory": "trust-tasks-ts-capability-client" },
+  "homepage": "https://trusttasks.org/implementations",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
+  },
+  "dependencies": {
+    "@openvtc/trust-tasks": "^0.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

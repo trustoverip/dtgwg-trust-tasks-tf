@@ -72,10 +72,12 @@ no hand-written entries.
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
+| `@openvtc/trust-tasks-capability-client` | npm — capability/`git-trust` document builders + reply parsing, no crypto |
 
 > ⚠️ **First publish of each new npm package is manual**, the same chicken-and-egg
 > as pub.dev: npm trusted publishing cannot create a package that does not exist.
-> Once per new package (`@openvtc/trust-tasks-proof`, `@openvtc/trust-tasks-tsp`):
+> Once per new package (`@openvtc/trust-tasks-proof`, `@openvtc/trust-tasks-tsp`,
+> `@openvtc/trust-tasks-capability-client`):
 > 1. `cd <dir> && npm ci && npm run build && npm publish --access public` (scoped
 >    packages default to private; `--access public` is required).
 > 2. On npmjs.com, the package → **Settings → Trusted Publisher → GitHub Actions**,
