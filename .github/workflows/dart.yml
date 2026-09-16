@@ -73,13 +73,23 @@ jobs:
       - name: Analyze
         working-directory: trust-tasks-dart
         run: dart analyze --fatal-infos
-      # Only on `stable`: `dart format` output can differ between SDK versions,
-      # and the committed tree is formatted by whatever the generator ran, so
-      # checking it on the floor SDK would assert something nobody promised.
+      # `--language-version` for the same reason the generator passes it:
+      # `dart format` picks its style from the code's language version, and since
+      # Dart 3.13 the newest version selects a different ("tall") style. Reading
+      # the floor from the pubspec pins it, so this check cannot disagree with
+      # the generator because of which SDK happened to run.
+      #
+      # Only on `stable`: two SDKs formatting the same language version should
+      # agree, but the committed tree is produced by one of them, and asserting
+      # that every SDK in the matrix reproduces it byte for byte is a promise
+      # nobody made.
       - name: Check formatting
         if: matrix.sdk == 'stable'
         working-directory: trust-tasks-dart
-        run: dart format --output=none --set-exit-if-changed .
+        run: |
+          floor=$(sed -n 's/^ *sdk: *^\{0,1\}\([0-9]*\.[0-9]*\).*/\1/p' pubspec.yaml | head -1)
+          echo "formatting at language version $floor"
+          dart format --output=none --set-exit-if-changed --language-version="$floor" .
 
   # The generated libraries are only types and constants; the SPEC §7.2 consumer
   # pipeline in lib/src/runtime is hand-written, so unlike the rest of the

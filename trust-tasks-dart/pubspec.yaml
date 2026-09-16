@@ -20,5 +20,9 @@ environment:
 dependencies:
 
 dev_dependencies:
-  lints: ^6.0.0
+  # ^4, not ^6: lints 6 requires SDK >= 3.5, and this package's floor is 3.3
+  # (the release that introduced extension types, which the generated
+  # closed-value types use). A dev dependency must not narrow what consumers
+  # can build against — 3.3 is Flutter 3.19, 3.5 is Flutter 3.24.
+  lints: ^4.0.0
   test: ^1.25.0

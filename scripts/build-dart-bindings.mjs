@@ -1016,6 +1016,19 @@ function generateOne(schemaPath) {
 
 /* ── Driver ──────────────────────────────────────────────────────────────── */
 
+/**
+ * The `MAJOR.MINOR` SDK floor declared in the package's pubspec.
+ *
+ * Used as the language version the generated code is formatted at — see the
+ * note at the `dart format` call.
+ */
+function sdkFloor() {
+  const pubspec = fsSync.readFileSync(path.join(PACKAGE_ROOT, "pubspec.yaml"), "utf8");
+  const m = /^\s*sdk:\s*\^?(\d+)\.(\d+)/m.exec(pubspec);
+  if (!m) throw new Error("could not read the `sdk:` constraint from pubspec.yaml");
+  return `${m[1]}.${m[2]}`;
+}
+
 async function walk(dir, pattern) {
   const out = [];
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
@@ -1076,7 +1089,24 @@ async function main() {
   // point: a contributor without the Dart SDK would otherwise commit
   // unformatted output and discover it in CI. `dart format` exits 0 when it
   // rewrites files, so only a genuine failure is reported.
-  const formatted = spawnSync("dart", ["format", OUT_DIR], { encoding: "utf8" });
+  // `--language-version` is not optional here, tempting as it looks.
+  //
+  // `dart format` picks its style from the code's language version, and infers
+  // that from the enclosing package's *resolved* config — `.dart_tool/`, written
+  // by `dart pub get`. With no resolution it falls back to the newest version it
+  // knows, and since Dart 3.13 that means the new "tall" style rather than the
+  // old one. So the same generator produced differently-formatted output
+  // depending on whether anyone had run `dart pub get`, which made the drift
+  // check fail in CI (no `.dart_tool`) while passing locally (one present).
+  //
+  // Reading the floor from the pubspec and passing it explicitly removes the
+  // ambient dependency entirely, and keeps one source of truth for the value.
+  const languageVersion = sdkFloor();
+  const formatted = spawnSync(
+    "dart",
+    ["format", `--language-version=${languageVersion}`, OUT_DIR],
+    { encoding: "utf8" },
+  );
   if (formatted.error?.code === "ENOENT") {
     throw new Error(
       "dart is not on PATH. The generated tree must be committed `dart format`-clean or " +
