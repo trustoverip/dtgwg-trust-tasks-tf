@@ -190,11 +190,12 @@ window.TT_LIBRARIES = [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
       "binding:tsp",
-      "proof",
+      "proof", "capability-client",
     ],
     transports: {
       "binding:tsp": { package: "@openvtc/trust-tasks-tsp", dir: "trust-tasks-ts-tsp" },
       proof: { package: "@openvtc/trust-tasks-proof", dir: "trust-tasks-ts-proof" },
+      "capability-client": { package: "@openvtc/trust-tasks-capability-client", dir: "trust-tasks-ts-capability-client" },
     },
     foundations: {
       "binding:https": { package: "fetch (built in)", url: "https://developer.mozilla.org/docs/Web/API/Fetch_API" },

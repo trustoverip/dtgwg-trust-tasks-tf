@@ -52,6 +52,12 @@ case "$PKG" in
     TAG_PREFIX="trust-tasks-ts-tsp-v"
     WATCH=("$PKG_DIR")
     ;;
+  @openvtc/trust-tasks-capability-client)
+    PKG_DIR="trust-tasks-ts-capability-client"
+    BRANCH="release-ts-capability-client"
+    TAG_PREFIX="trust-tasks-ts-capability-client-v"
+    WATCH=("$PKG_DIR")
+    ;;
   *)
     echo "::error::unknown TS package '$PKG'"
     exit 1
