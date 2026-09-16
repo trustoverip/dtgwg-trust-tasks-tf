@@ -266,6 +266,9 @@ jobs:
           - name: "@openvtc/trust-tasks-tsp"
             dir: trust-tasks-ts-tsp
             prefix: trust-tasks-ts-tsp-v
+          - name: "@openvtc/trust-tasks-capability-client"
+            dir: trust-tasks-ts-capability-client
+            prefix: trust-tasks-ts-capability-client-v
     concurrency:
       # Two pushes landing close together would both see the version as absent
       # from npm and both try to publish it; the loser fails on a duplicate.
@@ -652,6 +655,7 @@ jobs:
           - "@openvtc/trust-tasks"
           - "@openvtc/trust-tasks-proof"
           - "@openvtc/trust-tasks-tsp"
+          - "@openvtc/trust-tasks-capability-client"
     concurrency:
       group: release-ts-pr-${{ matrix.name }}-${{ github.ref }}
       cancel-in-progress: false
