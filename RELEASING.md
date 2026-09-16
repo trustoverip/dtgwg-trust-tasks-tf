@@ -253,15 +253,13 @@ usually fixes it, because the missing crate is on crates.io by then.
 
   **The same applies to every new Dart package.** For `trust_tasks_proof`: once
   its PR has merged, run `dart pub publish` from `trust-tasks-dart-proof/`
-  signed in as a user — it resolves `trust_tasks` from pub.dev, since
-  `pubspec_overrides.yaml` is not published, but locally that file still points
-  at the tree, so delete it first (and restore it with `git checkout`) to publish
-  against what consumers will get. Then enable publishing from GitHub Actions on
-  its Admin tab with tag pattern `trust-tasks-dart-proof-v{{version}}`. Merging
-  also tags `trust-tasks-dart-proof-v0.1.0`; whether that happens before or after
-  your manual upload, `publish-dart.yml` either finds the version already
-  published and skips, or fails with the message above and the manual upload
-  follows.
+  signed in as a user. Leave `pubspec_overrides.yaml` where it is — pub never
+  uploads it, and says so with a hint rather than a warning. Then enable
+  publishing from GitHub Actions on its Admin tab with tag pattern
+  `trust-tasks-dart-proof-v{{version}}`. Merging also tags
+  `trust-tasks-dart-proof-v0.1.0`; if that runs after your manual upload,
+  `publish-dart.yml` finds the version already on pub.dev and does nothing, and
+  if it runs before, it fails with the message above and your upload follows.
 
   Adding another Dart package means: an entry in `tag-dart` and in
   `release-dart-pr` in `publish.yml`, a tag pattern and a `case` arm in

@@ -440,8 +440,9 @@ Three Dart-specific things worth knowing:
   absent and `[]` when present-and-empty, which several specs make load-bearing.
 
 `myVerifier` does not have to be yours to write. `trust_tasks_proof` is a
-Data Integrity verifier for `eddsa-jcs-2022` and `ecdsa-jcs-2019`, and it
-verifies what the Rust `trust-tasks-proof` crate signs:
+Data Integrity verifier for `eddsa-jcs-2022` and `ecdsa-jcs-2019`, with
+`signTrustTask` for the producing side, and it interoperates with the Rust
+`trust-tasks-proof` crate in both directions:
 
 ```console
 dart pub add trust_tasks_proof

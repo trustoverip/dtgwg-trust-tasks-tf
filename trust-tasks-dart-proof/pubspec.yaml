@@ -33,8 +33,10 @@ dependencies:
   # 0.1.2, which removed functions they call, so they no longer compile.
   ssi: ">=3.9.6 <5.0.0"
 
+  # SHA-256 and SHA-384 for the JCS hash data signTrustTask builds. ssi already
+  # depends on it, so this adds nothing to a consumer's graph.
+  crypto: ^3.0.6
+
 dev_dependencies:
-  # Only the test signer uses it, to hash a proof configuration.
-  crypto: ^3.0.7
   lints: ^5.1.1
   test: ^1.26.3

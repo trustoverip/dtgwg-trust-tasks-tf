@@ -1,15 +1,17 @@
 # trust_tasks_proof
 
-W3C [Data Integrity](https://www.w3.org/TR/vc-data-integrity/) proof
-verification for [Trust Tasks](https://trusttasks.org): a `ProofVerifier` for
-[`package:trust_tasks`](https://pub.dev/packages/trust_tasks), built on
-Affinidi's [`package:ssi`](https://pub.dev/packages/ssi).
+W3C [Data Integrity](https://www.w3.org/TR/vc-data-integrity/) proofs for
+[Trust Tasks](https://trusttasks.org): a `ProofVerifier` for
+[`package:trust_tasks`](https://pub.dev/packages/trust_tasks), and the signer
+that produces what it verifies, built on Affinidi's
+[`package:ssi`](https://pub.dev/packages/ssi).
 
 `trust_tasks` declares the `ProofVerifier` seam and implements no cryptosuite,
 so that it can stay dependency-free. This package is the implementation to put
 behind it when you want one that already works — the Dart counterpart of the
-Rust [`trust-tasks-proof`](https://crates.io/crates/trust-tasks-proof) crate,
-and it verifies what that crate signs.
+Rust [`trust-tasks-proof`](https://crates.io/crates/trust-tasks-proof) crate.
+Each verifies what the other signs; for the same Ed25519 key, document and
+`created`, the two produce the same `proofValue` byte for byte.
 
 ```console
 dart pub add trust_tasks trust_tasks_proof
@@ -74,7 +76,7 @@ you accept `did:web`, prefer a resolver that caches and bounds its fetches.
 | Cryptosuite | |
 |---|---|
 | `eddsa-jcs-2022` | ✓ |
-| `ecdsa-jcs-2019` | ✓ (P-256, P-384) |
+| `ecdsa-jcs-2019` | ✓ P-256. P-384 too, but the Rust crate (through `affinidi-data-integrity` 0.7.11) accepts only P-256 for this suite, so use P-256 when a Rust peer must verify |
 | `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document has no JSON-LD `@context`, so there is nothing for RDF canonicalization to expand |
 | ML-DSA suites | — see below |
 
@@ -90,9 +92,21 @@ against each.
 
 ## Signing
 
-This package verifies; it does not sign yet. `ssi`'s generators currently stamp
-`created` without a zone designator, which this verifier and the Rust one both
-refuse — a signing helper will follow once an `ssi` release carries the fix.
+```dart
+final signed = await signTrustTask(doc, signer); // signer: an ssi DidSigner
+```
+
+`signTrustTask` returns a copy of the document with a `proof` over everything
+else in it, replacing any proof already there. It refuses — with a
+`SignException` — to sign a document that could never verify: one with no
+`issuer`, or whose `issuer` is not the DID of the signer's verification method.
+
+The cryptosuite follows from the key: `eddsa-jcs-2022` for Ed25519,
+`ecdsa-jcs-2019` for P-256 and P-384. `created` is written in UTC with a `Z`.
+
+It builds the proof itself instead of calling `ssi`'s generators. Before ssi
+4.3.0 those wrote `created` with no zone designator, which this verifier and
+the Rust one both refuse, and this package still supports ssi 3.9.
 
 ## License
 

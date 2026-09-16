@@ -16,4 +16,5 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 
 - Initial release: `DataIntegrityProofVerifier`, a `ProofVerifier` for
   `package:trust_tasks` verifying `eddsa-jcs-2022` and `ecdsa-jcs-2019` proofs
-  with issuer binding, backed by Affinidi's `package:ssi`.
+  with issuer binding, and `signTrustTask`, which produces them; backed by
+  Affinidi's `package:ssi`.

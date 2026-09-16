@@ -529,15 +529,19 @@ jobs:
       # Verify before tagging, not after: the tag is what pub.dev publishes from,
       # and a published version cannot be replaced — only superseded.
       #
-      # pubspec_overrides.yaml is deleted first. In CI it points a package at
+      # pubspec_overrides.yaml is removed first. In CI it points a package at
       # the in-tree `trust_tasks`; a consumer gets the published one, so that is
       # what a release must pass against. A package that needs core API nobody
       # has released yet fails here, and the fix is to release the core first.
+      #
+      # `git rm`, not `rm`: a tracked file missing from the working tree makes
+      # `dart pub publish --dry-run` warn that a checked-in file is ignored, and
+      # exit 65. Removing it from the index as well keeps the dry run clean.
       - name: Verify the package before tagging
         if: steps.decide.outputs.should_tag == 'true'
         working-directory: ${{ matrix.dir }}
         run: |
-          rm -f pubspec_overrides.yaml
+          git rm -q --ignore-unmatch pubspec_overrides.yaml
           dart pub get
           dart analyze --fatal-infos
           dart test

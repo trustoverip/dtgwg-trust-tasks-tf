@@ -342,7 +342,8 @@ Paths are snake_cased for Dart's `file_names` lint, so the slug
 ### The hand-written Dart packages beside it
 
 `trust-tasks-dart-proof` publishes as `trust_tasks_proof`: a Data Integrity
-`ProofVerifier` on Affinidi's `package:ssi`. Things that are not obvious:
+`ProofVerifier` and `signTrustTask` on Affinidi's `package:ssi`. Things that
+are not obvious:
 
 - **`pubspec_overrides.yaml` is committed** and points `trust_tasks` at
   `../trust-tasks-dart`, the Dart form of a Rust `path =` dependency. pub never
@@ -355,9 +356,12 @@ Paths are snake_cased for Dart's `file_names` lint, so the slug
   ML-DSA without deciding that trade explicitly. The floor is 3.9.6 because
   3.9.0–3.9.5 no longer compile against `x25519` 0.1.2.
 - **`created` without a zone designator is refused**, as `trust-tasks-proof`
-  refuses it. ssi's own generators emit exactly that (fixed upstream in
-  affinidi-ssi-dart#305, unreleased at the time of writing), which is why the
-  tests sign with their own helper and why the package does not sign yet.
+  refuses it. ssi's own generators emitted exactly that until ssi 4.3.0
+  (affinidi-ssi-dart#305), so `signTrustTask` builds the proof itself rather
+  than calling them — the package still accepts ssi 3.9. It writes `created`
+  the way chrono does (no `.000`), and a test holds it to reproducing the Rust
+  fixture's `proofValue` byte for byte; keep that test when touching either
+  side.
 - **Expect 150/160 on pub.dev, not 160.** `pqcrypto` 0.4.1, a dependency of
   ssi 4, ships a `dartdoc_options.yaml` naming a file it does not publish, so
   dartdoc fails for every package that depends on it — ssi itself included.
