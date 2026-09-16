@@ -428,6 +428,24 @@ binding on Affinidi's `package:didcomm`.
   its own range says; the range matches `trust_tasks_proof`'s so the two share
   one graph.
 
+`trust-tasks-dart-tsp` publishes as `trust_tasks_tsp`, the TSP binding on
+`affinidi_tsp`. It is the odd one out in two ways:
+
+- **It cannot be published yet.** `affinidi_tsp` is not on pub.dev, so
+  `pubspec_overrides.yaml` supplies it from a pinned git commit and the pinned
+  `pubspec.yaml` names the hosted `^0.1.0` it will resolve against once
+  published. Because of that it is deliberately **absent from the release
+  matrices** in `publish.yml` (`tag-dart`, `release-dart-pr`), its tag pattern
+  and case arm in `publish-dart.yml`, and the `release-dart-pr.sh` case — a
+  release would delete the override and fail `dart pub get`. `dart.yml` tests it
+  (via the override), and `check-dart-packages` permits a tested-but-unreleased
+  package. When affinidi_tsp publishes: drop the git override, add those four
+  release entries, and flip the website matrix cell.
+- **TSP signing is Ed25519 only** in `affinidi_tsp` (the HPKE key agreement is
+  derived from the Ed25519 key), so VIDs are built from Ed25519 keys. The sealed
+  payload is the same `{type, document}` envelope object the Rust crate seals —
+  a test pins the two shapes equal.
+
 ## Build / validate / publish
 
 ```sh

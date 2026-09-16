@@ -1,0 +1,26 @@
+name: trust_tasks_tsp
+# 60-180 characters: pub.dev scores a description outside that window as a
+# failed pubspec check, because search results only show the first part of it.
+description: >-
+  The Trust Tasks ToIP Trust Spanning Protocol transport binding for Dart:
+  HPKE-sealed envelopes and the SPEC section 7.2 pipeline with a replay guard.
+version: 0.1.0
+repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
+issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
+documentation: https://trusttasks.org/implementations
+
+environment:
+  # The floor package:affinidi_tsp sets.
+  sdk: ^3.8.0
+
+dependencies:
+  trust_tasks: ^0.1.0
+  # ToIP TSP for Dart: CESR framing, HPKE-Base sealing, ssi-integrated VIDs.
+  affinidi_tsp: ^0.1.0
+  # For DidManager, DidDocument and the resolver types affinidi_tsp's API is
+  # expressed in. The range matches the other binding packages.
+  ssi: ">=3.9.6 <5.0.0"
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.26.3
