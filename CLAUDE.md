@@ -92,14 +92,14 @@ defects three times.
 
 | Check | Asserts | Cannot see |
 |---|---|---|
-| `codegen-drift`, `bindings-drift` | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
-| `bindings match specs` (`npm run check-bindings`) | generated Rust and TS agree with each spec's front matter, its `$defs.Response`, and each other | anything not expressible from front matter + schema |
-| `node --test (runtime)`, `cargo test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
-| `npm run smoke` | the built npm package imports as a consumer imports it | |
+| `codegen-drift`, `bindings-drift` (×2: TS and Go) | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
+| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS and Go agree with each spec's front matter, its `$defs.Response`, and each other | anything not expressible from front matter + schema |
+| `node --test (runtime)`, `cargo test`, `go test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
+| `npm run smoke`, `go test ./smoke` | the built npm package imports as a consumer imports it; the Go module drives a *generated* package through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
 | `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
-| the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()` and `TRUST_TASK_ERROR_TYPE_URI` name the same version | whether that version is the right one to have adopted |
+| the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI` and `TrustTaskErrorTypeURI` all name the same version | whether that version is the right one to have adopted |
 
 The fourth instance of the hand-maintained-list failure mode was binding *prose*:
 #308 moved `targetFrameworkVersion` to `0.5` in five bindings and updated none of
@@ -115,20 +115,33 @@ front-matter → policy derivation rather than importing the generator's. Do not
 DRY it up: sharing the helper would make it assert that the generator agrees
 with itself, which is the property that already held while both defects shipped.
 
+`scripts/build-go-bindings.mjs` is duplicated from `build-ts-bindings.mjs` in the
+same deliberate way, and its file header says so. Its `$ref` inliner and its
+policy derivation are third independent implementations, and `check-bindings`
+compares the emitted schema text of all three languages against each other.
+Three resolvers that agree is evidence; one resolver quoted three times is
+decoration. **Do not factor the two generators together**, tempting as the
+overlap looks.
+
 ## ⚠️ Changing a spec or payload schema — regenerate the libraries
 
-The Rust and TS client libraries are generated from the specs. When you add or
-change anything under `specs/` (a new task, a schema edit, a new category used by a
-task), you MUST regenerate **both** sides in the same PR. Drift CI guards both —
-`codegen.yml` has `codegen-drift` and `ts.yml` has `bindings-drift` (added after
-PR #85 → #86, where only Rust was regenerated). Both workflows are deliberately
-unfiltered so those two checks always report — a path-filtered job cannot be a
-required check.
+The Rust, TS and Go client libraries are generated from the specs. When you add
+or change anything under `specs/` (a new task, a schema edit, a new category used
+by a task), you MUST regenerate **all three** in the same PR. Drift CI guards all
+three — `codegen.yml` has `codegen-drift`, `ts.yml` has `bindings-drift` (added
+after PR #85 → #86, where only Rust was regenerated) and `go.yml` has its own
+`bindings-drift`. All three workflows are deliberately unfiltered so those checks
+always report — a path-filtered job cannot be a required check.
 
 1. **Regenerate Rust bindings:** `cargo run -p trust-tasks-codegen && cargo fmt --all`
    (commit the diff — CI fails on drift).
 2. **Regenerate TS bindings:** `npm run build-ts-bindings`
    (updates `trust-tasks-ts/src/<slug>/...` + `src/index.ts` exports).
+3. **Regenerate Go bindings:** `npm run build-go-bindings`
+   (updates `trust-tasks-go/specs/<slug>/v<MAJOR>_<MINOR>/payload.go`). Unlike the
+   Rust step this needs no separate format command — the generator runs `gofmt`
+   itself and **fails** if it is not on PATH, because a contributor without Go
+   installed would otherwise commit unformatted output and discover it in CI.
 
 **Do NOT bump a version or write a CHANGELOG entry.** That changed — see below.
 What you owe the release instead is a conventional-commit PR title: `feat(<slug>):`
@@ -147,15 +160,18 @@ recollection that "your job is just to bump the versions in the PR; the merge to
 `.github/workflows/publish.yml` no longer publishes whatever version is newer
 than the registry. It runs [release-plz](https://release-plz.dev), which keeps a
 single **Release PR** up to date with the version bumps and changelog entries the
-merged commits imply; merging *that* PR is the release. A companion job does the
-same for `@openvtc/trust-tasks` via `scripts/release-ts-pr.sh`, because
-release-plz is Rust-only and cannot bump a `package.json`.
+merged commits imply; merging *that* PR is the release. Companion jobs do the
+same for `@openvtc/trust-tasks` via `scripts/release-ts-pr.sh` and for
+`trust-tasks-go` via `scripts/release-go-pr.sh`, because release-plz is Rust-only
+and cannot bump a `package.json` — and the Go module has no manifest at all.
 
 Consequences for anything you do in this repo:
 
-- **Never edit a `version = ` in a `Cargo.toml`, or `"version"` in
-  `trust-tasks-ts/package.json`.** They are assigned by the Release PR. A version
-  in a feature PR collides with every other open PR touching that package.
+- **Never edit a `version = ` in a `Cargo.toml`, `"version"` in
+  `trust-tasks-ts/package.json`, or `const Version` in
+  `trust-tasks-go/trusttasks/version.go`.** They are assigned by the Release PR.
+  A version in a feature PR collides with every other open PR touching that
+  package.
 - **Never hand-write a `CHANGELOG.md` entry.** They are generated from
   conventional commits by `cliff.toml`. The commit body is included verbatim.
 - **The PR title is load-bearing.** PRs squash-merge, so the title becomes the
@@ -207,7 +223,9 @@ side too. A break in `trust-tasks-rs` is usually a break in both libraries.
 
 **`StandardCode` is `#[non_exhaustive]` as of 0.7.0.** Adding a framework
 standard error code (SPEC §8.3) is therefore no longer breaking for downstream
-`match` expressions. It still requires a new `trust-task-error` spec version —
+`match` expressions. Go's `StandardCode` is a named string type, which is open
+by construction and so sits with Rust here; TypeScript's is a closed union and is
+the one side where adding a code is a **breaking** change. It still requires a new `trust-task-error` spec version —
 the code enum lives in that payload schema, so a document carrying a code the
 declared version doesn't list will not validate — and both SDKs must be pointed
 at the new version (`trust_task_error_type_uri()` in `trust-tasks-rs`,
@@ -239,6 +257,41 @@ construction path). The consequence worth knowing:
   a spec with no `$defs.Response` gets no impl. `HttpsServer::on` still takes
   both type parameters — constraining it is an open follow-up.
 
+## ⚠️ The Go module — four things that bite
+
+`trust-tasks-go` follows Rust's shape, not TypeScript's: one package per
+specification version, cross-file `$ref`s inlined per package, **no component
+hoisting**. Go is nominally typed, so hoisting `Ext` into one shared package
+would merge type identities the way it would in Rust (#283 declined it there for
+the same reason). TypeScript hoists because structural typing makes it free.
+
+1. **A directory starting with `_` is invisible to the go command.** `_shared`
+   and `_framework` are therefore emitted as `shared` and `framework`. A package
+   under an underscored directory would be generated, committed, and silently
+   excluded from `go build ./...` — green board, unreachable code.
+
+2. **One Go package is one *directory*, not one file.** TypeScript gives
+   `auth/_shared/0.1/session.ts` and `tokens.ts` separate namespaces, and both
+   declare `Ext`. Side by side in Go that is a redeclaration error, so every
+   schema gets its own directory: `specs/auth/shared/tokens/v0_1`.
+
+3. **Optional members are pointers, *including slices and maps*.** `omitempty` on
+   a plain slice drops an empty one from the wire, collapsing "present and empty"
+   into "absent" — which `acl`'s `allowedKeys` documents at length as a
+   privilege-escalation defect ("PRESENT-BUT-EMPTY means authorized on NO keys —
+   the opposite of absent"). `*[]string` is ugly and it is the only spelling that
+   can say it. `trust-tasks-go/smoke` pins this.
+
+4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
+   in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
+   `scripts/release-go-pr.sh` refuses to propose such a bump and tells you what to
+   do instead — it is a human migration, not a version number.
+
+And the one that has no undo: **a Go release cannot be retracted.**
+`proxy.golang.org` caches a tag permanently and by design. `publish-go` builds,
+vets and tests *before* tagging for that reason. crates.io and npm both have a
+retraction window; Go does not.
+
 ## Build / validate / publish
 
 ```sh
@@ -246,6 +299,7 @@ npm install                       # one-time
 npm run build                     # validate specs + regenerate website registry
 npm run validate                  # validate only, no website writes
 npm run build-ts-bindings         # regenerate TS bindings
+npm run build-go-bindings         # regenerate Go bindings (gofmts itself)
 cargo run -p trust-tasks-codegen  # regenerate Rust bindings (then `cargo fmt --all`)
 ```
 
