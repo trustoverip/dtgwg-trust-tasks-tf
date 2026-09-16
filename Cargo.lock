@@ -5106,6 +5106,7 @@ dependencies = [
 name = "trust-tasks-didcomm"
 version = "0.21.1"
 dependencies = [
+ "affinidi-crypto",
  "affinidi-messaging-didcomm",
  "affinidi-messaging-sdk",
  "affinidi-messaging-test-mediator",
