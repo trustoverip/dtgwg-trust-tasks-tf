@@ -129,3 +129,47 @@ jobs:
       - name: Run the runtime conformance tests and the smoke test
         working-directory: trust-tasks-go
         run: go test -race ./...
+
+  # The TSP transport binding is a SEPARATE Go module (trust-tasks-go/tsp) so the
+  # core stays dependency-free — the jobs above run `./...` in trust-tasks-go,
+  # which excludes a nested module, so none of them pulls affinidi-tsp-go. This
+  # job builds, vets and tests that module on its own floor.
+  #
+  # It is NOT wired into a release: affinidi-tsp-go is required at a pseudo-version
+  # (it has no tag yet), so a `trust-tasks-go/tsp/vX.Y.Z` release waits until it is
+  # tagged. Until then `go get` of this module resolves the pseudo-version from
+  # the public repo.
+  tsp:
+    name: go test trust-tasks-go/tsp (${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.27 is the `go` directive in tsp/go.mod, inherited from affinidi-tsp-go.
+        go: ["1.27", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Build
+        working-directory: trust-tasks-go/tsp
+        run: go build ./...
+      - name: Vet
+        working-directory: trust-tasks-go/tsp
+        run: go vet ./...
+      - name: gofmt
+        if: matrix.go == 'stable'
+        working-directory: trust-tasks-go/tsp
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Test
+        working-directory: trust-tasks-go/tsp
+        run: go test -race ./...
