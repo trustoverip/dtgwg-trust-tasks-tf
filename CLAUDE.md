@@ -385,6 +385,15 @@ authcrypt on the standard library.
   (RFC 3394, **pinned to the RFC's own test vector**) and the RFC 7518
   content-encryption in `jwe.go` are hand-rolled. anoncrypt and any other
   alg/enc are rejected on unpack — no authenticated sender (binding §2/§4).
+- **It matches the DIDComm ecosystem's ECDH-1PU exactly, which is subtle.** DIDComm
+  authcrypt is *tag-in-KDF*: encrypt the content **first**, then derive the KEK
+  with the content-encryption tag fed to the Concat KDF as a length-prefixed
+  `SuppPrivInfo` (draft-madden §2.3), and `apv = base64url(SHA-256(sorted recipient
+  kids joined by "."))`, `apu = base64url(skid)`. `aries-askar`, `didcomm-python`,
+  `didcomm-rust` and `affinidi` all do this; a plain Concat KDF with `apv = rawKid`
+  (what this binding did through `v0.1.0`) is spec-shaped but does **not**
+  interoperate. Do not "simplify" the KEK derivation back — it is load-bearing.
+  The rework to fix it was the `v0.1.0` → `v0.2.0` breaking change.
 - **`skid` is authenticated by the ECDH-1PU static secret, not trusted on its
   face.** The recipient resolves the sender's key *from* `skid` and derives the
   KEK with it; a forged `skid` yields a KEK that fails the key unwrap. So there
@@ -399,10 +408,11 @@ authcrypt on the standard library.
   the `go 1.22` floor. Keep the files gofmt-clean (the core job's `gofmt -l .`
   recurses in). **Released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag** the
   same way `proof` is — a `version.go`, a `publish-go` matrix leg, and a
-  `release-go-pr` leg — independent of the core. A shared cross-library authcrypt
-  fixture with the Rust/Dart bindings is still a documented follow-up — the
-  profile is spec-standard and the primitives are vector-pinned, but byte-for-byte
-  interop is not yet asserted the way the sealed TSP/proof envelopes are.
+  `release-go-pr` leg — independent of the core. **Cross-library interop is now
+  asserted both directions**: `interop_test.go` here unpacks a JWE packed by
+  `affinidi-messaging-didcomm` (affinidi → Go), and `trust-tasks-didcomm/tests/
+  interop.rs` unpacks a Go-packed JWE with affinidi (Go → affinidi). The fixtures
+  and their regeneration harnesses are in `testdata/` (see its README).
 
 ### The `trust-tasks-go/capabilityclient` nested module
 
