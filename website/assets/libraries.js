@@ -250,12 +250,13 @@ window.TT_LIBRARIES = [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
       "binding:https", "binding:didcomm",
-      "proof",
+      "proof", "capability-client",
     ],
     transports: {
       "binding:https": { package: "trust_tasks_https", dir: "trust-tasks-dart-https" },
       "binding:didcomm": { package: "trust_tasks_didcomm", dir: "trust-tasks-dart-didcomm" },
       proof: { package: "trust_tasks_proof", dir: "trust-tasks-dart-proof" },
+      "capability-client": { package: "trust_tasks_capability_client", dir: "trust-tasks-dart-capability-client" },
     },
     // trust_tasks_tsp is built and tested (bindings/tsp) but not on pub.dev yet
     // — affinidi_tsp, the library it seals with, is not published — so it is a
