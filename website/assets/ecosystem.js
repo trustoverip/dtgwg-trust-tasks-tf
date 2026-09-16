@@ -27,22 +27,25 @@ window.TT_ECOSYSTEM = [
     repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf",
   },
   {
-    id: "trust-tasks-rs",
-    name: "trust-tasks (Rust)",
-    tagline: "The reference implementation.",
-    role: "Reference implementation · Rust",
+    id: "trust-tasks-libraries",
+    name: "Trust Tasks client libraries",
+    tagline: "The reference implementations.",
+    role: "Reference implementations · Rust, TypeScript, Go, Dart",
     tier: "reference",
     accent: "violet",
     summary:
-      "A Rust workspace that turns the Trust Tasks framework into runnable code: framework primitives (envelope, TypeUri, Proof, RejectReason, TransportHandler), three transport bindings (TSP, HTTPS, DIDComm v2.1), a ProofVerifier implementation backed by Affinidi Data Integrity, a shared capability wire client, and a codegen tool that materialises typed payload modules for every spec in the registry.",
+      "Four reference client libraries, each generated from the same registry and published to its own language's package registry. All four carry a typed payload for every specification and implement the SPEC §7.2 consumer pipeline; a cross-language conformance check holds them to the same verdict on the same document. Transport bindings — TSP, HTTPS, DIDComm v2 and v1 — plus a Data Integrity proof backend ship in the Rust workspace today.",
+    // No version numbers: the previous entry said "Tracking framework 0.2
+    // (0.2.x crate line)" while the workspace was at 0.21. Each registry states
+    // its own current version, and the capability matrix states what each
+    // library can do — both are checked against the tree by
+    // `checkLibraryRegistry()` in scripts/build-registry.mjs.
     bullets: [
-      "trust-tasks-rs — core library + generated specs::*",
-      "trust-tasks-tsp — pack/unpack over ToIP Trust Spanning Protocol (preferred)",
-      "trust-tasks-https — typed axum server + reqwest client",
-      "trust-tasks-didcomm — pack/unpack over DIDComm v2.1",
-      "trust-tasks-proof — pluggable W3C Data Integrity verifiers (default `affinidi` backend)",
-      "trust-tasks-capability-client — shared wire client for the capability families",
-      "Tracking framework 0.2 (0.2.x crate line)",
+      "trust-tasks-rs — crates.io · the workspace with the transport bindings",
+      "@openvtc/trust-tasks — npm · types + §7.2 pipeline, zero dependencies",
+      "trust-tasks-go — Go module proxy · one package per specification",
+      "trust_tasks — pub.dev · Dart and Flutter",
+      "See the capability matrix for which library supports which transport",
     ],
     primary: { label: "Implementations · trusttasks.org", href: "/implementations" },
     repo: "https://github.com/trustoverip/dtgwg-trust-tasks-tf",
