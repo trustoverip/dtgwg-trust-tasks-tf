@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/backup/get-chunk/1.0",
+  "title": "VTA Backup — Get Chunk — payload",
+  "description": "Asks the recipient for one chunk of a `chunkedTrustTask` export bundle, by index. Non-consuming: the same request may be repeated and returns the same bytes while the bundle is live. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundleId",
+    "index"
+  ],
+  "properties": {
+    "bundleId": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/BundleId",
+      "description": "Handle from the initiate-export descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one."
+    },
+    "index": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex",
+      "description": "Which chunk. Zero-based, below the manifest's chunkCount."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Backup Get Chunk — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleId",
+        "index",
+        "digestMultibase",
+        "data",
+        "expiresAt"
+      ],
+      "properties": {
+        "bundleId": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/BundleId",
+          "description": "Echoed, so a chunk that arrives out of order or late is attributable to its bundle without consulting the request."
+        },
+        "index": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex",
+          "description": "Echoed, for the same reason."
+        },
+        "digestMultibase": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest of this chunk's raw bytes, restated from the manifest. A producer checks `data` against the manifest's digest for this index, not against this member — this one is a convenience for a producer that has not kept the manifest to hand, and is never sufficient on its own, because it travels with the bytes it describes, and whoever could alter one could alter the other."
+        },
+        "data": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkData"
+        },
+        "expiresAt": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt",
+          "description": "The bundle's current expiry, after any extension this request earned. The producer plans the rest of its retrieval against this, not against the descriptor's original value."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

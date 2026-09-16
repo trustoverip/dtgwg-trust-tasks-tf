@@ -3,5 +3,7 @@
 pub mod abort;
 pub mod complete_export;
 pub mod finalize_import;
+pub mod get_chunk;
 pub mod initiate_export;
 pub mod initiate_import;
+pub mod put_chunk;
