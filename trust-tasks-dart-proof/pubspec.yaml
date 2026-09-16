@@ -2,8 +2,8 @@ name: trust_tasks_proof
 # 60-180 characters: pub.dev scores a description outside that window as a
 # failed pubspec check, because search results only show the first part of it.
 description: >-
-  W3C Data Integrity proof verification for Trust Tasks: a ProofVerifier for
-  package:trust_tasks, built on Affinidi's ssi library.
+  W3C Data Integrity proofs for Trust Tasks: a ProofVerifier for
+  package:trust_tasks and the signer that produces what it verifies, on ssi.
 version: 0.1.0
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues

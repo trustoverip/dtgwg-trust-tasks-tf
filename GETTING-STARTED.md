@@ -454,6 +454,9 @@ import 'package:trust_tasks_proof/trust_tasks_proof.dart';
 final myVerifier = DataIntegrityProofVerifier.forDidKey(); // did:key, no I/O
 ```
 
+To carry documents over HTTPS, `trust_tasks_https` has a client and a server
+that runs this pipeline per request — see its README.
+
 Full detail is in [`trust-tasks-dart/README.md`](./trust-tasks-dart/README.md)
 and [`trust-tasks-dart-proof/README.md`](./trust-tasks-dart-proof/README.md).
 

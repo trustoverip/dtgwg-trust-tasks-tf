@@ -1,0 +1,27 @@
+name: trust_tasks_https
+# 60-180 characters: pub.dev scores a description outside that window as a
+# failed pubspec check, because search results only show the first part of it.
+description: >-
+  The Trust Tasks HTTPS transport binding for Dart: a typed client and a
+  framework-agnostic server running the SPEC section 7.2 pipeline per request.
+version: 0.1.0
+repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
+issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
+documentation: https://trusttasks.org/implementations
+
+environment:
+  # The same floor as trust_tasks. package:http 1.2.1 is the first 1.x that
+  # declares it.
+  sdk: ^3.3.0
+
+dependencies:
+  trust_tasks: ^0.1.0
+  # The client only. It runs on the web and in Flutter as well as the VM; the
+  # server's dart:io adapter lives in a separate library so that it does not
+  # take the web away from the client.
+  http: ^1.2.1
+
+dev_dependencies:
+  # ^4, not ^5: lints 5 requires SDK 3.5, and this package's floor is 3.3.
+  lints: ^4.0.0
+  test: ^1.25.0

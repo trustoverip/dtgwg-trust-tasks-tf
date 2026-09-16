@@ -121,8 +121,8 @@ jobs:
         working-directory: trust-tasks-dart
         run: dart test
 
-  # The hand-written packages built on trust_tasks: at present the Data
-  # Integrity verifier. Each is held to the same bar as the core — analysis with
+  # The hand-written packages built on trust_tasks: the Data Integrity proofs
+  # and the HTTPS binding. Each is held to the same bar as the core — analysis with
   # --fatal-infos, formatting at its own SDK floor, and its tests on that floor
   # and on stable.
   #
@@ -148,6 +148,11 @@ jobs:
           - package: trust-tasks-dart-proof
             sdk: stable
             ssi: "3.9.6"
+          # 3.3 is the floor it shares with trust_tasks.
+          - package: trust-tasks-dart-https
+            sdk: "3.3"
+          - package: trust-tasks-dart-https
+            sdk: stable
     steps:
       - uses: actions/checkout@v6
       - uses: dart-lang/setup-dart@v1

@@ -57,7 +57,7 @@ no hand-written entries.
 
 ## What gets published
 
-**Nine crates, one npm package, one Go module and two Dart packages.**
+**Nine crates, one npm package, one Go module and three Dart packages.**
 `trust-tasks-codegen` sets
 `publish = false` in its own `Cargo.toml` — it is the internal generator.
 
@@ -73,6 +73,7 @@ no hand-written entries.
 | `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
 | `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
+| `trust_tasks_https` | pub.dev — the HTTPS transport binding, from a `trust-tasks-dart-https-vX.Y.Z` tag |
 
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
@@ -123,7 +124,8 @@ declarations that must stay equal: `version:` in `pubspec.yaml` and
 `scripts/release-dart-pr.sh trust_tasks_proof`, on the `release-dart-proof`
 branch, measured from the `trust-tasks-dart-proof-v*` tag and watching only
 `trust-tasks-dart-proof/`. It moves `version:` alone; the package has no version
-constant.
+constant. **`chore: release trust_tasks_https <version>`** is the same again, on
+`release-dart-https`, from the `trust-tasks-dart-https-v*` tag.
 
 > ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
 > Dart bumps are only as accurate as the commit subjects: if a change breaks one
@@ -251,13 +253,14 @@ usually fixes it, because the missing crate is on crates.io by then.
   tag proves nothing. `0.1.1` is the first release the automation actually
   performs end to end.
 
-  **The same applies to every new Dart package.** For `trust_tasks_proof`: once
-  its PR has merged, run `dart pub publish` from `trust-tasks-dart-proof/`
+  **The same applies to every new Dart package.** For `trust_tasks_proof` (done
+  2026-09-16) and `trust_tasks_https`: once its PR has merged, run
+  `dart pub publish` from the package's directory
   signed in as a user. Leave `pubspec_overrides.yaml` where it is — pub never
   uploads it, and says so with a hint rather than a warning. Then enable
-  publishing from GitHub Actions on its Admin tab with tag pattern
-  `trust-tasks-dart-proof-v{{version}}`. Merging also tags
-  `trust-tasks-dart-proof-v0.1.0`; if that runs after your manual upload,
+  publishing from GitHub Actions on its Admin tab with its tag pattern
+  (`trust-tasks-dart-proof-v{{version}}`, `trust-tasks-dart-https-v{{version}}`).
+  Merging also writes the package's `-v0.1.0` tag; if that runs after your manual upload,
   `publish-dart.yml` finds the version already on pub.dev and does nothing, and
   if it runs before, it fails with the message above and your upload follows.
 
