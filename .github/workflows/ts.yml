@@ -111,6 +111,37 @@ jobs:
         working-directory: trust-tasks-ts
         run: npm run smoke
 
+  # The hand-written packages built on @openvtc/trust-tasks: the Data Integrity
+  # proof verifier. Each builds against the *published* @openvtc/trust-tasks
+  # (its package.json depends on it), so a PR that needs unreleased core API
+  # fails here until the core releases — the same discipline as the Dart
+  # `packages` job.
+  packages:
+    name: ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ["trust-tasks-ts-proof"]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Install
+        working-directory: ${{ matrix.package }}
+        run: npm ci --no-audit --no-fund
+      - name: Build
+        working-directory: ${{ matrix.package }}
+        run: npm run build
+      - name: Typecheck tests
+        working-directory: ${{ matrix.package }}
+        run: npm run typecheck:test
+      - name: Test
+        working-directory: ${{ matrix.package }}
+        run: npm test
+
   # The drift job above proves the generators were re-run. It compares each
   # generator's output to itself, so an output that is consistently wrong is
   # consistently clean — which is how the response-type drop (#174) and the

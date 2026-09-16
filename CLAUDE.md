@@ -326,6 +326,24 @@ its crypto. Keeping them apart is the whole point.
   in your own store). The sealed `{type, document}` envelope matches the Rust
   crate and the Dart package byte-for-byte, pinned by a test in each.
 
+## ⚠️ The hand-written TypeScript packages
+
+`@openvtc/trust-tasks-proof` (dir `trust-tasks-ts-proof`) is the first sibling
+package to the core `@openvtc/trust-tasks`. Notes:
+
+- **Proof crypto is rolled on `@noble`**, not digitalbazaar — its
+  jsonld-signatures/jsonld stack fits our bare JCS documents poorly and is
+  heavy, and the ecosystem (vti-tsp-js, vti-didcomm-js, pnm-core) is @noble-based
+  and browser-first. The verifier is byte-compatible with the Rust and Dart proof
+  libraries (a test reproduces the Rust `proofValue`), and @noble is the place
+  ML-DSA (PQC) lands later. eddsa-jcs-2022 + ecdsa-jcs-2019; did:key only.
+- **Tests compile to `.test-build/` and import from `../src`** (the core's
+  convention), run with `node --test`. The npm package ships `dist/` only.
+- **Release wiring is not generalised yet.** `publish-npm` and `release-ts-pr`
+  are single-package; the next TS package (TSP) turns them into a matrix, the way
+  the Dart side did. Until then the proof package is tested in `ts.yml` but not
+  auto-published.
+
 ## ⚠️ The Dart package — where it differs from the other three
 
 `trust-tasks-dart` publishes to pub.dev as `trust_tasks`. It follows the
