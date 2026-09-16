@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/backup/put-chunk/1.0",
+  "title": "VTA Backup — Put Chunk — payload",
+  "description": "Writes one chunk of a `chunkedTrustTask` import bundle, by index, into a slot opened by initiate-import. Idempotent for identical bytes; bytes that do not match the pre-committed manifest are refused. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundleId",
+    "index",
+    "digestMultibase",
+    "data"
+  ],
+  "properties": {
+    "bundleId": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/BundleId",
+      "description": "Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one."
+    },
+    "index": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex",
+      "description": "Which chunk. Zero-based, below the manifest's chunkCount."
+    },
+    "digestMultibase": {
+      "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "Digest of this chunk's raw bytes, restating the manifest entry for `index`. Restated so that a chunk sent to the wrong index is refused as a mismatch against the manifest at the index it names, rather than surviving until reassembly — the recipient checks this member against the manifest and `data` against both."
+    },
+    "data": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkData"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Backup Put Chunk — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundleId",
+        "index",
+        "stored",
+        "remainingCount",
+        "expiresAt"
+      ],
+      "properties": {
+        "bundleId": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/BundleId",
+          "description": "Echoed so the response stands alone as the acknowledgement of one write."
+        },
+        "index": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex",
+          "description": "Echoed, so an acknowledgement arriving out of order is attributable to its write."
+        },
+        "stored": {
+          "type": "boolean",
+          "description": "Whether this request is what stored the chunk. False means the recipient already held identical bytes at this index — a success, not a failure, and the reason a write can be retried safely. Required rather than optional: an absent member on an idempotent repeat would be indistinguishable from a first write."
+        },
+        "remainingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4095,
+          "description": "How many indices the slot still lacks after this write. Zero means the upload is complete and finalize-import can be sent."
+        },
+        "expiresAt": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt",
+          "description": "The slot's current expiry, after any extension this write earned."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

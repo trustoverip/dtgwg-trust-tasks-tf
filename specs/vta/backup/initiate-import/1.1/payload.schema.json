@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/backup/initiate-import/1.1",
+  "title": "VTA Backup — Initiate Import — payload",
+  "description": "Asks the recipient to open a slot for an encrypted bundle the producer is about to upload — by an HTTPS address (`stream`) or chunk by chunk over Trust Task documents (`chunkedTrustTask`) — pre-committing the digest and size, and for a chunked upload the chunk manifest, so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expectedSha256",
+    "expectedSizeBytes"
+  ],
+  "properties": {
+    "expectedSha256": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSha256",
+      "description": "Lowercase hex SHA-256 of the whole bundle about to be uploaded, committed before the upload begins. The recipient refuses bytes that hash differently, which is what bounds the damage from a leaked write token or a substituted chunk. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying."
+    },
+    "expectedSizeBytes": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSizeBytes",
+      "description": "Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first."
+    },
+    "algorithm": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm."
+    },
+    "chunks": {
+      "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/ChunkManifest",
+      "description": "The chunk manifest the upload will follow. REQUIRED when `algorithm` is `chunkedTrustTask` and forbidden otherwise — a rule over two members that this schema does not express; a recipient refuses a violation with invalidManifest. Pre-committed for the same reason the whole-bundle digest is: the recipient knows what each chunk must be before it receives any."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Backup Initiate Import — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "descriptor"
+      ],
+      "properties": {
+        "descriptor": {
+          "$ref": "../../../_shared/0.1/backup-transfer.schema.json#/$defs/BundleDescriptor",
+          "description": "Where or how to write the bytes, on what terms, and until when."
+        },
+        "completionHint": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

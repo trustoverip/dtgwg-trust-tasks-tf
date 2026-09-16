@@ -43,6 +43,14 @@ export type AuditAction =
   | "adminAdd"
   | "adminStrip";
 /**
+ * The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.
+ */
+export type BundleDescriptor = StreamDescriptor | ChunkedDescriptor;
+/**
+ * Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.
+ */
+export type BundleId = string;
+/**
  * A calendar date, `YYYY-MM-DD` (RFC 3339 full-date), with no time or zone. Compared as a UTC date.
  */
 export type CalendarDate = string;
@@ -82,6 +90,22 @@ export type Capability_DeviceV0_2 =
   | "memoryWrite"
   | "roomPresent"
   | "roomOpen";
+/**
+ * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
+ */
+export type ChunkCount = number;
+/**
+ * The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.
+ */
+export type ChunkData = string;
+/**
+ * Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.
+ */
+export type ChunkIndex = number;
+/**
+ * Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.
+ */
+export type ChunkSize = number;
 /**
  * The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.
  *
@@ -166,6 +190,14 @@ export type DigestMultibase = string;
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";
 /**
+ * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
+ */
+export type ExpectedSha256 = string;
+/**
+ * Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.
+ */
+export type ExpectedSizeBytes = number;
+/**
  * Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.
  */
 export type ExpectedVersion_PersonaV0_1 = number;
@@ -173,6 +205,10 @@ export type ExpectedVersion_PersonaV0_1 = number;
  * Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means "create only" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read "absent", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.
  */
 export type ExpectedVersion_VtaV0_1 = number;
+/**
+ * After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.
+ */
+export type ExpiresAt = string;
 /**
  * A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.
  */
@@ -1248,6 +1284,36 @@ export interface CapabilityManifest {
    */
   configSchema?: string;
   ext?: Ext;
+}
+/**
+ * The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.
+ *
+ * Consistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.
+ */
+export interface ChunkManifest {
+  chunkSize: ChunkSize;
+  chunkCount: ChunkCount;
+  /**
+   * Digest of each chunk's raw bytes (not of its base64url encoding), in index order. Compared as decoded multihash bytes, never as encoded strings. sha2-256 is RECOMMENDED and MUST be implemented by every party; a party that does not implement the hash a digest names MUST treat the manifest as unverifiable rather than skip the check.
+   *
+   * @minItems 1
+   * @maxItems 4096
+   */
+  chunkDigests: [DigestMultibase, ...DigestMultibase[]];
+}
+/**
+ * A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.
+ */
+export interface ChunkedDescriptor {
+  bundleId: BundleId;
+  /**
+   * Discriminates this shape from StreamDescriptor.
+   */
+  algorithm: "chunkedTrustTask";
+  chunks: ChunkManifest;
+  expectedSha256: ExpectedSha256;
+  expectedSizeBytes: ExpectedSizeBytes;
+  expiresAt: ExpiresAt;
 }
 /**
  * A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.
@@ -3444,6 +3510,27 @@ export interface StepUpProof_VaultV0_2 {
    * Maintainer-issued challenge id the proof responds to.
    */
   challengeId: string;
+}
+/**
+ * A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/* /1.0` descriptor.
+ */
+export interface StreamDescriptor {
+  bundleId: BundleId;
+  /**
+   * The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.
+   */
+  algorithm: string;
+  /**
+   * Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.
+   */
+  transportUrl: string;
+  /**
+   * Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.
+   */
+  transportToken: string;
+  expectedSha256: ExpectedSha256;
+  expectedSizeBytes: ExpectedSizeBytes;
+  expiresAt: ExpiresAt;
 }
 /**
  * An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.

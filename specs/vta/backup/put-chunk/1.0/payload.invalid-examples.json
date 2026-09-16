@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Missing `digestMultibase`. The producer restates the digest it pre-committed so that a chunk written to the wrong index is caught as a mismatch at the index, not only after reassembly.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": 2,
+      "data": "YmFja3VwLXRhaWwh"
+    }
+  },
+  {
+    "note": "Missing `data`. There is no empty chunk: a chunk holds at least one byte.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": 2,
+      "digestMultibase": "zQmTcWLvAPe4Txz32vVqZe5jgX4nBPiaBsTTCp4bLXDMzTT"
+    }
+  },
+  {
+    "note": "`data` in standard base64 with padding. The member is base64url without padding; accepting both alphabets makes the same chunk two different strings, and `+`, `/` and `=` are exactly what a lenient decoder silently drops.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": 2,
+      "digestMultibase": "zQmTcWLvAPe4Txz32vVqZe5jgX4nBPiaBsTTCp4bLXDMzTT",
+      "data": "YmFja3VwLXRhaWwh+/=="
+    }
+  },
+  {
+    "note": "Digest as bare hex. Chunk digests are DigestMultibase, so the hash algorithm travels with the value.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": 2,
+      "digestMultibase": "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0",
+      "data": "YmFja3VwLXRhaWwh"
+    }
+  }
+]
