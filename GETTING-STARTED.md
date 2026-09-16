@@ -27,6 +27,10 @@ npm install @openvtc/trust-tasks
 go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go
 ```
 
+```sh
+dart pub add trust_tasks
+```
+
 `trust-tasks` is a facade: it re-exports the framework's eight crates behind
 Cargo features so you pick a transport rather than a set of version numbers.
 Everything in it is a `pub use` — `trust_tasks::TrustTask` **is**
@@ -372,6 +376,70 @@ Three Go-specific things worth knowing before you write the handler:
   Integrity verifier works over the serialization anyway.
 
 Full detail is in [`trust-tasks-go/README.md`](./trust-tasks-go/README.md).
+
+---
+
+## 3b. The same round trip in Dart
+
+The Dart package is `trust_tasks`. Its library exports the runtime only — Dart's
+`export` is flat, so there is no way to namespace 500 generated libraries behind
+one barrel — and you import the specification you need with a prefix.
+
+```dart
+import 'package:trust_tasks/trust_tasks.dart';
+import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+
+// The guard IS the duplicate-execution record — one per consumer, held for the
+// process's lifetime. Back it with a shared store if you run replicas.
+final guard = InMemoryReplayGuard();
+
+final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
+  transport: StaticTransport(TransportContext(issuer: peerVid)),
+  spec: acl_grant.spec,
+  proofPolicy: ProofPolicy.verify(myVerifier),
+  payloadPolicy: PayloadPolicy.validate(myValidator),
+  // acl/grant is consequential: a replayed envelope must not grant twice.
+  checks: consequentialChecks(guard),
+  doc: doc,
+  myVid: 'did:web:maintainer.example',
+  now: DateTime.now(),
+  newErrorId: () => uuid.v4(),
+  payloadToJson: (p) => p.toJson(),
+  handler: (accepted, parties) async => respondWith(
+    accepted,
+    uuid.v4(),
+    acl_grant.Response(entry: await applyGrant(accepted.payload.entry, parties)),
+  ),
+);
+
+switch (outcome) {
+  case Handled(:final response):          return send(response);
+  case Rejected(:final error):            return send(error);
+  case Suppressed(:final reason):         return log(reason);
+  case Accepted():                        return;  // fire-and-forget
+  case DuplicateOutcome(:final priorResponse):
+    // §7.2 item 11: this document already executed.
+    if (priorResponse != null) send(priorResponse);
+}
+```
+
+The outcome is a **sealed** hierarchy, so that `switch` is exhaustive and the
+compiler tells you when a case is missing — the one place Dart gives more than
+the other three.
+
+Three Dart-specific things worth knowing:
+
+- **Closed value sets are extension types, not enums.** A Dart `enum` throws on a
+  value it does not recognise, which would crash your parse the first time a peer
+  on a newer MINOR sends one (SPEC §5.2 says it must not). Compare against the
+  generated constants and treat anything else as unrecognised.
+- **`payloadToJson` is an explicit argument** because Dart cannot recover a type
+  argument at runtime. Pass `(p) => p.toJson()`; the pipeline needs it for the
+  item-11 digest and for the validator.
+- **Absent and empty stay distinct for free** — `List<String>?` is null when
+  absent and `[]` when present-and-empty, which several specs make load-bearing.
+
+Full detail is in [`trust-tasks-dart/README.md`](./trust-tasks-dart/README.md).
 
 ---
 

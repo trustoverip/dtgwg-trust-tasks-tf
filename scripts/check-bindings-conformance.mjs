@@ -59,6 +59,7 @@ const SPECS_DIR = path.join(ROOT, "specs");
 const TS_DIR = path.join(ROOT, "trust-tasks-ts", "src");
 const RS_DIR = path.join(ROOT, "trust-tasks-rs", "src", "specs");
 const GO_DIR = path.join(ROOT, "trust-tasks-go", "specs");
+const DART_DIR = path.join(ROOT, "trust-tasks-dart", "lib", "specs");
 
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
@@ -272,6 +273,77 @@ function goSchemaConst(src, name) {
   }
 }
 
+/** The named arguments inside `const SpecPolicy <name> = SpecPolicy( … );`. */
+function dartPolicy(src, name) {
+  const block = new RegExp(
+    `const SpecPolicy ${name} = SpecPolicy\\(([\\s\\S]*?)\\n\\);`,
+    "m",
+  ).exec(src);
+  if (!block) return null;
+  const read = (field, dflt) => {
+    const m = new RegExp(`${field}:\\s*(true|false),`).exec(block[1]);
+    return m ? m[1] === "true" : dflt;
+  };
+  // The policy references the library's own `typeUri` / `responseTypeUri`
+  // constant rather than repeating the literal, so resolve one level.
+  const ref = /typeUri:\s*(\w+),/.exec(block[1]);
+  let typeUri = null;
+  if (ref) {
+    // `dart format` wraps a long Type URI onto its own line, so the literal is
+    // not necessarily on the same line as the `=` — the same allowance
+    // rustPolicy makes for rustfmt.
+    const decl = new RegExp(
+      // `\\s` not `\s`: inside a template literal an unrecognised escape
+      // collapses to the bare character before the RegExp sees it.
+      `const String ${ref[1]}\\s*=\\s*\x27([^\x27]+)\x27;`,
+    ).exec(src);
+    typeUri = decl ? decl[1] : null;
+  }
+  return {
+    typeUri,
+    // The generator emits every field explicitly, so an absent one would be a
+    // generator bug rather than a default.
+    isBearer: read("isBearer", false),
+    isProofRequired: read("isProofRequired", false),
+    isRecipientRequired: read("isRecipientRequired", false),
+    isIssuedAtRequired: read("isIssuedAtRequired", false),
+  };
+}
+
+/**
+ * Parse `const String <name> = '…';` — a Dart single-quoted literal, possibly
+ * several adjacent ones after `dart format` wraps a long line.
+ */
+function dartSchemaConst(src, name) {
+  const m = new RegExp(`const String ${name} =([\\s\\S]*?);\\n`).exec(src);
+  if (!m) return null;
+  const parts = m[1].match(/\x27(?:[^\x27\\]|\\.)*\x27/g);
+  if (!parts || parts.length === 0) return null;
+  let text = "";
+  for (const part of parts) {
+    const body = part.slice(1, -1);
+    for (let i = 0; i < body.length; i++) {
+      if (body[i] !== "\\") {
+        text += body[i];
+        continue;
+      }
+      const next = body[++i];
+      if (next === "n") text += "\n";
+      else if (next === "r") text += "\r";
+      else if (next === "t") text += "\t";
+      else if (next === "x") {
+        text += String.fromCharCode(parseInt(body.slice(i + 1, i + 3), 16));
+        i += 2;
+      } else text += next; // \\ , \x27 and \$ all stand for themselves
+    }
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 function comparePolicy(where, variant, expected, actual, lang) {
   if (!actual) {
     fail(where, `${lang} declares no ${variant} policy block`);
@@ -380,10 +452,18 @@ const specs = discoverSpecs();
 const tsByUri = indexGenerated(TS_DIR, /^payload\.ts$/, /export const TYPE_URI = "([^"]+)"/);
 const rsByUri = indexGenerated(RS_DIR, /^v\d+_\d+\.rs$/, /const TYPE_URI: &'static str =\s*"([^"]+)"/);
 const goByUri = indexGenerated(GO_DIR, /^payload\.go$/, /const TypeURI = "([^"]+)"/);
+// `\s*` around the `=`: `dart format` wraps a long Type URI onto its own line,
+// so the literal is not necessarily on the same line as the constant's name.
+const dartByUri = indexGenerated(
+  DART_DIR,
+  /^payload\.dart$/,
+  /const String typeUri\s*=\s*'([^']+)';/,
+);
 
 const seenTs = new Set();
 const seenRs = new Set();
 const seenGo = new Set();
+const seenDart = new Set();
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
 const rustHandWrittenSrc = (function read(dir, acc = []) {
@@ -522,6 +602,57 @@ for (const spec of specs) {
     }
   }
 
+  /* — Dart — */
+  const dart = dartByUri.get(typeUri);
+  if (!dart) {
+    fail(where, `no generated Dart library declares typeUri ${typeUri}`);
+  } else {
+    seenDart.add(typeUri);
+
+    // SPEC §4.4.1, as for the other three.
+    const hasResponseUri = /^const String responseTypeUri\s*=/m.test(dart.src);
+    const hasResponseType = /^(class Response\b|typedef Response =|extension type const Response\()/m.test(dart.src);
+    if (hasResponse && !(hasResponseUri && hasResponseType)) {
+      fail(
+        where,
+        `payload.schema.json declares $defs.Response, but the Dart library exports ` +
+          `${hasResponseUri ? "" : "no responseTypeUri"}${!hasResponseUri && !hasResponseType ? " and " : ""}` +
+          `${hasResponseType ? "" : "no Response type"} — the response half of the specification is unreachable.`,
+      );
+    }
+    if (!hasResponse && (hasResponseUri || hasResponseType)) {
+      fail(
+        where,
+        `this specification declares no success response, but the Dart library exports a response ` +
+          `constant or type. SPEC §4.4.1 says its consumers MUST NOT emit a #response document.`,
+      );
+    }
+
+    // Every payload root in the registry is `type: object`, so `Payload` must be
+    // a class. A typedef to a scalar there would mean the emitter fell through
+    // to its `Object?` fallback and the specification's members are unreachable.
+    if (schema?.type === "object" && !/^class Payload \{/m.test(dart.src)) {
+      fail(
+        where,
+        `this schema's root is an object, but the Dart library does not declare \`class Payload\` — ` +
+          `the emitter fell back to an untyped representation and the payload's members are unreachable.`,
+      );
+    }
+
+    const dartReq = dartPolicy(dart.src, "spec");
+    if (dartReq && dartReq.typeUri !== typeUri) {
+      fail(where, `Dart spec.typeUri is ${dartReq.typeUri}, expected ${typeUri}.`);
+    }
+    comparePolicy(where, "request", expected.request, dartReq, "Dart");
+    if (hasResponse) {
+      const dartResp = dartPolicy(dart.src, "responseSpec");
+      if (dartResp && dartResp.typeUri !== `${typeUri}#response`) {
+        fail(where, `Dart responseSpec.typeUri is ${dartResp.typeUri}, expected ${typeUri}#response.`);
+      }
+      comparePolicy(where, "response", expected.response, dartResp, "Dart");
+    }
+  }
+
   /* — Rust — */
   const rs = rsByUri.get(typeUri);
   if (!rs && RUST_HAND_WRITTEN.has(spec.slug)) {
@@ -562,7 +693,7 @@ for (const spec of specs) {
       comparePolicy(where, "response", expected.response, respPolicy, "Rust");
     }
 
-    /* — The three shipped schemas must be the same document — */
+    /* — The four shipped schemas must be the same document — */
     //
     // Each generator inlines cross-file `$ref`s itself: `resolve_cross_file_refs`
     // in Rust, `inlineCrossFileRefs` in the TS script, and a third copy of the
@@ -578,9 +709,15 @@ for (const spec of specs) {
     // establish alone. That is also why the Go generator was written with its own
     // resolver rather than importing the TypeScript one — see its file header.
     if (ts) {
-      for (const [variant, tsConst, rsConst, goConst] of [
-        ["request", "PAYLOAD_SCHEMA", "Payload", "PayloadSchemaJSON"],
-        ["response", "RESPONSE_PAYLOAD_SCHEMA", "Response", "ResponsePayloadSchemaJSON"],
+      for (const [variant, tsConst, rsConst, goConst, dartConst] of [
+        ["request", "PAYLOAD_SCHEMA", "Payload", "PayloadSchemaJSON", "payloadSchemaJson"],
+        [
+          "response",
+          "RESPONSE_PAYLOAD_SCHEMA",
+          "Response",
+          "ResponsePayloadSchemaJSON",
+          "responsePayloadSchemaJson",
+        ],
       ]) {
         if (variant === "response" && !hasResponse) continue;
 
@@ -589,6 +726,7 @@ for (const spec of specs) {
           ["Rust", rsConst, rustSchemaConst(rs.src, rsConst)],
         ];
         if (go) shipped.push(["Go", goConst, goSchemaConst(go.src, goConst)]);
+        if (dart) shipped.push(["Dart", dartConst, dartSchemaConst(dart.src, dartConst)]);
 
         const missing = shipped.filter(([, , doc]) => !doc);
         for (const [lang, constName] of missing) {
@@ -648,6 +786,11 @@ for (const [uri, mod] of goByUri) {
     fail(path.relative(ROOT, mod.file), `declares TypeURI ${uri}, which matches no specification under specs/`);
   }
 }
+for (const [uri, mod] of dartByUri) {
+  if (!seenDart.has(uri)) {
+    fail(path.relative(ROOT, mod.file), `declares typeUri ${uri}, which matches no specification under specs/`);
+  }
+}
 
 /* ── The error Type URI both SDKs emit ──────────────────────────────────── */
 
@@ -674,10 +817,12 @@ for (const [uri, mod] of goByUri) {
   const RS_DOC = path.join(ROOT, "trust-tasks-rs", "src", "document.rs");
   const TS_DOC = path.join(ROOT, "trust-tasks-ts", "src", "_runtime", "document.ts");
   const GO_DOC = path.join(ROOT, "trust-tasks-go", "trusttasks", "document.go");
+  const DART_DOC = path.join(ROOT, "trust-tasks-dart", "lib", "src", "runtime", "document.dart");
 
   const rsSrc = fs.readFileSync(RS_DOC, "utf8");
   const tsSrc = fs.readFileSync(TS_DOC, "utf8");
   const goSrc = fs.readFileSync(GO_DOC, "utf8");
+  const dartSrc = fs.readFileSync(DART_DOC, "utf8");
 
   const rsMatch = rsSrc.match(/TypeUri::canonical\("trust-task-error",\s*(\d+),\s*(\d+)\)/);
   const tsMatch = tsSrc.match(
@@ -690,7 +835,12 @@ for (const [uri, mod] of goByUri) {
 
   const rsVersion = rsMatch ? `${rsMatch[1]}.${rsMatch[2]}` : null;
   const tsVersion = tsMatch ? tsMatch[1] : null;
+  const dartMatch = dartSrc.match(
+    /trustTaskErrorTypeUri =\s*\x27https:\/\/trusttasks\.org\/spec\/trust-task-error\/(\d+\.\d+)\x27/,
+  );
+
   const goVersion = goMatch ? goMatch[1] : null;
+  const dartVersion = dartMatch ? dartMatch[1] : null;
 
   if (!rsVersion) {
     fail(path.relative(ROOT, RS_DOC), "no TypeUri::canonical(\"trust-task-error\", MAJOR, MINOR) found — trust_task_error_type_uri() is the crate's only statement of which error specification it emits");
@@ -702,17 +852,21 @@ for (const [uri, mod] of goByUri) {
   if (!goVersion) {
     fail(path.relative(ROOT, GO_DOC), "no TrustTaskErrorTypeURI found — it is the module's only statement of which error specification it emits");
   }
+  if (!dartVersion) {
+    fail(path.relative(ROOT, DART_DOC), "no trustTaskErrorTypeUri found — it is the package's only statement of which error specification it emits");
+  }
 
   const emitted = [
     ["trust-tasks-rs", rsVersion, "document.rs, trust_task_error_type_uri"],
     ["@openvtc/trust-tasks", tsVersion, "_runtime/document.ts, TRUST_TASK_ERROR_TYPE_URI"],
     ["trust-tasks-go", goVersion, "trusttasks/document.go, TrustTaskErrorTypeURI"],
+    ["trust_tasks", dartVersion, "lib/src/runtime/document.dart, trustTaskErrorTypeUri"],
   ].filter(([, version]) => version !== null);
 
   const distinct = new Set(emitted.map(([, version]) => version));
   if (distinct.size > 1) {
     fail(
-      "trust-tasks-rs / trust-tasks-ts / trust-tasks-go",
+      "trust-tasks-rs / trust-tasks-ts / trust-tasks-go / trust_tasks",
       `the SDKs emit different error documents: ` +
         emitted.map(([name, version, where]) => `${name} sends trust-task-error/${version} (${where})`).join("; ") +
         `. A new error specification version must be adopted in all of them or none.`,
@@ -723,7 +877,7 @@ for (const [uri, mod] of goByUri) {
 
   if (agreed && !fs.existsSync(path.join(SPECS_DIR, "trust-task-error", agreed))) {
     fail(
-      "trust-tasks-rs / trust-tasks-ts / trust-tasks-go",
+      "trust-tasks-rs / trust-tasks-ts / trust-tasks-go / trust_tasks",
       `every SDK emits trust-task-error/${agreed}, which does not exist under specs/trust-task-error/`,
     );
   } else if (agreed && agreed !== newest) {
@@ -731,8 +885,41 @@ for (const [uri, mod] of goByUri) {
     // be deliberately unadopted — so this is a note, not a failure.
     console.log(
       `  note: every SDK emits trust-task-error/${agreed}; specs/trust-task-error/${newest} is published. ` +
-        `Adopt it in trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI and TrustTaskErrorTypeURI ` +
-        `together, or leave all three.`,
+        `Adopt it in trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI, TrustTaskErrorTypeURI ` +
+        `and trustTaskErrorTypeUri together, or leave all four.`,
+    );
+  }
+}
+
+/* ── The Dart package's two version declarations ────────────────────────── */
+
+// `version:` in pubspec.yaml is what pub.dev publishes under; `packageVersion`
+// in lib/src/runtime/version.dart is what a consumer can log. Nothing at
+// runtime reads both, so a release that moved one and not the other would ship
+// a package whose own constant misreports its version — and the first attempt at
+// the rewrite in scripts/release-dart-pr.sh did exactly that, because its regex
+// could not match a version containing dots.
+{
+  const PUBSPEC = path.join(ROOT, "trust-tasks-dart", "pubspec.yaml");
+  const VERSION_DART = path.join(ROOT, "trust-tasks-dart", "lib", "src", "runtime", "version.dart");
+
+  const pubspecVersion = /^version:\s*(\S+)\s*$/m.exec(fs.readFileSync(PUBSPEC, "utf8"));
+  const constVersion = /^const String packageVersion = \x27([^\x27]+)\x27;$/m.exec(
+    fs.readFileSync(VERSION_DART, "utf8"),
+  );
+
+  if (!pubspecVersion) {
+    fail(path.relative(ROOT, PUBSPEC), "no top-level `version:` found");
+  }
+  if (!constVersion) {
+    fail(path.relative(ROOT, VERSION_DART), "no `const String packageVersion` found");
+  }
+  if (pubspecVersion && constVersion && pubspecVersion[1] !== constVersion[1]) {
+    fail(
+      "trust-tasks-dart",
+      `pubspec.yaml declares version ${pubspecVersion[1]} but ` +
+        `lib/src/runtime/version.dart declares ${constVersion[1]}. The Release PR moves both; ` +
+        `one moving without the other means the published package misreports its own version.`,
     );
   }
 }
@@ -752,5 +939,6 @@ if (problems.length > 0) {
 
 console.log(
   `Bindings conformance: ${specs.length} specifications checked against ` +
-    `${tsByUri.size} TypeScript, ${rsByUri.size} Rust and ${goByUri.size} Go modules — all agree.`,
+    `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
+    `${dartByUri.size} Dart modules — all agree.`,
 );

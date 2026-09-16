@@ -1,0 +1,112 @@
+name: Dart
+
+on:
+  push:
+    branches: [main]
+  # No `branches:` filter, and no `paths:` filter, for the reasons spelled out at
+  # length in ts.yml: a stacked PR would otherwise run none of these jobs and
+  # report a green board made entirely of DCO and licence checks, and a
+  # path-filtered job cannot be made a *required* check.
+  #
+  # These jobs are the guards that stop trust-tasks-dart disagreeing with the
+  # other three bindings about the wire contract, so they are worth being able to
+  # make required.
+  pull_request:
+
+jobs:
+  # The Dart mirror of codegen.yml's `codegen-drift` and the `bindings-drift`
+  # jobs in ts.yml and go.yml: regenerate and fail if the committed output
+  # differs. A spec change that regenerated only three of the four libraries is
+  # exactly the defect this catches.
+  #
+  # The generator runs `dart format` on its own output (see the note at the end
+  # of scripts/build-dart-bindings.mjs), so this compares like with like and a
+  # contributor cannot introduce drift merely by not having the Dart SDK
+  # installed.
+  bindings-drift:
+    name: build-dart-bindings drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Regenerate Dart bindings
+        run: npm run build-dart-bindings
+      - name: Check for drift
+        run: |
+          if ! git diff --quiet trust-tasks-dart/lib/specs; then
+            echo "::error::Dart bindings are stale. Run \`npm run build-dart-bindings\` and commit the diff. Do NOT bump a version — the Release PR does that; see RELEASING.md."
+            git diff --stat trust-tasks-dart/lib/specs
+            git diff trust-tasks-dart/lib/specs | head -200
+            exit 1
+          fi
+
+  analyze:
+    name: dart analyze + format (${{ matrix.sdk }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.3 is the `sdk` floor in pubspec.yaml — the oldest a consumer may be
+        # on, and the release that introduced the extension types the generated
+        # closed-value types use. `stable` is what most will actually use.
+        sdk: ["3.3", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install dependencies
+        working-directory: trust-tasks-dart
+        run: dart pub get
+      # `--fatal-infos` because the generated tree is held to the same bar as the
+      # hand-written runtime: a generator that emits code failing the project's
+      # own lints is a generator to fix, not a tree to exempt.
+      - name: Analyze
+        working-directory: trust-tasks-dart
+        run: dart analyze --fatal-infos
+      # Only on `stable`: `dart format` output can differ between SDK versions,
+      # and the committed tree is formatted by whatever the generator ran, so
+      # checking it on the floor SDK would assert something nobody promised.
+      - name: Check formatting
+        if: matrix.sdk == 'stable'
+        working-directory: trust-tasks-dart
+        run: dart format --output=none --set-exit-if-changed .
+
+  # The generated libraries are only types and constants; the SPEC §7.2 consumer
+  # pipeline in lib/src/runtime is hand-written, so unlike the rest of the
+  # package it can regress without the drift guard noticing. These are its
+  # conformance tests, and they mirror the sets in trust-tasks-rs/src/consume.rs,
+  # trust-tasks-ts/test/ and trust-tasks-go/trusttasks — the four reference
+  # implementations must reach the same verdict on the same document.
+  #
+  # test/smoke_test.dart is the counterpart of `npm run smoke` and
+  # `go test ./smoke`: it imports a *generated* library and drives the real
+  # pipeline with it, which is the one thing neither the drift check nor the
+  # runtime tests do.
+  test:
+    name: dart test (${{ matrix.sdk }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ["3.3", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install dependencies
+        working-directory: trust-tasks-dart
+        run: dart pub get
+      - name: Run the runtime conformance tests and the smoke test
+        working-directory: trust-tasks-dart
+        run: dart test

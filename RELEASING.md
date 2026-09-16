@@ -57,7 +57,8 @@ no hand-written entries.
 
 ## What gets published
 
-**Nine crates, one npm package and one Go module.** `trust-tasks-codegen` sets
+**Nine crates, one npm package, one Go module and one Dart package.**
+`trust-tasks-codegen` sets
 `publish = false` in its own `Cargo.toml` — it is the internal generator.
 
 | Package | Registry |
@@ -70,6 +71,7 @@ no hand-written entries.
 | `trust-tasks-capability-client` | crates.io |
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
+| `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
 
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
@@ -81,7 +83,7 @@ published crate's whole dependency closure to be published too.
 
 ### 1. Review the Release PR(s)
 
-Three can be open at once. They are independent — merge any, all, or none.
+Four can be open at once. They are independent — merge any, all, or none.
 
 **`chore: release` (release-plz, label `release`)** — the crates. It updates on
 every merge to `main` and contains the version bump for each changed crate and
@@ -109,11 +111,18 @@ Go has no manifest to bump, so the PR moves `const Version` in
 `trust-tasks-go/trusttasks/version.go`, which stands in for one. The tag is what
 actually publishes.
 
-> ⚠️ **Neither the npm nor the Go side has a `cargo-semver-checks` equivalent.**
-> Their bumps are only as accurate as the commit subjects: if a change breaks the
-> TypeScript or Go API and nobody wrote `!` in the PR title, the package ships a
-> patch. Check the diff before merging. This is the one place the three parts of
-> a release differ in rigour.
+**`chore: release trust_tasks <version>`** — the Dart package, on the
+`release-dart` branch, computed by `scripts/release-dart-pr.sh` from the
+conventional commits since the `trust-tasks-dart-v*` tag that touched `specs/`,
+`trust-tasks-dart/` or `scripts/build-dart-bindings.mjs`. It moves two
+declarations that must stay equal: `version:` in `pubspec.yaml` and
+`packageVersion` in `lib/src/runtime/version.dart`.
+
+> ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
+> Dart bumps are only as accurate as the commit subjects: if a change breaks one
+> of those APIs and nobody wrote `!` in the PR title, the package ships a patch.
+> Check the diff before merging. This is the one place the four parts of a
+> release differ in rigour.
 
 > ⚠️ **A Go release cannot be unpublished.** `proxy.golang.org` caches a tag
 > permanently and by design, so a tag pushed over a tree that does not build is
@@ -122,8 +131,9 @@ actually publishes.
 > exactly this reason. npm and crates.io both allow a short retraction window;
 > Go does not.
 
-The `release-ts` and `release-go` branches are **regenerated from `main` on
-every push**. Do not commit to them — a force-push will take your work.
+The `release-ts`, `release-go` and `release-dart` branches are **regenerated
+from `main` on every push**. Do not commit to them — a force-push will take your
+work.
 
 ### 2. Merge it
 
@@ -137,6 +147,18 @@ Merging the npm PR triggers `publish-npm`, which builds the package, publishes
 it with OIDC provenance, and pushes the `trust-tasks-ts-v<version>` tag that the
 *next* npm Release PR measures from.
 
+Merging the Dart PR triggers `tag-dart`, which verifies the package analyses,
+tests and dry-run-publishes, then pushes `trust-tasks-dart-v<version>`. That tag
+triggers `publish-dart.yml`, which publishes to pub.dev over OIDC. **pub.dev only
+accepts a publish from a tag-triggered workflow** — it checks that in the OIDC
+token's claims — which is why Dart needs two workflows where the others need one.
+
+> ⚠️ A tag pushed by the default `GITHUB_TOKEN` does **not** trigger a workflow.
+> Without `RELEASE_PLZ_TOKEN` set, `trust-tasks-dart-v<version>` lands and
+> nothing publishes. `tag-dart` prints a warning saying exactly that; the fix is
+> to delete and re-push the tag from a workstation, which is an ordinary
+> authenticated push and does trigger the workflow.
+
 Merging the Go PR triggers `publish-go`, which verifies the module builds and
 its tests pass, pushes the `trust-tasks-go/v<version>` tag, and asks
 `proxy.golang.org` to index it. That tag is both the publication and the anchor
@@ -149,10 +171,10 @@ nothing, because every version is already on its registry.
 
 ### 3. If it fails partway
 
-Re-run the job. All three sides are idempotent: `cargo publish` skips a crate
-already at that version, `publish-npm` skips a version already on npm, and
-`publish-go` skips a version already tagged. A re-run resumes rather than
-duplicating.
+Re-run the job. All four sides are idempotent: `cargo publish` skips a crate
+already at that version, `publish-npm` skips a version already on npm,
+`publish-go` skips a version already tagged, and `tag-dart` skips a version whose
+tag exists. A re-run resumes rather than duplicating.
 
 If the crates release dies mid-way with
 
@@ -181,7 +203,15 @@ usually fixes it, because the missing crate is on crates.io by then.
   authored by the default `GITHUB_TOKEN`, so without it a Release PR opens with
   no CI on it — meaning the one commit that publishes would be the one commit CI
   never built. Until the token exists, **close and reopen the Release PR** to
-  trigger CI before merging it. This applies to all three Release PRs.
+  trigger CI before merging it. This applies to all four Release PRs — and for
+  Dart it is worse than cosmetic, because the same token limitation stops the
+  release tag from triggering the publish workflow at all.
+- **pub.dev automated publishing** — a one-time setup on the package's Admin
+  tab: "Enable publishing from GitHub Actions", repository
+  `trustoverip/dtgwg-trust-tasks-tf`, tag pattern
+  `trust-tasks-dart-v{{version}}`. ⚠️ **The first version must be published by
+  hand** (`dart pub publish` from `trust-tasks-dart/`, signed in as a publisher):
+  a package that does not exist yet has no Admin tab to configure.
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to
   own, no token to rotate and no Trusted Publisher to misconfigure. The one
@@ -264,7 +294,7 @@ makes this migration clean:
 
 ---
 
-## Why the npm package and the Go module are released separately
+## Why the npm package, the Go module and the Dart package are released separately
 
 release-plz manages Rust and only Rust. It has **no pre- or post-release hook**
 and will not write a non-Rust manifest, so there is no supported way to make it
@@ -287,8 +317,13 @@ or for a manifest-bumping script to write, and `scripts/release-go-pr.sh` moves
 a `const Version` that exists precisely to give the Release PR something to
 carry. See the comment on that constant.
 
-`release-ts-pr` runs `needs: publish-npm`, and `release-go-pr` runs
-`needs: publish-go` — **not** beside them. Both fire on the same push, and the
+The Dart package is separate for a third reason on top of both: pub.dev will
+not publish from a push-to-`main` workflow at all, so the release is necessarily
+two steps — tag, then publish on the tag.
+
+`release-ts-pr` runs `needs: publish-npm`, `release-go-pr` runs
+`needs: publish-go`, and `release-dart-pr` runs `needs: tag-dart` — **not**
+beside them. Both fire on the same push, and the
 tag each Release-PR job measures from is written by the publish job before it.
 In parallel, the run that merges a release would compute its next bump against
 the *previous* tag and immediately reopen a Release PR for the release that had
