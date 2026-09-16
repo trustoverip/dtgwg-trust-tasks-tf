@@ -303,6 +303,29 @@ And the one that has no undo: **a Go release cannot be retracted.**
 vets and tests *before* tagging for that reason. crates.io and npm both have a
 retraction window; Go does not.
 
+### The `trust-tasks-go/tsp` nested module
+
+The TSP transport binding is a **separate Go module** under `trust-tasks-go/tsp`,
+not a package of the core. The core module has zero dependencies (its selling
+point, and what the website claims), and this one pulls in `affinidi-tsp-go` and
+its crypto. Keeping them apart is the whole point.
+
+- **The core CI jobs do not touch it.** `go build/vet/test ./...` in
+  `trust-tasks-go` excludes a nested module, so none of them pulls the TSP
+  dependency. A dedicated `tsp` job in `go.yml` builds and tests it on its own
+  floor (`go 1.27`, inherited from `affinidi-tsp-go`). `gofmt -l .` in the core
+  job does recurse into the subdir, so keep the tsp files gofmt-clean.
+- **It is not released yet.** `affinidi-tsp-go` has no tag, so `go.mod` requires
+  it at a pseudo-version and there is no `trust-tasks-go/tsp/v*` release wiring in
+  `publish.yml`. `go get` of the module still works (the proxy resolves the
+  pseudo-version from the public repo). When `affinidi-tsp-go` is tagged: bump the
+  requirement to the tag and add a `publish-go`-style tag job for
+  `trust-tasks-go/tsp/vX.Y.Z`.
+- **The Go TSP library signs Ed25519 only** and does no DID resolution — the
+  caller supplies the sender `*tsp.Identity` (read `AdvertisedSender`, look it up
+  in your own store). The sealed `{type, document}` envelope matches the Rust
+  crate and the Dart package byte-for-byte, pinned by a test in each.
+
 ## ⚠️ The Dart package — where it differs from the other three
 
 `trust-tasks-dart` publishes to pub.dev as `trust_tasks`. It follows the
