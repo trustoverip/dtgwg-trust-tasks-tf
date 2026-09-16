@@ -353,17 +353,39 @@ jobs:
   # go tooling derives the tag prefix from the subdirectory, so this spelling is
   # a requirement rather than a convention — unlike the `trust-tasks-ts-v*` and
   # `<crate>-v*` tags elsewhere in this file, which are ours to choose.
+  # One matrix entry per Go module: the core, and the two nested modules that
+  # version independently on their own `trust-tasks-go/<name>/vX.Y.Z` tags
+  # (proof and didcomm). tsp is deliberately absent — it depends on the
+  # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
+  # `const Version`, and the nested legs' verify step fetches the published core.
   publish-go:
-    name: Publish trust-tasks-go (tag + module proxy)
+    name: Publish ${{ matrix.name }} (tag + module proxy)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       # The tag IS the publication, so this is the one permission that matters.
       contents: write
-    outputs:
-      published: ${{ steps.decide.outputs.should_publish }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: trust-tasks-go
+            dir: trust-tasks-go
+            versionfile: trust-tasks-go/trusttasks/version.go
+            tagprefix: trust-tasks-go/v
+            module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go
+          - name: trust-tasks-go/proof
+            dir: trust-tasks-go/proof
+            versionfile: trust-tasks-go/proof/version.go
+            tagprefix: trust-tasks-go/proof/v
+            module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/proof
+          - name: trust-tasks-go/didcomm
+            dir: trust-tasks-go/didcomm
+            versionfile: trust-tasks-go/didcomm/version.go
+            tagprefix: trust-tasks-go/didcomm/v
+            module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/didcomm
     concurrency:
-      group: publish-go-${{ github.ref }}
+      group: publish-go-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
@@ -372,19 +394,22 @@ jobs:
 
       - name: Decide whether to publish
         id: decide
+        env:
+          VERSION_FILE: ${{ matrix.versionfile }}
+          TAG_PREFIX: ${{ matrix.tagprefix }}
         run: |
           set -euo pipefail
-          version=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' trust-tasks-go/trusttasks/version.go)
+          version=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' "$VERSION_FILE")
           if [ -z "$version" ]; then
-            echo "::error::Could not read \`const Version\` from trust-tasks-go/trusttasks/version.go"
+            echo "::error::Could not read \`const Version\` from $VERSION_FILE"
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          if git rev-parse -q --verify "refs/tags/trust-tasks-go/v$version" >/dev/null; then
-            echo "::notice::trust-tasks-go/v$version already tagged — skipping."
+          if git rev-parse -q --verify "refs/tags/${TAG_PREFIX}${version}" >/dev/null; then
+            echo "::notice::${TAG_PREFIX}${version} already tagged — skipping."
             echo "should_publish=false" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::trust-tasks-go/v$version is new — publishing."
+            echo "::notice::${TAG_PREFIX}${version} is new — publishing."
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -392,7 +417,6 @@ jobs:
         if: steps.decide.outputs.should_publish == 'true'
         with:
           go-version: "1.24"
-          # The module has no dependencies, so there is no go.sum to key a cache on.
           cache: false
 
       # Publishing is irreversible in a way npm and crates.io are not: the module
@@ -401,7 +425,7 @@ jobs:
       # retracted, only superseded. Build and test before tagging, not after.
       - name: Verify the module before tagging
         if: steps.decide.outputs.should_publish == 'true'
-        working-directory: trust-tasks-go
+        working-directory: ${{ matrix.dir }}
         run: |
           go build ./...
           go vet ./...
@@ -411,31 +435,31 @@ jobs:
         if: steps.decide.outputs.should_publish == 'true'
         env:
           VERSION: ${{ steps.decide.outputs.version }}
+          NAME: ${{ matrix.name }}
+          TAG_PREFIX: ${{ matrix.tagprefix }}
         run: |
           set -euo pipefail
-          tag="trust-tasks-go/v$VERSION"
+          tag="${TAG_PREFIX}${VERSION}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$tag" -m "trust-tasks-go $VERSION"
+          git tag -a "$tag" -m "$NAME $VERSION"
           git push origin "$tag"
 
       # Ask the module proxy for the version so it fetches and caches it now.
       # Without this the first consumer to run `go get` pays the fetch, and a
-      # failure there surfaces to them rather than here. GOFLAGS=-mod=mod and an
-      # empty GONOSUMDB keep this a plain proxy request from a temp directory,
-      # not a build of this module.
+      # failure there surfaces to them rather than here.
       - name: Warm proxy.golang.org
         if: steps.decide.outputs.should_publish == 'true'
         env:
           VERSION: ${{ steps.decide.outputs.version }}
+          MODULE: ${{ matrix.module }}
           GOPROXY: https://proxy.golang.org
         run: |
           set -euo pipefail
-          module="github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go"
           # The proxy polls for new tags; it can take a minute to see one.
           for attempt in 1 2 3 4 5 6; do
-            if go list -m "$module@v$VERSION" 2>/dev/null; then
-              echo "::notice::proxy.golang.org is serving $module@v$VERSION"
+            if go list -m "$MODULE@v$VERSION" 2>/dev/null; then
+              echo "::notice::proxy.golang.org is serving $MODULE@v$VERSION"
               exit 0
             fi
             echo "attempt $attempt: not yet indexed, waiting 20s"
@@ -443,10 +467,13 @@ jobs:
           done
           # Not a failure: the tag is pushed, which IS the publication, and the
           # proxy will index it on its own schedule.
-          echo "::warning::proxy.golang.org has not indexed $module@v$VERSION yet. The tag is pushed; the proxy will pick it up. Verify with: go list -m $module@v$VERSION"
+          echo "::warning::proxy.golang.org has not indexed $MODULE@v$VERSION yet. The tag is pushed; the proxy will pick it up. Verify with: go list -m $MODULE@v$VERSION"
 
+  # One Release PR per Go module (core, proof, didcomm), keyed on its own tag —
+  # the same matrix as publish-go, and release-go-pr.sh takes the module as its
+  # argument the way release-ts-pr.sh / release-dart-pr.sh take a package.
   release-go-pr:
-    name: Release PR (trust-tasks-go)
+    name: Release PR (${{ matrix.name }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # MUST run after publish-go, for the same reason release-ts-pr runs after
@@ -458,8 +485,15 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - trust-tasks-go
+          - trust-tasks-go/proof
+          - trust-tasks-go/didcomm
     concurrency:
-      group: release-go-pr-${{ github.ref }}
+      group: release-go-pr-${{ matrix.name }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
@@ -475,10 +509,10 @@ jobs:
       - name: Install git-cliff
         uses: taiki-e/install-action@git-cliff
 
-      - name: Open or update the trust-tasks-go Release PR
+      - name: Open or update the ${{ matrix.name }} Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-go-pr.sh
+        run: ./scripts/release-go-pr.sh "${{ matrix.name }}"
 
   # ── Dart ─────────────────────────────────────────────────────────────────
   #

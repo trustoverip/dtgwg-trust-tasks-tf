@@ -38,16 +38,55 @@
 
 set -euo pipefail
 
-MODULE="github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go"
-PKG_DIR="trust-tasks-go"
-VERSION_FILE="$PKG_DIR/trusttasks/version.go"
+# Which Go module to release. The core defaults; the nested modules
+# (trust-tasks-go/proof, trust-tasks-go/didcomm) pass their own path. Each has
+# its own directory, version file, release branch, tag prefix and watch set —
+# mirroring release-ts-pr.sh and release-dart-pr.sh.
+#
+# The nested modules are SEPARATE Go modules with their own tags
+# (`trust-tasks-go/<name>/v<version>`), so they version independently of the
+# core — which is why the core's watch EXCLUDES them: a change under
+# trust-tasks-go/proof releases proof, not the core.
+PKG="${1:-trust-tasks-go}"
+GO_ROOT="github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go"
+case "$PKG" in
+  trust-tasks-go)
+    MODULE="$GO_ROOT"
+    PKG_DIR="trust-tasks-go"
+    VERSION_FILE="$PKG_DIR/trusttasks/version.go"
+    BRANCH="release-go"
+    TAG_PREFIX="trust-tasks-go/v"
+    # `specs/**` because the packages under `trust-tasks-go/specs` are generated
+    # from it, and `scripts/build-go-bindings.mjs` because it is the generator.
+    # The nested modules are excluded — they release on their own tags.
+    WATCH=("specs" "$PKG_DIR" "scripts/build-go-bindings.mjs"
+           ":(exclude)$PKG_DIR/proof" ":(exclude)$PKG_DIR/didcomm" ":(exclude)$PKG_DIR/tsp")
+    CLIFF_PATHS=("trust-tasks-go/**" "specs/**" "scripts/build-go-bindings.mjs")
+    ;;
+  trust-tasks-go/proof)
+    MODULE="$GO_ROOT/proof"
+    PKG_DIR="trust-tasks-go/proof"
+    VERSION_FILE="$PKG_DIR/version.go"
+    BRANCH="release-go-proof"
+    TAG_PREFIX="trust-tasks-go/proof/v"
+    WATCH=("$PKG_DIR")
+    CLIFF_PATHS=("$PKG_DIR/**")
+    ;;
+  trust-tasks-go/didcomm)
+    MODULE="$GO_ROOT/didcomm"
+    PKG_DIR="trust-tasks-go/didcomm"
+    VERSION_FILE="$PKG_DIR/version.go"
+    BRANCH="release-go-didcomm"
+    TAG_PREFIX="trust-tasks-go/didcomm/v"
+    WATCH=("$PKG_DIR")
+    CLIFF_PATHS=("$PKG_DIR/**")
+    ;;
+  *)
+    echo "::error::unknown Go module '$PKG'"
+    exit 1
+    ;;
+esac
 CHANGELOG="$PKG_DIR/CHANGELOG.md"
-BRANCH="release-go"
-
-# Everything that can change what this module publishes. `specs/**` is here
-# because the packages under `trust-tasks-go/specs` are generated from it, and
-# `scripts/build-go-bindings.mjs` because it is the generator.
-WATCH=("specs" "$PKG_DIR" "scripts/build-go-bindings.mjs")
 
 read_version() {
   sed -n 's/^const Version = "\(.*\)"$/\1/p' "$VERSION_FILE"
@@ -60,22 +99,24 @@ if [ -z "$current" ]; then
 fi
 
 # ── Where the last release was ───────────────────────────────────────────────
-# `--sort=-version:refname` orders the `trust-tasks-go/vX.Y.Z` tags by version
-# rather than lexically, so v0.10.0 sorts above v0.9.0.
-tag=$(git tag -l 'trust-tasks-go/v*' --sort=-version:refname | head -1)
+# `--sort=-version:refname` orders the `<prefix>vX.Y.Z` tags by version rather
+# than lexically, so v0.10.0 sorts above v0.9.0. The glob is anchored on the
+# module's own prefix, so `trust-tasks-go/v*` never matches a nested module's
+# `trust-tasks-go/proof/v*` and vice versa.
+tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
 if [ -z "$tag" ]; then
   # Reaching here means `publish-go` did not run or did not finish — this job
-  # has `needs: publish-go`, and that job writes `trust-tasks-go/v<Version>` the
+  # has `needs: publish-go`, and that job writes `${TAG_PREFIX}<Version>` the
   # first time it sees a version with no matching tag. So the module seeds its
   # own anchor and there is nothing to seed by hand.
   #
   # Do NOT tag from a local checkout to clear this. A Go tag IS the publication
   # and cannot be retracted, and tagging locally skips the build/vet/test that
   # `publish-go` runs before it tags. Re-run `publish-go` instead.
-  echo "::error::No trust-tasks-go/v* tag exists. publish-go writes it — re-run that job rather than tagging by hand; a Go tag is a permanent publication. See RELEASING.md, 'The Go module seeds itself'."
+  echo "::error::No ${TAG_PREFIX}* tag exists. publish-go writes it — re-run that job rather than tagging by hand; a Go tag is a permanent publication. See RELEASING.md, 'The Go module seeds itself'."
   exit 1
 fi
-last="${tag#trust-tasks-go/v}"
+last="${tag#"$TAG_PREFIX"}"
 
 if [ "$current" != "$last" ]; then
   # main already carries a version newer than the last tag: a release is merged
@@ -165,13 +206,15 @@ NEXT="$next" node -e '
 # load-bearing part of this PR — it is what decides the tag — and a git-cliff
 # hiccup must not be able to block a release. A missing section is visible in
 # the PR diff and can be written by hand.
+cliff_include=()
+for p in "${CLIFF_PATHS[@]}"; do
+  cliff_include+=(--include-path "$p")
+done
 if section=$(git-cliff --config cliff.toml \
   --strip header \
   --tag "v$next" \
   --unreleased \
-  --include-path 'trust-tasks-go/**' \
-  --include-path 'specs/**' \
-  --include-path 'scripts/build-go-bindings.mjs' \
+  "${cliff_include[@]}" \
   "$range" 2>/dev/null) && [ -n "$section" ]; then
   SECTION="$section" node -e '
     const fs = require("fs");
@@ -195,22 +238,22 @@ fi
 git add "$VERSION_FILE" "$CHANGELOG"
 # -s: DCO sign-off is mandatory on every commit in this repo.
 git commit -s -m "chore: release $MODULE $next" -m \
-  "Automated by scripts/release-go-pr.sh. Merging this PR tags trust-tasks-go/v$next, which is what publishes the module."
+  "Automated by scripts/release-go-pr.sh. Merging this PR tags ${TAG_PREFIX}$next, which is what publishes the module."
 git push --force origin "$BRANCH"
 
 # ── Open or refresh the PR ───────────────────────────────────────────────────
-title="chore: release trust-tasks-go $next"
+title="chore: release $PKG $next"
+watched=$(printf '`%s`, ' "${WATCH[@]}"); watched="${watched%, }"
 body_file="$(mktemp)"
 cat >"$body_file" <<EOF
-Release PR for the Go module, the counterpart to the release-plz PR for the
-crates and the \`release-ts\` PR for the npm package. **Merging this is the
+Release PR for the \`$PKG\` Go module, the counterpart to the release-plz PR for
+the crates and the \`release-ts\` PR for the npm package. **Merging this is the
 release**: the \`publish-go\` job in \`publish.yml\` sees a \`Version\` that has
-no matching tag and pushes \`trust-tasks-go/v$next\`, after which
+no matching tag and pushes \`${TAG_PREFIX}$next\`, after which
 \`proxy.golang.org\` serves it and \`go get $MODULE@v$next\` resolves.
 
 - \`$MODULE\`: \`$last\` → \`$next\` (\`$level\`)
-- derived from the conventional commits in \`$range\` touching \`specs/\`,
-  \`trust-tasks-go/\` or \`scripts/build-go-bindings.mjs\`
+- derived from the conventional commits in \`$range\` touching $watched
 
 There is no registry account and no token involved — a Go module is published
 by tagging a public repository.
