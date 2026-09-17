@@ -1208,6 +1208,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/create/2.0#response" => <crate::specs::vta::did_templates::create::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.0" => <crate::specs::vta::did_templates::create::v3_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.0#response" => <crate::specs::vta::did_templates::create::v3_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/delete/1.0" => <crate::specs::vta::did_templates::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/delete/1.0#response" => <crate::specs::vta::did_templates::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1224,6 +1228,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/get/2.0#response" => <crate::specs::vta::did_templates::get::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.0" => <crate::specs::vta::did_templates::get::v3_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.0#response" => <crate::specs::vta::did_templates::get::v3_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/list/1.0" => <crate::specs::vta::did_templates::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/list/1.0#response" => <crate::specs::vta::did_templates::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1231,6 +1239,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/list/2.0" => <crate::specs::vta::did_templates::list::v2_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/list/2.0#response" => <crate::specs::vta::did_templates::list::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.0" => <crate::specs::vta::did_templates::list::v3_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.0#response" => <crate::specs::vta::did_templates::list::v3_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/render/1.0" => <crate::specs::vta::did_templates::render::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
@@ -1247,6 +1259,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/update/2.0" => <crate::specs::vta::did_templates::update::v2_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/update/2.0#response" => <crate::specs::vta::did_templates::update::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.0" => <crate::specs::vta::did_templates::update::v3_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.0#response" => <crate::specs::vta::did_templates::update::v3_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/management/reload-services/1.0" => <crate::specs::vta::management::reload_services::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
@@ -3206,6 +3222,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::did_templates::create::v3_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/delete/1.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::did_templates::delete::v1_0::Payload,
@@ -3226,12 +3248,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::vta::did_templates::get::v2_0::Payload,
         >()),
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::did_templates::get::v3_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/list/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::did_templates::list::v1_0::Payload,
         >()),
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/list/2.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::did_templates::list::v2_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::did_templates::list::v3_0::Payload,
         >()),
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/did-templates/render/1.0" => {
@@ -3255,6 +3285,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vta/did-templates/update/2.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::did_templates::update::v2_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::did_templates::update::v3_0::Payload,
             >())
         }
         #[cfg(feature = "vta")]
