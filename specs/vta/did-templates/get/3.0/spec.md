@@ -173,3 +173,41 @@ Response to the request example. The resolved `scope` names where the record liv
 **Attributed read, proportionate proof.** Fetching a template discloses only non-secret provisioning metadata, so the producer `proof` is **RECOMMENDED** rather than REQUIRED: the transport session already authorizes the read, and the proof's value here is a transport-independent identity for the VTA's audit trail. Deployments that require attributable reads SHOULD reject unproven requests as a matter of local policy.
 
 **Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload when a proof is present, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+
+### Data carried
+
+The response carries stored templates — placeholder tokens and public document
+structure, never key material.
+
+The `keys` block makes a read **a disclosure of cryptographic posture**: the
+response says, for every template in scope, whether the DIDs minted from it are
+classical or post-quantum. A reader who can list templates learns the shape of
+the deployment's migration, which is a more concentrated view than resolving DID
+documents one at a time. The authorization gate is therefore the whole of the
+protection here; there is no minimisation available in the payload, because a
+template with its `keys` block elided would not be a usable answer.
+
+### Correlation
+
+The recipient learns which operator is reading and when. A poll correlates to one
+operator by `issuer` and publishes its cadence to anyone watching the channel;
+request and response correlate by `threadId`.
+
+The returned provenance — creator DID and timestamps — correlates each template to
+the operator who wrote it, so a read discloses not only the current shape but who
+shaped it.
+
+### Retention
+
+Caller-side. A consumer **SHOULD** treat a fetched template as a cache of the
+recipient's record rather than a copy of record, and **SHOULD NOT** persist it
+beyond the operation that needed it — a stale template read back later describes
+a shape the VTA may no longer mint, and acting on one is how a caller provisions
+against a configuration that no longer exists.
+
+### Consent/purpose
+
+An administrative read by an operator the ACL already authorizes, scoped to the
+templates that operator may see. **No subject data is involved and no consent
+ceremony applies.** The purpose is bounded by the same scope as the write: a
+context administrator sees that context's templates, not the global scope.

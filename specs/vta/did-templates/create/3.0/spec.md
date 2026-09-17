@@ -209,3 +209,57 @@ Response to the request example. Note the resolved `scope` carries the context t
 **Scope is enforced server-side.** The VTA authorizes the write against `payload.contextId` (or its absence) and stamps the resolved scope onto the stored record; a context admin cannot create a template outside the contexts they administer, and cannot reach the global scope at all.
 
 **Templates are shapes, not secrets.** A template contains only placeholder tokens and public document structure — never key material. The VTA mints all keys at render time; a template never carries a private key. Even so, the optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload, so producers **MUST NOT** place data in `ext` they would not be comfortable signing.
+
+### Data carried
+
+A template is a **shape, not a secret**: placeholder tokens and public document
+structure, never key material. The implementation mints every key at render
+time, so a template cannot carry a private key even by mistake.
+
+The `keys` block is the one member that says something new about the deployment,
+and it is worth naming plainly: **it is a disclosure of cryptographic posture.**
+A template declaring `["ed25519"]` tells any reader that every DID minted from it
+is classical, and one declaring `["mldsa44", "ed25519"]` tells a reader the
+fallback exists. That is not a reason to omit it — a shape nobody can read is a
+shape nobody can audit, and the same fact is derivable from any DID document the
+template produces — but a producer **SHOULD** treat the set of templates as
+infrastructure detail rather than public information.
+
+`contextId` is a scope selector and carries no subject data. The optional `ext`
+(see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed with the
+rest of the payload, so producers **MUST NOT** place data in it they would not be
+comfortable signing.
+
+### Correlation
+
+The recipient records the creator's DID and the time, durably, as provenance —
+that is the point of the audit trail, and the **REQUIRED** `proof` is what makes
+it attributable rather than merely logged.
+
+To an observer of the channel, a request and its response correlate by
+`threadId`, and a sequence of them correlates to one operator by `issuer`.
+Neither can be varied: the `issuer` *is* the entitlement being checked, so a
+producer that varied it would not be authorized. What is variable is timing — a
+burst of template writes marks a provisioning campaign, and an operator who
+cares **MAY** space them.
+
+### Retention
+
+The stored template is **durable** until it is updated or deleted: that is the
+resource being created. Its provenance — creator DID, created and updated
+timestamps — is durable for the same lifetime and is not separable from it, since
+an unattributable template defeats the audit trail this task exists to leave.
+
+A consumer **SHOULD NOT** retain the request document itself once the record is
+stored; the record supersedes it, and the request additionally carries the proof.
+
+### Consent/purpose
+
+An administrative act by an operator the ACL already authorizes, on
+infrastructure the operator controls. **No subject data is involved and no
+consent ceremony applies** — the authority is the ACL grant, checked server-side
+against the resolved scope, and a context administrator cannot reach the global
+scope at all.
+
+The purpose is bounded by that scope: a template created in a context shapes
+DIDs minted in that context and nowhere else.
