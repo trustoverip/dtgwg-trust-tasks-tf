@@ -31,6 +31,47 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.2...trust-tasks-rs-v0.21.3) — 2026-09-17
+
+
+### Added
+
+- **vta/did-templates**: A template can declare which algorithms its keys use ([#508](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/508))
+
+* feat(vta/did-templates): a template can declare which algorithms its keys use
+
+  Adds `vta/_shared/0.2/did-template.schema.json` and `create`, `update`, `get`
+  and `list` at `3.0`. A template's `keys` block names each key slot's purpose and
+  its acceptable algorithms, most preferred first:
+
+      "keys": {
+        "signing": { "purpose": "signing", "algorithms": ["mldsa44", "ed25519"] },
+        "ka":      { "purpose": "keyAgreement", "algorithms": ["x25519"] }
+      }
+
+  A list rather than a single value because a fleet does not migrate atomically:
+  that says mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so
+  one template serves a VTA with post-quantum support and one without.
+
+  ## Why a new shared version rather than an edit
+
+  `DidTemplate` lives in `_shared/0.1`, which the shipped 1.0 and 2.0 specs
+  reference. Editing it in place would retroactively change what those versions
+  mean, which is what versioning exists to prevent. `_shared/0.2` follows the
+  precedent `credentials` and `device` already set, and 1.0/2.0 keep pointing at
+  0.1.
+
+  ## Why four task families, not two
+
+  `create` and `update` carry a `DidTemplate`; `get` and `list` return a
+  `DidTemplateRecord`, which flattens the same fields. A stored v2 template
+  fetched through `get/2.0` would fail validation, so all four move together —
+  otherwise the template can be written and not read back.
+
+  ## The change is breaking, for a stronger reason than expected
+
+
+
 ## [0.21.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.1...trust-tasks-rs-v0.21.2) — 2026-09-16
 
 
