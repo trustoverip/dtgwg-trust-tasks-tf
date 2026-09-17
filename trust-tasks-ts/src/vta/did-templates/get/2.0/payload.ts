@@ -3,7 +3,7 @@
  * Source: specs/vta/did-templates/get/2.0/payload.schema.json
  */
 
-import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplateRecord, Ext, Global_VtaV0_1 as Global, Scope_VtaV0_1 as Scope } from "../../../../_shared/components.js";
+import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplateRecord_VtaV0_1 as DidTemplateRecord, Ext, Global_VtaV0_1 as Global, Scope_VtaV0_1 as Scope } from "../../../../_shared/components.js";
 
 
 /**

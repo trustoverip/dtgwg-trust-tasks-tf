@@ -1920,9 +1920,106 @@ export interface DidRecord {
   ext?: Ext;
 }
 /**
+ * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
+ */
+export interface DidTemplateRecord_VtaV0_1 {
+  schemaVersion: 1;
+  name: string;
+  kind: string;
+  description?: string | null;
+  methods?: string[];
+  requiredVars?: string[];
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  document: {};
+  /**
+   * Resolved scope of the stored template.
+   */
+  scope: Scope_VtaV0_1;
+  /**
+   * UTC unix-epoch seconds the template was first stored.
+   */
+  createdAt: number;
+  /**
+   * UTC unix-epoch seconds of the last write.
+   */
+  updatedAt: number;
+  /**
+   * DID of the admin who last wrote the template.
+   */
+  createdBy: string;
+}
+/**
+ * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
+ */
+export interface DidTemplateRecord_VtaV0_2 {
+  /**
+   * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
+   */
+  schemaVersion: 1 | 2;
+  name: string;
+  kind: string;
+  description?: string | null;
+  methods?: string[];
+  requiredVars?: string[];
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
+   *
+   * A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
+   *
+   * An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.
+   */
+  keys?: {
+    [k: string]:
+      | {
+          /**
+           * What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.
+           */
+          purpose: "signing" | "keyAgreement";
+          /**
+           * Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `["mldsa44", "ed25519"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.
+           *
+           * @minItems 1
+           */
+          algorithms: [
+            "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65",
+            ...("ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65")[]
+          ];
+        }
+      | undefined;
+  };
+  document: {};
+  /**
+   * Resolved scope of the stored template.
+   */
+  scope: Scope_VtaV0_1;
+  /**
+   * UTC unix-epoch seconds the template was first stored.
+   */
+  createdAt: number;
+  /**
+   * UTC unix-epoch seconds of the last write.
+   */
+  updatedAt: number;
+  /**
+   * DID of the admin who last wrote the template.
+   */
+  createdBy: string;
+}
+/**
  * Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.
  */
-export interface DidTemplate {
+export interface DidTemplate_VtaV0_1 {
   /**
    * Template schema version. Currently always 1.
    */
@@ -1965,38 +2062,75 @@ export interface DidTemplate {
   document: {};
 }
 /**
- * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
+ * Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.
  */
-export interface DidTemplateRecord {
-  schemaVersion: 1;
+export interface DidTemplate_VtaV0_2 {
+  /**
+   * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
+   */
+  schemaVersion: 1 | 2;
+  /**
+   * Template id within its scope. Lowercase alphanumeric and hyphen only.
+   */
   name: string;
+  /**
+   * Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.
+   */
   kind: string;
+  /**
+   * Human-readable description of what the template provisions.
+   */
   description?: string | null;
+  /**
+   * DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"] for a did:key.
+   */
   methods?: string[];
+  /**
+   * Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).
+   */
   requiredVars?: string[];
+  /**
+   * Variables with default values, keyed by variable name.
+   */
   optionalVars?: {
     [k: string]: unknown | undefined;
   };
+  /**
+   * Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).
+   */
   defaults?: {
     [k: string]: unknown | undefined;
   };
+  /**
+   * The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
+   *
+   * A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
+   *
+   * An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.
+   */
+  keys?: {
+    [k: string]:
+      | {
+          /**
+           * What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.
+           */
+          purpose: "signing" | "keyAgreement";
+          /**
+           * Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `["mldsa44", "ed25519"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.
+           *
+           * @minItems 1
+           */
+          algorithms: [
+            "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65",
+            ...("ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65")[]
+          ];
+        }
+      | undefined;
+  };
+  /**
+   * The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
+   */
   document: {};
-  /**
-   * Resolved scope of the stored template.
-   */
-  scope: Scope_VtaV0_1;
-  /**
-   * UTC unix-epoch seconds the template was first stored.
-   */
-  createdAt: number;
-  /**
-   * UTC unix-epoch seconds of the last write.
-   */
-  updatedAt: number;
-  /**
-   * DID of the admin who last wrote the template.
-   */
-  createdBy: string;
 }
 /**
  * DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.

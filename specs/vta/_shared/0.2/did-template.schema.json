@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/_shared/0.2/did-template",
+  "title": "DidTemplate / DidTemplateRecord \u2014 shared definitions for the vta/did-templates/* spec family",
+  "description": "A *DID template* is the JSON shape of a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces; the VTA fills the placeholders with keys it mints and caller-supplied variables when provisioning an integration. `DidTemplate` is the authored shape a caller uploads; `DidTemplateRecord` is the persisted shape the VTA returns (the DidTemplate fields flattened at the top level alongside the resolved `Scope` and provenance metadata). Shared by every task in the vta/did-templates/* family so the record is defined once rather than duplicated per task.",
+  "$defs": {
+    "DidTemplate": {
+      "title": "DidTemplate",
+      "description": "Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "description": "Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "Template id within its scope. Lowercase alphanumeric and hyphen only."
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024,
+          "description": "Human-readable description of what the template provisions."
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "DID methods this template targets, e.g. [\"webvh\", \"web\"] for a hosted DID or [\"key\"] for a did:key."
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW)."
+        },
+        "optionalVars": {
+          "type": "object",
+          "description": "Variables with default values, keyed by variable name.",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).",
+          "additionalProperties": true
+        },
+        "keys": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "purpose",
+              "algorithms"
+            ],
+            "properties": {
+              "purpose": {
+                "type": "string",
+                "enum": [
+                  "signing",
+                  "keyAgreement"
+                ],
+                "description": "What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree."
+              },
+              "algorithms": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ed25519",
+                    "x25519",
+                    "p256",
+                    "mldsa44",
+                    "mldsa65"
+                  ]
+                },
+                "description": "Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\"mldsa44\", \"ed25519\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade \u2014 a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to."
+              }
+            }
+          },
+          "propertyNames": {
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "description": "The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule \u2014 uppercase, `-` to `_`, suffix `_KEY_MB` \u2014 so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` \u2014 the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal."
+        },
+        "document": {
+          "type": "object",
+          "description": "The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name."
+        }
+      }
+    },
+    "Scope": {
+      "title": "Scope",
+      "description": "Where a stored template lives. Tagged by `type`.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "Builtin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "builtin"
+            }
+          }
+        },
+        {
+          "title": "Global",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "global"
+            }
+          }
+        },
+        {
+          "title": "Context",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "contextId"
+          ],
+          "properties": {
+            "type": {
+              "const": "context"
+            },
+            "contextId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "DidTemplateRecord": {
+      "title": "DidTemplateRecord",
+      "description": "A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "kind",
+        "document",
+        "scope",
+        "createdAt",
+        "updatedAt",
+        "createdBy"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ],
+          "description": "Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiredVars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optionalVars": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "defaults": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "keys": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "purpose",
+              "algorithms"
+            ],
+            "properties": {
+              "purpose": {
+                "type": "string",
+                "enum": [
+                  "signing",
+                  "keyAgreement"
+                ],
+                "description": "What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree."
+              },
+              "algorithms": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ed25519",
+                    "x25519",
+                    "p256",
+                    "mldsa44",
+                    "mldsa65"
+                  ]
+                },
+                "description": "Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\"mldsa44\", \"ed25519\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade \u2014 a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to."
+              }
+            }
+          },
+          "propertyNames": {
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "description": "The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule \u2014 uppercase, `-` to `_`, suffix `_KEY_MB` \u2014 so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` \u2014 the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal."
+        },
+        "document": {
+          "type": "object"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "Resolved scope of the stored template."
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds the template was first stored."
+        },
+        "updatedAt": {
+          "type": "integer",
+          "description": "UTC unix-epoch seconds of the last write."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "DID of the admin who last wrote the template."
+        }
+      }
+    }
+  }
+}
