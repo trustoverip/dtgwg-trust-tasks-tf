@@ -13,6 +13,7 @@ class Response {
   const Response({
     required this.id,
     required this.deleted,
+    this.daemonCleanupErrors,
     this.ext,
   });
 
@@ -20,6 +21,11 @@ class Response {
   factory Response.fromJson(Map<String, dynamic> json) => Response(
         id: json['id'] as String,
         deleted: json['deleted'] as bool,
+        daemonCleanupErrors: json['daemonCleanupErrors'] == null
+            ? null
+            : (json['daemonCleanupErrors'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -29,12 +35,22 @@ class Response {
   /// VTA declined to act — it is not an error, and a consumer MUST NOT report the
   /// deletion as done on the basis of the response status alone.
   final bool deleted;
+
+  /// One entry per `did:webvh` DID in the deleted subtree whose local record was removed
+  /// while its hosting server did not confirm removal of the published log. **Those DIDs
+  /// may still resolve.** This is a partial success reported as a success — the same
+  /// condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single
+  /// DID — and a consumer MUST surface it rather than treating the deletion as complete.
+  /// Absent or empty means every host copy was confirmed gone.
+  final List<String>? daemonCleanupErrors;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'deleted': deleted,
+        if (daemonCleanupErrors != null)
+          'daemonCleanupErrors': daemonCleanupErrors!,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -86,11 +102,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vta/contexts/delete/1.0","title":"VTA Contexts Delete — payload","type":"object","additionalProperties":false,"required":["id"],"properties":{"id":{"type":"string","minLength":1,"description":"Context to delete."},"force":{"type":"boolean","default":false,"description":"Delete even though the context still holds keys, DIDs or templates. Default false, and the default is the point: without it a context holding anything is refused, so the destructive case is always something a caller asked for explicitly."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTA Contexts Delete — response payload","description":"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.","type":"object","additionalProperties":false,"required":["id","deleted"],"properties":{"id":{"type":"string"},"deleted":{"type":"boolean","description":"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vta/contexts/delete/1.0","title":"VTA Contexts Delete — payload","type":"object","additionalProperties":false,"required":["id"],"properties":{"id":{"type":"string","minLength":1,"description":"Context to delete."},"force":{"type":"boolean","default":false,"description":"Delete even though the context still holds keys, DIDs or templates. Default false, and the default is the point: without it a context holding anything is refused, so the destructive case is always something a caller asked for explicitly."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTA Contexts Delete — response payload","description":"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.","type":"object","additionalProperties":false,"required":["id","deleted"],"properties":{"id":{"type":"string"},"deleted":{"type":"boolean","description":"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."},"daemonCleanupErrors":{"type":"array","items":{"type":"string"},"description":"One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTA Contexts Delete — response payload","description":"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.","type":"object","additionalProperties":false,"required":["id","deleted"],"properties":{"id":{"type":"string"},"deleted":{"type":"boolean","description":"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTA Contexts Delete — response payload","description":"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.","type":"object","additionalProperties":false,"required":["id","deleted"],"properties":{"id":{"type":"string"},"deleted":{"type":"boolean","description":"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."},"daemonCleanupErrors":{"type":"array","items":{"type":"string"},"description":"One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

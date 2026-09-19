@@ -53,9 +53,13 @@ related:
 everything scoped to it: its keys, the `did:webvh` DIDs it publishes, its DID
 templates, and the ACL entries that named it.
 
-By default the VTA refuses to delete a context that still holds anything.
-`force` overrides that, and the refusal exists so that the destructive case is
-always something the caller asked for in as many words.
+It also removes the context's **sub-contexts, and everything scoped to those**,
+to any depth. A context is a folder as well as a scope, and there is no state
+in which a sub-context outlives the parent whose path it is part of.
+
+By default the VTA refuses to delete a context that still holds anything —
+sub-contexts included. `force` overrides that, and the refusal exists so that
+the destructive case is always something the caller asked for in as many words.
 
 ## Status of this Document
 
@@ -66,9 +70,21 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) apply.
 
 A conforming **consumer** (the VTA) **MUST** refuse with
-`vta/contexts/delete:notEmpty` when the context holds keys, DIDs or templates
-and `force` is absent or `false`. It **MUST NOT** partially delete: either the
-context and its contents go, or nothing does.
+`vta/contexts/delete:notEmpty` when the context holds keys, DIDs, templates
+**or sub-contexts** and `force` is absent or `false`. It **MUST NOT** partially
+delete: either the context and its contents go, or nothing does — and
+"contents" is the whole subtree, so a refusal that can only be discovered part
+way through the cascade **MUST** be discovered before any of it is performed.
+
+A `did:webvh` DID in the subtree **MUST** be deleted as
+[`vta/webvh/dids/delete/1.0`](../../../webvh/dids/delete/1.0/spec.md) deletes
+it, including removal of the published log on its hosting server, revocation of
+credentials issued to it, and removal of the authority that named it. Removing
+only the consumer's own record of a DID is **not** a deletion of it: the log
+keeps resolving for every party except its owner, and the records that could
+revoke or remove it are the ones just destroyed. Where a host copy could not be
+confirmed removed, the consumer **MUST** report it in `daemonCleanupErrors`
+rather than presenting the deletion as complete.
 
 `deleted: false` in a success response means the VTA declined to act. A
 consumer **MUST NOT** report the deletion as done on the strength of a

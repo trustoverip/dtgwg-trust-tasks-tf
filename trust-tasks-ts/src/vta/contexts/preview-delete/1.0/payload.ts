@@ -25,6 +25,10 @@ export interface VTAContextsPreviewDeleteResponsePayload {
    */
   id: string;
   /**
+   * Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf.
+   */
+  subContexts?: string[];
+  /**
    * Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.
    */
   keys: string[];
@@ -110,6 +114,13 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "description": "The context previewed."
         },
+        "subContexts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf."
+        },
         "keys": {
           "type": "array",
           "items": {
@@ -185,6 +196,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "id": {
           "type": "string",
           "description": "The context previewed."
+        },
+        "subContexts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf."
         },
         "keys": {
           "type": "array",

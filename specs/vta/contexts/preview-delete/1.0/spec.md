@@ -51,6 +51,10 @@ It returns the keys, published DIDs and DID templates the context holds, and
 the ACL entries that would be removed or narrowed as a consequence. Nothing is
 written, and the caller may decide not to proceed.
 
+Deleting a context deletes its **whole subtree**, so the preview covers the
+whole subtree: `subContexts` names the sub-contexts that would go, and every
+other array is the union over them and the context itself.
+
 ## Status of this Document
 
 This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice.
@@ -66,6 +70,20 @@ this repeatedly, and a caller that never follows through leaves no trace.
 The response is a snapshot and **MUST NOT** be treated as a guarantee: the
 context can change between the preview and the deletion. A consumer **MAY**
 re-derive the effects at deletion time and act on those instead.
+
+A conforming **consumer** **MUST** report the effects on the **entire subtree**
+rooted at the named context, not only on that context: `subContexts` names
+every sub-context that the corresponding deletion would remove, and `keys`,
+`webvhDids`, `aclEntriesRemoved`, `aclEntriesUpdated` and `didTemplates` are
+the union across all of them.
+
+This is stated because the narrower reading is the natural one and is
+dangerous. A preview scoped to the named context alone reports "holds nothing"
+for a context whose children hold a great deal, and a caller acting on that
+answer — including one deciding whether the deletion needs the explicit `force`
+that `vta/contexts/delete/1.0` requires — is deciding about the wrong thing. A
+preview that under-reports is worse than no preview, because it is a promise
+the operator acted on.
 
 A conforming **consumer** **MUST** distinguish `aclEntriesRemoved` from
 `aclEntriesUpdated`: the first names subjects whose ACL entry disappears
@@ -105,6 +123,7 @@ context may not inventory it either.
   "threadId": "708192a3-b4c5-4d6e-f708-192a3b4c5d6e",
   "payload": {
     "id": "personal/banking",
+    "subContexts": ["personal/banking/cards"],
     "keys": ["signing-1", "agreement-1"],
     "webvhDids": ["did:webvh:QmScid:example.com"],
     "aclEntriesRemoved": ["did:key:z6MkBankBot"],
@@ -114,9 +133,15 @@ context may not inventory it either.
 }
 ```
 
-Read as: deleting this context destroys two keys and stops serving one DID;
+Read as: deleting this context also deletes `personal/banking/cards`, and
+between them they destroy two keys and stop serving one DID;
 `did:key:z6MkBankBot` loses its ACL entry outright, and `did:key:z6MkOperator`
 keeps its entry with this scope removed.
+
+The resource arrays do not say which context each entry belongs to, and
+deliberately: the question the preview answers is what the deletion destroys,
+and every one of them is destroyed either way. A consumer that wants the
+per-context breakdown previews each sub-context in turn.
 
 ## Security & Privacy
 
