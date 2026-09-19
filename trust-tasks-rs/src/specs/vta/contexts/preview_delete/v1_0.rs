@@ -588,7 +588,7 @@ mod conformance {
     }
     #[test]
     fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"8192a3b4-c5d6-4e7f-0819-2a3b4c5d6e7f\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkAdmin\",\n  \"issuedAt\": \"2026-08-19T09:50:01Z\",\n  \"threadId\": \"708192a3-b4c5-4d6e-f708-192a3b4c5d6e\",\n  \"payload\": {\n    \"id\": \"personal/banking\",\n    \"keys\": [\"signing-1\", \"agreement-1\"],\n    \"webvhDids\": [\"did:webvh:QmScid:example.com\"],\n    \"aclEntriesRemoved\": [\"did:key:z6MkBankBot\"],\n    \"aclEntriesUpdated\": [\"did:key:z6MkOperator\"],\n    \"didTemplates\": [\"bank-persona\"]\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"8192a3b4-c5d6-4e7f-0819-2a3b4c5d6e7f\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkAdmin\",\n  \"issuedAt\": \"2026-08-19T09:50:01Z\",\n  \"threadId\": \"708192a3-b4c5-4d6e-f708-192a3b4c5d6e\",\n  \"payload\": {\n    \"id\": \"personal/banking\",\n    \"subContexts\": [\"personal/banking/cards\"],\n    \"keys\": [\"signing-1\", \"agreement-1\"],\n    \"webvhDids\": [\"did:webvh:QmScid:example.com\"],\n    \"aclEntriesRemoved\": [\"did:key:z6MkBankBot\"],\n    \"aclEntriesUpdated\": [\"did:key:z6MkOperator\"],\n    \"didTemplates\": [\"bank-persona\"]\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
