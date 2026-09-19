@@ -11,6 +11,21 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.4 — 2026-09-19
+
+
+### Added
+
+- **vta/contexts**: Preview the whole subtree a delete destroys, and report host copies it could not remove
+
+Deleting a context deletes its sub-contexts and everything they hold, to any depth. Neither vta/contexts/delete/1.0 nor its preview said so, and the preview had nowhere to say what the cascade would reach.
+
+  vta/contexts/preview-delete/1.0 gains subContexts, with the existing arrays defined as the union over the whole subtree. The narrower reading — preview the named context alone — is the natural one and is dangerous: a context whose children hold keys and DIDs previews as holding nothing, and a caller deciding whether the delete needs force decides about the wrong thing.
+
+  vta/contexts/delete/1.0 gains daemonCleanupErrors, the subtree-wide form of the daemonCleanupError that vta/webvh/dids/delete/1.0 already reports for a single DID, and now requires that a did:webvh DID in the subtree be deleted the way that task deletes one — published log removed from its hosting server, credentials revoked, authority withdrawn. Removing only the local record is not a deletion: the log keeps resolving for every party except its owner, and the records that could remove it are the ones just destroyed.
+
+  Both members are optional and additive; the refusal and cascade prose describes behaviour that was already implemented but unstated.
+
 ## 0.1.3 — 2026-09-17
 
 
