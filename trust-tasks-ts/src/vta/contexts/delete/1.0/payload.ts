@@ -26,6 +26,10 @@ export interface VTAContextsDeleteResponsePayload {
    * Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.
    */
   deleted: boolean;
+  /**
+   * One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone.
+   */
+  daemonCleanupErrors?: string[];
   ext?: Ext;
 }
 
@@ -96,6 +100,13 @@ export const PAYLOAD_SCHEMA = {
           "type": "boolean",
           "description": "Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."
         },
+        "daemonCleanupErrors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -136,6 +147,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "deleted": {
           "type": "boolean",
           "description": "Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone."
+        },
+        "daemonCleanupErrors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

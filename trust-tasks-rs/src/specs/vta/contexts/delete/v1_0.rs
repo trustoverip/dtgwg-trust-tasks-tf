@@ -268,6 +268,13 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 ///    "id"
 ///  ],
 ///  "properties": {
+///    "daemonCleanupErrors": {
+///      "description": "One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone.",
+///      "type": "array",
+///      "items": {
+///        "type": "string"
+///      }
+///    },
 ///    "deleted": {
 ///      "description": "Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.",
 ///      "type": "boolean"
@@ -288,6 +295,13 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    ///One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone.
+    #[serde(
+        rename = "daemonCleanupErrors",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub daemon_cleanup_errors: ::std::vec::Vec<::std::string::String>,
     ///Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.
     pub deleted: bool,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -369,6 +383,8 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
+        daemon_cleanup_errors:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
         deleted: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         id: ::std::result::Result<::std::string::String, ::std::string::String>,
@@ -376,6 +392,7 @@ pub mod builder {
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
+                daemon_cleanup_errors: Ok(Default::default()),
                 deleted: Err("no value supplied for deleted".to_string()),
                 ext: Ok(Default::default()),
                 id: Err("no value supplied for id".to_string()),
@@ -383,6 +400,16 @@ pub mod builder {
         }
     }
     impl Response {
+        pub fn daemon_cleanup_errors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.daemon_cleanup_errors = value.try_into().map_err(|e| {
+                format!("error converting supplied value for daemon_cleanup_errors: {e}")
+            });
+            self
+        }
         pub fn deleted<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<bool>,
@@ -418,6 +445,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                daemon_cleanup_errors: value.daemon_cleanup_errors?,
                 deleted: value.deleted?,
                 ext: value.ext?,
                 id: value.id?,
@@ -427,6 +455,7 @@ pub mod builder {
     impl ::std::convert::From<super::Response> for Response {
         fn from(value: super::Response) -> Self {
             Self {
+                daemon_cleanup_errors: Ok(value.daemon_cleanup_errors),
                 deleted: Ok(value.deleted),
                 ext: Ok(value.ext),
                 id: Ok(value.id),
@@ -440,7 +469,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.\",\n      \"properties\": {\n        \"deleted\": {\n          \"description\": \"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"deleted\"\n      ],\n      \"title\": \"VTA Contexts Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"force\": {\n      \"default\": false,\n      \"description\": \"Delete even though the context still holds keys, DIDs or templates. Default false, and the default is the point: without it a context holding anything is refused, so the destructive case is always something a caller asked for explicitly.\",\n      \"type\": \"boolean\"\n    },\n    \"id\": {\n      \"description\": \"Context to delete.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTA Contexts Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.\",\n      \"properties\": {\n        \"daemonCleanupErrors\": {\n          \"description\": \"One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"deleted\": {\n          \"description\": \"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"deleted\"\n      ],\n      \"title\": \"VTA Contexts Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"force\": {\n      \"default\": false,\n      \"description\": \"Delete even though the context still holds keys, DIDs or templates. Default false, and the default is the point: without it a context holding anything is refused, so the destructive case is always something a caller asked for explicitly.\",\n      \"type\": \"boolean\"\n    },\n    \"id\": {\n      \"description\": \"Context to delete.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTA Contexts Delete — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -449,7 +478,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.\",\n      \"properties\": {\n        \"deleted\": {\n          \"description\": \"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"deleted\"\n      ],\n      \"title\": \"VTA Contexts Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.\",\n      \"properties\": {\n        \"daemonCleanupErrors\": {\n          \"description\": \"One entry per `did:webvh` DID in the deleted subtree whose local record was removed while its hosting server did not confirm removal of the published log. **Those DIDs may still resolve.** This is a partial success reported as a success — the same condition `vta/webvh/dids/delete/1.0` reports as `daemonCleanupError` for a single DID — and a consumer MUST surface it rather than treating the deletion as complete. Absent or empty means every host copy was confirmed gone.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"deleted\": {\n          \"description\": \"Whether the context was removed. A successful response carrying `false` means the VTA declined to act — it is not an error, and a consumer MUST NOT report the deletion as done on the basis of the response status alone.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"deleted\"\n      ],\n      \"title\": \"VTA Contexts Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
