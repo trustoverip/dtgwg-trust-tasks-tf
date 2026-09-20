@@ -11,6 +11,44 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.6 — 2026-09-20
+
+
+### Specifications
+
+- **vtc/endorsement-types/delete**: A criterion requiring the type also blocks its deletion (#523)
+
+The spec described one kind of reference — a live endorsement — and the
+  `inUse` refusal as being about orphaned endorsements alone. A second kind
+  exists wherever the consumer also holds admission criteria: a criterion
+  requiring statements of the type is left asking applicants for evidence the
+  community no longer recognises. Where registering such a criterion against
+  an unregistered type is itself refused, deleting the type strands the
+  criterion in a state it could not have been created in.
+
+  `inUse` now covers both, and gains a `detailsSchema` so a consumer that can
+  determine both reports which applies rather than leaving the caller to
+  parse prose. `liveEndorsements` and `criteria` are each optional, because
+  neither an endorsement store nor a criteria registry is mandatory — and the
+  spec says plainly that an absent member means "not applicable here", not
+  "none found", so a caller cannot read silence as an all-clear.
+
+  Conformance asks a consumer that can determine both to gather both before
+  refusing. Refusing on the first found turns one determination into as many
+  round trips as there are kinds of reference, each ending in the same code.
+
+  Security & Privacy gains what the refusal discloses: `details` names
+  criteria by identifier, which is a governance fact the authorised
+  administrator can already enumerate, and is reachable only after the
+  community-admin capability has been verified.
+
+  In place on 0.1 rather than a new version: the spec is `draft`, no payload
+  or response shape changes, and no previously-valid document becomes
+  invalid.
+
+  Implemented in verifiable-trust-infrastructure#1584, which added the
+  criterion check and reported both causes in one refusal.
+
 ## 0.1.5 — 2026-09-20
 
 
