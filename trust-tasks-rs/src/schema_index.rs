@@ -1576,6 +1576,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/join-requests/submit-receipt/0.1#response" => <crate::specs::vtc::join_requests::submit_receipt::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/supplement/0.1" => <crate::specs::vtc::join_requests::supplement::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/supplement/0.1#response" => <crate::specs::vtc::join_requests::supplement::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/join-requests/withdraw/0.1" => <crate::specs::vtc::join_requests::withdraw::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/join-requests/withdraw/0.1#response" => <crate::specs::vtc::join_requests::withdraw::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3683,6 +3687,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/join-requests/submit-receipt/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::join_requests::submit_receipt::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/supplement/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::join_requests::supplement::v0_1::Payload,
             >())
         }
         #[cfg(feature = "vtc")]

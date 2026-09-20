@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/supplement/0.1",
+  "title": "VTC Join-Requests Supplement — payload",
+  "description": "The evidence an applicant offers in answer to a community's request for more, against the join request they already have open. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vp"
+  ],
+  "properties": {
+    "vp": {
+      "type": "object",
+      "description": "The Verifiable Presentation satisfying the `presentationDefinition` the community returned when it deferred. It REPLACES the presentation on the request rather than adding to it, so it carries everything the community requires and not only the shortfall — see the spec's Definitions."
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The request to supplement. OPTIONAL: an applicant whose submit response was lost never received one, and the consumer then resolves the request from the authenticated applicant. A consumer given this value MUST prefer it over inferring the request from the caller."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "An opaque bag the community stores verbatim and this task does not interpret. Replaces the bag on the request on the same terms as `vp`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests Supplement — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "verdict"
+      ],
+      "description": "The community's fresh decision on the re-presented evidence. Failures use trust-task-error, not this shape.",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The request that was re-decided (a UUID). Returned even when the request omitted it, so an applicant who used the id-less form learns which request they answered."
+        },
+        "verdict": {
+          "$ref": "../../../_shared/0.1/ceremony.schema.json#/$defs/Verdict",
+          "description": "What the community decided on the new evidence, in the same shape `vtc/join-requests/submit` returns. MAY be any outcome a submission can produce, including a further request for more evidence and including a refusal."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
