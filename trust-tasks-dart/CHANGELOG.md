@@ -11,6 +11,50 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.5 — 2026-09-20
+
+
+### Added
+
+- **vtc/join-requests**: Withdraw/0.1 — an applicant closes their own request (#518)
+
+An applicant whose request is answered `requestMore` has no way to end it.
+  The community holds it open, the applicant cannot submit another, and the
+  only thing that resolves it is a retention sweep neither party controls.
+
+  The registry already assumed this task existed: `join-requests/status/0.1`
+  lists `withdrawn` among the states it can report, and nothing could reach
+  it. This is the task that does.
+
+  Modelled on `members/self-remove/0.1` — the same shape of act, a subject
+  exercising authority over their own record — and scaffolded with
+  `npm run new-spec` rather than copied from it, per CONTRIBUTING-SPECS.md.
+
+  Three things worth review:
+
+  **`requestId` is OPTIONAL**, following `join-requests/status/0.1` and for
+  the same reason: an applicant whose submit response was lost never received
+  an id, and would otherwise have no way to reach their own request. A
+  consumer given one MUST prefer it over inferring the request from the
+  caller.
+
+  **`issuedAt` is REQUIRED for a reason specific to this task**, beyond the
+  §7.3 item 17 floor. An applicant may withdraw and then apply again — that
+  is the point of it — so a captured withdrawal replayed later does not
+  repeat a harmless act: it closes the *next* request, which the applicant
+  never withdrew. The two documents are identical apart from when they were
+  issued.
+
+  **`notFound` deliberately conflates "no open request" with "not yours"**,
+  so a caller cannot probe whether a given request id exists on a community.
+  `alreadyDecided` is kept distinct because an applicant is entitled to know
+  the outcome of their own request, and because retrying will never change
+  it.
+
+  Bindings regenerated for all four targets; `check-bindings` reports 452
+  specs against 452 TypeScript, 447 Rust, 452 Go and 452 Dart modules, all
+  agreeing. No version or changelog edits — release-plz owns those here.
+
 ## 0.1.4 — 2026-09-19
 
 
