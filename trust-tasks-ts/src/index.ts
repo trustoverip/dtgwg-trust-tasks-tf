@@ -481,6 +481,7 @@ export * as VtcJoinRequestsStatus_v0_1 from "./vtc/join-requests/status/0.1/payl
 export * as VtcJoinRequestsSubmitReceipt_v0_1 from "./vtc/join-requests/submit-receipt/0.1/payload.js";
 export * as VtcJoinRequestsSubmit_v0_1 from "./vtc/join-requests/submit/0.1/payload.js";
 export * as VtcJoinRequestsSubmit_v0_2 from "./vtc/join-requests/submit/0.2/payload.js";
+export * as VtcJoinRequestsWithdraw_v0_1 from "./vtc/join-requests/withdraw/0.1/payload.js";
 export * as VtcMembersAdminRemove_v0_1 from "./vtc/members/admin-remove/0.1/payload.js";
 export * as VtcMembersCredentials_v0_1 from "./vtc/members/credentials/0.1/payload.js";
 export * as VtcMembersList_v0_1 from "./vtc/members/list/0.1/payload.js";
