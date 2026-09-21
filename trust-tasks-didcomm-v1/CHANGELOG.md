@@ -3,6 +3,41 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.21.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.21.10...trust-tasks-didcomm-v1-v0.21.11) — 2026-09-21
+
+
+### Specifications
+
+- Generate SPEC.md from the canonical framework specification ([#559](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/559))
+
+SPEC.md was a hand-ported copy of trustoverip/dtgwg-trust-tasks-spec,
+  and had drifted: it lacked #14's versioning sections (Document Status,
+  three-part framework versions, ratification), among others. It is now an
+  output.
+
+  - scripts/generate-framework-spec.mjs assembles the canonical Spec-Up-T
+    sources (specs.json markdown_paths + term definitions), numbers the
+    headings in canonical order, rewrites named anchors to numbered ones,
+    and emits legacy anchors as aliases. --check fails on drift.
+  - scripts/framework-spec-legacy-anchors.json maps every anchor of the old
+    hand-maintained copy to its canonical section, so existing links keep
+    resolving (generator rejects an alias that collides with a heading).
+  - build-registry: every /SPEC.md#… link in spec and binding prose,
+    including the bindings' absolute GitHub links, must name a section or
+    alias. Found 15 links broken before this change; fixed.
+  - deploy.yml regenerates SPEC.md from canonical main before the build, so
+    trusttasks.org serves the latest canonical text, and redeploys daily and
+    on workflow_dispatch / repository_dispatch (framework-spec-updated).
+  - Canonical order moves Terminology to §3, Conformance to §17, and the old
+    §10-§13 (Security & Privacy, Discovery, Task control, References) to
+    §12/§13, §10, §11 and §18. Qualified references ("SPEC §N", "SPEC.md §N",
+    links to SPEC.md) are rewritten across specs, bindings, docs, scripts and
+    library comments; bindings regenerated.
+  - CLAUDE.md, CONTRIBUTING-SPECS.md, README and the website point framework
+    changes at the canonical repository.
+
+
+
 ## [0.21.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.21.9...trust-tasks-didcomm-v1-v0.21.10) — 2026-09-21
 
 
