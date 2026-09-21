@@ -1,7 +1,7 @@
 # Trust Tasks
 
 > **Generated file — do not edit.** This is the Trust Tasks framework specification, generated
-> from [`f2a4b67a6298`](https://github.com/trustoverip/dtgwg-trust-tasks-spec/tree/f2a4b67a6298b6b9054a459b5de0c32a0e99f32a) (`main`) of the canonical source,
+> from [`8c63241a65c0`](https://github.com/trustoverip/dtgwg-trust-tasks-spec/tree/8c63241a65c055ddc387c5315a83ec958a5d004c) (`main`) of the canonical source,
 > <https://github.com/trustoverip/dtgwg-trust-tasks-spec>, by `scripts/generate-framework-spec.mjs`. Changes to the text belong
 > there. Section numbers are assigned here, in the canonical order, because the registry cites
 > the framework by number; they are not part of the canonical text.
@@ -1339,15 +1339,17 @@ Two parties about to enter a *Trust Task* exchange often need to negotiate a sha
 The slug `trust-task-discovery` is reserved by [Type URI](#61-type-uri) under the framework's `trust-task-` namespace. Its current published version lives at:
 
 ```
-https://trusttasks.org/spec/trust-task-discovery/0.1
+https://trusttasks.org/spec/trust-task-discovery/0.2
 ```
 
 Its registry entry defines the full request/response payload schema and conformance requirements. This section gives the framework-level overview; for the normative definitions of `payload.patterns` semantics, response shape, and conformance, see that registry entry.
 
+`trust-task-discovery/0.1` remains published. It differs only in carrying the responder's `frameworkVersion` as `MAJOR.MINOR`, which cannot name a framework release in the three-part form of [Versioning of This Framework Specification](#511-versioning-of-this-framework-specification); a *responder* answers each version it supports in the version it was asked.
+
 <a id="111-request"></a>
 ### 10.1 Discovery Request
 
-A *discovery request* is a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-discovery/0.1`. Its `payload` carries an optional list of slug-glob patterns:
+A *discovery request* is a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-discovery/0.2`. Its `payload` carries an optional list of slug-glob patterns:
 
 ```json
 {
@@ -1375,7 +1377,7 @@ The grammar omits version filters, recursive globs (`**`), and regex on purpose.
 <a id="113-response"></a>
 ### 10.3 Discovery Response
 
-A *discovery response* is a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-discovery/0.1#response`. Its `payload` carries the matching subset of *Type URIs* the responder supports:
+A *discovery response* is a *Trust Task document* whose `type` is `https://trusttasks.org/spec/trust-task-discovery/0.2#response`. Its `payload` carries the matching subset of *Type URIs* the responder supports:
 
 ```json
 {
