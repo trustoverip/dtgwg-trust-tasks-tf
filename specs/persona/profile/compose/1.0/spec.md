@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Profile — Compose
 summary: A holder composes a face for one context at the moment it is asked for, from values typed there and attributes already held, local by default, and may wear it in the same act.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona

@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Attribute — Promote
 summary: A holder makes values typed into a context-local face reusable across their faces. The face moves above contexts, keeping its id and every place it is worn; the step is one-way.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona
