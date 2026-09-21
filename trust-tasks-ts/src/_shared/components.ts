@@ -277,14 +277,18 @@ export type PlaceName = string;
  * `{inline}` — a value that never enters the pool, and so never leaks into another profile.
  *
  * Omission is exclusion; there is no removal marker.
+ *
+ * Any form MAY carry a `slot` naming the role the entry plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two entries carry the same slot: a slot exists to answer one question with one entry.
  */
 export type ProfileEntry =
   | {
       ref: Ulid;
+      slot?: Slot;
     }
   | {
       ref: Ulid;
       pinVersion: Version_PersonaV0_1;
+      slot?: Slot;
     }
   | {
       ref: Ulid;
@@ -295,6 +299,7 @@ export type ProfileEntry =
         value: unknown;
         label?: string;
       };
+      slot?: Slot;
     }
   | {
       inline: {
@@ -304,6 +309,7 @@ export type ProfileEntry =
         label?: string;
         provenance: Provenance;
       };
+      slot?: Slot;
     };
 /**
  * How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.
@@ -506,6 +512,18 @@ export type SiteTarget_VaultV0_1 = WebOrigin_VaultV0_1 | Did_VaultV0_1 | IosApp_
  * A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
  */
 export type SiteTarget_VaultV0_2 = WebOrigin_VaultV0_2 | Did_VaultV0_2 | IosApp_VaultV0_2 | AndroidApp_VaultV0_2;
+/**
+ * A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.
+ *
+ * Well-known slots:
+ *
+ * - `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.
+ * - `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.
+ * - `avatar` — the image this face presents.
+ *
+ * Other values are the holder's or the producer's own and carry no meaning a maintainer interprets.
+ */
+export type Slot = string;
 export type SyncEvent_SyncV0_1 =
   | VaultUpsertedEvent_SyncV0_1
   | VaultDeletedEvent_SyncV0_1
@@ -1038,6 +1056,25 @@ export interface Attribute {
    */
   release?: ReleaseRequirement;
   version: Version_PersonaV0_1;
+  /**
+   * Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.
+   *
+   * @maxItems 64
+   */
+  retainedVersions?: {
+    version: Version_PersonaV0_1;
+    /**
+     * When this version was written.
+     */
+    updatedAt?: string;
+    /**
+     * The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.
+     *
+     * @minItems 1
+     * @maxItems 256
+     */
+    pinnedBy: [Ulid, ...Ulid[]];
+  }[];
   createdAt?: string;
   updatedAt: string;
 }
@@ -3337,6 +3374,10 @@ export interface ResolvedClaim {
    * The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier.
    */
   label?: string;
+  /**
+   * The slot of the entry this claim resolved from, where it has one.
+   */
+  slot?: Slot;
   provenance: Provenance;
   /**
    * Present and true when this entry cannot be presented — a credential-backed value that could not be re-derived, or a pin naming a version the maintainer no longer holds. Surfaced rather than omitted so a holder learns why a disclosure would be short.

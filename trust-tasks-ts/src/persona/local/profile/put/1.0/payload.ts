@@ -3,7 +3,7 @@
  * Source: specs/persona/local/profile/put/1.0/payload.schema.json
  */
 
-import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../../_shared/components.js";
+import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Slot, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../../_shared/components.js";
 
 
 /**
@@ -32,6 +32,7 @@ export interface PersonaLocalProfilePutPayload {
       value: unknown;
       label?: string;
     };
+    slot?: Slot;
   }[];
   expectedVersion?: ExpectedVersion;
   ext?: Ext;
@@ -57,7 +58,7 @@ export interface PersonaLocalProfilePutResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, ExpectedVersion, Ext, Ulid, ValueType, Version };
+export type { ClaimType, ExpectedVersion, Ext, Slot, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/local/profile/put/1.0" as const;
@@ -138,6 +139,9 @@ export const PAYLOAD_SCHEMA = {
                 "maxLength": 128
               }
             }
+          },
+          "slot": {
+            "$ref": "#/$defs/Slot"
           }
         }
       }
@@ -225,6 +229,12 @@ export const PAYLOAD_SCHEMA = {
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "Slot": {
+      "title": "Slot",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
+      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
     },
     "ValueType": {
       "title": "ValueType",
@@ -329,6 +339,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "Slot": {
+      "title": "Slot",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
+      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
     },
     "ValueType": {
       "title": "ValueType",

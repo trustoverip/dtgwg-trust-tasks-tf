@@ -34,6 +34,16 @@ errorCodes:
   - code: persona/local/profile/put:referenceNotPermitted
     meaning: An entry attempted to reference a pool attribute. Local profiles are inline-only, and honouring a reference would let a context-authored object acquire pool reach.
     retryable: false
+  - code: persona/local/profile/put:duplicateSlot
+    meaning: Two entries carry the same `slot`. The details name the slot. A slot answers one question with one entry, so the profile is not written.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["slot"]
+      properties:
+        slot:
+          type: string
 ---
 
 ## Abstract
@@ -89,6 +99,9 @@ pool; **MUST** refuse any entry that references a pool attribute; **MUST**
 include local values in the holder's correlation index; and **MUST** treat every
 local value as `selfAsserted`, presenting it as such wherever a provenance is
 required.
+A conforming maintainer **MUST** refuse, with
+`persona/local/profile/put:duplicateSlot`, a profile in which two entries carry
+the same `slot`.
 
 ## Authorization
 
