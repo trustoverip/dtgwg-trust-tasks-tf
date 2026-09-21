@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-didcomm"
-version = "0.21.11"
+version = "0.21.12"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
