@@ -31,6 +31,19 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.6...trust-tasks-rs-v0.21.7) — 2026-09-21
+
+
+### Specifications
+
+- **persona**: Lifecycle answers — disclosure currency, edit reach, binding label ([#533](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/533))
+
+Additive members on existing 1.0 schemas, plus normative prose. From the
+  persona context-first design note (verifiable-trust-infrastructure,
+  docs/05-design-notes/persona-context-first.md, sections 3.2, 3.4, 9.2, 9.3).
+
+
+
 ## [0.21.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.5...trust-tasks-rs-v0.21.6) — 2026-09-21
 
 
