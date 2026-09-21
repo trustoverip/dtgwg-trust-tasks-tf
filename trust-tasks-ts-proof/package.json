@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks-proof",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "W3C Data Integrity proof verification and signing for Trust Tasks: a ProofVerifier for @openvtc/trust-tasks, on @noble.",
   "type": "module",
   "license": "Apache-2.0",

@@ -4,7 +4,7 @@ name: trust_tasks_proof
 description: >-
   W3C Data Integrity proofs for Trust Tasks: a ProofVerifier for
   package:trust_tasks and the signer that produces what it verifies, on ssi.
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
