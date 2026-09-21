@@ -1,0 +1,380 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/_shared/0.1/mediator-ops",
+  "title": "Messaging operations — shared definitions for mediator queue, message, statistics, and traffic-monitor tasks",
+  "description": "Shared $def objects referenced by the messaging/queue/*, messaging/message/*, messaging/stats/*, and messaging/monitor/* specifications: queue depth views, stored-message metadata, the wire-protocol vocabulary, and the traffic-monitor event and filter shapes. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build). Account identifiers reuse `Vid` from the sibling messaging.schema.json component, so an identifier returned by one family is accepted verbatim by the other.",
+  "$defs": {
+    "Queue": {
+      "title": "Queue",
+      "type": "string",
+      "enum": [
+        "receive",
+        "send"
+      ],
+      "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues."
+    },
+    "WireProtocol": {
+      "title": "WireProtocol",
+      "type": "string",
+      "enum": [
+        "didcomm",
+        "didcommV1",
+        "tsp",
+        "other"
+      ],
+      "description": "The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify."
+    },
+    "DeliveryState": {
+      "title": "DeliveryState",
+      "type": "string",
+      "enum": [
+        "queued",
+        "delivered"
+      ],
+      "description": "`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it."
+    },
+    "QueueDepth": {
+      "title": "QueueDepth",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "bytes"
+      ],
+      "description": "The depth of one queue and its effective limit.",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Messages currently in the queue."
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total stored size of those messages, in bytes."
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited."
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0,
+          "description": "count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth."
+        },
+        "oldestAgeSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it."
+        },
+        "deliveredUnacked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it."
+        }
+      }
+    },
+    "PeerDepth": {
+      "title": "PeerDepth",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "peer",
+        "count",
+        "bytes"
+      ],
+      "description": "The share of one queue attributable to one counterparty: in a send queue, the recipient; in a receive queue, the sender.",
+      "properties": {
+        "peer": {
+          "$ref": "messaging.schema.json#/$defs/Vid",
+          "description": "The counterparty's identifier, in the same form the mediator uses for accounts."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "oldestAgeSeconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "QueueSummary": {
+      "title": "QueueSummary",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "receive",
+        "send"
+      ],
+      "description": "Both queues of one account.",
+      "properties": {
+        "did": {
+          "$ref": "messaging.schema.json#/$defs/Vid"
+        },
+        "accountType": {
+          "$ref": "messaging.schema.json#/$defs/AccountType"
+        },
+        "receive": {
+          "$ref": "#/$defs/QueueDepth"
+        },
+        "send": {
+          "$ref": "#/$defs/QueueDepth"
+        }
+      }
+    },
+    "MessageMeta": {
+      "title": "MessageMeta",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "msgId",
+        "queue",
+        "size",
+        "receivedAt"
+      ],
+      "description": "Metadata of one stored message. Never carries the message body.",
+      "properties": {
+        "msgId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.",
+          "maxLength": 256
+        },
+        "queue": {
+          "$ref": "#/$defs/Queue"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Stored size in bytes."
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the mediator stored the message."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the mediator will expire the message if it is not deleted first."
+        },
+        "from": {
+          "$ref": "messaging.schema.json#/$defs/Vid",
+          "description": "The sender, where the mediator knows it. Absent for anonymous messages."
+        },
+        "to": {
+          "$ref": "messaging.schema.json#/$defs/Vid",
+          "description": "The recipient account."
+        },
+        "protocol": {
+          "$ref": "#/$defs/WireProtocol"
+        },
+        "deliveryState": {
+          "$ref": "#/$defs/DeliveryState"
+        },
+        "deliveredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the message was first handed to the recipient. Present only when deliveryState is `delivered`."
+        }
+      }
+    },
+    "TrafficDirection": {
+      "title": "TrafficDirection",
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound",
+        "internal"
+      ],
+      "description": "`inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge)."
+    },
+    "TrafficStage": {
+      "title": "TrafficStage",
+      "type": "string",
+      "enum": [
+        "received",
+        "stored",
+        "delivered",
+        "forwarded",
+        "refused",
+        "deleted",
+        "expired",
+        "purged"
+      ],
+      "description": "What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge."
+    },
+    "TrafficChannel": {
+      "title": "TrafficChannel",
+      "type": "string",
+      "enum": [
+        "websocket",
+        "rest",
+        "peerMediator",
+        "internal"
+      ],
+      "description": "How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding."
+    },
+    "TrafficOutcome": {
+      "title": "TrafficOutcome",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code"
+      ],
+      "description": "Why a frame was refused or failed.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).",
+          "maxLength": 256
+        },
+        "detail": {
+          "type": "string",
+          "description": "Short human-readable explanation. Not machine-parsed.",
+          "maxLength": 1024
+        }
+      }
+    },
+    "MonitorEvent": {
+      "title": "MonitorEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "at",
+        "direction",
+        "stage",
+        "channel",
+        "protocol"
+      ],
+      "description": "One observed step in the life of one message at the mediator. Carries metadata only — never a message body.",
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the step happened, with sub-second precision where the mediator has it."
+        },
+        "direction": {
+          "$ref": "#/$defs/TrafficDirection"
+        },
+        "stage": {
+          "$ref": "#/$defs/TrafficStage"
+        },
+        "channel": {
+          "$ref": "#/$defs/TrafficChannel"
+        },
+        "protocol": {
+          "$ref": "#/$defs/WireProtocol"
+        },
+        "msgId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.",
+          "maxLength": 256
+        },
+        "from": {
+          "$ref": "messaging.schema.json#/$defs/Vid",
+          "description": "The sender, where the mediator knows it."
+        },
+        "to": {
+          "$ref": "messaging.schema.json#/$defs/Vid",
+          "description": "The recipient, where the mediator knows it."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Frame size in bytes."
+        },
+        "messageType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.",
+          "maxLength": 512
+        },
+        "outcome": {
+          "$ref": "#/$defs/TrafficOutcome",
+          "description": "Present when stage is `refused`, and on any other stage that failed."
+        },
+        "latencyMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "For `delivered` and `forwarded`: milliseconds since the message was stored."
+        }
+      }
+    },
+    "MonitorFilter": {
+      "title": "MonitorFilter",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Selects which events a monitor subscription receives. Every member present narrows the selection (members are ANDed; values within one member are ORed). An empty filter selects everything the requester is entitled to see.",
+      "properties": {
+        "dids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "messaging.schema.json#/$defs/Vid"
+          },
+          "description": "Only events whose `from` or `to` is one of these accounts."
+        },
+        "directions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/TrafficDirection"
+          }
+        },
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/TrafficStage"
+          }
+        },
+        "protocols": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/WireProtocol"
+          }
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/TrafficChannel"
+          }
+        },
+        "messageTypePrefixes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "description": "Only events whose `messageType` starts with one of these strings. Events with no `messageType` never match when this member is present."
+        },
+        "failuresOnly": {
+          "type": "boolean",
+          "description": "Only events that carry an `outcome`."
+        }
+      }
+    }
+  }
+}

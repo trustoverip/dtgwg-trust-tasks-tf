@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1",
+  "title": "Messaging — Subscribe to Traffic Monitor — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "filter": {
+      "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/MonitorFilter"
+    },
+    "leaseSeconds": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 3600,
+      "description": "How long the subscription lives unless renewed. Default 300."
+    },
+    "maxEventsPerSecond": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Rate ceiling the subscriber can absorb; the mediator MAY apply a lower one. Events over the ceiling are counted as dropped, never queued."
+    },
+    "subscriptionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Renew or re-filter an existing subscription held by the same requester. Omitted = create a new one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Subscribe to Traffic Monitor — response payload",
+      "description": "The success response to a messaging/monitor/subscribe request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subscriptionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "filter": {
+          "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/MonitorFilter",
+          "description": "The filter in force, after the mediator narrowed it to what the requester is entitled to see."
+        },
+        "maxEventsPerSecond": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The rate ceiling in force."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "required": [
+        "subscriptionId",
+        "expiresAt",
+        "filter",
+        "maxEventsPerSecond"
+      ]
+    }
+  }
+}
