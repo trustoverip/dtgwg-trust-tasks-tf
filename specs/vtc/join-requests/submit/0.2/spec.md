@@ -35,7 +35,7 @@ exposure:
   discloses: none
   ingests: personal
   actsAsSubject: true
-  rationale: "The applicant submits on their own behalf — the subject is the proof signer, so the applicant acts as themselves; there is no separate subject field. Nothing is disclosed back to the applicant, but the request carries `vp` into the community: a Verifiable Presentation of credentials about an identifiable party, whose claim set is whatever that community's join policy demands, plus an opaque applicant-supplied `extensions` bag the community stores verbatim."
+  rationale: "The applicant submits on their own behalf — the subject is the proof signer, so the applicant acts as themselves; there is no separate subject field. Nothing is disclosed back to the applicant, but the request carries `vp` into the community: a Verifiable Presentation of credentials about an identifiable party, whose claim set is whatever that community's join policy demands, plus an opaque applicant-supplied `extensions` bag the community stores verbatim, plus `attributes` — self-asserted values about the applicant, such as a display name, answering the manifest's `requestedAttributes`."
 retention:
   class: durable
   rationale: The community keeps the submitted presentation as the evidence its admission decision rested on — a decision it may have to account for to its members or to a regulator long after the fact, and which is unreconstructable if the presentation is discarded. That evidentiary value is exactly why a refused applicant does not get their claims back; see Security & Privacy → Retention, which states what this costs them.
@@ -46,6 +46,32 @@ errorCodes:
   - code: vtc/join-requests/submit:presentationInvalid
     meaning: The Verifiable Presentation failed verification, or its holder did not match the proof signer.
     retryable: false
+  - code: vtc/join-requests/submit:attributesMissing
+    meaning: The manifest's `requestedAttributes` marks an attribute required and `attributes` does not answer it. The details name the missing types so the applicant can supply them and resubmit.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["types"]
+      properties:
+        types:
+          type: array
+          maxItems: 32
+          items:
+            type: string
+  - code: vtc/join-requests/submit:attributesUnrequested
+    meaning: An entry in `attributes` names a type the manifest does not request. Refused rather than stored, so a client that over-shares cannot leave an applicant's data with a community that never asked for it. The details name the types.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["types"]
+      properties:
+        types:
+          type: array
+          maxItems: 32
+          items:
+            type: string
 ---
 
 ## Abstract
@@ -67,6 +93,10 @@ The applicant identity is the **document proof's signer** — there is no `appli
 Producer: supply `vp` (its holder MUST equal the proof signer); optionally `registryConsent` and `extensions`. Carry a proof.
 
 Consumer: verify the proof and the presentation; if the VP fails verification or the holder mismatches the signer, return `presentationInvalid`; if it does not satisfy the active join policy, return `policyUnsatisfied`. Otherwise evaluate the join policy and return `{ requestId, verdict }`, where the verdict carries what the policy decided and the detail that decision implies.
+
+**Requested attributes.** Producer: answer the manifest's `requestedAttributes` in `attributes`, one entry per attribute given, and nothing it does not ask for. The values are self-asserted; the proof binds them to the applicant and attests nothing further.
+
+Consumer: refuse with `attributesMissing`, naming the types, when a required requested attribute is not answered, and with `attributesUnrequested`, naming the types, when an entry names a type the manifest does not request. **MUST** store the answers with the request and show them to its reviewers as the applicant's own statement — never as verified — and **MUST NOT** let a join policy treat one as attested evidence. Their retention is the request's: they are deleted with it.
 
 ## Authorization
 
@@ -108,6 +138,16 @@ narrowest credential set and the fewest claims its reading of the
 afterwards. A producer **MUST NOT** move claims into `extensions` that it was
 unwilling to put in `vp` — material there sits outside the presentation's
 selective-disclosure machinery and is stored as plain JSON.
+
+`attributes` carries plain values the applicant states about themselves —
+self-asserted by construction, stored as given, and bound to the applicant only
+by the document proof. It holds exactly what the manifest's
+`requestedAttributes` asks for: a consumer refuses a type it did not request
+(`attributesUnrequested`) rather than keep it, because a value accepted "just in
+case" is personal data held with no stated purpose. A producer **SHOULD** send
+these through the applicant's own disclosure path so that the applicant's record
+of what they told whom includes them, and **MUST NOT** move a value into
+`attributes` that the applicant would only share inside a credential.
 
 ### Correlation
 

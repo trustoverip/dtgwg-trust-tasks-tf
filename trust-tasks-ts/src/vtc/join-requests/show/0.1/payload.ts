@@ -180,6 +180,31 @@ export const PAYLOAD_SCHEMA = {
         "extensions": {
           "type": "object",
           "description": "Opaque community-defined extension bag."
+        },
+        "attributes": {
+          "type": "array",
+          "maxItems": 32,
+          "description": "What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
+                "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
+              },
+              "value": {
+                "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
+              }
+            }
+          }
         }
       }
     }
@@ -309,6 +334,31 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "extensions": {
           "type": "object",
           "description": "Opaque community-defined extension bag."
+        },
+        "attributes": {
+          "type": "array",
+          "maxItems": 32,
+          "description": "What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
+                "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
+              },
+              "value": {
+                "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
+              }
+            }
+          }
         }
       }
     }

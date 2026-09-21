@@ -19,6 +19,23 @@ export interface VTCJoinRequestsSubmitPayload {
    * Opaque applicant-supplied extension bag.
    */
   extensions?: {};
+  /**
+   * The applicant's answers to the manifest's `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.
+   *
+   * @maxItems 32
+   */
+  attributes?: {
+    /**
+     * A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
+     */
+    type: string;
+    /**
+     * The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.
+     */
+    value: {
+      [k: string]: unknown | undefined;
+    };
+  }[];
   ext?: Ext;
 }
 export interface VTCJoinRequestsSubmitResponsePayload {
@@ -80,6 +97,31 @@ export const PAYLOAD_SCHEMA = {
     "extensions": {
       "type": "object",
       "description": "Opaque applicant-supplied extension bag."
+    },
+    "attributes": {
+      "type": "array",
+      "maxItems": 32,
+      "description": "The applicant's answers to the manifest's `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
+            "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
+          },
+          "value": {
+            "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
+          }
+        }
+      }
     },
     "ext": {
       "$ref": "#/$defs/Ext"
