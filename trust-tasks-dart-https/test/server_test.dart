@@ -4,6 +4,8 @@ import 'package:test/test.dart';
 import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
 import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
     as discovery;
+import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
+    as discovery_v0_2;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_https/trust_tasks_https.dart';
 
@@ -383,14 +385,38 @@ void main() {
             echoType,
             notifyType,
             discovery.typeUri,
+            discovery_v0_2.typeUri,
           ]..sort());
+      // 0.1 admits only MAJOR.MINOR.
+      expect(payload['frameworkVersion'], '0.6');
     });
 
-    test('filters by slug pattern', () async {
+    test('answers 0.2 in 0.2, with the three-part framework release', () async {
       final s = echoServer()..enableDiscovery();
-      final reply = await s.handle(post(query(patterns: ['example/*'])));
-      final payload = bodyOf(reply)['payload'] as Map<String, dynamic>;
-      expect(payload['supportedTypes'], [echoType, notifyType]);
+      final reply = await s.handle(post(echoDoc(type: discovery_v0_2.typeUri)
+        ..['payload'] = <String, dynamic>{}));
+      expect(reply.status, 200);
+      final body = bodyOf(reply);
+      expect(body['type'], '${discovery_v0_2.typeUri}#response');
+      final payload = body['payload'] as Map<String, dynamic>;
+      expect(payload['frameworkVersion'], '0.6.0');
+      expect(payload['supportedTypes'], contains(echoType));
+    });
+
+    test('keeps a PATCH in 0.2 and drops it only in 0.1', () async {
+      // One server per request: both documents share echoDoc's id, and the
+      // replay record would otherwise refuse the second.
+      Future<Map<String, dynamic>> ask(Map<String, dynamic> doc) async {
+        final s = echoServer()..enableDiscovery(frameworkVersion: '0.6.1');
+        return bodyOf(await s.handle(post(doc)))['payload']
+            as Map<String, dynamic>;
+      }
+
+      final v1 = await ask(query());
+      final v2 = await ask(echoDoc(type: discovery_v0_2.typeUri)
+        ..['payload'] = <String, dynamic>{});
+      expect(v1['frameworkVersion'], '0.6');
+      expect(v2['frameworkVersion'], '0.6.1');
     });
 
     test('refuses an unauthenticated discoverer unless public', () async {

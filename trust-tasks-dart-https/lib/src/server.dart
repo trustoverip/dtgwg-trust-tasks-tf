@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
     as discovery;
+import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
+    as discovery_v0_2;
 import 'package:trust_tasks/trust_tasks.dart';
 
 import 'binding.dart';
@@ -283,41 +285,75 @@ final class HttpsServer {
             );
   }
 
-  /// Answer `trust-task-discovery/0.1` (SPEC §10) with every Type URI this
-  /// server has a handler for, read at request time.
+  /// Answer `trust-task-discovery` (SPEC §10), versions 0.1 and 0.2, with
+  /// every Type URI this server has a handler for, read at request time. Each
+  /// version is answered in the version it was asked.
   ///
   /// A discovery response enumerates the route table, and SPEC §12 says a
   /// responder SHOULD authenticate the discoverer. So by default a caller with
   /// no transport-authenticated sender is refused with `permissionDenied`; pass
   /// [public] when the supported set is genuinely public.
-  void enableDiscovery({bool public = false, String frameworkVersion = '0.5'}) {
+  ///
+  /// [frameworkVersion] is the framework release the server targets, three-part
+  /// per SPEC §5.1.1 (a two-part `M.N` is read as `M.N.0`). A 0.2 response
+  /// carries it in full; a 0.1 response, which admits only `MAJOR.MINOR`,
+  /// carries it without its PATCH. A value in neither form is omitted.
+  void enableDiscovery(
+      {bool public = false, String frameworkVersion = '0.6.0'}) {
+    final release = _frameworkRelease(frameworkVersion);
     on<discovery.Payload, discovery.Response>(
       spec: discovery.spec,
       decode: discovery.Payload.fromJson,
       encode: (p) => p.toJson(),
       encodeResponse: (r) => r.toJson(),
       handler: (doc, ctx) async {
-        if (!public && ctx.authenticatedSender == null) {
-          // The generic wording any permission failure uses: a
-          // discovery-specific message would confirm discovery is installed.
-          throw ctx.refuse(
-            const RejectReason(
-              code: StandardCode.permissionDenied,
-              message: 'permission denied',
-            ),
-          );
-        }
-        final patterns = doc.payload.patterns ?? const <String>[];
-        final supported = <String>[
-          for (final key in _routes.keys.toList()..sort())
-            if (!key.contains('#') && _queryMatches(patterns, key)) key,
-        ];
+        _refuseUnauthenticatedDiscovery(public, ctx);
         return discovery.Response(
-          supportedTypes: supported,
-          frameworkVersion: frameworkVersion,
+          supportedTypes: _discoverable(doc.payload.patterns),
+          frameworkVersion:
+              release == null ? null : '${release[0]}.${release[1]}',
         );
       },
     );
+    on<discovery_v0_2.Payload, discovery_v0_2.Response>(
+      spec: discovery_v0_2.spec,
+      decode: discovery_v0_2.Payload.fromJson,
+      encode: (p) => p.toJson(),
+      encodeResponse: (r) => r.toJson(),
+      handler: (doc, ctx) async {
+        _refuseUnauthenticatedDiscovery(public, ctx);
+        return discovery_v0_2.Response(
+          supportedTypes: _discoverable(doc.payload.patterns),
+          frameworkVersion: release?.join('.'),
+        );
+      },
+    );
+  }
+
+  void _refuseUnauthenticatedDiscovery(bool public, RequestContext ctx) {
+    if (!public && ctx.authenticatedSender == null) {
+      // The generic wording any permission failure uses: a
+      // discovery-specific message would confirm discovery is installed.
+      throw ctx.refuse(
+        const RejectReason(
+          code: StandardCode.permissionDenied,
+          message: 'permission denied',
+        ),
+      );
+    }
+  }
+
+  List<String> _discoverable(List<String>? patterns) => <String>[
+        for (final key in _routes.keys.toList()..sort())
+          if (!key.contains('#') && _queryMatches(patterns ?? const [], key))
+            key,
+      ];
+
+  /// `MAJOR.MINOR` or `MAJOR.MINOR.PATCH` as three numbers, or null.
+  static List<int>? _frameworkRelease(String v) {
+    final m = RegExp(r'^(\d+)\.(\d+)(?:\.(\d+))?$').firstMatch(v);
+    if (m == null) return null;
+    return [int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3] ?? '0')];
   }
 
   /// Answer one request. Never throws.

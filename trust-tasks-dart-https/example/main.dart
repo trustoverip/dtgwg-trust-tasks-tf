@@ -7,7 +7,7 @@
 // it supports, then re-sends the identical document, which the server absorbs
 // as a retry rather than executing twice (bindings/https/0.2 §5.1).
 
-import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
+import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
     as discovery;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_https/io.dart';
