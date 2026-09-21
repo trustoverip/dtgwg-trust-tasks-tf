@@ -97,6 +97,54 @@
             }
           }
         },
+        "refreshed": {
+          "type": "array",
+          "maxItems": 256,
+          "description": "Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "contextId",
+              "personaDid"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+              },
+              "contextId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "personaDid": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "heldByPin": {
+          "type": "array",
+          "maxItems": 256,
+          "description": "Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "pinVersion"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+              },
+              "pinVersion": {
+                "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version"
+              }
+            }
+          }
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"

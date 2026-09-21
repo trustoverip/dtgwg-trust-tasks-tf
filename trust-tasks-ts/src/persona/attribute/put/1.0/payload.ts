@@ -64,6 +64,25 @@ export interface PersonaAttributePutResponsePayload {
      */
     sharedWithProfileCount?: number;
   };
+  /**
+   * Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.
+   *
+   * @maxItems 256
+   */
+  refreshed?: {
+    profileId: Ulid;
+    contextId: string;
+    personaDid: string;
+  }[];
+  /**
+   * Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.
+   *
+   * @maxItems 256
+   */
+  heldByPin?: {
+    profileId: Ulid;
+    pinVersion: Version;
+  }[];
   createdAt?: string;
   updatedAt: string;
   ext?: Ext;
@@ -189,6 +208,54 @@ export const PAYLOAD_SCHEMA = {
               "type": "integer",
               "minimum": 0,
               "description": "How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies."
+            }
+          }
+        },
+        "refreshed": {
+          "type": "array",
+          "maxItems": 256,
+          "description": "Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "contextId",
+              "personaDid"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "#/$defs/Ulid"
+              },
+              "contextId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "personaDid": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "heldByPin": {
+          "type": "array",
+          "maxItems": 256,
+          "description": "Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "pinVersion"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "#/$defs/Ulid"
+              },
+              "pinVersion": {
+                "$ref": "#/$defs/Version"
+              }
             }
           }
         },
@@ -409,6 +476,54 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "type": "integer",
               "minimum": 0,
               "description": "How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies."
+            }
+          }
+        },
+        "refreshed": {
+          "type": "array",
+          "maxItems": 256,
+          "description": "Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "contextId",
+              "personaDid"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "#/$defs/Ulid"
+              },
+              "contextId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "personaDid": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "heldByPin": {
+          "type": "array",
+          "maxItems": 256,
+          "description": "Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "profileId",
+              "pinVersion"
+            ],
+            "properties": {
+              "profileId": {
+                "$ref": "#/$defs/Ulid"
+              },
+              "pinVersion": {
+                "$ref": "#/$defs/Version"
+              }
             }
           }
         },

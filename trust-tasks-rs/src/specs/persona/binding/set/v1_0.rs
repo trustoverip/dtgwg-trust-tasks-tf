@@ -218,6 +218,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
+///    "label": {
+///      "description": "What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.",
+///      "type": "string",
+///      "maxLength": 128,
+///      "minLength": 1
+///    },
 ///    "personaDid": {
 ///      "description": "The persona being bound.",
 ///      "type": "string",
@@ -263,6 +269,9 @@ pub struct Payload {
     pub expected_version: ::std::option::Option<ExpectedVersion>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<PayloadLabel>,
     ///The persona being bound.
     #[serde(rename = "personaDid")]
     pub persona_did: PayloadPersonaDid,
@@ -344,6 +353,79 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadContextId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.",
+///  "type": "string",
+///  "maxLength": 128,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadLabel(::std::string::String);
+impl ::std::ops::Deref for PayloadLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadLabel> for ::std::string::String {
+    fn from(value: PayloadLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -941,6 +1023,10 @@ pub mod builder {
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::PayloadLabel>,
+            ::std::string::String,
+        >,
         persona_did: ::std::result::Result<super::PayloadPersonaDid, ::std::string::String>,
         profile_id:
             ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
@@ -952,6 +1038,7 @@ pub mod builder {
                 context_id: Err("no value supplied for context_id".to_string()),
                 expected_version: Ok(Default::default()),
                 ext: Ok(Default::default()),
+                label: Ok(Default::default()),
                 persona_did: Err("no value supplied for persona_did".to_string()),
                 profile_id: Ok(Default::default()),
                 public_entries: Ok(Default::default()),
@@ -987,6 +1074,16 @@ pub mod builder {
             self.ext = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
             self
         }
         pub fn persona_did<T>(mut self, value: T) -> Self
@@ -1027,6 +1124,7 @@ pub mod builder {
                 context_id: value.context_id?,
                 expected_version: value.expected_version?,
                 ext: value.ext?,
+                label: value.label?,
                 persona_did: value.persona_did?,
                 profile_id: value.profile_id?,
                 public_entries: value.public_entries?,
@@ -1039,6 +1137,7 @@ pub mod builder {
                 context_id: Ok(value.context_id),
                 expected_version: Ok(value.expected_version),
                 ext: Ok(value.ext),
+                label: Ok(value.label),
                 persona_did: Ok(value.persona_did),
                 profile_id: Ok(value.profile_id),
                 public_entries: Ok(value.public_entries),
@@ -1249,7 +1348,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/set. Type https://trusttasks.org/spec/persona/binding/set/1.0#response.\",\n      \"properties\": {\n        \"boundAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"correlation\": {\n          \"additionalProperties\": false,\n          \"description\": \"Advisory. Correlation is scored HERE as well as at composition, because composing is hypothetical and binding is when a value actually crosses into a context. Binding one profile to a second persona is reported at `high` unconditionally: that act makes the two personas the same person by construction.\",\n          \"properties\": {\n            \"alsoBoundPersonaCount\": {\n              \"description\": \"How many other personas are bound to this same profile. A count, not identifiers.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"severity\": {\n              \"enum\": [\n                \"none\",\n                \"low\",\n                \"high\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"severity\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"materialisedClaimCount\": {\n          \"description\": \"How many claims were materialised into the context by this binding. A count, so the holder can see that a push happened and how large it was without the response restating the values.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"oneOf\": [\n            {\n              \"$ref\": \"#/$defs/Ulid\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ]\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"personaDid\",\n        \"version\",\n        \"boundAt\"\n      ],\n      \"title\": \"Persona Binding Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/binding/set/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Assign a profile to a persona DID within a context, or clear the assignment. This is the step that pushes a composition across the context boundary: the maintainer materialises the profile into the context, and a context never reaches back the other way.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The context the persona lives in. The binding is context-scoped even though the profile it names is not.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"personaDid\": {\n      \"description\": \"The persona being bound.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"profileId\": {\n      \"description\": \"The profile to bind, or null to clear. Null is a first-class value and not an omission: a persona with no profile is a legitimate, common state — a throwaway identity that presents nothing — and the schema says so rather than leaving a consumer to infer it from an absent member.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        {\n          \"type\": \"null\"\n        }\n      ]\n    },\n    \"publicEntries\": {\n      \"description\": \"Attributes the holder opts into publishing on the persona's own DID document or equivalent public surface. Empty by default and MUST remain empty unless explicitly set: everything else is a per-verifier projection, and a published value is one document every relying party sees identically — a permanent correlation point the rest of this family exists to avoid.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Ulid\"\n      },\n      \"maxItems\": 32,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"personaDid\"\n  ],\n  \"title\": \"Persona Binding Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/set. Type https://trusttasks.org/spec/persona/binding/set/1.0#response.\",\n      \"properties\": {\n        \"boundAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"correlation\": {\n          \"additionalProperties\": false,\n          \"description\": \"Advisory. Correlation is scored HERE as well as at composition, because composing is hypothetical and binding is when a value actually crosses into a context. Binding one profile to a second persona is reported at `high` unconditionally: that act makes the two personas the same person by construction.\",\n          \"properties\": {\n            \"alsoBoundPersonaCount\": {\n              \"description\": \"How many other personas are bound to this same profile. A count, not identifiers.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"severity\": {\n              \"enum\": [\n                \"none\",\n                \"low\",\n                \"high\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"severity\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"materialisedClaimCount\": {\n          \"description\": \"How many claims were materialised into the context by this binding. A count, so the holder can see that a push happened and how large it was without the response restating the values.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"oneOf\": [\n            {\n              \"$ref\": \"#/$defs/Ulid\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ]\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"personaDid\",\n        \"version\",\n        \"boundAt\"\n      ],\n      \"title\": \"Persona Binding Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/binding/set/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Assign a profile to a persona DID within a context, or clear the assignment. This is the step that pushes a composition across the context boundary: the maintainer materialises the profile into the context, and a context never reaches back the other way.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The context the persona lives in. The binding is context-scoped even though the profile it names is not.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"personaDid\": {\n      \"description\": \"The persona being bound.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"profileId\": {\n      \"description\": \"The profile to bind, or null to clear. Null is a first-class value and not an omission: a persona with no profile is a legitimate, common state — a throwaway identity that presents nothing — and the schema says so rather than leaving a consumer to infer it from an absent member.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        {\n          \"type\": \"null\"\n        }\n      ]\n    },\n    \"publicEntries\": {\n      \"description\": \"Attributes the holder opts into publishing on the persona's own DID document or equivalent public surface. Empty by default and MUST remain empty unless explicitly set: everything else is a per-verifier projection, and a published value is one document every relying party sees identically — a permanent correlation point the rest of this family exists to avoid.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Ulid\"\n      },\n      \"maxItems\": 32,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"personaDid\"\n  ],\n  \"title\": \"Persona Binding Set — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

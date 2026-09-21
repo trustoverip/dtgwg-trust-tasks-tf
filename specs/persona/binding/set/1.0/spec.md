@@ -93,6 +93,14 @@ A conforming **maintainer** **MUST**:
 5. Publish nothing beyond `publicEntries`, and treat an empty or absent `publicEntries` as publishing nothing.
 6. Record an audit event naming the context, the persona and the claims that crossed.
 
+`label` is what the context may call the face this persona wears there. A
+maintainer **MUST** return it, and not the face's own name, from
+`persona/binding/get` and `persona/binding/list` to a caller that is not
+holder-authorized. A face's name is the holder's filing — "Job hunting", "the
+divorce" — and binding a face to a persona is not consent to tell a context what
+the holder calls it. An absent `label` gives the context no name at all, which
+is a legitimate choice rather than a gap.
+
 ## Authorization
 
 **Holder-authorized and unscoped**, and this is the task where that matters most.

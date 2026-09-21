@@ -29,7 +29,8 @@
             "properties": {
               "personaDid": { "type": "string", "minLength": 1 },
               "bound": { "type": "boolean" },
-              "profileName": { "type": "string", "maxLength": 128, "description": "The holder's label for the bound profile. Names a composition; reveals none of it." },
+              "label": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The name the holder chose for this context to call the face. Absent when they chose none." },
+              "profileName": { "type": "string", "maxLength": 128, "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get." },
               "claimCount": { "type": "integer", "minimum": 0 },
               "isLocal": { "type": "boolean", "description": "True when the bound profile is context-local rather than imported from the holder's pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down." }
             }

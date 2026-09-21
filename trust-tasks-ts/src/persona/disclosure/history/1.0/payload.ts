@@ -53,6 +53,12 @@ export interface PersonaDisclosureHistoryResponsePayload {
      * @maxItems 128
      */
     rungs?: ProofRung[];
+    /**
+     * Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.
+     *
+     * @maxItems 128
+     */
+    claimCurrency?: ("current" | "changed" | "removed" | "unknown")[];
     purpose?: string;
     renderer?: string;
     /**
@@ -189,6 +195,20 @@ export const PAYLOAD_SCHEMA = {
                 },
                 "description": "Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures."
               },
+              "claimCurrency": {
+                "type": "array",
+                "maxItems": 128,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "changed",
+                    "removed",
+                    "unknown"
+                  ]
+                },
+                "description": "Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read."
+              },
               "purpose": {
                 "type": "string",
                 "maxLength": 512
@@ -318,6 +338,20 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                   "$ref": "#/$defs/ProofRung"
                 },
                 "description": "Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures."
+              },
+              "claimCurrency": {
+                "type": "array",
+                "maxItems": 128,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "changed",
+                    "removed",
+                    "unknown"
+                  ]
+                },
+                "description": "Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read."
               },
               "purpose": {
                 "type": "string",

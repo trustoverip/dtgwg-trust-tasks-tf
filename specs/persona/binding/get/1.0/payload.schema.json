@@ -24,7 +24,8 @@
         "personaDid": { "type": "string", "minLength": 1 },
         "bound": { "type": "boolean", "description": "Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile." },
         "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized." },
-        "profileName": { "type": "string", "maxLength": 128, "description": "The holder's label for the bound profile, so an application can show which identity is in use. Names a composition; reveals none of it." },
+        "label": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none." },
+        "profileName": { "type": "string", "maxLength": 128, "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`." },
         "claimCount": { "type": "integer", "minimum": 0, "description": "How many claims the materialised projection holds. Lets an application render \"12 details available\" without obtaining any of them." },
         "boundAt": { "type": "string", "format": "date-time" },
         "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }

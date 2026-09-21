@@ -126,6 +126,17 @@ severity. Changing a displayed value does nothing about the credential beneath i
 and an analysis that scored on the displayed value would report a false all-clear
 — which is worse than reporting nothing, because the holder would act on it.
 
+A conforming maintainer **MUST** analyse the values a profile carries itself —
+an `override`'s value and an `inline` entry's — as well as the pool attributes
+it references, including in context-local profiles. Those are the two forms a
+holder reaches for when they want a face to be *different*, and a throwaway face
+is exactly where somebody reuses a real value; an analysis blind to them reports
+a false all-clear where the holder most needs a warning. A value that no pool
+attribute holds is reported as a finding **without** `attributeId`, whose
+`sharedWith` names every profile carrying it. When `profileId` is supplied the
+maintainer **MUST** confine the analysis to that profile: what it references and
+what it carries, against everything else.
+
 ## Authorization
 
 **Holder-authorized and unscoped.** A context-scoped caller **MUST** be refused

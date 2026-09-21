@@ -124,6 +124,14 @@ correlation check requires exact-match lookup only, which a keyed hash provides
 without a plaintext index; prefix and substring search over values are therefore
 outside this family by construction, and that trade is deliberate.
 
+A conforming maintainer **SHOULD** return `refreshed` and `heldByPin`. An edit
+propagates to every face showing the attribute live, which is the point of a pool
+and also the surprise: a holder told only that the write succeeded cannot tell
+whether it changed what one counterparty sees or nine. `heldByPin` names the
+opposite case — faces that deliberately did not follow — so a name change can be
+made everywhere except where a counterparty must keep the value it verified, and
+the holder can see both halves of that in one answer.
+
 ## Authorization
 
 **Holder-authorized and unscoped.** The pool sits above the context boundary, so

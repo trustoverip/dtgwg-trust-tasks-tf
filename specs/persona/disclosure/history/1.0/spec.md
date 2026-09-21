@@ -71,6 +71,17 @@ A conforming **maintainer** **MUST** reject the document unless the caller is
 written — the history is append-only, and a disclosure a holder cannot find is a
 disclosure they cannot act on.
 
+A conforming maintainer **SHOULD** return `claimCurrency`. It answers the question
+a holder has after changing a value — *who still has the old one* — which the
+claim types alone cannot: a type says what kind of thing went, not whether what
+went is still true. To compute it without storing a value, a maintainer records a
+keyed hash of each disclosed value at the moment of disclosure and, at read time,
+compares it with the same persona's current projection **in the same context**.
+Nothing above the context boundary is read to answer it, and no pool identifier
+or version is recorded below it — a store-wide version would tell anyone who can
+read the context how much the holder writes. A record made before a maintainer
+kept that hash reports `unknown`, never `current`.
+
 ## Authorization
 
 **Holder-authorized and unscoped.** A context-scoped caller **MUST** be refused
