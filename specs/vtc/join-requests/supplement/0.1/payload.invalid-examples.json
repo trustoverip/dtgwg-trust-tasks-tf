@@ -1,0 +1,8 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } },
+  { "note": "`vp` is required — a supplement with no evidence answers nothing.", "payload": { "requestId": "urn:uuid:00000000-0000-4000-8000-00000000a1b2" } },
+  { "note": "`vp` is an object, not a string — the presentation is carried, not referenced.", "payload": { "vp": "https://example.org/presentations/1" } },
+  { "note": "`requestId` must not be empty — the id-less form omits it rather than sending a blank.", "payload": { "vp": {}, "requestId": "" } },
+  { "note": "`requestId` is a string, not a number.", "payload": { "vp": {}, "requestId": 42 } },
+  { "note": "`extensions` is an object bag, not an array.", "payload": { "vp": {}, "extensions": [] } }
+]
