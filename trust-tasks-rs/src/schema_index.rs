@@ -557,9 +557,47 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/admin/strip/0.1#response" => <crate::specs::messaging::admin::strip::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/delete/0.1" => <crate::specs::messaging::message::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/delete/0.1#response" => <crate::specs::messaging::message::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/get/0.1" => <crate::specs::messaging::message::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/get/0.1#response" => <crate::specs::messaging::message::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/list/0.1" => <crate::specs::messaging::message::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/list/0.1#response" => <crate::specs::messaging::message::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/event/0.1" => <crate::specs::messaging::monitor::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => <crate::specs::messaging::monitor::subscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response" => <crate::specs::messaging::monitor::subscribe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1" => <crate::specs::messaging::monitor::unsubscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1#response" => <crate::specs::messaging::monitor::unsubscribe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/ping/0.1" => <crate::specs::messaging::ping::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/ping/0.1#response" => <crate::specs::messaging::ping::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/list/0.1" => <crate::specs::messaging::queue::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/list/0.1#response" => <crate::specs::messaging::queue::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/purge/0.1" => <crate::specs::messaging::queue::purge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/purge/0.1#response" => <crate::specs::messaging::queue::purge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/status/0.1" => <crate::specs::messaging::queue::status::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/status/0.1#response" => <crate::specs::messaging::queue::status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/stats/show/0.1" => <crate::specs::messaging::stats::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/stats/show/0.1#response" => <crate::specs::messaging::stats::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/delete/1.0" => <crate::specs::persona::attribute::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
@@ -2495,8 +2533,54 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::messaging::admin::strip::v0_1::Payload,
         >()),
         #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/delete/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::message::delete::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::message::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::message::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/event/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::monitor::event::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::monitor::subscribe::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::monitor::unsubscribe::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/ping/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::ping::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::queue::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/purge/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::queue::purge::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/status/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::queue::status::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/stats/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::stats::show::v0_1::Payload,
         >()),
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/delete/1.0" => {

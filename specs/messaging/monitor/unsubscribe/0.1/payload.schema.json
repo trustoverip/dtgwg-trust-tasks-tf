@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1",
+  "title": "Messaging — Unsubscribe from Traffic Monitor — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subscriptionId"
+  ],
+  "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Unsubscribe from Traffic Monitor — response payload",
+      "description": "The success response to a messaging/monitor/unsubscribe request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eventsSent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eventsDropped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

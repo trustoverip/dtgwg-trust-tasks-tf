@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/queue/status/0.1",
+  "title": "Messaging — Show Queue Status — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The account whose queues to report. Omitted = the requester's own account. A requester without administrative standing may name only itself."
+    },
+    "includePeers": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Also return the top N counterparties of each queue by message count. Omitted = no per-peer breakdown."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Show Queue Status — response payload",
+      "description": "The success response to a messaging/queue/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/status/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "queues": {
+          "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/QueueSummary"
+        },
+        "receivePeers": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/PeerDepth"
+          },
+          "description": "Top senders into the receive queue. Present only when includePeers was requested."
+        },
+        "sendPeers": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/PeerDepth"
+          },
+          "description": "Top recipients holding the send queue. Present only when includePeers was requested."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "required": [
+        "queues"
+      ]
+    }
+  }
+}

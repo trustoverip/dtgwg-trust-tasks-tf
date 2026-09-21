@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/stats/show/0.1",
+  "title": "Messaging — Show Mediator Statistics — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Show Mediator Statistics — response payload",
+      "description": "The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The mediator software's version string."
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "uptimeSeconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "connections": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "websocketActive"
+          ],
+          "properties": {
+            "websocketActive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "websocketMax": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Configured ceiling; absent when unlimited."
+            }
+          }
+        },
+        "totals": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.",
+          "required": [
+            "receivedCount",
+            "receivedBytes",
+            "sentCount",
+            "sentBytes",
+            "deletedCount"
+          ],
+          "properties": {
+            "receivedCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "receivedBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sentCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sentBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "deletedCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "deletedBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "websocketOpened": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "websocketClosed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sessionsCreated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sessionsAuthenticated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "invitationsCreated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "invitationsClaimed": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "forwarding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "queueLength"
+          ],
+          "properties": {
+            "queueLength": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Messages waiting to be forwarded to other mediators."
+            },
+            "queueLimit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "circuitBreaker": {
+              "type": "string",
+              "enum": [
+                "closed",
+                "open",
+                "halfOpen"
+              ],
+              "description": "State of the store circuit breaker. `open` means the mediator is shedding store operations."
+            }
+          }
+        },
+        "queues": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.",
+          "required": [
+            "surveyedAt",
+            "accounts"
+          ],
+          "properties": {
+            "surveyedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "accounts": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Accounts the survey covered."
+            },
+            "truncated": {
+              "type": "boolean",
+              "description": "The survey stopped before covering every account."
+            },
+            "receive": {
+              "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/QueueDepth",
+              "description": "Totals across every surveyed receive queue; `saturation` is the maximum of any single queue."
+            },
+            "send": {
+              "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/QueueDepth",
+              "description": "Totals across every surveyed send queue; `saturation` is the maximum of any single queue."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "required": [
+        "version",
+        "uptimeSeconds",
+        "connections",
+        "totals",
+        "forwarding"
+      ]
+    }
+  }
+}
