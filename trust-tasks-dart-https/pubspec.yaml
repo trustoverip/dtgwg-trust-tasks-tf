@@ -4,7 +4,7 @@ name: trust_tasks_https
 description: >-
   The Trust Tasks HTTPS transport binding for Dart: a typed client and a
   framework-agnostic server running the SPEC section 7.2 pipeline per request.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
