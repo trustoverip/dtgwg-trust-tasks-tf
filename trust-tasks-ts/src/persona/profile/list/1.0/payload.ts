@@ -3,7 +3,7 @@
  * Source: specs/persona/profile/list/1.0/payload.schema.json
  */
 
-import type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
+import type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**
@@ -33,7 +33,7 @@ export interface PersonaProfileListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Ulid, ValueType, Version };
+export type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/profile/list/1.0" as const;
@@ -176,7 +176,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "ProfileEntry": {
       "title": "ProfileEntry",
-      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.",
+      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.\n\nAny form MAY carry a `slot` naming the role the entry plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two entries carry the same slot: a slot exists to answer one question with one entry.",
       "type": "object",
       "oneOf": [
         {
@@ -187,6 +187,9 @@ export const PAYLOAD_SCHEMA = {
           "properties": {
             "ref": {
               "$ref": "#/$defs/Ulid"
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -202,6 +205,9 @@ export const PAYLOAD_SCHEMA = {
             },
             "pinVersion": {
               "$ref": "#/$defs/Version"
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -229,6 +235,9 @@ export const PAYLOAD_SCHEMA = {
                 }
               },
               "description": "Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested."
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -263,10 +272,19 @@ export const PAYLOAD_SCHEMA = {
                   "$ref": "#/$defs/Provenance"
                 }
               }
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         }
       ]
+    },
+    "Slot": {
+      "title": "Slot",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
+      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
     },
     "Provenance": {
       "title": "Provenance",
@@ -485,7 +503,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "ProfileEntry": {
       "title": "ProfileEntry",
-      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.",
+      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.\n\nAny form MAY carry a `slot` naming the role the entry plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two entries carry the same slot: a slot exists to answer one question with one entry.",
       "type": "object",
       "oneOf": [
         {
@@ -496,6 +514,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "properties": {
             "ref": {
               "$ref": "#/$defs/Ulid"
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -511,6 +532,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "pinVersion": {
               "$ref": "#/$defs/Version"
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -538,6 +562,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 }
               },
               "description": "Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested."
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -572,10 +599,19 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                   "$ref": "#/$defs/Provenance"
                 }
               }
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         }
       ]
+    },
+    "Slot": {
+      "title": "Slot",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
+      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
     },
     "Provenance": {
       "title": "Provenance",

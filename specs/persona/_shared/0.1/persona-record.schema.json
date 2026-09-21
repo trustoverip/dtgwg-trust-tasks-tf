@@ -18,6 +18,12 @@
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     },
+    "Slot": {
+      "title": "Slot",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]{0,31}$",
+      "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets."
+    },
     "ValueType": {
       "title": "ValueType",
       "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
@@ -177,6 +183,38 @@
         "version": {
           "$ref": "#/$defs/Version"
         },
+        "retainedVersions": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "version",
+              "pinnedBy"
+            ],
+            "properties": {
+              "version": {
+                "$ref": "#/$defs/Version"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this version was written."
+              },
+              "pinnedBy": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 256,
+                "items": {
+                  "$ref": "#/$defs/Ulid"
+                },
+                "description": "The profiles pinning this version — the reason it is kept. A version no profile pins is not retained."
+              }
+            }
+          }
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -216,6 +254,10 @@
           "maxLength": 128,
           "description": "The holder's own words, from the override where one is given and from the pool attribute otherwise. Never disclosed to a verifier."
         },
+        "slot": {
+          "$ref": "#/$defs/Slot",
+          "description": "The slot of the entry this claim resolved from, where it has one."
+        },
         "provenance": {
           "$ref": "#/$defs/Provenance"
         },
@@ -247,7 +289,7 @@
     },
     "ProfileEntry": {
       "title": "ProfileEntry",
-      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.",
+      "description": "One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.\n\n`{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.\n\n`{ref, pinVersion}` — use the value as it was at that version. For a profile that must keep presenting the value a counterparty already verified.\n\n`{ref, override}` — the same fact, a different value here. (\"In the gaming profile my display name is different.\")\n\n`{inline}` — a value that never enters the pool, and so never leaks into another profile.\n\nOmission is exclusion; there is no removal marker.\n\nAny form MAY carry a `slot` naming the role the entry plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two entries carry the same slot: a slot exists to answer one question with one entry.",
       "type": "object",
       "oneOf": [
         {
@@ -258,6 +300,9 @@
           "properties": {
             "ref": {
               "$ref": "#/$defs/Ulid"
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -273,6 +318,9 @@
             },
             "pinVersion": {
               "$ref": "#/$defs/Version"
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -300,6 +348,9 @@
                 }
               },
               "description": "Replaces the pool attribute's value for this profile only. `type`, `valueType` and `provenance` are inherited from the referenced attribute and MUST NOT be overridden — an override that changed provenance would let a self-asserted value present as attested."
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         },
@@ -334,6 +385,9 @@
                   "$ref": "#/$defs/Provenance"
                 }
               }
+            },
+            "slot": {
+              "$ref": "#/$defs/Slot"
             }
           }
         }

@@ -56,6 +56,9 @@
                 "maxLength": 128
               }
             }
+          },
+          "slot": {
+            "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Slot"
           }
         }
       }

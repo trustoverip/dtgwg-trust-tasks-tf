@@ -218,9 +218,12 @@ because an agent restored without it comes back without the identity the restore
 was for.
 
 A replaced value is not evidence and a maintainer is under no obligation to keep
-it; a maintainer that keeps prior versions to support `pinVersion` **SHOULD**
-state that it does, since a holder who overwrites a value may reasonably believe
-the old one is gone.
+it. A maintainer that keeps prior versions to support `pinVersion` **MUST** keep
+them **by reference**: a version is kept while, and only while, some profile pins
+it, and is removed once none does. It **MUST** list each one in the attribute's
+`retainedVersions`, since a holder who overwrites a value may reasonably believe
+the old one is gone. The holder removes one deliberately with
+persona/attribute/purge-version.
 
 ### Consent/purpose
 

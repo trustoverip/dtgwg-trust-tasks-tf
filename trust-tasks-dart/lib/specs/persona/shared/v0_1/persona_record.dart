@@ -24,6 +24,19 @@ typedef Ulid = String;
 /// query.
 typedef ClaimType = String;
 
+/// A role a profile entry plays within its profile, so a consumer can find it without
+/// guessing from its claim type. A profile MAY hold several entries of one type — a
+/// legal name and a display name, two phone numbers — and only a slot says which
+/// answers a given question. Unique within a profile. Well-known slots: -
+/// `displayName` — what this face calls itself. The entry a consumer renders as the
+/// face's name to anyone it is shown to. Distinct from the profile's own `name`, which
+/// is the holder's private label and never disclosed. - `primaryEmail`,
+/// `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for
+/// one of a kind and the profile holds several. - `avatar` — the image this face
+/// presents. Other values are the holder's or the producer's own and carry no meaning
+/// a maintainer interprets.
+typedef Slot = String;
+
 /// The JSON shape of `value`, declared so that a consumer can render and compare
 /// without guessing. The maintainer validates that `value` agrees with this member and
 /// does nothing further: it does NOT validate a phone number against a phone-number
@@ -171,6 +184,41 @@ extension type const AttributeStaleReason(String value) {
   ];
 }
 
+/// AttributeRetainedVersionsItem, generated from its schema.
+class AttributeRetainedVersionsItem {
+  const AttributeRetainedVersionsItem({
+    required this.version,
+    this.updatedAt,
+    required this.pinnedBy,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AttributeRetainedVersionsItem.fromJson(Map<String, dynamic> json) =>
+      AttributeRetainedVersionsItem(
+        version: json['version'] as int,
+        updatedAt: json['updatedAt'] as String?,
+        pinnedBy: (json['pinnedBy'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+      );
+
+  final Version version;
+
+  /// When this version was written.
+  final String? updatedAt;
+
+  /// The profiles pinning this version — the reason it is kept. A version no profile
+  /// pins is not retained.
+  final List<Ulid> pinnedBy;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'version': version,
+        if (updatedAt != null) 'updatedAt': updatedAt!,
+        'pinnedBy': pinnedBy,
+      };
+}
+
 /// One atomic fact a holder keeps about themselves. Several attributes MAY share a
 /// `type` — three phone numbers, a legal name and a preferred name — which is why
 /// `attributeId` is the identity of a fact and `type` is not. The pool is flat and
@@ -188,6 +236,7 @@ class Attribute {
     this.sensitivity,
     this.release,
     required this.version,
+    this.retainedVersions,
     this.createdAt,
     required this.updatedAt,
   });
@@ -211,6 +260,12 @@ class Attribute {
             ? null
             : ReleaseRequirement(json['release'] as String),
         version: json['version'] as int,
+        retainedVersions: json['retainedVersions'] == null
+            ? null
+            : (json['retainedVersions'] as List<dynamic>)
+                .map((e) => AttributeRetainedVersionsItem.fromJson(
+                    e as Map<String, dynamic>))
+                .toList(),
         createdAt: json['createdAt'] as String?,
         updatedAt: json['updatedAt'] as String,
       );
@@ -249,6 +304,14 @@ class Attribute {
   /// claim-type registry.
   final ReleaseRequirement? release;
   final Version version;
+
+  /// Earlier versions of this attribute the maintainer still holds, and why. A
+  /// maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a
+  /// holder who overwrote a value may reasonably believe it gone, and this is how they
+  /// learn otherwise. Values are not included — the holder reads one through the profile
+  /// that pins it, or removes it with persona/attribute/purge-version. Absent when none
+  /// are held.
+  final List<AttributeRetainedVersionsItem>? retainedVersions;
   final String? createdAt;
   final String updatedAt;
 
@@ -265,6 +328,8 @@ class Attribute {
         if (sensitivity != null) 'sensitivity': sensitivity!.value,
         if (release != null) 'release': release!.value,
         'version': version,
+        if (retainedVersions != null)
+          'retainedVersions': retainedVersions!.map((e) => e.toJson()).toList(),
         if (createdAt != null) 'createdAt': createdAt!,
         'updatedAt': updatedAt,
       };
@@ -313,6 +378,7 @@ class ResolvedClaim {
     required this.valueType,
     this.value,
     this.label,
+    this.slot,
     required this.provenance,
     this.stale,
     this.staleReason,
@@ -327,6 +393,7 @@ class ResolvedClaim {
         valueType: ValueType(json['valueType'] as String),
         value: json['value'],
         label: json['label'] as String?,
+        slot: json['slot'] as String?,
         provenance: json['provenance'] as Map<String, dynamic>,
         stale: json['stale'] as bool?,
         staleReason: json['staleReason'] == null
@@ -350,6 +417,9 @@ class ResolvedClaim {
   /// The holder's own words, from the override where one is given and from the pool
   /// attribute otherwise. Never disclosed to a verifier.
   final String? label;
+
+  /// The slot of the entry this claim resolved from, where it has one.
+  final Slot? slot;
   final Provenance provenance;
 
   /// Present and true when this entry cannot be presented — a credential-backed value
@@ -376,6 +446,7 @@ class ResolvedClaim {
         'valueType': valueType.value,
         if (value != null) 'value': value!,
         if (label != null) 'label': label!,
+        if (slot != null) 'slot': slot!,
         'provenance': provenance,
         if (stale != null) 'stale': stale!,
         if (staleReason != null) 'staleReason': staleReason!.value,
@@ -392,7 +463,9 @@ class ResolvedClaim {
 /// already verified. `{ref, override}` — the same fact, a different value here. ("In
 /// the gaming profile my display name is different.") `{inline}` — a value that never
 /// enters the pool, and so never leaks into another profile. Omission is exclusion;
-/// there is no removal marker.
+/// there is no removal marker. Any form MAY carry a `slot` naming the role the entry
+/// plays in the profile — see `Slot`. A maintainer MUST refuse a profile in which two
+/// entries carry the same slot: a slot exists to answer one question with one entry.
 typedef ProfileEntry = Map<String, dynamic>;
 
 /// A named projection over the pool. Agent-scoped, like the pool it draws from.

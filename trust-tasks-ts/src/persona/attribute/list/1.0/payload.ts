@@ -223,6 +223,38 @@ export const PAYLOAD_SCHEMA = {
         "version": {
           "$ref": "#/$defs/Version"
         },
+        "retainedVersions": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "version",
+              "pinnedBy"
+            ],
+            "properties": {
+              "version": {
+                "$ref": "#/$defs/Version"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this version was written."
+              },
+              "pinnedBy": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 256,
+                "items": {
+                  "$ref": "#/$defs/Ulid"
+                },
+                "description": "The profiles pinning this version — the reason it is kept. A version no profile pins is not retained."
+              }
+            }
+          }
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -232,6 +264,12 @@ export const PAYLOAD_SCHEMA = {
           "format": "date-time"
         }
       }
+    },
+    "Ulid": {
+      "title": "Ulid",
+      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     },
     "Version": {
       "title": "Version",
@@ -363,12 +401,6 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
 } as const;
@@ -475,6 +507,38 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "version": {
           "$ref": "#/$defs/Version"
         },
+        "retainedVersions": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "version",
+              "pinnedBy"
+            ],
+            "properties": {
+              "version": {
+                "$ref": "#/$defs/Version"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this version was written."
+              },
+              "pinnedBy": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 256,
+                "items": {
+                  "$ref": "#/$defs/Ulid"
+                },
+                "description": "The profiles pinning this version — the reason it is kept. A version no profile pins is not retained."
+              }
+            }
+          }
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -484,6 +548,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "format": "date-time"
         }
       }
+    },
+    "Ulid": {
+      "title": "Ulid",
+      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     },
     "Version": {
       "title": "Version",
@@ -615,12 +685,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
 } as const;

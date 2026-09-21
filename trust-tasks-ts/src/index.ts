@@ -174,6 +174,7 @@ export * as MessagingPing_v0_1 from "./messaging/ping/0.1/payload.js";
 export * as PersonaRecordShared_v0_1 from "./persona/_shared/0.1/persona-record.js";
 export * as PersonaAttributeDelete_v1_0 from "./persona/attribute/delete/1.0/payload.js";
 export * as PersonaAttributeList_v1_0 from "./persona/attribute/list/1.0/payload.js";
+export * as PersonaAttributePurgeVersion_v1_0 from "./persona/attribute/purge-version/1.0/payload.js";
 export * as PersonaAttributePut_v1_0 from "./persona/attribute/put/1.0/payload.js";
 export * as PersonaBindingGet_v1_0 from "./persona/binding/get/1.0/payload.js";
 export * as PersonaBindingList_v1_0 from "./persona/binding/list/1.0/payload.js";

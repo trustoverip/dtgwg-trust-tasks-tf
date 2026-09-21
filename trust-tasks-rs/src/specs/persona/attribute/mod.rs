@@ -2,4 +2,5 @@
 
 pub mod delete;
 pub mod list;
+pub mod purge_version;
 pub mod put;

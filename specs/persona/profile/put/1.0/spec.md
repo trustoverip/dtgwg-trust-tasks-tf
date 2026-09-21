@@ -51,6 +51,16 @@ errorCodes:
   - code: persona/profile/put:pinnedVersionUnavailable
     meaning: An entry pins a version of an attribute the maintainer no longer retains. The details name the attribute and the versions available, so the caller can repin rather than guess.
     retryable: false
+  - code: persona/profile/put:duplicateSlot
+    meaning: Two entries carry the same `slot`. The details name the slot. A slot answers one question with one entry, so the profile is not written.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["slot"]
+      properties:
+        slot:
+          type: string
   - code: persona/profile/put:versionConflict
     meaning: The `expectedVersion` precondition failed. Details carry the maintainer's current version.
     retryable: false
@@ -106,6 +116,15 @@ correlation result, and **MUST NOT** return the identifiers of other profiles in
 the `correlation` member — a count is enough to warn, and identifiers would make
 every profile write a disclosure of the holder's other compositions to whatever
 tool made it.
+A conforming maintainer **MUST** refuse, with `persona/profile/put:duplicateSlot`,
+a profile in which two entries carry the same `slot`. A slot answers one question
+— "what does this face call itself" — with one entry, and two answers is no
+answer.
+
+A conforming maintainer **MUST** refuse, with
+`persona/profile/put:pinnedVersionUnavailable`, an entry pinning a version it
+neither holds as current nor retains. Accepting it would store a composition that
+presents nothing for that entry from the moment it is written.
 
 ## Authorization
 
