@@ -419,6 +419,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::SUPERVISOR_REQUIRED];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `config/restart:supervisorRequired`
+    ///
+    /// No process supervisor was detected, so a graceful exit would not be followed by a restart — it would just stop the maintainer. Refused. Configure a supervisor (or set the maintainer's explicit opt-in) and retry.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUPERVISOR_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "config/restart:supervisorRequired",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

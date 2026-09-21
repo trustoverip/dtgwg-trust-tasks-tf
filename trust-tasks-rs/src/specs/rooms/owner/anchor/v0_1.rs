@@ -932,6 +932,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_THE_OWNER,
+    error_codes::HOST_UNREACHABLE,
+    error_codes::HOST_REFUSED,
+    error_codes::NOT_WITNESSED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/owner/anchor:notTheOwner`
+    ///
+    /// The recipient does not control this room's DID, so it cannot publish in the room's name.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_THE_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/anchor:notTheOwner",
+        retryable: false,
+    };
+    /// `rooms/owner/anchor:hostUnreachable`
+    ///
+    /// The named host could not be resolved, advertises no transport this recipient speaks, or did not answer — so there is no head to anchor.
+    ///
+    /// Declared `retryable: true`.
+    pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/anchor:hostUnreachable",
+        retryable: true,
+    };
+    /// `rooms/owner/anchor:hostRefused`
+    ///
+    /// The host answered and declined to serve the room's head. Its own code and reason are carried in `details`.
+    ///
+    /// Declared `retryable: false`.
+    pub const HOST_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/anchor:hostRefused",
+        retryable: false,
+    };
+    /// `rooms/owner/anchor:notWitnessed`
+    ///
+    /// The room's DID is configured with no witnesses, so an entry would be the controller's own word. `details.roomId` names it; the repair is a witness configuration, not a retry.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_WITNESSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/anchor:notWitnessed",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

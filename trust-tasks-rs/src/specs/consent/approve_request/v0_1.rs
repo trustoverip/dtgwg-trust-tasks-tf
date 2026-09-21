@@ -1057,6 +1057,48 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"ConsentKind\": {\n      \"$anchor\": \"consentKind\",\n      \"description\": \"Interaction kind. Present because it changes what the approver is agreeing to: consenting to an agent reading a 1:1 conversation exposes two parties, and consenting on a group exposes everyone in it, most of whom are not being asked.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"title\": \"ConsentKind\",\n      \"type\": \"string\"\n    },\n    \"ConsentScope\": {\n      \"$anchor\": \"consentScope\",\n      \"description\": \"What the agent may do. `receive` is read-only: the agent sees inbound messages. `converse` additionally lets it reply, which means it can speak to the other parties as the subject — a materially different decision, and the reason the two are distinct values rather than a boolean.\",\n      \"enum\": [\n        \"receive\",\n        \"converse\"\n      ],\n      \"title\": \"ConsentScope\",\n      \"type\": \"string\"\n    },\n    \"ConsentSubject\": {\n      \"$anchor\": \"consentSubject\",\n      \"additionalProperties\": false,\n      \"description\": \"Platform-agnostic identifier of what consent is about. Deliberately not a platform address: a consent record that named one would be a stored directory of who the subject talks to, readable by anyone who reaches the store.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"DID of the agent the decision is about. Consent is granted to one agent, not to the service that hosts it, so that revoking one agent's access does not revoke another's.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE handle for the conversation. MUST NOT be a raw platform address (a phone number, a handle, a group invite link). The approver identifies the conversation from displayHint; this member exists so a decision can be matched to a conversation without the matching key being personal data.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/ConsentKind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging platform the conversation lives on, as the bridge names it (for example `signal`, `whatsapp`). Opaque to the framework.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"title\": \"ConsentSubject\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/approve-request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The prompt an agent's home service sends to a designated approver, asking a human to decide whether an agent may act on one conversation. It carries no decision itself: the approver answers with a separate, separately-signed consent/decision. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"Single-use, unpredictable value the approver MUST echo in the consent/decision it signs. This is what binds a decision to this request: without it a decision is a free-floating assertion that the approver consented to something, and cannot be shown to answer this prompt rather than an earlier one. Consumers MUST reject a decision whose challenge they did not issue, and MUST NOT accept the same challenge twice.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"displayHint\": {\n      \"description\": \"Human-readable label for the conversation, for the approver's screen — \\\"Signal group 'Family'\\\". Present because conversationRef is deliberately opaque: without a hint the approver is asked to decide about an identifier that means nothing to them, and will either always allow or always deny. Advisory only. It is chosen by the requesting party, so a renderer MUST treat it as untrusted text — escape it, bound its length, and never let it displace the subject members above as the basis of the decision.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"firstMessageDigest\": {\n      \"description\": \"Digest of the inbound message that prompted this request, when there is one, so an approver deciding on a receive scope can confirm the decision it is being asked to make corresponds to a real arriving message. A digest rather than the content: the approver is deciding whether the agent may read the conversation, and showing them the message in order to ask would disclose what the decision is meant to gate.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"scope\": {\n      \"$ref\": \"#/$defs/ConsentScope\",\n      \"description\": \"What the agent is asking to be allowed to do.\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/ConsentSubject\",\n      \"description\": \"What the decision is about: one conversation, for one agent.\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"scope\",\n    \"challenge\"\n  ],\n  \"title\": \"Consent — Approve Request — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_UNKNOWN,
+    error_codes::SCOPE_UNSUPPORTED,
+    error_codes::CHALLENGE_REPLAYED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `consent/approve-request:subjectUnknown`
+    ///
+    /// The approver does not speak for the agent named in subject.agent.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/approve-request:subjectUnknown",
+        retryable: false,
+    };
+    /// `consent/approve-request:scopeUnsupported`
+    ///
+    /// The approver cannot render or answer a decision at the requested scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const SCOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/approve-request:scopeUnsupported",
+        retryable: false,
+    };
+    /// `consent/approve-request:challengeReplayed`
+    ///
+    /// The challenge has been seen before. A challenge is single-use; a repeat is either a retry that must not be answered twice or a replay.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_REPLAYED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/approve-request:challengeReplayed",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

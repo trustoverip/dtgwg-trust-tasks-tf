@@ -618,3 +618,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_AUTHORIZED,
+    error_codes::UNKNOWN_EPOCH,
+    error_codes::DID_NOT_OPEN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/keys/open:notAuthorized`
+    ///
+    /// The caller is not authorized to open records for this room.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/open:notAuthorized",
+        retryable: false,
+    };
+    /// `rooms/keys/open:unknownEpoch`
+    ///
+    /// The oracle holds no key for the epoch this record was sealed under.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_EPOCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/open:unknownEpoch",
+        retryable: false,
+    };
+    /// `rooms/keys/open:didNotOpen`
+    ///
+    /// The record failed authentication — it was sealed under a different key, or relocated.
+    ///
+    /// Declared `retryable: false`.
+    pub const DID_NOT_OPEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/open:didNotOpen",
+        retryable: false,
+    };
+}

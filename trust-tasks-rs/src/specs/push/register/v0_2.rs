@@ -1252,6 +1252,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNSUPPORTED_PLATFORM,
+    error_codes::INVALID_REGISTRATION,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `push/register:unsupportedPlatform`
+    ///
+    /// The gateway does not implement the registration's `platform`. The device falls back to queue-and-wait (no push).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNSUPPORTED_PLATFORM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "push/register:unsupportedPlatform",
+        retryable: false,
+    };
+    /// `push/register:invalidRegistration`
+    ///
+    /// The platform token / Web Push subscription is malformed.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_REGISTRATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "push/register:invalidRegistration",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

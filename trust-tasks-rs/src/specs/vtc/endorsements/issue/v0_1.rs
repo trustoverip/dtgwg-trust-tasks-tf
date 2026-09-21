@@ -1250,6 +1250,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::TYPE_NOT_REGISTERED,
+    error_codes::CLAIM_SCHEMA_VIOLATION,
+    error_codes::CLAIM_TOO_LARGE,
+    error_codes::STATUS_LIST_EXHAUSTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/endorsements/issue:typeNotRegistered`
+    ///
+    /// `typeUri` is not registered in this community's endorsement-type registry.
+    ///
+    /// Declared `retryable: false`.
+    pub const TYPE_NOT_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsements/issue:typeNotRegistered",
+        retryable: false,
+    };
+    /// `vtc/endorsements/issue:claimSchemaViolation`
+    ///
+    /// `claim` failed validation against the endorsement type's declared claimSchema.
+    ///
+    /// Declared `retryable: false`.
+    pub const CLAIM_SCHEMA_VIOLATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsements/issue:claimSchemaViolation",
+        retryable: false,
+    };
+    /// `vtc/endorsements/issue:claimTooLarge`
+    ///
+    /// `claim` exceeds the 8 KiB serialised cap.
+    ///
+    /// Declared `retryable: false`.
+    pub const CLAIM_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsements/issue:claimTooLarge",
+        retryable: false,
+    };
+    /// `vtc/endorsements/issue:statusListExhausted`
+    ///
+    /// The community's status list has no free slot; an operator must provision a new list.
+    ///
+    /// Declared `retryable: true`.
+    pub const STATUS_LIST_EXHAUSTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsements/issue:statusListExhausted",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

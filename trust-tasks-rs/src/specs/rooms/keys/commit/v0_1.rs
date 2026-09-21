@@ -392,3 +392,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::EPOCH_GAP,
+    error_codes::NOT_A_MEMBER,
+    error_codes::COMMIT_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/keys/commit:epochGap`
+    ///
+    /// The commit is more than one epoch ahead. The response carries the recipient's current epoch so the sender can resume from there.
+    ///
+    /// Declared `retryable: false`.
+    pub const EPOCH_GAP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/commit:epochGap",
+        retryable: false,
+    };
+    /// `rooms/keys/commit:notAMember`
+    ///
+    /// The recipient holds no group state for this room.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/commit:notAMember",
+        retryable: false,
+    };
+    /// `rooms/keys/commit:commitInvalid`
+    ///
+    /// The commit did not process — malformed, or not signed by a member of the group the recipient holds.
+    ///
+    /// Declared `retryable: false`.
+    pub const COMMIT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/commit:commitInvalid",
+        retryable: false,
+    };
+}

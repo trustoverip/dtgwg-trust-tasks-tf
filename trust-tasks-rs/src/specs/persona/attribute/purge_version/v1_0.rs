@@ -665,3 +665,23 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::CURRENT_VERSION];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/attribute/purge-version:currentVersion`
+    ///
+    /// A named version is the attribute's current one. The current value is removed with persona/attribute/delete, never here — a purge that could take the live value would make "tidy up old names" able to erase the present one.
+    ///
+    /// Declared `retryable: false`.
+    pub const CURRENT_VERSION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/attribute/purge-version:currentVersion",
+        retryable: false,
+    };
+}

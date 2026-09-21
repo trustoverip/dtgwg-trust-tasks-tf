@@ -836,6 +836,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::NOT_RELEASABLE];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/contexts/secrets:notFound`
+    ///
+    /// No context with this id exists within the caller's entitlement. A caller not entitled to the id is refused for that reason instead, and because entitlement is checked before existence, "not found" is only ever said to a caller already entitled to hear it — so the pair leaks nothing about ids the caller may not reach.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/contexts/secrets:notFound",
+        retryable: false,
+    };
+    /// `vta/contexts/secrets:notReleasable`
+    ///
+    /// The context is reachable and has key material, but the recipient's policy marks that material as non-releasable. A refusal about the key, not about the caller — retrying as a more privileged caller does not change it.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_RELEASABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/contexts/secrets:notReleasable",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

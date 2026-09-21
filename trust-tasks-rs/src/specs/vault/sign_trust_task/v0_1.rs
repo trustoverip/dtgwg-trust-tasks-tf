@@ -1793,6 +1793,98 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::NOT_SIGNABLE,
+    error_codes::ENVELOPE_INVALID,
+    error_codes::ENVELOPE_ISSUER_MISMATCH,
+    error_codes::ENVELOPE_ALREADY_PROOFED,
+    error_codes::ENVELOPE_EXPIRED,
+    error_codes::STEP_UP_REQUIRED,
+    error_codes::POLICY_DENY,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/sign-trust-task:notFound`
+    ///
+    /// No entry with this id exists in the consumer's scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:notFound",
+        retryable: false,
+    };
+    /// `vault/sign-trust-task:notSignable`
+    ///
+    /// The entry's `secretKind` has no DID-based signing identity (`password`, `passkey`, `oauth-tokens`, `bearer-token`, `ssh-key`, `custom`). Only `did-self-issued` and `didcomm-peer` entries can sign Trust Tasks.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_SIGNABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:notSignable",
+        retryable: false,
+    };
+    /// `vault/sign-trust-task:envelopeInvalid`
+    ///
+    /// The supplied `unsignedEnvelope` is missing a framework-required field (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload`) or carries fields the maintainer cannot canonicalise.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:envelopeInvalid",
+        retryable: false,
+    };
+    /// `vault/sign-trust-task:envelopeIssuerMismatch`
+    ///
+    /// The supplied envelope's `issuer` does not match the entry's `principalDid`. The maintainer refuses to sign — the consumer MUST set `issuer = principalDid` for the entry being used. This guards against the consumer accidentally requesting a signature for an issuer the maintainer can't actually authenticate as.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_ISSUER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:envelopeIssuerMismatch",
+        retryable: false,
+    };
+    /// `vault/sign-trust-task:envelopeAlreadyProofed`
+    ///
+    /// The supplied envelope already carries a `proof`. The maintainer refuses to re-sign — strip the existing proof and resubmit.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_ALREADY_PROOFED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:envelopeAlreadyProofed",
+        retryable: false,
+    };
+    /// `vault/sign-trust-task:envelopeExpired`
+    ///
+    /// The supplied envelope's `expiresAt` is in the past. Signing it would produce a stale credential.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:envelopeExpired",
+        retryable: false,
+    };
+    /// `vault/sign-trust-task:stepUpRequired`
+    ///
+    /// Policy demands a step-up proof before the signature can be issued. Consumer retries with `stepUpProof` populated. Same shape as `vault/proxy-login:stepUpRequired`.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:stepUpRequired",
+        retryable: true,
+    };
+    /// `vault/sign-trust-task:policyDeny`
+    ///
+    /// Policy denies sign-trust-task for this consumer + entry combination outright (no step-up will satisfy it).
+    ///
+    /// Declared `retryable: false`.
+    pub const POLICY_DENY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sign-trust-task:policyDeny",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

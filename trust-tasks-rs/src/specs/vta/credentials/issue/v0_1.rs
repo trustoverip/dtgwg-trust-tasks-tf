@@ -1132,6 +1132,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::HOLDER_INVALID,
+    error_codes::SCOPE_EMPTY,
+    error_codes::VALIDITY_TOO_LONG,
+    error_codes::STEP_UP_REQUIRED,
+    error_codes::PROFILE_VIOLATION,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/credentials/issue:holderInvalid`
+    ///
+    /// The holder identifier is not a resolvable DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const HOLDER_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/credentials/issue:holderInvalid",
+        retryable: false,
+    };
+    /// `vta/credentials/issue:scopeEmpty`
+    ///
+    /// The requested claims object is empty — a share must convey at least one claim.
+    ///
+    /// Declared `retryable: false`.
+    pub const SCOPE_EMPTY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/credentials/issue:scopeEmpty",
+        retryable: false,
+    };
+    /// `vta/credentials/issue:validityTooLong`
+    ///
+    /// The requested validity exceeds the issuer's maximum.
+    ///
+    /// Declared `retryable: false`.
+    pub const VALIDITY_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/credentials/issue:validityTooLong",
+        retryable: false,
+    };
+    /// `vta/credentials/issue:stepUpRequired`
+    ///
+    /// The operation requires a higher authentication assurance level (operator step-up) that has not been satisfied.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/credentials/issue:stepUpRequired",
+        retryable: true,
+    };
+    /// `vta/credentials/issue:profileViolation`
+    ///
+    /// payload.credentialType names a claims profile defined by this specification and payload.claims does not satisfy it (shape mismatch, or a policyHash that does not match the canonicalized policy).
+    ///
+    /// Declared `retryable: false`.
+    pub const PROFILE_VIOLATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/credentials/issue:profileViolation",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

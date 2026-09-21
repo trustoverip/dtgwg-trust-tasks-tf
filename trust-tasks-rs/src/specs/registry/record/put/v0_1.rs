@@ -774,6 +774,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::ALREADY_EXISTS, error_codes::NOT_FOUND];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `registry/record/put:alreadyExists`
+    ///
+    /// `expectedExisting: false` was asserted but a record already exists for the given entity+authority+action+resource key.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "registry/record/put:alreadyExists",
+        retryable: false,
+    };
+    /// `registry/record/put:notFound`
+    ///
+    /// `expectedExisting: true` was asserted but no record exists for the given entity+authority+action+resource key.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "registry/record/put:notFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

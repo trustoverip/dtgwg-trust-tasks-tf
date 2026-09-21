@@ -771,6 +771,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_OWNER,
+    error_codes::ALREADY_DELETED,
+    error_codes::UNKNOWN_DOMAIN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management/did/delete:notOwner`
+    ///
+    /// The caller is not the slot's current owner (and is not an admin).
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/did/delete:notOwner",
+        retryable: false,
+    };
+    /// `did-management/did/delete:alreadyDeleted`
+    ///
+    /// The slot is already in the deleted state.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_DELETED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/did/delete:alreadyDeleted",
+        retryable: false,
+    };
+    /// `did-management:unknownDomain`
+    ///
+    /// The submitted `domain` is not a known hosting domain on this consumer. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknownDomain",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

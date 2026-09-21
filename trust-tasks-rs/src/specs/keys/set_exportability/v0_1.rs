@@ -1233,6 +1233,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::NOT_PERMITTED_FOR_THIS_KEY,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `keys:notFound`
+    ///
+    /// No key record on this custodian carries the named `keyId`.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "keys:notFound",
+        retryable: false,
+    };
+    /// `keys/set-exportability:notPermittedForThisKey`
+    ///
+    /// The key's material can never be released regardless of this member, so asking for `exportable` true is asking for something the custodian cannot honour. Distinct from a permission refusal — no caller, at any authority, can change this answer.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_PERMITTED_FOR_THIS_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "keys/set-exportability:notPermittedForThisKey",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

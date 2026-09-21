@@ -453,6 +453,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_OWNER,
+    error_codes::INVALID_WITNESS,
+    error_codes::SLOT_NOT_FOUND,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `webvh/witness/publish:notOwner`
+    ///
+    /// The caller is not the owner of the named slot.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "webvh/witness/publish:notOwner",
+        retryable: false,
+    };
+    /// `webvh/witness/publish:invalidWitness`
+    ///
+    /// The supplied `witness` object failed structural validation (empty object, missing signature, or signature did not verify against the expected witness DID).
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_WITNESS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "webvh/witness/publish:invalidWitness",
+        retryable: false,
+    };
+    /// `webvh/witness/publish:slotNotFound`
+    ///
+    /// The named `mnemonic` does not exist on this hosting service.
+    ///
+    /// Declared `retryable: false`.
+    pub const SLOT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "webvh/witness/publish:slotNotFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

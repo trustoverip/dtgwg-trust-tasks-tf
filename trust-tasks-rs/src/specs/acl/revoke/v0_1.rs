@@ -1331,6 +1331,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_NOT_PRESENT,
+    error_codes::LAST_AUTHORITY_PROTECTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `acl/revoke:subjectNotPresent`
+    ///
+    /// The subject named in the payload is not currently in the ACL.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_NOT_PRESENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/revoke:subjectNotPresent",
+        retryable: false,
+    };
+    /// `acl/revoke:lastAuthorityProtected`
+    ///
+    /// The revocation would leave the ACL with no party able to perform a privileged operation; the maintainer's policy forbids it.
+    ///
+    /// Declared `retryable: false`.
+    pub const LAST_AUTHORITY_PROTECTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/revoke:lastAuthorityProtected",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

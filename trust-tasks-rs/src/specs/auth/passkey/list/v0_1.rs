@@ -663,6 +663,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::PASSKEYS_NOT_SUPPORTED];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/list:passkeysNotSupported`
+    ///
+    /// This auth service does not manage passkeys, so there is no inventory to return. Distinct from an empty list, which asserts that passkeys ARE supported and this subject has none.
+    ///
+    /// Declared `retryable: false`.
+    pub const PASSKEYS_NOT_SUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/list:passkeysNotSupported",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

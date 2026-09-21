@@ -1552,6 +1552,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CHALLENGE_NOT_FOUND,
+    error_codes::CHALLENGE_EXPIRED,
+    error_codes::CHALLENGE_MISMATCH,
+    error_codes::SUBJECT_MISMATCH,
+    error_codes::SCOPE_DENIED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/authenticate:challengeNotFound`
+    ///
+    /// The `sessionId` does not refer to any challenge the auth service issued, or the challenge was already consumed.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/authenticate:challengeNotFound",
+        retryable: false,
+    };
+    /// `auth/authenticate:challengeExpired`
+    ///
+    /// The challenge's expiresAt is in the past.
+    ///
+    /// Declared `retryable: true`.
+    pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/authenticate:challengeExpired",
+        retryable: true,
+    };
+    /// `auth/authenticate:challengeMismatch`
+    ///
+    /// The presented `challenge` value does not equal the one the auth service bound to `sessionId`.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/authenticate:challengeMismatch",
+        retryable: false,
+    };
+    /// `auth/authenticate:subjectMismatch`
+    ///
+    /// The `issuer` of the authenticate document does not equal the `subject` the challenge was bound to.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/authenticate:subjectMismatch",
+        retryable: false,
+    };
+    /// `auth/authenticate:scopeDenied`
+    ///
+    /// One or more requested scopes were refused by the consumer's authorization policy. `details.refused` MAY enumerate the denied scopes.
+    ///
+    /// Declared `retryable: false`.
+    pub const SCOPE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/authenticate:scopeDenied",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

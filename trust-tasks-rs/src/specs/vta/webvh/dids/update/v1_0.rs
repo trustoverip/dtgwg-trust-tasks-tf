@@ -878,6 +878,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::VERSION_CONFLICT,
+    error_codes::INVALID_DOCUMENT,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/webvh/dids/update:notFound`
+    ///
+    /// The agent holds no update key for this DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/update:notFound",
+        retryable: false,
+    };
+    /// `vta/webvh/dids/update:versionConflict`
+    ///
+    /// The DID's latest entry no longer matches `expectedVersionId` — someone else updated it since the caller read it. The caller SHOULD re-read and re-apply its edits.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/update:versionConflict",
+        retryable: false,
+    };
+    /// `vta/webvh/dids/update:invalidDocument`
+    ///
+    /// The document is not a valid DID document for this subject (for example, its `id` does not match `did`).
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_DOCUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/update:invalidDocument",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

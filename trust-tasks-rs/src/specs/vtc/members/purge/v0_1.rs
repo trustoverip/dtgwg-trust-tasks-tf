@@ -595,6 +595,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::LAST_ADMINISTRATOR];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/members/purge:notFound`
+    ///
+    /// No member or tombstone exists for that DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/purge:notFound",
+        retryable: false,
+    };
+    /// `vtc/members/purge:lastAdministrator`
+    ///
+    /// Purging would leave the community with no administrator.
+    ///
+    /// Declared `retryable: false`.
+    pub const LAST_ADMINISTRATOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/purge:lastAdministrator",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

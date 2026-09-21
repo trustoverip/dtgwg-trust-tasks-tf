@@ -1056,6 +1056,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::CONTEXT_NOT_FOUND, error_codes::NOT_FOUND];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/app-state:contextNotFound`
+    ///
+    /// OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such context" from "not permitted to reach it". Where it cannot — an ACL that enumerates the contexts a caller may act in answers both the same way — the framework's standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this code is never emitted. Refusing an unauthorized caller is NOT this code.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/app-state:contextNotFound",
+        retryable: false,
+    };
+    /// `vta/app-state/get:notFound`
+    ///
+    /// No record exists at `(contextId, namespace, key)`. Also returned when a tombstone exists but `includeDeleted` was not set.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/app-state/get:notFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

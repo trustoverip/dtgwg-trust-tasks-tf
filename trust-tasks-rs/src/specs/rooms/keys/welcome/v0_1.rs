@@ -422,3 +422,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_INVITED,
+    error_codes::ALREADY_JOINED,
+    error_codes::WELCOME_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/keys/welcome:notInvited`
+    ///
+    /// The recipient holds no valid, unconsumed invitation from this room for this party.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_INVITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/welcome:notInvited",
+        retryable: false,
+    };
+    /// `rooms/keys/welcome:alreadyJoined`
+    ///
+    /// The recipient already holds group state for this room.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_JOINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/welcome:alreadyJoined",
+        retryable: false,
+    };
+    /// `rooms/keys/welcome:welcomeInvalid`
+    ///
+    /// The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree.
+    ///
+    /// Declared `retryable: false`.
+    pub const WELCOME_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/welcome:welcomeInvalid",
+        retryable: false,
+    };
+}

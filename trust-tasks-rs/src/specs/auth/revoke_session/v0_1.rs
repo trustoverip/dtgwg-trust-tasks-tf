@@ -546,6 +546,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::SESSION_NOT_FOUND, error_codes::NOT_OWNER];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/revoke-session:sessionNotFound`
+    ///
+    /// The named `sessionId` does not exist (already revoked, or never belonged to this subject).
+    ///
+    /// Declared `retryable: false`.
+    pub const SESSION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/revoke-session:sessionNotFound",
+        retryable: false,
+    };
+    /// `auth/revoke-session:notOwner`
+    ///
+    /// The named `sessionId` exists but belongs to a different subject than the producer. The auth service MUST NOT reveal whether the session exists at all when the producer is not its owner.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/revoke-session:notOwner",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

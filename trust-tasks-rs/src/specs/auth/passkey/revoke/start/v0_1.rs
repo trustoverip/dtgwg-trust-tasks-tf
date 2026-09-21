@@ -1086,6 +1086,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CREDENTIAL_NOT_FOUND,
+    error_codes::LAST_CREDENTIAL,
+    error_codes::REAUTH_UNAVAILABLE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/revoke/start:credentialNotFound`
+    ///
+    /// No credential with this id is bound to the subject. Consumers MUST return this for a credential belonging to a different subject as well, so the code cannot be used to probe whether an id exists elsewhere.
+    ///
+    /// Declared `retryable: false`.
+    pub const CREDENTIAL_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/start:credentialNotFound",
+        retryable: false,
+    };
+    /// `auth/passkey/revoke/start:lastCredential`
+    ///
+    /// This is the subject's only remaining passkey and the consumer refuses to leave them with none. `details.remaining` MAY carry the count.
+    ///
+    /// Declared `retryable: false`.
+    pub const LAST_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/start:lastCredential",
+        retryable: false,
+    };
+    /// `auth/passkey/revoke/start:reauthUnavailable`
+    ///
+    /// The consumer requires user verification to revoke but cannot mount a ceremony — for example every enrolled authenticator is itself unusable. Recovery is out of band.
+    ///
+    /// Declared `retryable: false`.
+    pub const REAUTH_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/start:reauthUnavailable",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

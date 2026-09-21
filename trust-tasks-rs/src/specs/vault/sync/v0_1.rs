@@ -3787,6 +3787,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::SEQ_TOO_OLD];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/sync:seqTooOld`
+    ///
+    /// The supplied `sinceSeq` is older than the maintainer's retained event horizon; the consumer cannot catch up incrementally and MUST resync from scratch (omit `sinceSeq`). This happens when a consumer has been offline longer than the maintainer's event-retention window.
+    ///
+    /// Declared `retryable: false`.
+    pub const SEQ_TOO_OLD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/sync:seqTooOld",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

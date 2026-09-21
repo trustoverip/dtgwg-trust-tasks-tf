@@ -727,6 +727,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CHALLENGE_UNKNOWN,
+    error_codes::CHALLENGE_EXPIRED,
+    error_codes::SUBJECT_MISMATCH,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `confirm/response:challenge_unknown`
+    ///
+    /// The relying party has no pending confirm/request matching the echoed challenge.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "confirm/response:challenge_unknown",
+        retryable: false,
+    };
+    /// `confirm/response:challenge_expired`
+    ///
+    /// The matching confirm/request has expired.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "confirm/response:challenge_expired",
+        retryable: false,
+    };
+    /// `confirm/response:subject_mismatch`
+    ///
+    /// The document's issuer (or proof verificationMethod DID) does not equal the requested subject.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "confirm/response:subject_mismatch",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

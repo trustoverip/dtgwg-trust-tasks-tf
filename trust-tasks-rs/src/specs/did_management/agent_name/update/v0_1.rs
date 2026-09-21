@@ -1101,6 +1101,98 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_OWNER,
+    error_codes::NAME_RESERVED,
+    error_codes::NAME_TAKEN,
+    error_codes::NOT_FOUND,
+    error_codes::ALSO_KNOWN_AS_MISMATCH,
+    error_codes::INVALID_DID_DATA,
+    error_codes::STEP_UP_REQUIRED,
+    error_codes::UNKNOWN_DOMAIN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management/agent-name/update:notOwner`
+    ///
+    /// The caller is not the DID slot's current owner or an admin.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:notOwner",
+        retryable: false,
+    };
+    /// `did-management/agent-name/update:nameReserved`
+    ///
+    /// The requested name is on the host's reserved list (e.g. `admin`, `support`) and cannot be claimed by a tenant.
+    ///
+    /// Declared `retryable: false`.
+    pub const NAME_RESERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:nameReserved",
+        retryable: false,
+    };
+    /// `did-management/agent-name/update:nameTaken`
+    ///
+    /// The name is already bound to a different DID on this hosting domain.
+    ///
+    /// Declared `retryable: false`.
+    pub const NAME_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:nameTaken",
+        retryable: false,
+    };
+    /// `did-management/agent-name/update:notFound`
+    ///
+    /// `state: parked` was requested for a name that is not bound to this DID. Parking requires an existing binding; there is no reservation to keep.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:notFound",
+        retryable: false,
+    };
+    /// `did-management/agent-name/update:alsoKnownAsMismatch`
+    ///
+    /// The submitted `didData`'s `alsoKnownAs` does not match the requested state: it must claim the name for `active` and must not claim it for `parked`.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALSO_KNOWN_AS_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:alsoKnownAsMismatch",
+        retryable: false,
+    };
+    /// `did-management/agent-name/update:invalidDidData`
+    ///
+    /// The submitted `didData` failed proof or structural validation for the target DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_DID_DATA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:invalidDidData",
+        retryable: false,
+    };
+    /// `did-management/agent-name/update:stepUpRequired`
+    ///
+    /// The operation requires a higher authentication assurance level (operator step-up) that has not been satisfied. Parking a name takes it out of service and is a consumer-gated operation.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/update:stepUpRequired",
+        retryable: true,
+    };
+    /// `did-management:unknownDomain`
+    ///
+    /// The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknownDomain",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

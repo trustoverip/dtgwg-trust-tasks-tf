@@ -115,7 +115,7 @@ defects three times.
 | Check | Asserts | Cannot see |
 |---|---|---|
 | `codegen-drift`, `bindings-drift` (×3: TS, Go and Dart) | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
-| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
+| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
@@ -289,6 +289,29 @@ construction path). The consequence worth knowing:
   from `Payload` because associated type defaults are unstable on stable Rust;
   a spec with no `$defs.Response` gets no impl. `HttpsServer::on` still takes
   both type parameters — constraining it is an open follow-up.
+
+## Declared error codes are generated — Rust only, so far
+
+A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:
+every generated module carries `pub const ERROR_CODES: &[DeclaredErrorCode]`
+(empty when the spec declares none) and, when it declares any, a
+`pub mod error_codes` with one `DeclaredErrorCode` constant per code, named for
+the local part in SCREAMING_SNAKE_CASE (`withdraw:notFound` →
+`error_codes::NOT_FOUND`). `schema_index::error_codes_for(type_uri)` serves the
+same slice by bare request URI. The point is that an implementation emits the
+code the spec declares instead of a string literal nothing checks, and can
+derive a census of declared-vs-emitted codes rather than hand-keep one.
+
+- The generator **refuses** a declaration that does not parse, whose namespace
+  is not the slug or a path prefix of it, or whose local part collides with
+  another's constant (`notFound` / `not_found`, or `keys:notFound` beside
+  `keys/revoke:notFound`). `DeclaredErrorCode → TrustTaskCode` is infallible on
+  the strength of that.
+- `check-bindings` compares every Rust `ERROR_CODES` against the front matter,
+  re-derived independently, as it does the policy constants.
+- **TypeScript, Go and Dart do not emit them yet.** When they do, add them to the
+  same comparison so the four agree with each other, not only with the front
+  matter.
 
 ## ⚠️ The Go module — four things that bite
 

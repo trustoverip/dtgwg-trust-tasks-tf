@@ -2859,6 +2859,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::INVALID_TICKET,
+    error_codes::CAPACITY,
+    error_codes::NOT_ELIGIBLE,
+    error_codes::DECLINED,
+    error_codes::METHOD_UNAVAILABLE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vetting/request:invalidTicket`
+    ///
+    /// A scanned ticket's secret does not match an active ticket this vetter issued for the named community, or the ticket is used up or expired. Never returned for a short code — a wrong short code gets no reply at all.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_TICKET: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/request:invalidTicket",
+        retryable: false,
+    };
+    /// `vetting/request:capacity`
+    ///
+    /// The vetter is not taking new requests at the moment.
+    ///
+    /// Declared `retryable: true`.
+    pub const CAPACITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/request:capacity",
+        retryable: true,
+    };
+    /// `vetting/request:notEligible`
+    ///
+    /// The addressee is not currently a vetter for the named community.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_ELIGIBLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/request:notEligible",
+        retryable: false,
+    };
+    /// `vetting/request:declined`
+    ///
+    /// The vetter will not take this request. No reason is given, and none is owed.
+    ///
+    /// Declared `retryable: false`.
+    pub const DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/request:declined",
+        retryable: false,
+    };
+    /// `vetting/request:methodUnavailable`
+    ///
+    /// The vetter does not offer the preferred method.
+    ///
+    /// Declared `retryable: false`.
+    pub const METHOD_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/request:methodUnavailable",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

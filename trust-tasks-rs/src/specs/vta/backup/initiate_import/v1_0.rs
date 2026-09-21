@@ -1157,6 +1157,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNSUPPORTED_ALGORITHM,
+    error_codes::INVALID_DIGEST,
+    error_codes::TRANSPORT_UNAVAILABLE,
+    error_codes::TOO_MANY_OPEN_BUNDLES,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/backup/initiate-import:unsupportedAlgorithm`
+    ///
+    /// The recipient does not implement the requested transport algorithm. The message names what it does implement.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNSUPPORTED_ALGORITHM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/initiate-import:unsupportedAlgorithm",
+        retryable: false,
+    };
+    /// `vta/backup/initiate-import:invalidDigest`
+    ///
+    /// `expectedSha256` is not 64 lowercase hex characters, or `expectedSizeBytes` is not a positive count. Refused before a slot is opened.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_DIGEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/initiate-import:invalidDigest",
+        retryable: false,
+    };
+    /// `vta/backup/initiate-import:transportUnavailable`
+    ///
+    /// The recipient has no address at which it can accept the bytes, so it cannot produce a descriptor. Not a fault in the request — see Transport preconditions.
+    ///
+    /// Declared `retryable: false`.
+    pub const TRANSPORT_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/initiate-import:transportUnavailable",
+        retryable: false,
+    };
+    /// `vta/backup/initiate-import:tooManyOpenBundles`
+    ///
+    /// This operator already holds the maximum number of live bundles. Abort one or wait for expiry.
+    ///
+    /// Declared `retryable: true`.
+    pub const TOO_MANY_OPEN_BUNDLES: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/initiate-import:tooManyOpenBundles",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

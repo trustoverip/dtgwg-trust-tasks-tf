@@ -975,6 +975,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::VRC_INVALID, error_codes::SUBJECT_NOT_MEMBER];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/relationships/publish:vrcInvalid`
+    ///
+    /// The VRC failed verification, or its issuer did not match the proof signer.
+    ///
+    /// Declared `retryable: false`.
+    pub const VRC_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/relationships/publish:vrcInvalid",
+        retryable: false,
+    };
+    /// `vtc/relationships/publish:subjectNotMember`
+    ///
+    /// The credentialSubject.id is not a member of this community.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/relationships/publish:subjectNotMember",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

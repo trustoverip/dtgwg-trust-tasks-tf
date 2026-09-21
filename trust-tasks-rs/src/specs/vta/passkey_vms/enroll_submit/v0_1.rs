@@ -1812,6 +1812,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_CEREMONY,
+    error_codes::CEREMONY_DID_MISMATCH,
+    error_codes::INVALID_ATTESTATION,
+    error_codes::PUBLIC_KEY_MISMATCH,
+    error_codes::ALREADY_ENROLLED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/passkey-vms/enroll-submit:unknownCeremony`
+    ///
+    /// The `ceremonyId` is unknown, has expired, or has already been consumed. Re-running this submission will not succeed; the producer must obtain a fresh challenge.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_CEREMONY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/passkey-vms/enroll-submit:unknownCeremony",
+        retryable: false,
+    };
+    /// `vta/passkey-vms/enroll-submit:ceremonyDidMismatch`
+    ///
+    /// The submitted `did` does not match the DID bound to the ceremony at challenge time — a cross-DID replay.
+    ///
+    /// Declared `retryable: false`.
+    pub const CEREMONY_DID_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/passkey-vms/enroll-submit:ceremonyDidMismatch",
+        retryable: false,
+    };
+    /// `vta/passkey-vms/enroll-submit:invalidAttestation`
+    ///
+    /// The WebAuthn attestation could not be parsed or verified, or its credential key could not be converted to a Multikey.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_ATTESTATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/passkey-vms/enroll-submit:invalidAttestation",
+        retryable: false,
+    };
+    /// `vta/passkey-vms/enroll-submit:publicKeyMismatch`
+    ///
+    /// The browser-supplied `publicKeyMultibase` does not match the key the VTA re-derived from `attestationObject.authData`. The browser tampered with (or miscomputed) the public key; the submission is rejected.
+    ///
+    /// Declared `retryable: false`.
+    pub const PUBLIC_KEY_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/passkey-vms/enroll-submit:publicKeyMismatch",
+        retryable: false,
+    };
+    /// `vta/passkey-vms/enroll-submit:alreadyEnrolled`
+    ///
+    /// A passkey with this `credentialId` is already enrolled on the DID (the derived verificationMethod fragment already exists).
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/passkey-vms/enroll-submit:alreadyEnrolled",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

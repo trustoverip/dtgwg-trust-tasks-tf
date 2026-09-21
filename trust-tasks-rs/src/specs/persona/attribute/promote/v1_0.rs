@@ -898,3 +898,35 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ENTRY_OUT_OF_RANGE,
+    error_codes::VERSION_CONFLICT,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/attribute/promote:entryOutOfRange`
+    ///
+    /// A position is beyond the end of the face's entries. The details carry the face's entry count. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENTRY_OUT_OF_RANGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/attribute/promote:entryOutOfRange",
+        retryable: false,
+    };
+    /// `persona/attribute/promote:versionConflict`
+    ///
+    /// The face's version is not `expectedVersion`. Details carry the current version. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/attribute/promote:versionConflict",
+        retryable: false,
+    };
+}

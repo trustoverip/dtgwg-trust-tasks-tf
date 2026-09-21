@@ -885,6 +885,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::CONFLICT];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/webvh/dids/realign-keys:notFound`
+    ///
+    /// No such DID is held by this recipient, or the caller cannot reach its context.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/realign-keys:notFound",
+        retryable: false,
+    };
+    /// `vta/webvh/dids/realign-keys:conflict`
+    ///
+    /// A verification method is already held by a key this realignment does not move. Nothing was changed.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/realign-keys:conflict",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

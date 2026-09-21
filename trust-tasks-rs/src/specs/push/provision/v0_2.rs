@@ -672,6 +672,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::UNKNOWN_HANDLE, error_codes::NOT_CONTROLLER];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `push/provision:unknownHandle`
+    ///
+    /// No such handle at this gateway.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_HANDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "push/provision:unknownHandle",
+        retryable: false,
+    };
+    /// `push/provision:notController`
+    ///
+    /// The authenticated caller is not the controller VTA recorded for this handle (at push/register). Only the controller may set the allowlist.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_CONTROLLER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "push/provision:notController",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

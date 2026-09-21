@@ -976,3 +976,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::PREVIEW_NOT_FOUND,
+    error_codes::STALE_CLAIM,
+    error_codes::STEP_UP_REQUIRED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/disclosure/present:previewNotFound`
+    ///
+    /// The previewId is unknown, already consumed, or expired. A producer previews again rather than retrying; the second preview is a second decision, which is the intent.
+    ///
+    /// Declared `retryable: false`.
+    pub const PREVIEW_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/disclosure/present:previewNotFound",
+        retryable: false,
+    };
+    /// `persona/disclosure/present:staleClaim`
+    ///
+    /// A claim in the preview could not be re-derived at signing time. The disclosure is refused whole rather than issued short, because a verifier receiving fewer claims than were approved cannot tell that from a holder who approved fewer.
+    ///
+    /// Declared `retryable: false`.
+    pub const STALE_CLAIM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/disclosure/present:staleClaim",
+        retryable: false,
+    };
+    /// `persona/disclosure/present:stepUpRequired`
+    ///
+    /// A claim in the preview requires a fresh step-up approval (`release` is `stepUp`) and the maintainer holds none bound to this previewId. Retryable once such an approval is obtained — the preview is not consumed, since refusing for want of an approval must not cost the holder the decision they already made.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/disclosure/present:stepUpRequired",
+        retryable: true,
+    };
+}

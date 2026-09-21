@@ -1304,3 +1304,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_AUTHORIZED,
+    error_codes::NOT_CONTROLLABLE,
+    error_codes::ALREADY_CANCELLED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `trust-task-control:notAuthorized`
+    ///
+    /// The issuer is not the target document's initiator, and the consumer's policy does not recognize it as authorized to control the task (SPEC.md §11.1). Distinct from `permissionDenied`, which concerns authority to invoke this specification at all.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "trust-task-control:notAuthorized",
+        retryable: false,
+    };
+    /// `trust-task-control:notControllable`
+    ///
+    /// The consumer holds the target task but will not apply the requested operation to it — typically because the task has passed a point its specification declares unsafe to interrupt, or because the consumer does not implement `suspend`/`resume`.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_CONTROLLABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "trust-task-control:notControllable",
+        retryable: false,
+    };
+    /// `trust-task-control:alreadyCancelled`
+    ///
+    /// The target task was already cancelled. Cancellation is terminal (SPEC.md §11.3), so it can be neither repeated nor undone; a producer that still wants the work issues a new document.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_CANCELLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "trust-task-control:alreadyCancelled",
+        retryable: false,
+    };
+}

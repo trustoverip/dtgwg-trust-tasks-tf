@@ -1002,6 +1002,78 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_OWNER,
+    error_codes::NOT_FOUND,
+    error_codes::ALSO_KNOWN_AS_MISMATCH,
+    error_codes::INVALID_DID_DATA,
+    error_codes::STEP_UP_REQUIRED,
+    error_codes::UNKNOWN_DOMAIN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management/agent-name/remove:notOwner`
+    ///
+    /// The caller is not the DID slot's current owner or an admin.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/remove:notOwner",
+        retryable: false,
+    };
+    /// `did-management/agent-name/remove:notFound`
+    ///
+    /// No such name is bound to this DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/remove:notFound",
+        retryable: false,
+    };
+    /// `did-management/agent-name/remove:alsoKnownAsMismatch`
+    ///
+    /// The submitted `didData` still claims the name via `alsoKnownAs`. A release MUST be accompanied by a document that no longer claims the name, so the two states cannot diverge.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALSO_KNOWN_AS_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/remove:alsoKnownAsMismatch",
+        retryable: false,
+    };
+    /// `did-management/agent-name/remove:invalidDidData`
+    ///
+    /// The submitted `didData` failed proof or structural validation for the target DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_DID_DATA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/remove:invalidDidData",
+        retryable: false,
+    };
+    /// `did-management/agent-name/remove:stepUpRequired`
+    ///
+    /// The operation requires a higher authentication assurance level (operator step-up) that has not been satisfied. Releasing a name is destructive and a consumer MUST gate it behind step-up.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/remove:stepUpRequired",
+        retryable: true,
+    };
+    /// `did-management:unknownDomain`
+    ///
+    /// The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknownDomain",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

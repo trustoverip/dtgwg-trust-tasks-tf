@@ -695,6 +695,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::NOT_DELETED,
+    error_codes::GRACE_EXPIRED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/credentials/restore:notFound`
+    ///
+    /// The maintainer holds no credential under this identifier that this consumer may act on. Deliberately conflates "no such credential" with "not yours" — see Custody scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/credentials/restore:notFound",
+        retryable: false,
+    };
+    /// `vault/credentials/restore:notDeleted`
+    ///
+    /// The credential is not a tombstone. An archived credential returns this too — that one comes back through `unarchive`.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_DELETED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/credentials/restore:notDeleted",
+        retryable: false,
+    };
+    /// `vault/credentials/restore:graceExpired`
+    ///
+    /// The grace window has passed and the credential has been erased. Distinguished from `notFound` on purpose: "this existed and is now unrecoverable" is a different thing to tell a holder than "this was never here", and only one of them warrants going back to the issuer.
+    ///
+    /// Declared `retryable: false`.
+    pub const GRACE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/credentials/restore:graceExpired",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

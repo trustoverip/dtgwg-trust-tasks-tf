@@ -2765,6 +2765,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_REQUEST,
+    error_codes::CLAIM_UNAVAILABLE,
+    error_codes::MATCH_CODE_MISMATCH,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vetting/session:unknownRequest`
+    ///
+    /// This vetter holds no accepted vetting request from this applicant with the named requestId.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_REQUEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/session:unknownRequest",
+        retryable: false,
+    };
+    /// `vetting/session:claimUnavailable`
+    ///
+    /// The applicant cannot, or will not, present a claim the session requires.
+    ///
+    /// Declared `retryable: false`.
+    pub const CLAIM_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/session:claimUnavailable",
+        retryable: false,
+    };
+    /// `vetting/session:matchCodeMismatch`
+    ///
+    /// The applicant's agent derives a different match code from the one the vetter reads out, so the session the applicant received is not the one the vetter opened. The vetter may open a fresh session.
+    ///
+    /// Declared `retryable: true`.
+    pub const MATCH_CODE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vetting/session:matchCodeMismatch",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

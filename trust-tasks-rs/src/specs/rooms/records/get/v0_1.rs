@@ -1534,3 +1534,55 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_AUTHORIZED,
+    error_codes::NOT_FOUND,
+    error_codes::CHAIN_TOO_DEEP,
+    error_codes::SUBJECT_BINDING_MISSING,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/records/get:notAuthorized`
+    ///
+    /// The presentation does not confer `read` at this room's scope, or its chain does not reach the room.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/get:notAuthorized",
+        retryable: false,
+    };
+    /// `rooms/records/get:notFound`
+    ///
+    /// No record with that key in this room.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/get:notFound",
+        retryable: false,
+    };
+    /// `rooms/records/get:chainTooDeep`
+    ///
+    /// The authority chain exceeds the maximum of 8 links.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/get:chainTooDeep",
+        retryable: false,
+    };
+    /// `rooms/records/get:subjectBindingMissing`
+    ///
+    /// A `private` room presentation omitted the required same-subject proof.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_BINDING_MISSING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/get:subjectBindingMissing",
+        retryable: false,
+    };
+}

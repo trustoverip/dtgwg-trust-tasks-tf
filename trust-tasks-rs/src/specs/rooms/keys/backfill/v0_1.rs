@@ -491,6 +491,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_A_MEMBER,
+    error_codes::HOST_UNREACHABLE,
+    error_codes::HOST_REFUSED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/keys/backfill:notAMember`
+    ///
+    /// The recipient holds no group state for this room, so there is nothing for the rungs to extend and no credentials to present.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/backfill:notAMember",
+        retryable: false,
+    };
+    /// `rooms/keys/backfill:hostUnreachable`
+    ///
+    /// The named host could not be resolved, advertises no transport this recipient speaks, or did not answer.
+    ///
+    /// Declared `retryable: true`.
+    pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/backfill:hostUnreachable",
+        retryable: true,
+    };
+    /// `rooms/keys/backfill:hostRefused`
+    ///
+    /// The host answered and declined. Its own reason is carried in `details`; the commonest is that this host does not serve the named room.
+    ///
+    /// Declared `retryable: false`.
+    pub const HOST_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/backfill:hostRefused",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

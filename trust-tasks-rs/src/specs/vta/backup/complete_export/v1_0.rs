@@ -532,6 +532,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::TERMINAL_STATE];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/backup/complete-export:notFound`
+    ///
+    /// The recipient holds no export bundle under this identifier that this producer may act on. Deliberately conflates "no such bundle", "not an export bundle", and "not yours" — see Correlation.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/complete-export:notFound",
+        retryable: false,
+    };
+    /// `vta/backup/complete-export:terminalState`
+    ///
+    /// The bundle was already aborted or expired, so there is nothing to acknowledge. Distinct from a second acknowledgement of a completed bundle, which succeeds.
+    ///
+    /// Declared `retryable: false`.
+    pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/complete-export:terminalState",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

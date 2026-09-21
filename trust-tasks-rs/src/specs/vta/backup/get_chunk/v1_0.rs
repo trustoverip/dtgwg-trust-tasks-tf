@@ -816,6 +816,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::CHUNK_OUT_OF_RANGE,
+    error_codes::TERMINAL_STATE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/backup/get-chunk:notFound`
+    ///
+    /// The recipient holds no live chunked export bundle under this identifier that this producer may act on. Deliberately conflates "no such bundle", "an import bundle", "a stream bundle", and "not yours" — see Correlation.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/get-chunk:notFound",
+        retryable: false,
+    };
+    /// `vta/backup/get-chunk:chunkOutOfRange`
+    ///
+    /// `index` is not below the bundle's `chunkCount`. Returned only to the bundle's creator, who already holds the manifest, so it discloses nothing.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHUNK_OUT_OF_RANGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/get-chunk:chunkOutOfRange",
+        retryable: false,
+    };
+    /// `vta/backup/get-chunk:terminalState`
+    ///
+    /// The bundle was acknowledged with complete-export, aborted, or has expired. Nothing more will be served under this identifier; a new export is needed.
+    ///
+    /// Declared `retryable: false`.
+    pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/get-chunk:terminalState",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

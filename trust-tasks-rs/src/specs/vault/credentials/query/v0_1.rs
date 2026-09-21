@@ -1391,6 +1391,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::FILTER_REQUIRED];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/credentials/query:filterRequired`
+    ///
+    /// The filter carried no constraint the maintainer can scan on. An unconstrained query would enumerate the consumer's whole vault, so it is refused rather than answered. `includeArchived` and `includeDeleted` are modifiers and do not satisfy this requirement on their own.
+    ///
+    /// Declared `retryable: false`.
+    pub const FILTER_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/credentials/query:filterRequired",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

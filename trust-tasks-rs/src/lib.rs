@@ -76,8 +76,8 @@ pub use consume::{
 pub use dispatcher::Dispatcher;
 pub use document::{trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask};
 pub use error::{
-    ErrorPayload, InResponseTo, ParseCodeError, RejectReason, StandardCode, TrustTaskCode,
-    IDENTITY_MISMATCH_WIRE_MESSAGE, PROOF_INVALID_WIRE_MESSAGE, STALE_WIRE_MESSAGE,
+    DeclaredErrorCode, ErrorPayload, InResponseTo, ParseCodeError, RejectReason, StandardCode,
+    TrustTaskCode, IDENTITY_MISMATCH_WIRE_MESSAGE, PROOF_INVALID_WIRE_MESSAGE, STALE_WIRE_MESSAGE,
     UNAVAILABLE_WIRE_MESSAGE, WRONG_RECIPIENT_WIRE_MESSAGE,
 };
 pub use freshness::{FreshnessPolicy, StaleReason, DEFAULT_MAX_AGE, DEFAULT_SKEW};

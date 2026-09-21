@@ -1942,6 +1942,88 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CHALLENGE_UNKNOWN,
+    error_codes::CHALLENGE_EXPIRED,
+    error_codes::SUBJECT_MISMATCH,
+    error_codes::APPROVER_UNAUTHORIZED,
+    error_codes::ACR_UNSATISFIED,
+    error_codes::ASSERTION_INVALID,
+    error_codes::NO_GATE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/step-up/approve-response:challengeUnknown`
+    ///
+    /// The relying party has no pending step-up matching the echoed challenge.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:challengeUnknown",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-response:challengeExpired`
+    ///
+    /// The matching step-up has expired.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:challengeExpired",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-response:subjectMismatch`
+    ///
+    /// The echoed `payload.subject` does not equal the session's subject, or the proof's verificationMethod DID does not equal the document's issuer (the signer is not the named approver).
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:subjectMismatch",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-response:approverUnauthorized`
+    ///
+    /// The document's issuer is neither the subject (self step-up) nor an approver the relying party authorized to ratify step-ups for the subject (delegated step-up).
+    ///
+    /// Declared `retryable: false`.
+    pub const APPROVER_UNAUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:approverUnauthorized",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-response:acrUnsatisfied`
+    ///
+    /// The grantedAcr is below the targetAcr the relying party originally requested.
+    ///
+    /// Declared `retryable: false`.
+    pub const ACR_UNSATISFIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:acrUnsatisfied",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-response:assertionInvalid`
+    ///
+    /// The WebAuthn assertion carried in `evidence` failed verification. `details.reason` carries a machine-readable hint.
+    ///
+    /// Declared `retryable: false`.
+    pub const ASSERTION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:assertionInvalid",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-response:noGate`
+    ///
+    /// The document carried neither a verifiable framework proof (did-signed) nor a `webauthn` evidence assertion. There is no cryptographic basis to elevate.
+    ///
+    /// Declared `retryable: false`.
+    pub const NO_GATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-response:noGate",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

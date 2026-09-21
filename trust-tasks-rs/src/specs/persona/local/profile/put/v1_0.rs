@@ -1637,3 +1637,35 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::REFERENCE_NOT_PERMITTED,
+    error_codes::DUPLICATE_SLOT,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/local/profile/put:referenceNotPermitted`
+    ///
+    /// An entry attempted to reference a pool attribute. Local profiles are inline-only, and honouring a reference would let a context-authored object acquire pool reach.
+    ///
+    /// Declared `retryable: false`.
+    pub const REFERENCE_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/local/profile/put:referenceNotPermitted",
+        retryable: false,
+    };
+    /// `persona/local/profile/put:duplicateSlot`
+    ///
+    /// Two entries carry the same `slot`. The details name the slot. A slot answers one question with one entry, so the profile is not written.
+    ///
+    /// Declared `retryable: false`.
+    pub const DUPLICATE_SLOT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/local/profile/put:duplicateSlot",
+        retryable: false,
+    };
+}

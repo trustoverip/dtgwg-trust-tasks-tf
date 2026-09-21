@@ -440,6 +440,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::UNKNOWN_ACCOUNT, error_codes::PROTECTED_ACCOUNT];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `messaging/account/remove:unknownAccount`
+    ///
+    /// The target DID has no account at this mediator.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/account/remove:unknownAccount",
+        retryable: false,
+    };
+    /// `messaging/account/remove:protectedAccount`
+    ///
+    /// The target account is protected (a mediator or rootAdmin account) and cannot be removed.
+    ///
+    /// Declared `retryable: false`.
+    pub const PROTECTED_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/account/remove:protectedAccount",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

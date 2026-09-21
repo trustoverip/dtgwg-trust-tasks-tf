@@ -879,6 +879,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_ALREADY_ENROLLED,
+    error_codes::ROLE_NOT_PERMITTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/enroll/invite:subjectAlreadyEnrolled`
+    ///
+    /// The invitee VID already has a passkey credential on file. Use auth/passkey/enroll/start (with the existing session) instead.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/enroll/invite:subjectAlreadyEnrolled",
+        retryable: false,
+    };
+    /// `auth/passkey/enroll/invite:roleNotPermitted`
+    ///
+    /// The administrator's authority does not allow assigning the requested role.
+    ///
+    /// Declared `retryable: false`.
+    pub const ROLE_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/enroll/invite:roleNotPermitted",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

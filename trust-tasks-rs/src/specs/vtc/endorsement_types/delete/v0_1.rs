@@ -488,6 +488,35 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::NOT_FOUND, error_codes::IN_USE];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/endorsement-types/delete:notFound`
+    ///
+    /// No endorsement type with the supplied typeUri is registered.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsement-types/delete:notFound",
+        retryable: false,
+    };
+    /// `vtc/endorsement-types/delete:inUse`
+    ///
+    /// Something still references this type — a live endorsement of it, an admission criterion requiring statements of it, or both. `details` says which, and a consumer that can determine both SHOULD report both rather than making the caller clear one and discover the other.
+    ///
+    /// Declared `retryable: false`.
+    pub const IN_USE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsement-types/delete:inUse",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

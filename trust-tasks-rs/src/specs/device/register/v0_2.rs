@@ -2163,6 +2163,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NO_PENDING_ENROLMENT,
+    error_codes::ATTESTATION_FAILED,
+    error_codes::ALREADY_REGISTERED,
+    error_codes::HPKE_KEY_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `device/register:noPendingEnrolment`
+    ///
+    /// The producer's DID is not the result of a recent provision-integration + acl/swap-key flow. Registration cannot proceed without first being granted via the maintainer's normal enrolment path.
+    ///
+    /// Declared `retryable: false`.
+    pub const NO_PENDING_ENROLMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/register:noPendingEnrolment",
+        retryable: false,
+    };
+    /// `device/register:attestationFailed`
+    ///
+    /// The supplied device attestation could not be verified against the platform's attestation infrastructure.
+    ///
+    /// Declared `retryable: false`.
+    pub const ATTESTATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/register:attestationFailed",
+        retryable: false,
+    };
+    /// `device/register:alreadyRegistered`
+    ///
+    /// A DeviceBinding for this consumer DID already exists. Re-registration is rejected; the consumer SHOULD swap to a fresh key via acl/swap-key and retry.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/register:alreadyRegistered",
+        retryable: false,
+    };
+    /// `device/register:hpkeKeyInvalid`
+    ///
+    /// The `hpkePublicKey` is not a valid X25519 did:key.
+    ///
+    /// Declared `retryable: false`.
+    pub const HPKE_KEY_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/register:hpkeKeyInvalid",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

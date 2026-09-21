@@ -231,6 +231,27 @@ function rustPolicy(src, ident) {
   };
 }
 
+/**
+ * The declared error codes a generated Rust module ships, in `ERROR_CODES`
+ * order, as `{ code, retryable }`. `null` when the module has no
+ * `ERROR_CODES` at all.
+ *
+ * Read off the slice and resolved through the `error_codes` submodule's
+ * constants, so a constant that exists but is left out of the slice — or a
+ * slice naming one twice — is a disagreement rather than a pass.
+ */
+function rustErrorCodes(src) {
+  const slice = /pub const ERROR_CODES: &\[crate::DeclaredErrorCode\] =\s*&\[([^\]]*)\];/.exec(src);
+  if (!slice) return null;
+  const consts = new Map();
+  const constRe =
+    /pub const ([A-Z][A-Z0-9_]*): crate::DeclaredErrorCode = crate::DeclaredErrorCode \{\s*code:\s*"([^"]+)",\s*retryable:\s*(true|false),?\s*\}/g;
+  for (const m of src.matchAll(constRe)) consts.set(m[1], { code: m[2], retryable: m[3] === "true" });
+  return [...slice[1].matchAll(/error_codes::([A-Z][A-Z0-9_]*)/g)].map(
+    (m) => consts.get(m[1]) ?? { code: `<unresolved error_codes::${m[1]}>`, retryable: null },
+  );
+}
+
 /** The fields inside `var <name> = trusttasks.SpecPolicy{ … }`. */
 function goPolicy(src, name) {
   const block = new RegExp(`var ${name} = trusttasks\\.SpecPolicy\\{([\\s\\S]*?)\\n\\}`, "m").exec(src);
@@ -464,6 +485,7 @@ const seenTs = new Set();
 const seenRs = new Set();
 const seenGo = new Set();
 const seenDart = new Set();
+let rustErrorCodesChecked = 0;
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
 const rustHandWrittenSrc = (function read(dir, acc = []) {
@@ -691,6 +713,25 @@ for (const spec of specs) {
     comparePolicy(where, "request", expected.request, reqPolicy, "Rust");
     if (hasResponse && respPolicy) {
       comparePolicy(where, "response", expected.response, respPolicy, "Rust");
+    }
+
+    // SPEC §7.3 item 9: the extended error codes the specification declares.
+    // Only the Rust generator emits them so far, so this compares Rust against
+    // the front matter directly — re-derived here, not imported from the
+    // generator, for the reason in the header note.
+    const expectedCodes = (meta.errorCodes || []).map((c) => ({ code: c.code, retryable: c.retryable }));
+    const rustCodes = rustErrorCodes(rs.src);
+    if (!rustCodes) {
+      fail(where, `the Rust module exports no ERROR_CODES — the specification's declared error codes are unreachable.`);
+    } else if (stableJson(rustCodes) !== stableJson(expectedCodes)) {
+      fail(
+        where,
+        `Rust ERROR_CODES is ${JSON.stringify(rustCodes)}, but the front matter declares ` +
+          `${JSON.stringify(expectedCodes)} (SPEC §7.3 item 9). A consumer checking the codes it emits ` +
+          `against ERROR_CODES would be checking them against the wrong list.`,
+      );
+    } else {
+      rustErrorCodesChecked += rustCodes.length;
     }
 
     /* — The four shipped schemas must be the same document — */
@@ -940,5 +981,6 @@ if (problems.length > 0) {
 console.log(
   `Bindings conformance: ${specs.length} specifications checked against ` +
     `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
-    `${dartByUri.size} Dart modules — all agree.`,
+    `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes ` +
+    `match Rust ERROR_CODES.`,
 );

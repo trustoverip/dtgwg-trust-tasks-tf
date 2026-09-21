@@ -2027,6 +2027,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNTRUSTED_ISSUER,
+    error_codes::NOT_ELIGIBLE,
+    error_codes::NO_SURFACE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `task-consent/request:untrustedIssuer`
+    ///
+    /// The request was not signed by an executor this device is enrolled with. The device MUST NOT prompt.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNTRUSTED_ISSUER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/request:untrustedIssuer",
+        retryable: false,
+    };
+    /// `task-consent/request:notEligible`
+    ///
+    /// This device is not a member of the named `approverSet`, or is the `requester` while `excludeRequester` is set.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_ELIGIBLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/request:notEligible",
+        retryable: false,
+    };
+    /// `task-consent/request:noSurface`
+    ///
+    /// The device has no consent surface available (headless, locked, or backgrounded past its wake budget).
+    ///
+    /// Declared `retryable: true`.
+    pub const NO_SURFACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/request:noSurface",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

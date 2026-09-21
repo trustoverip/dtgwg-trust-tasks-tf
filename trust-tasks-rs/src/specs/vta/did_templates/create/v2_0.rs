@@ -1605,6 +1605,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::DUPLICATE_NAME, error_codes::CONTEXT_NOT_FOUND];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/did-templates/create:duplicateName`
+    ///
+    /// A template with this name already exists in the selected scope. Use update to replace it.
+    ///
+    /// Declared `retryable: false`.
+    pub const DUPLICATE_NAME: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/did-templates/create:duplicateName",
+        retryable: false,
+    };
+    /// `vta/did-templates/create:contextNotFound`
+    ///
+    /// The context named by contextId does not exist.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/did-templates/create:contextNotFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

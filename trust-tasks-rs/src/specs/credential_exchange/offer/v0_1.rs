@@ -244,6 +244,26 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/offer/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Issuer to holder: an OID4VCI Credential Offer. Opens the issuance thread; the holder replies with credential-exchange/request.\",\n  \"properties\": {\n    \"credential_offer\": {\n      \"description\": \"An OID4VCI Credential Offer object, carried verbatim. Its members are defined by OpenID for Verifiable Credential Issuance and are deliberately NOT re-specified here — this task is the transport, authentication and threading envelope, and re-stating a foreign specification's shape would create a second source of truth that drifts. snake_case member names are OID4VCI's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"credential_offer\"\n  ],\n  \"title\": \"Credential Exchange Offer — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::UNSUPPORTED_CREDENTIAL];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `credential-exchange/offer:unsupportedCredential`
+    ///
+    /// The holder cannot accept any credential configuration named in the offer.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNSUPPORTED_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/offer:unsupportedCredential",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

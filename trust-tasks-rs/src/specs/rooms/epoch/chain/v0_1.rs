@@ -689,6 +689,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::FORBIDDEN];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/epoch/chain:notFound`
+    ///
+    /// No room with this identifier is served here.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/epoch/chain:notFound",
+        retryable: false,
+    };
+    /// `rooms/epoch/chain:forbidden`
+    ///
+    /// The presentation does not confer `read` at this room's scope, does not verify, or was not made to the party that signed the request.
+    ///
+    /// Declared `retryable: false`.
+    pub const FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/epoch/chain:forbidden",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

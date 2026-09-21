@@ -865,6 +865,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::RESERVED,
+    error_codes::EXISTS,
+    error_codes::INVALID_URI,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/endorsement-types/register:reserved`
+    ///
+    /// The typeUri is a workspace-reserved URI (e.g. CommunityRole) and cannot be registered.
+    ///
+    /// Declared `retryable: false`.
+    pub const RESERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsement-types/register:reserved",
+        retryable: false,
+    };
+    /// `vtc/endorsement-types/register:exists`
+    ///
+    /// An endorsement type with this typeUri is already registered.
+    ///
+    /// Declared `retryable: false`.
+    pub const EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsement-types/register:exists",
+        retryable: false,
+    };
+    /// `vtc/endorsement-types/register:invalidUri`
+    ///
+    /// The typeUri is empty or exceeds 512 bytes.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_URI: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsement-types/register:invalidUri",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

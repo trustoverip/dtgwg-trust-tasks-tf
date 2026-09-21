@@ -2391,3 +2391,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_BOUND,
+    error_codes::RENDERER_UNAVAILABLE,
+    error_codes::RENDERER_CANNOT_CARRY,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/disclosure/preview:notBound`
+    ///
+    /// The persona has no profile bound, so there is nothing to disclose. A normal condition rather than a fault — a persona need not have a profile.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/disclosure/preview:notBound",
+        retryable: false,
+    };
+    /// `persona/disclosure/preview:rendererUnavailable`
+    ///
+    /// The requested renderer is not offered by this maintainer. The available renderers are enumerable, so a producer discovers rather than guesses.
+    ///
+    /// Declared `retryable: false`.
+    pub const RENDERER_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/disclosure/preview:rendererUnavailable",
+        retryable: false,
+    };
+    /// `persona/disclosure/preview:rendererCannotCarry`
+    ///
+    /// The requested renderer cannot represent a claim in the disclosure — most commonly a predicate, which has no value to render. Failing here at format negotiation is deliberate; silently dropping the claim would produce a disclosure that verifies and says less than the holder approved.
+    ///
+    /// Declared `retryable: false`.
+    pub const RENDERER_CANNOT_CARRY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/disclosure/preview:rendererCannotCarry",
+        retryable: false,
+    };
+}

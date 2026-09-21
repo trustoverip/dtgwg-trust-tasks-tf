@@ -2374,3 +2374,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::VERSION_CONFLICT,
+    error_codes::VALUE_TYPE_MISMATCH,
+    error_codes::CREDENTIAL_NOT_FOUND,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/attribute/put:versionConflict`
+    ///
+    /// The `expectedVersion` precondition failed. The details carry the maintainer's current version and value, so the caller can resolve without a re-read.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/attribute/put:versionConflict",
+        retryable: false,
+    };
+    /// `persona/attribute/put:valueTypeMismatch`
+    ///
+    /// The supplied `value` does not agree with the declared `valueType`.
+    ///
+    /// Declared `retryable: false`.
+    pub const VALUE_TYPE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/attribute/put:valueTypeMismatch",
+        retryable: false,
+    };
+    /// `persona/attribute/put:credentialNotFound`
+    ///
+    /// A `credentialBacked` provenance names a credential the vault does not hold, or holds in a state it cannot be derived from. The attribute is not written — an attribute whose backing cannot be resolved at write time would read back stale forever.
+    ///
+    /// Declared `retryable: false`.
+    pub const CREDENTIAL_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/attribute/put:credentialNotFound",
+        retryable: false,
+    };
+}
