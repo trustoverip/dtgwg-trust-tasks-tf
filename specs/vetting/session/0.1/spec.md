@@ -48,6 +48,19 @@ exposure:
 retention:
   class: durable
   rationale: "This document's `id` is what a Vetting Statement carries as `taskContext`, and its content is what the statement's task digest is computed over, so an applicant retains it for as long as it holds the statement. The card inside the response is not durable: the vetter keeps it only as long as its own retention policy allows, and afterwards at most its digest, which the statement already carries."
+outcomeEvidence:
+  response: https://trusttasks.org/spec/vetting/session/0.1#response
+  binding:
+    challenge:
+      initiating: /payload/challenge
+      response: /payload/card/challenge
+  rationale: >-
+    A Vetting Statement cites this document as its taskContext. The applicant's
+    card reproduces this session's challenge, fresh for the session and never
+    reused, under the applicant's signature. The challenge form is permitted
+    (SPEC §7.3 item 20.5.2) because this specification requires the statement's
+    issuer to be the session's issuer — the vetter who minted the challenge is
+    the party whose word the statement already rests on.
 errorCodes:
   - code: vetting/session:unknownRequest
     meaning: This vetter holds no accepted vetting request from this applicant with the named requestId.

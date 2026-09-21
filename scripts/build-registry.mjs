@@ -628,6 +628,81 @@ function checkIssuedAtFloor(meta, rel, hasResponse) {
 }
 
 /*
+ * SPEC §7.3 item 20 — outcome evidence. The declaration is made by the spec
+ * governing an exchange's *initiating* document and names a success response,
+ * which may be another spec's (a session opened under one and completed by a
+ * task on its thread under another). The build checks what front matter can
+ * show: the declared response exists and meets items 20.1-20.3, retention is
+ * `durable` (20.4, a SHOULD, so a warning), the initiating document is
+ * addressed by a REQUIRED `recipient` on a non-bearer spec (check 4 of §4.9.4
+ * identifies the responder by it), and each binding pointer (20.5) names a
+ * member the relevant payload schema declares.
+ *
+ * The pointer check descends only as far as the schema is transparent: an
+ * opaque object or a `$ref` ends it, and the pointer is accepted from there.
+ * Whether the challenge form's issuer condition (20.5.2) holds is a property of
+ * the spec's prose, not its front matter; the meta-schema requires the
+ * rationale to say where it holds.
+ */
+function pointerDeclared(pointer, schema) {
+  const segments = pointer.split('/').slice(2).map((t) => t.replace(/~1/g, '/').replace(/~0/g, '~'));
+  let node = schema;
+  for (const seg of segments) {
+    if (!node || node.$ref || !node.properties) return true;
+    if (!(seg in node.properties)) return node.additionalProperties !== false;
+    node = node.properties[seg];
+  }
+  return true;
+}
+
+function checkOutcomeEvidence(specIndex) {
+  let declared = 0;
+  for (const { meta, schema, rel } of specIndex.values()) {
+    const oe = meta.outcomeEvidence;
+    if (!oe) continue;
+    declared++;
+    const loc = `${rel}/spec.md`;
+    const m = /^https:\/\/trusttasks\.org\/spec\/(.+)\/(\d+\.\d+)#response$/.exec(oe.response);
+    const target = m && specIndex.get(`${m[1]}@${m[2]}`);
+    if (!target) {
+      fail(loc, `outcomeEvidence.response '${oe.response}' names no specification in this registry (SPEC §7.3 item 20)`);
+      continue;
+    }
+    const responseSchema = target.schema.$defs?.Response;
+    if (!responseSchema) {
+      fail(loc, `outcomeEvidence.response names ${target.rel}, which defines no success response payload (SPEC §7.3 item 20.1)`);
+    }
+    if (resolveProofRequirement(target.meta).response !== 'REQUIRED') {
+      fail(loc, `outcomeEvidence.response names ${target.rel}, whose response proofRequirement is not REQUIRED (SPEC §7.3 item 20.2)`);
+    }
+    if (resolveIssuedAtRequirement(target.meta).response !== 'REQUIRED') {
+      fail(loc, `outcomeEvidence.response names ${target.rel}, whose response issuedAtRequirement is not REQUIRED (SPEC §7.3 item 20.3)`);
+    }
+    if (target.meta.retention?.class !== 'durable') {
+      warn(`${loc}: outcomeEvidence.response names ${target.rel}, whose retention class is not 'durable' — SPEC §7.3 item 20.4 says it SHOULD be`);
+    }
+    if (meta.bearer) {
+      fail(loc, `a bearer specification cannot declare outcomeEvidence: its initiating document need not name a recipient, and §4.9.4 check 4 identifies the responder by it (SPEC §7.3 item 20)`);
+    }
+    const recipient = (meta.parties || []).find((p) => p?.member === 'recipient');
+    if (!recipient || recipient.requirement !== 'REQUIRED') {
+      fail(loc, `outcomeEvidence requires the initiating document to carry a REQUIRED recipient party (SPEC §7.3 item 20; §4.9.4 check 4)`);
+    }
+    const b = oe.binding;
+    const requestSchema = schema.$defs?.Request ?? schema;
+    const pointers = b.challenge
+      ? [[b.challenge.initiating, requestSchema, rel], [b.challenge.response, responseSchema, target.rel]]
+      : [[b.id, responseSchema, target.rel], [b.taskDigest, responseSchema, target.rel]];
+    for (const [pointer, s, owner] of pointers) {
+      if (s && !pointerDeclared(pointer, s)) {
+        fail(loc, `outcomeEvidence binding pointer '${pointer}' names no member declared by ${owner}'s payload schema (SPEC §7.3 item 20.5)`);
+      }
+    }
+  }
+  console.log(`  Outcome evidence (§7.3 item 20): ${declared} spec(s) declare outcomeEvidence`);
+}
+
+/*
  * `parties[].identifierScope: public` (framework 0.5.0) narrows the privacy
  * properties available to every producer of the task: it says the counterparty
  * must be able to recognise the same identifier it sees elsewhere, which
@@ -1863,6 +1938,9 @@ function main() {
 
   const tasks = [];
   const seen = new Set();
+  // Every spec that passed its payload-schema check, for the cross-spec checks run
+  // after the loop (checkOutcomeEvidence).
+  const specIndex = new Map();
   let disclosureFloorOffenders = 0;
   // SPEC §7.3 item 17 — see checkIssuedAtFloor. The count is still reported as
   // one line rather than one message per spec, but it is now a line that reads
@@ -1913,6 +1991,7 @@ function main() {
     seen.add(idKey);
     const schema = checkPayloadSchema(slug, version, dir);
     if (!schema) continue;
+    specIndex.set(idKey, { meta, schema, rel });
     checkProofFloor(meta, rel, Boolean(schema.$defs?.Response));
     checkFreeTextBounds(meta, schema, rel);
     const freshness = checkIssuedAtFloor(meta, rel, Boolean(schema.$defs?.Response));
@@ -1950,6 +2029,7 @@ function main() {
     tasks.push(buildTask(entry, { ...meta, errorCodes: details.errorCodes }, schema, uses));
   }
 
+  checkOutcomeEvidence(specIndex);
   console.log(
     `  Exposure floor: ${disclosureFloorOffenders} spec(s) declare exposure.discloses: none ` +
       `while returning released material` +

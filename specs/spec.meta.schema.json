@@ -410,6 +410,84 @@
       },
       "description": "Retention class per framework 0.5.0 \u2014 the third descriptive dimension alongside `sideEffects` (integrity) and `exposure` (confidentiality and agency): how long what the recipient receives is expected to live. OPTIONAL and SHOULD-strength, so no existing specification is invalidated by its introduction; unlike `sideEffects` and `exposure` it is deliberately NOT in `required`.\n\nDESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as the other two: it states what the task's design assumes, never what a data-protection regime obliges a deployment to do, and a specification MUST NOT derive a consent or approval requirement from it. A consumer MUST treat an absent or unrecognized declaration as `durable` \u2014 the conservative reading, and the only one that cannot understate what a recipient is holding by omission."
     },
+    "outcomeEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "response",
+        "binding",
+        "rationale"
+      ],
+      "properties": {
+        "response": {
+          "type": "string",
+          "pattern": "^https://trusttasks\\.org/spec/[a-z0-9/-]+/[0-9]+\\.[0-9]+#response$",
+          "description": "The Type URI, with its `#response` fragment, of the success response that constitutes this exchange's outcome evidence (SPEC \u00a77.3 item 20). May be this specification's own response, or the response to a task conducted on this exchange's thread under another specification (item 20, the multi-specification case)."
+        },
+        "binding": {
+          "description": "How the declared response is bound to the initiating document under its own proof (SPEC \u00a77.3 item 20.5). Exactly one form.",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "taskDigest"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^/payload/",
+                  "description": "Member of the declared response carrying the initiating document's `id`. A JSON Pointer (RFC 6901) evaluated against the root of the Trust Task document that carries the member, so every binding pointer starts at `/payload/`."
+                },
+                "taskDigest": {
+                  "type": "string",
+                  "pattern": "^/payload/",
+                  "description": "Member of the declared response carrying the initiating document's task digest (SPEC \u00a74.9.3). A JSON Pointer (RFC 6901) evaluated against the root of the Trust Task document that carries the member, so every binding pointer starts at `/payload/`."
+                }
+              },
+              "description": "Item 20.5.1 \u2014 the initiating document's id and task digest. The form every specification may use."
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "challenge"
+              ],
+              "properties": {
+                "challenge": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "initiating",
+                    "response"
+                  ],
+                  "properties": {
+                    "initiating": {
+                      "type": "string",
+                      "pattern": "^/payload/",
+                      "description": "Member of the initiating document that freshly supplies the unguessable value. A JSON Pointer (RFC 6901) evaluated against the root of the Trust Task document that carries the member, so every binding pointer starts at `/payload/`."
+                    },
+                    "response": {
+                      "type": "string",
+                      "pattern": "^/payload/",
+                      "description": "Member of the declared response that reproduces it. A JSON Pointer (RFC 6901) evaluated against the root of the Trust Task document that carries the member, so every binding pointer starts at `/payload/`."
+                    }
+                  }
+                }
+              },
+              "description": "Item 20.5.2 \u2014 a fresh value the initiating document supplied. Permitted ONLY where this specification requires the initiating document's producer to be the issuer of the citing artifact; the rationale must say where it does."
+            }
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What cites this exchange, and \u2014 for the challenge form \u2014 where this specification requires the initiating document's producer to issue the citing artifact."
+        }
+      },
+      "description": "Outcome evidence declaration per SPEC \u00a77.3 item 20 and \u00a74.9.4. Declared by the specification governing an exchange's INITIATING document, and only by a specification whose exchanges are cited from outside the framework as evidence that an event occurred. OPTIONAL: a specification that declares nothing cannot be cited as evidence of completion \u2014 a consumer treats every citation of it as not evidencing completion."
+    },
     "errorCodes": {
       "type": "array",
       "items": {
