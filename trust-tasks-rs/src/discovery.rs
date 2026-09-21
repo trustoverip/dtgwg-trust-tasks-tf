@@ -1,7 +1,11 @@
-//! Helpers for the `trust-task-discovery/0.1` exchange.
+//! Helpers for the `trust-task-discovery` exchange, versions 0.1 and 0.2.
 //!
-//! This module is the framework crate's companion to the registry spec
-//! at `specs/trust-task-discovery/0.1`. It supplies:
+//! This module is the framework crate's companion to the registry specs
+//! at `specs/trust-task-discovery/0.1` and `0.2`. The two differ only in
+//! the response's `frameworkVersion`: 0.1 admits `MAJOR.MINOR`, 0.2 the
+//! framework's full `MAJOR.MINOR.PATCH` (SPEC §5.1.1). A responder answers
+//! each version in the version it was asked — [`DiscoveryRegistry::respond_to`]
+//! for 0.1, [`DiscoveryRegistry::respond_to_v0_2`] for 0.2. It supplies:
 //!
 //! * [`match_slug`] / [`query_matches`] — the slug-glob matcher in
 //!   primitive form, useful when integrating discovery into an existing
@@ -36,15 +40,31 @@ use std::iter::FromIterator;
 
 use crate::payload::Payload;
 use crate::specs::trust_task_discovery::v0_1 as wire;
+use crate::specs::trust_task_discovery::v0_2 as wire_v0_2;
 use crate::type_uri::TypeUri;
 
-/// Optional framework version this registry advertises in its discovery
-/// responses. Per SPEC §4.5.1 + §5.2 + the `trust-task-discovery/0.1` spec,
-/// the response payload's `frameworkVersion` is OPTIONAL in 0.1 and
-/// RECOMMENDED in future revisions. The default is `"0.2"` because that's
-/// the framework version this crate targets; callers MAY override or
-/// clear it.
-const DEFAULT_FRAMEWORK_VERSION: &str = "0.2";
+/// Framework release this registry advertises in its discovery responses by
+/// default: the newest one whose envelope this crate's generated types
+/// include. Callers MAY override or clear it. It is held three-part (SPEC
+/// §5.1.1) and written in whichever form the answered version admits — the
+/// full value in a 0.2 response, its `MAJOR.MINOR` in a 0.1 response.
+const DEFAULT_FRAMEWORK_VERSION: &str = "0.6.0";
+
+/// `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`, split into its numeric parts. A
+/// caller-supplied value in neither form yields `None`.
+fn framework_version_parts(v: &str) -> Option<(u64, u64, u64)> {
+    let mut parts = v.split('.');
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    let patch = match parts.next() {
+        Some(p) => p.parse().ok()?,
+        None => 0,
+    };
+    if parts.next().is_some() {
+        return None;
+    }
+    Some((major, minor, patch))
+}
 
 /// Match a single glob `pattern` against a `slug`, per the
 /// `trust-task-discovery/0.1` pattern grammar:
@@ -104,15 +124,16 @@ pub struct DiscoveryRegistry {
     /// entry here use the expanded form so producers see the requirement
     /// before the wire trip.
     required_ext: BTreeMap<String, BTreeSet<String>>,
-    /// MAJOR.MINOR framework version advertised in the response payload's
+    /// Framework release advertised in the response payload's
     /// `frameworkVersion` field. `None` suppresses the field (caller opted
-    /// out); `Some` is emitted verbatim. Defaults to the crate's target.
+    /// out). Defaults to the crate's target. Accepted two- or three-part; a
+    /// two-part `M.N` is the release `M.N.0` (SPEC §5.1.1).
     framework_version: Option<String>,
 }
 
 impl DiscoveryRegistry {
-    /// New empty registry that advertises `frameworkVersion = "0.1"` in
-    /// responses. Use [`Self::framework_version`] / [`Self::no_framework_version`]
+    /// New empty registry that advertises the crate's target framework
+    /// release (`0.6.0`) in responses. Use [`Self::framework_version`] / [`Self::no_framework_version`]
     /// to change or suppress the advertised value.
     pub fn new() -> Self {
         Self {
@@ -123,14 +144,15 @@ impl DiscoveryRegistry {
 
     /// Override the `frameworkVersion` advertised in the response payload.
     /// Most consumers should leave this at the default — the registry
-    /// emits the framework version this crate targets.
+    /// emits the framework version this crate targets. Pass the release
+    /// three-part (`"0.6.0"`); a two-part value is read as its `.0`.
     pub fn framework_version(mut self, version: impl Into<String>) -> Self {
         self.framework_version = Some(version.into());
         self
     }
 
     /// Suppress the `frameworkVersion` field in the response payload.
-    /// The field is OPTIONAL in 0.1; callers who want to remain silent
+    /// The field is OPTIONAL in both versions; callers who want to remain silent
     /// about their framework version (e.g. for privacy reasons per
     /// SPEC §10.6) can opt out with this.
     pub fn no_framework_version(mut self) -> Self {
@@ -230,33 +252,80 @@ impl DiscoveryRegistry {
     /// are emitted in expanded form
     /// ([`wire::ResponseSupportedTypesItem::Object`]) carrying the
     /// `requiredExt` array.
+    ///
+    /// This answers `trust-task-discovery/0.1`, whose `frameworkVersion` is
+    /// `MAJOR.MINOR`: the configured release is written without its PATCH.
+    /// Answer a 0.2 query with [`Self::respond_to_v0_2`].
     pub fn respond_to(&self, query: &wire::Payload) -> wire::Response {
         // Generated `Payload` wraps each pattern in a `PayloadPatternsItem`
         // newtype; deref to &str for matching.
         let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
         let supported_types: Vec<wire::ResponseSupportedTypesItem> = self
-            .type_uris
-            .iter()
-            .filter(|uri| match parse_slug(uri) {
-                Some(slug) => query_matches(&patterns, slug),
-                None => false,
-            })
+            .matching(&patterns)
             .map(|uri| self.entry_for(uri))
             .collect();
 
-        // A `framework_version` override that doesn't match the MAJOR.MINOR
-        // pattern is omitted rather than panicking on this caller-supplied
-        // value — building a discovery response (which is advisory) must not
-        // abort on a malformed setter argument.
+        // A `framework_version` override that is not a version is omitted
+        // rather than panicking on this caller-supplied value — building a
+        // discovery response (which is advisory) must not abort on a
+        // malformed setter argument.
         let framework_version = self
             .framework_version
             .as_deref()
-            .and_then(|v| v.parse::<wire::ResponseFrameworkVersion>().ok());
+            .and_then(framework_version_parts)
+            .and_then(|(major, minor, _)| format!("{major}.{minor}").parse().ok());
 
         wire::Response {
             supported_types,
             framework_version,
         }
+    }
+
+    /// Build a response to a `trust-task-discovery/0.2` `query`: the same
+    /// matching as [`Self::respond_to`], with `frameworkVersion` written as
+    /// the full three-part release (SPEC §5.1.1) — a two-part configured
+    /// value is written as its `.0`.
+    pub fn respond_to_v0_2(&self, query: &wire_v0_2::Payload) -> wire_v0_2::Response {
+        let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
+        let supported_types: Vec<wire_v0_2::ResponseSupportedTypesItem> = self
+            .matching(&patterns)
+            .map(|uri| match self.required_ext_for(uri) {
+                Some(required_ext) => wire_v0_2::ResponseSupportedTypesItem::Object {
+                    type_: uri.to_string(),
+                    required_ext: Some(required_ext.filter_map(|ns| ns.parse().ok()).collect()),
+                },
+                None => wire_v0_2::ResponseSupportedTypesItem::Uri(uri.to_string()),
+            })
+            .collect();
+
+        let framework_version = self
+            .framework_version
+            .as_deref()
+            .and_then(framework_version_parts)
+            .and_then(|(major, minor, patch)| format!("{major}.{minor}.{patch}").parse().ok());
+
+        wire_v0_2::Response {
+            supported_types,
+            framework_version,
+        }
+    }
+
+    /// Registered Type URIs whose slug matches at least one of `patterns`.
+    fn matching<'a>(&'a self, patterns: &'a [&'a str]) -> impl Iterator<Item = &'a String> + 'a {
+        self.type_uris
+            .iter()
+            .filter(move |uri| match parse_slug(uri) {
+                Some(slug) => query_matches(patterns, slug),
+                None => false,
+            })
+    }
+
+    /// The `requiredExt` namespaces declared for `uri`, if any.
+    fn required_ext_for(&self, uri: &str) -> Option<impl Iterator<Item = &String>> {
+        self.required_ext
+            .get(uri)
+            .filter(|namespaces| !namespaces.is_empty())
+            .map(|namespaces| namespaces.iter())
     }
 
     fn entry_for(&self, uri: &str) -> wire::ResponseSupportedTypesItem {
@@ -414,11 +483,12 @@ mod tests {
         let response = registry.respond_to(&nothing);
         assert!(response.supported_types.is_empty());
 
-        // frameworkVersion defaults to the framework version this crate targets.
+        // frameworkVersion defaults to the framework release this crate
+        // targets, written MAJOR.MINOR because 0.1 admits nothing finer.
         let response = registry.respond_to(&wire::Payload { patterns: vec![] });
         assert_eq!(
             response.framework_version.as_ref().map(|v| v.to_string()),
-            Some("0.2".to_string())
+            Some("0.6".to_string())
         );
     }
 
@@ -440,11 +510,75 @@ mod tests {
     }
 
     #[test]
+    fn v0_2_writes_the_full_three_part_release() {
+        let registry = DiscoveryRegistry::new().with::<crate::specs::acl::grant::v0_1::Payload>();
+        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        assert_eq!(
+            response.framework_version.as_ref().map(|v| v.to_string()),
+            Some("0.6.0".to_string())
+        );
+        assert_eq!(response.supported_types.len(), 1);
+    }
+
+    #[test]
+    fn a_patch_release_survives_in_0_2_and_is_dropped_only_in_0_1() {
+        // 0.1 cannot express a PATCH; 0.2 exists so that it can.
+        let registry = DiscoveryRegistry::new().framework_version("0.6.1");
+        let v1 = registry.respond_to(&wire::Payload { patterns: vec![] });
+        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        assert_eq!(
+            v1.framework_version.map(|v| v.to_string()),
+            Some("0.6".into())
+        );
+        assert_eq!(
+            v2.framework_version.map(|v| v.to_string()),
+            Some("0.6.1".into())
+        );
+    }
+
+    #[test]
+    fn a_two_part_override_is_written_as_its_dot_zero_in_0_2() {
+        // SPEC §5.1.1: a two-part M.N is the release M.N.0.
+        let registry = DiscoveryRegistry::new().framework_version("0.5");
+        let v2 = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        assert_eq!(
+            v2.framework_version.map(|v| v.to_string()),
+            Some("0.5.0".into())
+        );
+    }
+
+    #[test]
+    fn the_0_2_schema_refuses_a_two_part_framework_version() {
+        assert!("0.6"
+            .parse::<wire_v0_2::ResponseFrameworkVersion>()
+            .is_err());
+        assert!("0.6.0"
+            .parse::<wire_v0_2::ResponseFrameworkVersion>()
+            .is_ok());
+    }
+
+    #[test]
+    fn v0_2_carries_required_ext_in_expanded_form() {
+        let grant_uri = TypeUri::canonical("acl/grant", 0, 1).unwrap();
+        let registry =
+            DiscoveryRegistry::new().with_required_ext(grant_uri, ["vnd.affinidi.webvh"]);
+        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
+        match &response.supported_types[0] {
+            wire_v0_2::ResponseSupportedTypesItem::Object { required_ext, .. } => {
+                assert_eq!(required_ext.as_ref().map(Vec::len), Some(1));
+            }
+            other => panic!("expected expanded Object form, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn malformed_framework_version_override_is_omitted_not_panicked() {
         // A caller-supplied override that doesn't match MAJOR.MINOR must not
         // panic when the response is built (M6); the field is simply omitted.
         let registry = DiscoveryRegistry::new().framework_version("not-a-version");
         let response = registry.respond_to(&wire::Payload { patterns: vec![] });
+        assert!(response.framework_version.is_none());
+        let response = registry.respond_to_v0_2(&wire_v0_2::Payload { patterns: vec![] });
         assert!(response.framework_version.is_none());
     }
 

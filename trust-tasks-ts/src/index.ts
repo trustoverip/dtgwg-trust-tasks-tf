@@ -290,6 +290,7 @@ export * as TaskConsentRequest_v0_1 from "./task-consent/request/0.1/payload.js"
 export * as TrustCeremonyReceipt_v0_1 from "./trust-ceremony-receipt/0.1/payload.js";
 export * as TrustTaskControl_v0_1 from "./trust-task-control/0.1/payload.js";
 export * as TrustTaskDiscovery_v0_1 from "./trust-task-discovery/0.1/payload.js";
+export * as TrustTaskDiscovery_v0_2 from "./trust-task-discovery/0.2/payload.js";
 export * as TrustTaskError_v0_1 from "./trust-task-error/0.1/payload.js";
 export * as TrustTaskError_v0_2 from "./trust-task-error/0.2/payload.js";
 export * as TrustTaskError_v0_3 from "./trust-task-error/0.3/payload.js";

@@ -67,10 +67,11 @@ use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
     discovery::DiscoveryRegistry, document_digest, erase_verifier,
-    specs::trust_task_discovery::v0_1 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
-    ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
-    ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
-    TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
+    specs::trust_task_discovery::v0_1 as discovery,
+    specs::trust_task_discovery::v0_2 as discovery_v0_2, DocumentDigest, DynProofVerifier,
+    ErrorPayload, ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier,
+    RejectReason, ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason,
+    StandardCode, TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
@@ -474,8 +475,10 @@ impl HttpsServerBuilder {
         self
     }
 
-    /// Register a `trust-task-discovery/0.1` handler that responds with
-    /// the contents of `registry`. Combine with [`Self::on`] in any order;
+    /// Register `trust-task-discovery` handlers, for both 0.1 and 0.2, that
+    /// respond with the contents of `registry` — each version in the version
+    /// it was asked. The two differ only in `frameworkVersion`, which 0.2
+    /// writes three-part (SPEC §5.1.1). Combine with [`Self::on`] in any order;
     /// the registry is consulted afresh on every inbound query.
     ///
     /// Unless [`Self::public_discovery`] is set, the handler answers a
@@ -490,16 +493,15 @@ impl HttpsServerBuilder {
     /// [`Self::enable_discovery`].
     pub fn with_discovery(self, registry: DiscoveryRegistry) -> Self {
         let public = Arc::clone(&self.public_discovery);
+        let public_v0_2 = Arc::clone(&self.public_discovery);
+        let registry_v0_2 = registry.clone();
         self.on::<discovery::Payload, _>(move |req, ctx| {
-            if !public.load(Ordering::Relaxed) && ctx.authenticated_sender.is_none() {
-                // Deliberately the same generic wording any other permission
-                // failure uses — a discovery-specific message would itself
-                // confirm that discovery is installed here.
-                return Err(RejectReason::PermissionDenied {
-                    reason: "discovery requires an authenticated sender".into(),
-                });
-            }
+            refuse_unauthenticated_discovery(&public, ctx.authenticated_sender.is_none())?;
             Ok(registry.respond_to(&req.payload))
+        })
+        .on::<discovery_v0_2::Payload, _>(move |req, ctx| {
+            refuse_unauthenticated_discovery(&public_v0_2, ctx.authenticated_sender.is_none())?;
+            Ok(registry_v0_2.respond_to_v0_2(&req.payload))
         })
     }
 
@@ -523,6 +525,7 @@ impl HttpsServerBuilder {
         // somehow guessed they could ask wouldn't see their own protocol
         // listed back.
         registry.register_payload::<discovery::Payload>();
+        registry.register_payload::<discovery_v0_2::Payload>();
         self.with_discovery(registry)
     }
 
@@ -1151,4 +1154,22 @@ fn suppressed_error_response(new_id: &str) -> ErrorResponse {
 /// we map status codes.
 fn _verify_standard_code_into() {
     let _: trust_tasks_rs::TrustTaskCode = StandardCode::Expired.into();
+}
+
+/// Unless discovery is public, refuse a caller with no transport-authenticated
+/// sender rather than enumerating the route table (SPEC §12, discovery privacy).
+///
+/// Deliberately the same generic wording any other permission failure uses — a
+/// discovery-specific message would itself confirm that discovery is installed
+/// here.
+fn refuse_unauthenticated_discovery(
+    public: &AtomicBool,
+    unauthenticated: bool,
+) -> Result<(), RejectReason> {
+    if !public.load(Ordering::Relaxed) && unauthenticated {
+        return Err(RejectReason::PermissionDenied {
+            reason: "discovery requires an authenticated sender".into(),
+        });
+    }
+    Ok(())
 }

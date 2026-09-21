@@ -26,6 +26,7 @@ use trust_tasks_rs::{
     specs::acl::{grant, list, revoke, show},
     specs::task_consent::granted::v0_1 as granted,
     specs::trust_task_discovery::v0_1 as discovery,
+    specs::trust_task_discovery::v0_2 as discovery_v0_2,
     DocumentDigest, FreshnessPolicy, InMemoryReplayGuard, Payload, Proof, ProofVerifier,
     RejectReason, ReplayGuard, ReplayGuardError, ReplayVerdict, StandardCode, TrustTask, TypeUri,
     VerificationError,
@@ -284,8 +285,17 @@ async fn discovery_advertises_registered_handlers() {
             // handler, so discovery advertises it like any other.
             "https://trusttasks.org/spec/task-consent/granted/0.1",
             "https://trusttasks.org/spec/trust-task-discovery/0.1",
+            "https://trusttasks.org/spec/trust-task-discovery/0.2",
         ],
-        "enable_discovery() should advertise the registered acl/* handlers plus discovery itself"
+        "enable_discovery() should advertise the registered acl/* handlers plus both discovery versions"
+    );
+    // 0.1 can only say MAJOR.MINOR.
+    assert_eq!(
+        resp.payload
+            .framework_version
+            .as_ref()
+            .map(|v| v.to_string()),
+        Some("0.6".to_string())
     );
 
     // SPEC §4.4.1: the success response carries the #response variant
@@ -300,6 +310,38 @@ async fn discovery_advertises_registered_handlers() {
         resp.thread_id.as_deref(),
         Some("urn:uuid:test-discover-all")
     );
+}
+
+#[tokio::test]
+async fn discovery_0_2_is_answered_in_0_2_with_a_three_part_framework_version() {
+    let addr = spawn_server().await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+
+    let req = TrustTask::for_payload(
+        "urn:uuid:test-discover-v0-2",
+        discovery_v0_2::Payload::default(),
+    );
+    let resp = client.send::<discovery_v0_2::Payload>(req).await.unwrap();
+
+    assert_eq!(
+        resp.type_uri,
+        "https://trusttasks.org/spec/trust-task-discovery/0.2#response"
+            .parse::<TypeUri>()
+            .unwrap()
+    );
+    // SPEC §5.1.1: the full release, PATCH included.
+    assert_eq!(
+        resp.payload
+            .framework_version
+            .as_ref()
+            .map(|v| v.to_string()),
+        Some("0.6.0".to_string())
+    );
+    assert!(resp
+        .payload
+        .supported_types
+        .iter()
+        .any(|e| matches!(e, discovery_v0_2::ResponseSupportedTypesItem::Uri(u) if u == "https://trusttasks.org/spec/acl/grant/0.1")));
 }
 
 #[tokio::test]

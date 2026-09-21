@@ -981,6 +981,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/trust-task-control/0.1#response" => <crate::specs::trust_task_control::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-discovery/0.1" => <crate::specs::trust_task_discovery::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-discovery/0.1#response" => <crate::specs::trust_task_discovery::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/trust-task-discovery/0.2" => <crate::specs::trust_task_discovery::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/trust-task-discovery/0.2#response" => <crate::specs::trust_task_discovery::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => <crate::specs::trust_task_next_step::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-ok/0.1" => <crate::specs::trust_task_ok::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vault")]
@@ -3014,6 +3016,9 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         "https://trusttasks.org/spec/trust-task-discovery/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::trust_task_discovery::v0_1::Payload,
+        >()),
+        "https://trusttasks.org/spec/trust-task-discovery/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::trust_task_discovery::v0_2::Payload,
         >()),
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::trust_task_next_step::v0_1::Payload,
