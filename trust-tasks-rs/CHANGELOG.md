@@ -31,6 +31,21 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.9...trust-tasks-rs-v0.21.10) — 2026-09-21
+
+
+### Added
+
+- **messaging**: Add mediator queue, message, stats and traffic-monitor specifications ([#549](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/549))
+
+Ten new messaging/* tasks (all 0.1, draft) so a mediator can be operated
+  entirely through Trust Tasks — by an administrator across every account, or
+  by an account controller over its own queues — instead of the REST
+  `/admin/status`, `/purge` and `/queue/status` routes and the retired DIDComm
+  admin protocols.
+
+
+
 ## [0.21.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.8...trust-tasks-rs-v0.21.9) — 2026-09-21
 
 
