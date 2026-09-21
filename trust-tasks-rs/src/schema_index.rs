@@ -1472,6 +1472,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1#response" => <crate::specs::vtc::admin::bootstrap::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/did-log/install/0.1" => <crate::specs::vtc::admin::did_log::install::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/did-log/install/0.1#response" => <crate::specs::vtc::admin::did_log::install::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => <crate::specs::vtc::admin::invites::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1#response" => <crate::specs::vtc::admin::invites::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3620,6 +3624,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::admin::bootstrap::v0_1::Payload,
         >()),
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/did-log/install/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::admin::did_log::install::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => {
             Some(crate::SpecPolicy::of::<

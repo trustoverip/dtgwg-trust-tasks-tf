@@ -1,0 +1,6 @@
+[
+  { "note": "`log` is required.", "payload": {} },
+  { "note": "`log` must not be empty.", "payload": { "log": "" } },
+  { "note": "`log` is the log as served — JSON Lines text, not parsed entries.", "payload": { "log": [{ "versionId": "1-Qm" }] } },
+  { "note": "Unknown top-level member is rejected: the log is delivered whole, never as a delta.", "payload": { "log": "{}", "entries": ["{}"] } }
+]

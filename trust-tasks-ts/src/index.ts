@@ -457,6 +457,7 @@ export * as JoinRequestShared_v0_1 from "./vtc/_shared/0.1/join-request.js";
 export * as MemberShared_v0_1 from "./vtc/_shared/0.1/member.js";
 export * as VetterProfileShared_v0_1 from "./vtc/_shared/0.1/vetter-profile.js";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload.js";
+export * as VtcAdminDidLogInstall_v0_1 from "./vtc/admin/did-log/install/0.1/payload.js";
 export * as VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
 export * as VtcAdminInvitesRevoke_v0_1 from "./vtc/admin/invites/revoke/0.1/payload.js";

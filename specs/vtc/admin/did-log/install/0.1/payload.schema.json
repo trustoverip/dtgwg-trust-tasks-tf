@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/did-log/install/0.1",
+  "title": "VTC Admin DID Log Install — payload",
+  "description": "A community's complete did:webvh log, for the community to verify and serve in place of the one it serves now. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["log"],
+  "properties": {
+    "log": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The community DID's complete did:webvh log, in JSON Lines as it is served at the DID's `did.jsonl` URL: every entry from the first, not only the new ones."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin DID Log Install — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "versionId", "previousVersionId", "entriesAdded"],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The community's DID, whose log is now served."
+        },
+        "versionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The `versionId` of the last entry of the log now served."
+        },
+        "previousVersionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The `versionId` of the last entry served before this request. Equal to `versionId` when nothing was added."
+        },
+        "entriesAdded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many entries the installed log added to the one served before. `0` when the supplied log was the one already served."
+        },
+        "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
