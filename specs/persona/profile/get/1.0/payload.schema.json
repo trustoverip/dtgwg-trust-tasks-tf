@@ -35,6 +35,16 @@
         "profile": {
           "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Profile"
         },
+        "disclosedTo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["partyCount", "contextCount"],
+          "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. A producer shows this before a delete: deleting a face does not un-tell anyone what it told them.",
+          "properties": {
+            "partyCount": { "type": "integer", "minimum": 0 },
+            "contextCount": { "type": "integer", "minimum": 0 }
+          }
+        },
         "resolved": {
           "type": "array",
           "maxItems": 256,

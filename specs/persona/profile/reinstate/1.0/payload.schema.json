@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/reinstate/1.0",
+  "title": "Persona Profile Reinstate — payload",
+  "description": "Make a retired face wearable again. It is worn nowhere afterwards: the bindings retiring cleared are not restored, because wearing a face in a context is a decision about that context, taken when it is taken.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileId"],
+  "properties": {
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "contextId": { "type": "string", "minLength": 1, "description": "The context a context-local face lives in. Omit for a pool face." },
+    "expectedVersion": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion" },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Reinstate — response payload",
+      "description": "Success response to persona/profile/reinstate. Type https://trusttasks.org/spec/persona/profile/reinstate/1.0#response. Reinstating an active face is a success that changes nothing and takes no new version.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "version"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

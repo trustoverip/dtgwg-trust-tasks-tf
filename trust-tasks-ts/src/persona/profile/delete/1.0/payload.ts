@@ -28,6 +28,13 @@ export interface PersonaProfileDeleteResponsePayload {
    */
   existed: boolean;
   /**
+   * How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.
+   */
+  disclosedTo?: {
+    partyCount: number;
+    contextCount: number;
+  };
+  /**
    * Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing.
    *
    * @maxItems 256
@@ -105,6 +112,25 @@ export const PAYLOAD_SCHEMA = {
           "type": "boolean",
           "description": "False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen."
         },
+        "disclosedTo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "partyCount",
+            "contextCount"
+          ],
+          "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.",
+          "properties": {
+            "partyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "contextCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
         "unboundPersonas": {
           "type": "array",
           "maxItems": 256,
@@ -166,6 +192,25 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "existed": {
           "type": "boolean",
           "description": "False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen."
+        },
+        "disclosedTo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "partyCount",
+            "contextCount"
+          ],
+          "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.",
+          "properties": {
+            "partyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "contextCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         },
         "unboundPersonas": {
           "type": "array",

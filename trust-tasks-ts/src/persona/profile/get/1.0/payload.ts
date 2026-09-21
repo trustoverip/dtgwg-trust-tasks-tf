@@ -23,6 +23,13 @@ export interface PersonaProfileGetPayload {
 export interface PersonaProfileGetResponsePayload {
   profile: Profile;
   /**
+   * How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. A producer shows this before a delete: deleting a face does not un-tell anyone what it told them.
+   */
+  disclosedTo?: {
+    partyCount: number;
+    contextCount: number;
+  };
+  /**
    * Present only when `resolve` was true: the claims this profile would present, in entry order, with overrides applied and pinned versions honoured. A credential-backed claim whose backing could not be re-derived appears carrying `stale`, because a holder inspecting a profile needs to see that it has stopped being fully presentable.
    *
    * Typed as `ResolvedClaim` rather than `Attribute`: a profile is a projection and may contain `inline` values, which have no pool record and therefore no `attributeId`, `version` or `updatedAt`. The pool record's shape requires all three, so it cannot describe such an entry at all.
@@ -93,6 +100,25 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "profile": {
           "$ref": "#/$defs/Profile"
+        },
+        "disclosedTo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "partyCount",
+            "contextCount"
+          ],
+          "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. A producer shows this before a delete: deleting a face does not un-tell anyone what it told them.",
+          "properties": {
+            "partyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "contextCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         },
         "resolved": {
           "type": "array",
@@ -332,6 +358,20 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ProfileEntry"
           }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "retired"
+          ],
+          "default": "active",
+          "description": "`retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`."
+        },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the face was retired. Present exactly when `status` is `retired`."
         },
         "credentialRefs": {
           "type": "array",
@@ -482,6 +522,25 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "profile": {
           "$ref": "#/$defs/Profile"
         },
+        "disclosedTo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "partyCount",
+            "contextCount"
+          ],
+          "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. A producer shows this before a delete: deleting a face does not un-tell anyone what it told them.",
+          "properties": {
+            "partyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "contextCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
         "resolved": {
           "type": "array",
           "maxItems": 256,
@@ -720,6 +779,20 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ProfileEntry"
           }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "retired"
+          ],
+          "default": "active",
+          "description": "`retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`."
+        },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the face was retired. Present exactly when `status` is `retired`."
         },
         "credentialRefs": {
           "type": "array",

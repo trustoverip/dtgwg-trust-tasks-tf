@@ -8,6 +8,7 @@
   "properties": {
     "cursor": { "type": "string", "maxLength": 4096, "description": "Opaque continuation token from a prior response. A producer MUST NOT construct or parse one." },
     "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "includeRetired": { "type": "boolean", "default": false, "description": "Include retired faces. Off by default: a retired face is one the holder has stopped being, and a picker that offered it back would undo the decision by accident." },
     "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {

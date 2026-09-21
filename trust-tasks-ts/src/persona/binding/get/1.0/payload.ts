@@ -41,6 +41,10 @@ export interface PersonaBindingGetResponsePayload {
    */
   claimCount?: number;
   boundAt?: string;
+  /**
+   * When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.
+   */
+  until?: string;
   ext?: Ext;
 }
 
@@ -142,6 +146,11 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "date-time"
         },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -218,6 +227,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "boundAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

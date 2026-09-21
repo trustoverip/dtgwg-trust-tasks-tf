@@ -69,6 +69,7 @@ class Payload {
     required this.personaDid,
     this.profileId,
     this.label,
+    this.until,
     this.expectedVersion,
     this.ext,
   });
@@ -79,6 +80,7 @@ class Payload {
         personaDid: json['personaDid'] as String,
         profileId: json['profileId'],
         label: json['label'] as String?,
+        until: json['until'] as String?,
         expectedVersion: json['expectedVersion'] as int?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
@@ -97,6 +99,15 @@ class Payload {
   /// of the holder's own name for the face, which is theirs and may say far more than
   /// they would tell a context ('the divorce'). Omit to give the context no name at all.
   final String? label;
+
+  /// When this binding ends on its own. At `until` the maintainer clears the binding as
+  /// a null persona/binding/set would; if the face is then worn nowhere, it is retired
+  /// as persona/profile/retire would a pool face, never deleted, so its history
+  /// survives. Absent means the binding lasts until changed. For the face worn for one
+  /// weekend — a conference, a listing — so that ending it is a default rather than a
+  /// discipline. A maintainer MUST refuse an `until` that is not in the future, and one
+  /// given with a null `profileId`.
+  final String? until;
   final ExpectedVersion? expectedVersion;
   final Ext? ext;
 
@@ -106,6 +117,7 @@ class Payload {
         'personaDid': personaDid,
         if (profileId != null) 'profileId': profileId!,
         if (label != null) 'label': label!,
+        if (until != null) 'until': until!,
         if (expectedVersion != null) 'expectedVersion': expectedVersion!,
         if (ext != null) 'ext': ext!,
       };
@@ -127,7 +139,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/persona/local/binding/set/1.0","title":"Persona Local Binding Set — payload","description":"Bind a context-local profile to a persona in the same context. Safely context-callable — unlike persona/binding/set — precisely because both objects it names live below the boundary and neither reaches the holder\'s pool.","type":"object","additionalProperties":false,"required":["contextId","personaDid"],"properties":{"contextId":{"type":"string","minLength":1},"personaDid":{"type":"string","minLength":1,"maxLength":2048},"profileId":{"oneOf":[{"\$ref":"#/\$defs/Ulid"},{"type":"null"}],"description":"A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder\'s composition, which is the one escalation the whole boundary exists to prevent."},"label":{"type":"string","minLength":1,"maxLength":128,"description":"What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder\'s own name for the face, which is theirs and may say far more than they would tell a context (\'the divorce\'). Omit to give the context no name at all."},"expectedVersion":{"\$ref":"#/\$defs/ExpectedVersion"},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"Persona Local Binding Set — response payload","description":"Success response to persona/local/binding/set. Type https://trusttasks.org/spec/persona/local/binding/set/1.0#response.","type":"object","additionalProperties":false,"required":["contextId","personaDid","version"],"properties":{"contextId":{"type":"string","minLength":1},"personaDid":{"type":"string","minLength":1},"profileId":{"oneOf":[{"\$ref":"#/\$defs/Ulid"},{"type":"null"}]},"version":{"\$ref":"#/\$defs/Version"},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Version":{"title":"Version","description":"A value of the store\'s monotonic write counter. Server-assigned; a producer never chooses one.","type":"integer","minimum":1},"Ulid":{"title":"Ulid","description":"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.","type":"string","pattern":"^[0-9A-HJKMNP-TV-Z]{26}\$"},"ExpectedVersion":{"title":"ExpectedVersion","description":"Optimistic-concurrency precondition. A positive value requires the record\'s current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.","type":"integer","minimum":0}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/persona/local/binding/set/1.0","title":"Persona Local Binding Set — payload","description":"Bind a context-local profile to a persona in the same context. Safely context-callable — unlike persona/binding/set — precisely because both objects it names live below the boundary and neither reaches the holder\'s pool.","type":"object","additionalProperties":false,"required":["contextId","personaDid"],"properties":{"contextId":{"type":"string","minLength":1},"personaDid":{"type":"string","minLength":1,"maxLength":2048},"profileId":{"oneOf":[{"\$ref":"#/\$defs/Ulid"},{"type":"null"}],"description":"A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder\'s composition, which is the one escalation the whole boundary exists to prevent."},"label":{"type":"string","minLength":1,"maxLength":128,"description":"What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder\'s own name for the face, which is theirs and may say far more than they would tell a context (\'the divorce\'). Omit to give the context no name at all."},"until":{"type":"string","format":"date-time","description":"When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`."},"expectedVersion":{"\$ref":"#/\$defs/ExpectedVersion"},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"Persona Local Binding Set — response payload","description":"Success response to persona/local/binding/set. Type https://trusttasks.org/spec/persona/local/binding/set/1.0#response.","type":"object","additionalProperties":false,"required":["contextId","personaDid","version"],"properties":{"contextId":{"type":"string","minLength":1},"personaDid":{"type":"string","minLength":1},"profileId":{"oneOf":[{"\$ref":"#/\$defs/Ulid"},{"type":"null"}]},"version":{"\$ref":"#/\$defs/Version"},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Version":{"title":"Version","description":"A value of the store\'s monotonic write counter. Server-assigned; a producer never chooses one.","type":"integer","minimum":1},"Ulid":{"title":"Ulid","description":"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.","type":"string","pattern":"^[0-9A-HJKMNP-TV-Z]{26}\$"},"ExpectedVersion":{"title":"ExpectedVersion","description":"Optimistic-concurrency precondition. A positive value requires the record\'s current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.","type":"integer","minimum":0}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

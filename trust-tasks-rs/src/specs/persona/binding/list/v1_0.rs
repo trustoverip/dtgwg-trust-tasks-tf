@@ -381,6 +381,11 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 ///            "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.",
 ///            "type": "string",
 ///            "maxLength": 128
+///          },
+///          "until": {
+///            "description": "When this binding ends on its own. Absent when it lasts until changed.",
+///            "type": "string",
+///            "format": "date-time"
 ///          }
 ///        },
 ///        "additionalProperties": false
@@ -517,6 +522,11 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 ///      "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.",
 ///      "type": "string",
 ///      "maxLength": 128
+///    },
+///    "until": {
+///      "description": "When this binding ends on its own. Absent when it lasts until changed.",
+///      "type": "string",
+///      "format": "date-time"
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -553,6 +563,9 @@ pub struct ResponsePersonasItem {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_name: ::std::option::Option<ResponsePersonasItemProfileName>,
+    ///When this binding ends on its own. Absent when it lasts until changed.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl ResponsePersonasItem {
     pub fn builder() -> builder::ResponsePersonasItem {
@@ -941,6 +954,10 @@ pub mod builder {
             ::std::option::Option<super::ResponsePersonasItemProfileName>,
             ::std::string::String,
         >,
+        until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for ResponsePersonasItem {
         fn default() -> Self {
@@ -951,6 +968,7 @@ pub mod builder {
                 label: Ok(Default::default()),
                 persona_did: Err("no value supplied for persona_did".to_string()),
                 profile_name: Ok(Default::default()),
+                until: Ok(Default::default()),
             }
         }
     }
@@ -1017,6 +1035,18 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for profile_name: {e}"));
             self
         }
+        pub fn until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for until: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<ResponsePersonasItem> for super::ResponsePersonasItem {
         type Error = super::error::ConversionError;
@@ -1030,6 +1060,7 @@ pub mod builder {
                 label: value.label?,
                 persona_did: value.persona_did?,
                 profile_name: value.profile_name?,
+                until: value.until?,
             })
         }
     }
@@ -1042,6 +1073,7 @@ pub mod builder {
                 label: Ok(value.label),
                 persona_did: Ok(value.persona_did),
                 profile_name: Ok(value.profile_name),
+                until: Ok(value.until),
             }
         }
     }
@@ -1061,7 +1093,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"personas\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"bound\": {\n                \"type\": \"boolean\"\n              },\n              \"claimCount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"isLocal\": {\n                \"description\": \"True when the bound profile is context-local rather than imported from the holder's pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down.\",\n                \"type\": \"boolean\"\n              },\n              \"label\": {\n                \"description\": \"The name the holder chose for this context to call the face. Absent when they chose none.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"profileName\": {\n                \"description\": \"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.\",\n                \"maxLength\": 128,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"personaDid\",\n              \"bound\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"personas\"\n      ],\n      \"title\": \"Persona Binding List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/binding/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the personas present in one context. This context only — an application learns which identities operate where it does, and nothing about anywhere else the holder operates.\",\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"contextId\"\n  ],\n  \"title\": \"Persona Binding List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"personas\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"bound\": {\n                \"type\": \"boolean\"\n              },\n              \"claimCount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"isLocal\": {\n                \"description\": \"True when the bound profile is context-local rather than imported from the holder's pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down.\",\n                \"type\": \"boolean\"\n              },\n              \"label\": {\n                \"description\": \"The name the holder chose for this context to call the face. Absent when they chose none.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"profileName\": {\n                \"description\": \"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.\",\n                \"maxLength\": 128,\n                \"type\": \"string\"\n              },\n              \"until\": {\n                \"description\": \"When this binding ends on its own. Absent when it lasts until changed.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"personaDid\",\n              \"bound\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"personas\"\n      ],\n      \"title\": \"Persona Binding List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/binding/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the personas present in one context. This context only — an application learns which identities operate where it does, and nothing about anywhere else the holder operates.\",\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"contextId\"\n  ],\n  \"title\": \"Persona Binding List — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1069,7 +1101,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"personas\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"bound\": {\n                \"type\": \"boolean\"\n              },\n              \"claimCount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"isLocal\": {\n                \"description\": \"True when the bound profile is context-local rather than imported from the holder's pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down.\",\n                \"type\": \"boolean\"\n              },\n              \"label\": {\n                \"description\": \"The name the holder chose for this context to call the face. Absent when they chose none.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"profileName\": {\n                \"description\": \"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.\",\n                \"maxLength\": 128,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"personaDid\",\n              \"bound\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"personas\"\n      ],\n      \"title\": \"Persona Binding List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"personas\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"bound\": {\n                \"type\": \"boolean\"\n              },\n              \"claimCount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"isLocal\": {\n                \"description\": \"True when the bound profile is context-local rather than imported from the holder's pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down.\",\n                \"type\": \"boolean\"\n              },\n              \"label\": {\n                \"description\": \"The name the holder chose for this context to call the face. Absent when they chose none.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"profileName\": {\n                \"description\": \"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.\",\n                \"maxLength\": 128,\n                \"type\": \"string\"\n              },\n              \"until\": {\n                \"description\": \"When this binding ends on its own. Absent when it lasts until changed.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"personaDid\",\n              \"bound\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"personas\"\n      ],\n      \"title\": \"Persona Binding List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
