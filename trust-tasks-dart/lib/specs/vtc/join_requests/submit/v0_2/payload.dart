@@ -167,12 +167,43 @@ class Response {
       };
 }
 
+/// PayloadAttributesItem, generated from its schema.
+class PayloadAttributesItem {
+  const PayloadAttributesItem({
+    required this.type,
+    required this.value,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory PayloadAttributesItem.fromJson(Map<String, dynamic> json) =>
+      PayloadAttributesItem(
+        type: json['type'] as String,
+        value: json['value'],
+      );
+
+  /// A claim-type token from the persona claim-type registry
+  /// (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an
+  /// `x:` extension token.
+  final String type;
+
+  /// The value the applicant gives. Self-asserted: the applicant's own statement, bound
+  /// to them by the document proof, and attested by nobody.
+  final Object? value;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'type': type,
+        'value': value,
+      };
+}
+
 /// VTC Join-Requests Submit — payload
 class Payload {
   const Payload({
     required this.vp,
     this.registryConsent,
     this.extensions,
+    this.attributes,
     this.ext,
   });
 
@@ -181,6 +212,12 @@ class Payload {
         vp: json['vp'] as Map<String, dynamic>,
         registryConsent: json['registryConsent'] as bool?,
         extensions: json['extensions'] as Map<String, dynamic>?,
+        attributes: json['attributes'] == null
+            ? null
+            : (json['attributes'] as List<dynamic>)
+                .map((e) =>
+                    PayloadAttributesItem.fromJson(e as Map<String, dynamic>))
+                .toList(),
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -194,6 +231,13 @@ class Payload {
 
   /// Opaque applicant-supplied extension bag.
   final Map<String, dynamic>? extensions;
+
+  /// The applicant's answers to the manifest's `requestedAttributes`: one entry per
+  /// attribute given. Self-asserted and bound to the applicant by the document proof. A
+  /// maintainer MUST refuse the submission with `attributesMissing` when a required
+  /// attribute is absent and with `attributesUnrequested` when an entry names a type the
+  /// manifest does not request.
+  final List<PayloadAttributesItem>? attributes;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -201,6 +245,8 @@ class Payload {
         'vp': vp,
         if (registryConsent != null) 'registryConsent': registryConsent!,
         if (extensions != null) 'extensions': extensions!,
+        if (attributes != null)
+          'attributes': attributes!.map((e) => e.toJson()).toList(),
         if (ext != null) 'ext': ext!,
       };
 }
@@ -221,7 +267,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/join-requests/submit/0.2","title":"VTC Join-Requests Submit — payload","type":"object","additionalProperties":false,"required":["vp"],"properties":{"vp":{"type":"object","description":"The applicant\'s W3C Verifiable Presentation (opaque here), satisfying the community\'s join policy. The applicant DID is the document proof\'s signer — not a payload field."},"registryConsent":{"type":"boolean","description":"Whether the applicant consents to trust-registry publication."},"extensions":{"type":"object","description":"Opaque applicant-supplied extension bag."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Join-Requests Submit — response payload","type":"object","additionalProperties":false,"required":["requestId","verdict"],"properties":{"requestId":{"type":"string","minLength":1,"description":"Id of the created join request (a UUID)."},"verdict":{"\$ref":"#/\$defs/Verdict","description":"What the community decided about this submission.\\n\\n`0.1` returned `status: \\"pending\\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as \'pending\' or not at all."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Verdict":{"\$anchor":"verdict","title":"Verdict","type":"object","additionalProperties":false,"required":["effect","with"],"description":"A ceremony decision: the effect, plus its effect-dependent detail.","properties":{"effect":{"\$ref":"#/\$defs/VerdictEffect"},"with":{"\$ref":"#/\$defs/VerdictWith"}}},"VerdictWith":{"\$anchor":"verdictWith","title":"VerdictWith","type":"object","additionalProperties":false,"description":"The effect-dependent detail of a verdict.\\n\\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.","properties":{"role":{"type":"string","minLength":1,"description":"The granted local role. `allow` only."},"obligations":{"type":"object","description":"Conditions attached to the grant. `allow` only."},"bundleRef":{"type":"object","description":"Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only."},"code":{"type":"string","minLength":1,"description":"Stable refusal code, safe to branch on. `deny` only."},"reason":{"type":["string","null"],"maxLength":1024,"description":"Elaboration in prose, when the decider gave one. `deny` and `refer`."},"queue":{"type":"string","minLength":1,"description":"Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only."},"needs":{"type":"array","items":{"type":"string","minLength":1},"description":"What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only."},"presentationDefinition":{"type":"object","description":"A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only."}}},"VerdictEffect":{"\$anchor":"verdictEffect","title":"VerdictEffect","type":"string","enum":["allow","deny","refer","requestMore"],"description":"What the policy decided.\\n\\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\\n\\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both \'not decided\', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/join-requests/submit/0.2","title":"VTC Join-Requests Submit — payload","type":"object","additionalProperties":false,"required":["vp"],"properties":{"vp":{"type":"object","description":"The applicant\'s W3C Verifiable Presentation (opaque here), satisfying the community\'s join policy. The applicant DID is the document proof\'s signer — not a payload field."},"registryConsent":{"type":"boolean","description":"Whether the applicant consents to trust-registry publication."},"extensions":{"type":"object","description":"Opaque applicant-supplied extension bag."},"attributes":{"type":"array","maxItems":32,"description":"The applicant\'s answers to the manifest\'s `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.","items":{"type":"object","additionalProperties":false,"required":["type","value"],"properties":{"type":{"type":"string","minLength":1,"maxLength":128,"pattern":"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*\$","description":"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."},"value":{"description":"The value the applicant gives. Self-asserted: the applicant\'s own statement, bound to them by the document proof, and attested by nobody."}}}},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Join-Requests Submit — response payload","type":"object","additionalProperties":false,"required":["requestId","verdict"],"properties":{"requestId":{"type":"string","minLength":1,"description":"Id of the created join request (a UUID)."},"verdict":{"\$ref":"#/\$defs/Verdict","description":"What the community decided about this submission.\\n\\n`0.1` returned `status: \\"pending\\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as \'pending\' or not at all."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Verdict":{"\$anchor":"verdict","title":"Verdict","type":"object","additionalProperties":false,"required":["effect","with"],"description":"A ceremony decision: the effect, plus its effect-dependent detail.","properties":{"effect":{"\$ref":"#/\$defs/VerdictEffect"},"with":{"\$ref":"#/\$defs/VerdictWith"}}},"VerdictWith":{"\$anchor":"verdictWith","title":"VerdictWith","type":"object","additionalProperties":false,"description":"The effect-dependent detail of a verdict.\\n\\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.","properties":{"role":{"type":"string","minLength":1,"description":"The granted local role. `allow` only."},"obligations":{"type":"object","description":"Conditions attached to the grant. `allow` only."},"bundleRef":{"type":"object","description":"Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only."},"code":{"type":"string","minLength":1,"description":"Stable refusal code, safe to branch on. `deny` only."},"reason":{"type":["string","null"],"maxLength":1024,"description":"Elaboration in prose, when the decider gave one. `deny` and `refer`."},"queue":{"type":"string","minLength":1,"description":"Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only."},"needs":{"type":"array","items":{"type":"string","minLength":1},"description":"What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only."},"presentationDefinition":{"type":"object","description":"A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only."}}},"VerdictEffect":{"\$anchor":"verdictEffect","title":"VerdictEffect","type":"string","enum":["allow","deny","refer","requestMore"],"description":"What the policy decided.\\n\\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\\n\\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both \'not decided\', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =

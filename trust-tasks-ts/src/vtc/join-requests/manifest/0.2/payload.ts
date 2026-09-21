@@ -20,6 +20,25 @@ export interface VTCJoinRequestsManifestPayload {
 export interface VTCJoinRequestsManifestResponsePayload {
   communityDid: string;
   criteria: Criterion[];
+  /**
+   * What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.
+   *
+   * @maxItems 32
+   */
+  requestedAttributes?: {
+    /**
+     * A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
+     */
+    type: string;
+    /**
+     * False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.
+     */
+    required?: boolean;
+    /**
+     * Why the community asks, in words shown to the applicant before they disclose.
+     */
+    purpose?: string;
+  }[];
   branding?: CommunityBranding;
   ext?: Ext;
 }
@@ -408,6 +427,37 @@ export const PAYLOAD_SCHEMA = {
             "$ref": "#/$defs/Criterion"
           }
         },
+        "requestedAttributes": {
+          "type": "array",
+          "maxItems": 32,
+          "description": "What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
+                "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
+              },
+              "required": {
+                "type": "boolean",
+                "default": true,
+                "description": "False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 256,
+                "description": "Why the community asks, in words shown to the applicant before they disclose."
+              }
+            }
+          }
+        },
         "branding": {
           "$ref": "#/$defs/CommunityBranding"
         },
@@ -714,6 +764,37 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Criterion"
+          }
+        },
+        "requestedAttributes": {
+          "type": "array",
+          "maxItems": 32,
+          "description": "What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
+                "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
+              },
+              "required": {
+                "type": "boolean",
+                "default": true,
+                "description": "False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 256,
+                "description": "Why the community asks, in words shown to the applicant before they disclose."
+              }
+            }
           }
         },
         "branding": {

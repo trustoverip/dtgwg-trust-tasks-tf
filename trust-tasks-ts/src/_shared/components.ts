@@ -2568,6 +2568,23 @@ export interface JoinRequest {
    * Opaque community-defined extension bag.
    */
   extensions?: {};
+  /**
+   * What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.
+   *
+   * @maxItems 32
+   */
+  attributes?: {
+    /**
+     * A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
+     */
+    type: string;
+    /**
+     * The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.
+     */
+    value: {
+      [k: string]: unknown | undefined;
+    };
+  }[];
 }
 export interface KdfParams {
   /**

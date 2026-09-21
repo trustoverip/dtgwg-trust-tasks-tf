@@ -80,12 +80,14 @@ A conforming **community** (`recipient`):
 4. **MUST** evaluate a submission that cites a `requirementsDigest` under the criterion version that digest names, while that version is within its `requirementsGrace`, and **MUST** record which version governed the decision. Outside the grace window, or where no grace is declared, the current version governs.
 5. **MUST NOT** apply to a vetting statement any constraint the `vetting` object does not state. Absent members mean no constraint of that kind; this specification defines no default count, method floor, age limit, or documentation, and a community that relies on one publishes it.
 6. **MAY** return `branding`, with any of its members. Branding belongs to no criterion, so no `requirementsDigest` covers it, and changing it changes nothing an applicant was told to gather.
+7. **MAY** return `requestedAttributes`: what it asks an applicant to tell it about themselves, as claim types, never values. An answer is **self-asserted** — the applicant's own statement, bound to them by the submission's proof and attested by nobody — and the community **MUST NOT** describe one as verified or make a decision that assumes it is. A community that needs an attested value asks for a credential in a criterion instead. It **SHOULD** ask only for what it will use, and state why in `purpose`: a requested attribute is the one part of this manifest that asks an applicant to hand over something about themselves before they have been admitted.
 
 A conforming **applicant**:
 
 1. **MUST** ignore members of `vetting` it does not recognise, and **MUST** treat a `vetting` object that fails item 3 above as unsatisfiable rather than guess at its meaning. A client's reading of the requirements is advisory in any case: the community's decision is authoritative, and some of what it evaluates — current vetter eligibility, for one — is visible only to the community.
 2. On starting an application under a criterion carrying `vetting`, **SHOULD** record the `requirementsDigest` at that moment, cite it in every [`vetting/request`](../../../../vetting/request/0.1/spec.md) and at submission, and recompute it from the criterion before relying on it.
-3. **MUST NOT** treat `branding` as evidence of which community it is dealing with — `communityDid` is that — and **SHOULD** ignore a `branding` member it cannot use, such as a logo that fails to load, rather than refuse the manifest.
+3. **SHOULD** show the applicant every `requestedAttributes` entry, with its `purpose`, before disclosing anything, and **MUST** let them decline one whose `required` is false. The answers leave through the applicant's own disclosure path, so the applicant's record of what went where includes them.
+4. **MUST NOT** treat `branding` as evidence of which community it is dealing with — `communityDid` is that — and **SHOULD** ignore a `branding` member it cannot use, such as a logo that fails to load, rather than refuse the manifest.
 
 ### Computing `requirementsDigest`
 

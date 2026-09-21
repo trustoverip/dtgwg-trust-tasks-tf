@@ -34,6 +34,18 @@ type JoinRequestDecision struct {
 	DecidedAt string `json:"decidedAt"`
 }
 
+// JoinRequestAttributesItem JoinRequestAttributesItem is a generated payload type.
+type JoinRequestAttributesItem struct {
+	// A claim-type token from the persona claim-type registry
+	// (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:`
+	// extension token.
+	Type string `json:"type"`
+
+	// The value the applicant gives. Self-asserted: the applicant's own statement, bound to
+	// them by the document proof, and attested by nobody.
+	Value json.RawMessage `json:"value"`
+}
+
 // JoinRequest One application to join a Verifiable Trust Community.
 type JoinRequest struct {
 	// Stable id of this join request (a UUID).
@@ -70,4 +82,9 @@ type JoinRequest struct {
 
 	// Opaque community-defined extension bag.
 	Extensions *map[string]json.RawMessage `json:"extensions,omitempty"`
+
+	// What the applicant told the community about themselves in answer to the manifest's
+	// `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the
+	// request. Absent when none were asked for or given.
+	Attributes *[]JoinRequestAttributesItem `json:"attributes,omitempty"`
 }

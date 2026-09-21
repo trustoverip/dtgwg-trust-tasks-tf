@@ -62,6 +62,36 @@ class JoinRequestDecision {
       };
 }
 
+/// JoinRequestAttributesItem, generated from its schema.
+class JoinRequestAttributesItem {
+  const JoinRequestAttributesItem({
+    required this.type,
+    required this.value,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory JoinRequestAttributesItem.fromJson(Map<String, dynamic> json) =>
+      JoinRequestAttributesItem(
+        type: json['type'] as String,
+        value: json['value'],
+      );
+
+  /// A claim-type token from the persona claim-type registry
+  /// (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an
+  /// `x:` extension token.
+  final String type;
+
+  /// The value the applicant gives. Self-asserted: the applicant's own statement, bound
+  /// to them by the document proof, and attested by nobody.
+  final Object? value;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'type': type,
+        'value': value,
+      };
+}
+
 /// One application to join a Verifiable Trust Community.
 class JoinRequest {
   const JoinRequest({
@@ -75,6 +105,7 @@ class JoinRequest {
     this.decision,
     this.registryConsent,
     this.extensions,
+    this.attributes,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -92,6 +123,12 @@ class JoinRequest {
                 json['decision'] as Map<String, dynamic>),
         registryConsent: json['registryConsent'] as bool?,
         extensions: json['extensions'] as Map<String, dynamic>?,
+        attributes: json['attributes'] == null
+            ? null
+            : (json['attributes'] as List<dynamic>)
+                .map((e) => JoinRequestAttributesItem.fromJson(
+                    e as Map<String, dynamic>))
+                .toList(),
       );
 
   /// Stable id of this join request (a UUID).
@@ -129,6 +166,11 @@ class JoinRequest {
   /// Opaque community-defined extension bag.
   final Map<String, dynamic>? extensions;
 
+  /// What the applicant told the community about themselves in answer to the manifest's
+  /// `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews
+  /// the request. Absent when none were asked for or given.
+  final List<JoinRequestAttributesItem>? attributes;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
@@ -141,5 +183,7 @@ class JoinRequest {
         if (decision != null) 'decision': decision!.toJson(),
         if (registryConsent != null) 'registryConsent': registryConsent!,
         if (extensions != null) 'extensions': extensions!,
+        if (attributes != null)
+          'attributes': attributes!.map((e) => e.toJson()).toList(),
       };
 }

@@ -150,6 +150,31 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    "vp"
 ///  ],
 ///  "properties": {
+///    "attributes": {
+///      "description": "The applicant's answers to the manifest's `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.",
+///      "type": "array",
+///      "items": {
+///        "type": "object",
+///        "required": [
+///          "type",
+///          "value"
+///        ],
+///        "properties": {
+///          "type": {
+///            "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
+///            "type": "string",
+///            "maxLength": 128,
+///            "minLength": 1,
+///            "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
+///          },
+///          "value": {
+///            "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
+///          }
+///        },
+///        "additionalProperties": false
+///      },
+///      "maxItems": 32
+///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
@@ -174,6 +199,9 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
+    ///The applicant's answers to the manifest's `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub attributes: ::std::vec::Vec<PayloadAttributesItem>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Opaque applicant-supplied extension bag.
@@ -192,6 +220,131 @@ pub struct Payload {
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///`PayloadAttributesItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "type",
+///    "value"
+///  ],
+///  "properties": {
+///    "type": {
+///      "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
+///      "type": "string",
+///      "maxLength": 128,
+///      "minLength": 1,
+///      "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
+///    },
+///    "value": {
+///      "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct PayloadAttributesItem {
+    ///A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
+    #[serde(rename = "type")]
+    pub type_: PayloadAttributesItemType,
+    ///The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.
+    pub value: ::serde_json::Value,
+}
+impl PayloadAttributesItem {
+    pub fn builder() -> builder::PayloadAttributesItem {
+        Default::default()
+    }
+}
+///A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
+///  "type": "string",
+///  "maxLength": 128,
+///  "minLength": 1,
+///  "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadAttributesItemType(::std::string::String);
+impl ::std::ops::Deref for PayloadAttributesItemType {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadAttributesItemType> for ::std::string::String {
+    fn from(value: PayloadAttributesItemType) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadAttributesItemType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$\"".into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadAttributesItemType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadAttributesItemType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadAttributesItemType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadAttributesItemType {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`Response`
@@ -909,6 +1062,10 @@ impl<'de> ::serde::Deserialize<'de> for VerdictWithRole {
 pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
+        attributes: ::std::result::Result<
+            ::std::vec::Vec<super::PayloadAttributesItem>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         extensions: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -923,6 +1080,7 @@ pub mod builder {
     impl ::std::default::Default for Payload {
         fn default() -> Self {
             Self {
+                attributes: Ok(Default::default()),
                 ext: Ok(Default::default()),
                 extensions: Ok(Default::default()),
                 registry_consent: Ok(Default::default()),
@@ -931,6 +1089,16 @@ pub mod builder {
         }
     }
     impl Payload {
+        pub fn attributes<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::PayloadAttributesItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.attributes = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for attributes: {e}"));
+            self
+        }
         pub fn ext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
@@ -980,6 +1148,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                attributes: value.attributes?,
                 ext: value.ext?,
                 extensions: value.extensions?,
                 registry_consent: value.registry_consent?,
@@ -990,10 +1159,65 @@ pub mod builder {
     impl ::std::convert::From<super::Payload> for Payload {
         fn from(value: super::Payload) -> Self {
             Self {
+                attributes: Ok(value.attributes),
                 ext: Ok(value.ext),
                 extensions: Ok(value.extensions),
                 registry_consent: Ok(value.registry_consent),
                 vp: Ok(value.vp),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PayloadAttributesItem {
+        type_: ::std::result::Result<super::PayloadAttributesItemType, ::std::string::String>,
+        value: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for PayloadAttributesItem {
+        fn default() -> Self {
+            Self {
+                type_: Err("no value supplied for type_".to_string()),
+                value: Err("no value supplied for value".to_string()),
+            }
+        }
+    }
+    impl PayloadAttributesItem {
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadAttributesItemType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+        pub fn value<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.value = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for value: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PayloadAttributesItem> for super::PayloadAttributesItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PayloadAttributesItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                type_: value.type_?,
+                value: value.value?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PayloadAttributesItem> for PayloadAttributesItem {
+        fn from(value: super::PayloadAttributesItem) -> Self {
+            Self {
+                type_: Ok(value.type_),
+                value: Ok(value.value),
             }
         }
     }
@@ -1290,7 +1514,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"Id of the created join request (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"verdict\": {\n          \"$ref\": \"#/$defs/Verdict\",\n          \"description\": \"What the community decided about this submission.\\n\\n`0.1` returned `status: \\\"pending\\\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"verdict\"\n      ],\n      \"title\": \"VTC Join-Requests Submit — response payload\",\n      \"type\": \"object\"\n    },\n    \"Verdict\": {\n      \"$anchor\": \"verdict\",\n      \"additionalProperties\": false,\n      \"description\": \"A ceremony decision: the effect, plus its effect-dependent detail.\",\n      \"properties\": {\n        \"effect\": {\n          \"$ref\": \"#/$defs/VerdictEffect\"\n        },\n        \"with\": {\n          \"$ref\": \"#/$defs/VerdictWith\"\n        }\n      },\n      \"required\": [\n        \"effect\",\n        \"with\"\n      ],\n      \"title\": \"Verdict\",\n      \"type\": \"object\"\n    },\n    \"VerdictEffect\": {\n      \"$anchor\": \"verdictEffect\",\n      \"description\": \"What the policy decided.\\n\\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\\n\\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.\",\n      \"enum\": [\n        \"allow\",\n        \"deny\",\n        \"refer\",\n        \"requestMore\"\n      ],\n      \"title\": \"VerdictEffect\",\n      \"type\": \"string\"\n    },\n    \"VerdictWith\": {\n      \"$anchor\": \"verdictWith\",\n      \"additionalProperties\": false,\n      \"description\": \"The effect-dependent detail of a verdict.\\n\\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.\",\n      \"properties\": {\n        \"bundleRef\": {\n          \"description\": \"Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only.\",\n          \"type\": \"object\"\n        },\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. `deny` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"needs\": {\n          \"description\": \"What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"obligations\": {\n          \"description\": \"Conditions attached to the grant. `allow` only.\",\n          \"type\": \"object\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.\",\n          \"type\": \"object\"\n        },\n        \"queue\": {\n          \"description\": \"Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. `deny` and `refer`.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"role\": {\n          \"description\": \"The granted local role. `allow` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"VerdictWith\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/submit/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extensions\": {\n      \"description\": \"Opaque applicant-supplied extension bag.\",\n      \"type\": \"object\"\n    },\n    \"registryConsent\": {\n      \"description\": \"Whether the applicant consents to trust-registry publication.\",\n      \"type\": \"boolean\"\n    },\n    \"vp\": {\n      \"description\": \"The applicant's W3C Verifiable Presentation (opaque here), satisfying the community's join policy. The applicant DID is the document proof's signer — not a payload field.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"vp\"\n  ],\n  \"title\": \"VTC Join-Requests Submit — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"Id of the created join request (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"verdict\": {\n          \"$ref\": \"#/$defs/Verdict\",\n          \"description\": \"What the community decided about this submission.\\n\\n`0.1` returned `status: \\\"pending\\\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"verdict\"\n      ],\n      \"title\": \"VTC Join-Requests Submit — response payload\",\n      \"type\": \"object\"\n    },\n    \"Verdict\": {\n      \"$anchor\": \"verdict\",\n      \"additionalProperties\": false,\n      \"description\": \"A ceremony decision: the effect, plus its effect-dependent detail.\",\n      \"properties\": {\n        \"effect\": {\n          \"$ref\": \"#/$defs/VerdictEffect\"\n        },\n        \"with\": {\n          \"$ref\": \"#/$defs/VerdictWith\"\n        }\n      },\n      \"required\": [\n        \"effect\",\n        \"with\"\n      ],\n      \"title\": \"Verdict\",\n      \"type\": \"object\"\n    },\n    \"VerdictEffect\": {\n      \"$anchor\": \"verdictEffect\",\n      \"description\": \"What the policy decided.\\n\\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\\n\\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.\",\n      \"enum\": [\n        \"allow\",\n        \"deny\",\n        \"refer\",\n        \"requestMore\"\n      ],\n      \"title\": \"VerdictEffect\",\n      \"type\": \"string\"\n    },\n    \"VerdictWith\": {\n      \"$anchor\": \"verdictWith\",\n      \"additionalProperties\": false,\n      \"description\": \"The effect-dependent detail of a verdict.\\n\\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.\",\n      \"properties\": {\n        \"bundleRef\": {\n          \"description\": \"Pointer to a sealed credential bundle, added by the community where issuance occurred rather than emitted by the policy. `allow` only.\",\n          \"type\": \"object\"\n        },\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. `deny` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"needs\": {\n          \"description\": \"What further evidence is required, named so the applicant can act without a support conversation. `requestMore` only.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"obligations\": {\n          \"description\": \"Conditions attached to the grant. `allow` only.\",\n          \"type\": \"object\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.\",\n          \"type\": \"object\"\n        },\n        \"queue\": {\n          \"description\": \"Which review queue the decision was parked in, so an applicant can be told who now holds it. `refer` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. `deny` and `refer`.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"role\": {\n          \"description\": \"The granted local role. `allow` only.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"VerdictWith\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/submit/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"attributes\": {\n      \"description\": \"The applicant's answers to the manifest's `requestedAttributes`: one entry per attribute given. Self-asserted and bound to the applicant by the document proof. A maintainer MUST refuse the submission with `attributesMissing` when a required attribute is absent and with `attributesUnrequested` when an entry names a type the manifest does not request.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"type\": {\n            \"description\": \"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"pattern\": \"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"description\": \"The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.\"\n          }\n        },\n        \"required\": [\n          \"type\",\n          \"value\"\n        ],\n        \"type\": \"object\"\n      },\n      \"maxItems\": 32,\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extensions\": {\n      \"description\": \"Opaque applicant-supplied extension bag.\",\n      \"type\": \"object\"\n    },\n    \"registryConsent\": {\n      \"description\": \"Whether the applicant consents to trust-registry publication.\",\n      \"type\": \"boolean\"\n    },\n    \"vp\": {\n      \"description\": \"The applicant's W3C Verifiable Presentation (opaque here), satisfying the community's join policy. The applicant DID is the document proof's signer — not a payload field.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"vp\"\n  ],\n  \"title\": \"VTC Join-Requests Submit — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
