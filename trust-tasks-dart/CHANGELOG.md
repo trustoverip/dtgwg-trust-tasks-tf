@@ -11,6 +11,39 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.11 — 2026-09-21
+
+
+### Added
+
+- **vtc**: A community can ask an applicant to tell it about themselves (#543)
+
+From the persona context-first design note (verifiable-trust-infrastructure,
+  docs/05-design-notes/persona-context-first.md §5.2): a join manifest could
+  ask only for credentials, so a community wanting a display name and a
+  country had nothing to put on the "what's required" screen, and nothing
+  connected the join ceremony to the applicant's persona.
+
+  All additive, no new versions:
+
+  - vtc/join-requests/manifest/0.2: optional `requestedAttributes` --
+    claim types (never values), each `required` (default true) with a
+    `purpose` shown to the applicant. Outside every criterion, so no
+    requirementsDigest covers it. Answers are self-asserted: a community
+    MUST NOT describe one as verified or decide as if it were; a community
+    needing an attested value asks for a credential instead.
+  - vtc/join-requests/submit/0.2: optional `attributes` -- [{type, value}],
+    bound to the applicant by the document proof. New codes
+    attributesMissing (a required one is absent) and attributesUnrequested
+    (a type the manifest does not request -- refused rather than stored, so
+    an over-sharing client cannot leave data with a community that never
+    asked). SHOULD be sent through the applicant's own disclosure path so
+    their record of what they told whom includes it.
+  - vtc/_shared JoinRequest: optional `attributes`, so show and list carry
+    the answers to reviewers, as the applicant's own statement.
+
+  Bindings regenerated in Rust, TS, Go and Dart.
+
 ## 0.1.10 — 2026-09-21
 
 
