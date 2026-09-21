@@ -76,7 +76,12 @@ exchange.
 
 The `#response` of this specification is the session's **terminal success
 document**, and it is what a `taskContext`-bearing credential's evidence
-obligation refers to:
+obligation refers to. The declaration is made by
+[`witness/session`](../../0.1/spec.md), which governs the document that opens the
+session, under
+[SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 20: its
+`outcomeEvidence` names this response and binds it through the delivered VWC's
+`taskContext` and `taskDigestMultibase`.
 
 1. The delivered VWC's `taskContext` **MUST** equal the `id` of the
    `witness/session` document that opened **this** session — the innermost
@@ -98,14 +103,18 @@ obligation refers to:
    **MUST** retain this `#response` **and the `witness/session` document that
    opened the session**, and ship both with the presentation — the digest
    check is not performable without the document it is taken over. A
-   verifier pairing them checks: the session document's `id` equals the VWC's
-   `taskContext` **and the VWC's `taskDigestMultibase` reproduces over that
-   document** under §4.9.3, comparing decoded multihash bytes rather than
-   encoded strings; the evidence's `threadId` equals the
-   VWC's `taskContext`; the evidence's `type` is this specification's
-   `#response`; the evidence's own REQUIRED proof verifies; the evidence's
-   `issuer` is the witness that issued the VWC; and the presented credential's
-   digest equals the evidence's `vwcDigestMultibase`.
+   verifier pairs them by the checks of
+   [SPEC.md §4.9.4](/SPEC.md#494-evidence-that-a-cited-exchange-completed),
+   taking the VWC's `taskContext` and `taskDigestMultibase` as the citation,
+   and additionally checks what is particular to witnessing: the VWC's
+   `issuer` is the session document's `recipient` — the witness whose proof
+   §4.9.4 check 4 requires on this response — and the presented credential's
+   digest equals the evidence's `vwcDigestMultibase`. This specification
+   formerly stated its own pairing rule, which identified the responder as
+   the credential's issuer; that agrees with §4.9.4 here only because a
+   witness both answers the session and issues the VWC, and does not
+   generalise to exchanges where the responder and the citing artifact's
+   issuer differ.
 3. A `trust-task-error` terminating this exchange is diagnostic for the
    parties; it is **not** verifier-facing outcome evidence, and no credential
    may cite an exchange that terminated in one as completed.

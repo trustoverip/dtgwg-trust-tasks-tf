@@ -47,6 +47,16 @@ exposure:
 retention:
   class: durable
   rationale: "The witness's own session state is exchange-scoped and ends when the session terminates or expires, but this document is not — its `id` is what a Verifiable Witness Credential carries as `taskContext`, and its content is what that credential's `taskDigestMultibase` is computed over. A holder retains it for the useful life of the VWC, because a verifier cannot recompute the digest without the document it was taken over — deleting it leaves a credential that still verifies on the witness's proof but can no longer be shown to belong to any particular session."
+outcomeEvidence:
+  response: https://trusttasks.org/spec/witness/session/submit/0.1#response
+  binding:
+    id: /payload/vwc/taskContext
+    taskDigest: /payload/vwc/taskDigestMultibase
+  rationale: >-
+    A Verifiable Witness Credential cites this document as its taskContext.
+    The session closes with the witness's witness/session/submit response on
+    this thread, whose vwc names this document by id and binds it by task
+    digest under the witness's own proof.
 errorCodes:
   - code: witness/session:refused
     meaning: The witness declines to open a session — policy, capacity, or the named exchange is not one it will witness.
