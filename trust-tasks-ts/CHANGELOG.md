@@ -11,6 +11,46 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.19.12 — 2026-09-21
+
+
+### Specifications
+
+- **vtc/join-requests/supplement**: Vetting travels in the presentation, so it is replaced with it (#531)
+
+#526 stated that vetting attestations are "attached to the request, not to the
+  presentation", and that a consumer MUST NOT discard them when the presentation
+  is replaced. That is wrong, and I found it while implementing the consumer
+  side.
+
+  A community counts vetting by reading the attestations **out of the
+  presentation** it was handed — in the reference implementation,
+  `vetting_credentials(vp)` filters the VP's `verifiableCredential` array. The
+  per-request vetting record that does exist is a *record*: it answers the admin
+  view, the vetter sweep, and the question of which admissions a later-withdrawn
+  statement counted toward. No decision reads it. So there is nothing on the
+  request for a consumer to decline to discard, and a supplement whose
+  presentation omits the attestations is one with no vetting.
+
+  The claim was also internally inconsistent with the rule immediately above it.
+  Carrying forward attestations from a superseded presentation is accumulation —
+  it decides the request on evidence the applicant is no longer presenting, which
+  is exactly the defect the replace-not-merge rule exists to prevent. It merely
+  arrives by a different route, so the corrected text forbids it explicitly.
+
+  What survives is the promise underneath, which is the part that mattered: a
+  vetting attestation is a credential the **applicant** holds, so re-presenting
+  it costs the vetter nothing and no one attests twice. The obligation this puts
+  on a deferring community is now stated — name the attestations in the
+  `presentationDefinition` alongside everything else required.
+
+  The Correlation subsection carried the same error ("it is what lets vetting
+  survive") and is corrected to what the linkage actually buys: the applicant
+  keeps their place rather than starting again.
+
+  Prose only, in place, per SPEC §5.2's draft rule — no schema change, so the
+  bindings are untouched.
+
 ## 0.19.11 — 2026-09-20
 
 ## 0.19.10 — 2026-09-19
