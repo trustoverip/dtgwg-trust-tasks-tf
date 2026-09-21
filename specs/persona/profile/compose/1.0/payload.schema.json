@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/compose/1.0",
+  "title": "Persona Profile Compose — payload",
+  "description": "Compose a face for one context, where it is needed, from values typed now and attributes already held — and optionally wear it there in the same act. Local by default: a value typed here stays in this context unless the holder says it should be reusable. Where the face lives follows from what it carries, so there is no scope parameter to get wrong.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "name", "claims"],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The context the face is composed for. A face whose every claim is local lives in this context and nowhere else; a face carrying any pool claim lives above contexts, and is bound into this one when `personaDid` is given."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The holder's name for the face. Never disclosed; what a context may call the face is `label`."
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": { "$ref": "#/$defs/ComposeClaim" },
+      "description": "Ordered; the order is display order."
+    },
+    "personaDid": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "Wear the new face as this persona in `contextId`, in the same act. Omit to compose without wearing it."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "What the context may call the face, as on persona/binding/set. Meaningful only with `personaDid`; a maintainer MUST refuse it without one rather than drop it."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "ComposeClaim": {
+      "title": "ComposeClaim",
+      "description": "One claim of the face being composed: a value typed now, or an attribute the holder already keeps.",
+      "oneOf": [
+        { "$ref": "#/$defs/NewClaim" },
+        { "$ref": "#/$defs/HeldClaim" }
+      ]
+    },
+    "NewClaim": {
+      "title": "NewClaim",
+      "description": "A value the holder types now. Self-asserted: a value typed at this step has no issuer behind it, and a claim that could carry a provenance here would let a typed value present as attested.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "valueType", "value"],
+      "properties": {
+        "type": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" },
+        "valueType": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType" },
+        "value": {},
+        "label": { "type": "string", "maxLength": 128, "description": "The holder's note to self for this value. Never disclosed." },
+        "slot": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Slot" },
+        "share": {
+          "type": "string",
+          "enum": ["local", "pool"],
+          "default": "local",
+          "description": "`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a self-asserted pool attribute holding exactly this type and value, creating one when none exists."
+        }
+      }
+    },
+    "HeldClaim": {
+      "title": "HeldClaim",
+      "description": "An attribute already in the holder's pool, presented live.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attributeId"],
+      "properties": {
+        "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "slot": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Slot" }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Compose — response payload",
+      "description": "Success response to persona/profile/compose. Type https://trusttasks.org/spec/persona/profile/compose/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "scope", "version"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "scope": {
+          "type": "string",
+          "enum": ["local", "pool"],
+          "description": "Where the face lives. `local`: in `contextId` only, readable through persona/local/profile/get. `pool`: above contexts, readable through persona/profile/get, and able to be worn in other contexts later."
+        },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+        "pooled": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "For each `share: pool` claim, in request order, the pool attribute the face now references and whether this compose created it. `created: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it. Absent when no claim was pooled.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["attributeId", "created"],
+            "properties": {
+              "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+              "created": { "type": "boolean" }
+            }
+          }
+        },
+        "binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["personaDid", "version"],
+          "description": "Present when `personaDid` was given: the face is now worn there.",
+          "properties": {
+            "personaDid": { "type": "string", "minLength": 1 },
+            "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" },
+            "alsoBoundPersonaCount": { "type": "integer", "minimum": 0, "description": "How many other personas in this context wear this face. Always zero for a face this task just created; present for parity with persona/binding/set." }
+          }
+        },
+        "correlation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["severity"],
+          "description": "Advisory, as on persona/profile/put: how many of the face's claims present a value another face also presents. A count; identifiers come from persona/correlation/analyze. The write has applied.",
+          "properties": {
+            "severity": { "type": "string", "enum": ["none", "low", "high"] },
+            "sharedAttributeCount": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/attribute/promote/1.0",
+  "title": "Persona Attribute Promote — payload",
+  "description": "Make values a context-local face carries reusable: each named entry's value becomes a pool attribute, and the face — which can no longer live inside one context once it references the pool — moves above contexts, keeping its id and staying worn wherever it was. One-way.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "profileId", "entries", "expectedVersion"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1, "description": "The context the local face lives in." },
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "The context-local face." },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "type": "integer", "minimum": 0 },
+      "description": "Zero-based positions, in the face's `entries`, of the values to promote. Positions are meaningful only against the version the producer read, which is why `expectedVersion` is required."
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version",
+      "description": "The local face's version as the producer read it. Required: a position into a face edited since would promote a different value than the holder chose."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Attribute Promote — response payload",
+      "description": "Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "version", "promoted"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid", "description": "Unchanged: the face keeps its id. It is now read through persona/profile/get." },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version", "description": "The face's version in the pool." },
+        "promoted": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "description": "For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `created: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["entry", "attributeId", "created"],
+            "properties": {
+              "entry": { "type": "integer", "minimum": 0 },
+              "attributeId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+              "created": { "type": "boolean" }
+            }
+          }
+        },
+        "reboundPersonaDids": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
