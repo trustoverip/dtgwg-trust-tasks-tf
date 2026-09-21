@@ -31,6 +31,14 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.7...trust-tasks-rs-v0.21.8) — 2026-09-21
+
+
+### Added
+
+- **persona**: Honest pins, purge-version, and entry slots ([#538](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/538))
+
+
 ## [0.21.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.6...trust-tasks-rs-v0.21.7) — 2026-09-21
 
 
