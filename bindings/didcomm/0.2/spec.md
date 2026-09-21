@@ -4,7 +4,7 @@ version: "0.2"
 title: DIDComm v2.1 transport binding
 summary: Carries Trust Task documents inside DIDComm v2.1 authcrypt envelopes; the verified sender_kid maps to the framework's transport-authenticated party identity, and the DIDComm thread headers map to the framework's threadId and parentThreadId.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 bindingURI: https://trusttasks.org/binding/didcomm/0.2
 envelopeType: https://trusttasks.org/binding/didcomm/0.1/envelope
 authors:
@@ -17,7 +17,7 @@ This binding specifies how *Trust Task documents* are exchanged inside [DIDComm 
 
 ## Status of This Document
 
-`0.2` draft. Targets **framework `0.5`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). The binding is implemented by [`trust-tasks-didcomm`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm) and round-trip-tested against `affinidi-messaging-test-mediator`.
+`0.2` draft. Targets **framework `0.5.0`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). The binding is implemented by [`trust-tasks-didcomm`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/trust-tasks-didcomm) and round-trip-tested against `affinidi-messaging-test-mediator`.
 
 ## 1. Binding URI
 

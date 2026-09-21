@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Binding — Get
 summary: An application in a context learns whether a persona has a profile bound and what the holder calls it, and never what it contains.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, binding, context, least-disclosure]
 authors:

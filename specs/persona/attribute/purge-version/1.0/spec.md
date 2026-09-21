@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Attribute — Purge Version
 summary: A holder permanently removes earlier versions of an attribute that their agent kept because a profile pins them — the explicit override on retention, for a value they want gone even where a face still asks for it.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona

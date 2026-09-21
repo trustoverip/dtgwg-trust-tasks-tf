@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Renderers — List
 summary: Enumerate the output formats an agent can present in, and what each discards, so a client negotiates format rather than discovering lossiness afterwards.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, privacy, correlation]
 authors:

@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Correlation — Analyze
 summary: Report where the holder's identities link to one another, why, whether the link crosses a part of their life they keep separate, and what can be done about each — including the remedy a holder would not otherwise think of.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, privacy, correlation, facet]
 authors:

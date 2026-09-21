@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Ceremony Receipt
 summary: Evidence that one enactment of a Trust Ceremony completed — the steps it comprised, in order, attested by a recorder the definition names.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: provenance
 keywords:
   - ceremony

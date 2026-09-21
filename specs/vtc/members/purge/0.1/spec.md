@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Members — Purge
 summary: Irreversibly delete a removed member's tombstone and residual records from a Verifiable Trust Community, refusing when it would orphan the last administrator.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: governance
 keywords:
   - vtc

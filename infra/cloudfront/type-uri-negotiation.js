@@ -11,7 +11,9 @@
 // their schema by content-negotiating one. The schemas are deployed; they are
 // just at a different URL from the one the specification hands implementers.
 //
-//   /spec/trust-task/<M.m>  + application/schema+json -> /specs/_framework/<M.m>/trust-task.schema.json
+//   /spec/trust-task/<M.m.p> + application/schema+json -> /specs/_framework/<M.m>/trust-task.schema.json   (p = 0)
+//                                                     -> /specs/_framework/<M.m.p>/trust-task.schema.json (p > 0)
+//   /spec/trust-task/<M.m>  + application/schema+json -> /specs/_framework/<M.m>/trust-task.schema.json   (alias of M.m.0)
 //   /spec/<slug…>/<M.m>     + application/schema+json -> /specs/<slug…>/<M.m>/payload.schema.json
 //   /ceremony/<slug…>/<M.m> + application/json         -> /ceremonies/<slug…>/<M.m>/ceremony.json
 //
@@ -84,18 +86,34 @@ function negotiateSchema(request) {
     return false;
   }
 
-  // Last segment is the MAJOR.MINOR version; everything before it is the slug.
+  // Last segment is the version; everything before it is the slug. A task's
+  // version is MAJOR.MINOR; only the framework's is three-part (SPEC §5.1.1).
   var version = segments[segments.length - 1];
-  if (!/^[0-9]+\.[0-9]+$/.test(version)) {
+  var slug = segments.slice(0, segments.length - 1).join('/');
+  var threePart = /^[0-9]+\.[0-9]+\.[0-9]+$/.test(version);
+  if (!threePart && !/^[0-9]+\.[0-9]+$/.test(version)) {
     return false;
   }
-  var slug = segments.slice(0, segments.length - 1).join('/');
 
   // `trust-task` is reserved for the framework (§6.1); its envelope schema lives
-  // outside the task tree.
+  // outside the task tree. The framework's Type URI is three-part, and its
+  // two-part form is an alias of the `.0` release (SPEC §5.1.1), so a `.0`
+  // release is stored once, under MAJOR.MINOR, and served at both. A later
+  // PATCH is a different envelope, stored under its full version: it is never
+  // substituted for the release a specification targets.
   if (slug === 'trust-task') {
-    request.uri = '/specs/_framework/' + version + '/trust-task.schema.json';
+    var dir = version;
+    if (threePart) {
+      var parts = version.split('.');
+      if (parts[2] === '0') {
+        dir = parts[0] + '.' + parts[1];
+      }
+    }
+    request.uri = '/specs/_framework/' + dir + '/trust-task.schema.json';
     return true;
+  }
+  if (threePart) {
+    return false;
   }
 
   // Refuse anything that is not a plain slug — a stray `.` or `..` would

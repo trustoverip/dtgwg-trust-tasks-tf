@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Attribute — Put
 summary: A holder writes one atomic fact about themselves into their agent's attribute pool, declaring where the value came from, and receives back an advisory count of how many of their other profiles already present the same value.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona

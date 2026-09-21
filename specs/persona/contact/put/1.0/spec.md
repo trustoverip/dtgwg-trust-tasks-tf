@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Contact — Put
 summary: A holder's agent files what a peer disclosed as a new revision, never overwriting, and reports which claims changed — so a silently altered payment address becomes a visible event.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, contact, revision, phishing-resistance]
 authors:

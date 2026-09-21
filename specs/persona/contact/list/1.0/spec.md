@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Contact — List
 summary: Enumerate a context's contacts as summaries, narrowed by persona or by what changed since a given instant, with no claim values in the listing.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, contact, privacy]
 authors:

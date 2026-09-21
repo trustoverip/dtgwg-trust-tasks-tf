@@ -4,7 +4,7 @@ version: "0.1"
 title: Push wake-up transport binding
 summary: A contentless wake-up notification (APNs / FCM / Web Push) sent by a push gateway on behalf of a trigger — the device's mediator or its VTA — telling a backgrounded consumer to connect to its mediator and drain queued DIDComm-carried Trust Task documents.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 bindingURI: https://trusttasks.org/binding/push/0.1
 authors:
   - Glenn Gore (https://github.com/stormer78)
@@ -32,7 +32,7 @@ The credential reality drives the split. APNs and FCM credentials are bound to t
 
 ## Status of This Document
 
-`0.1` draft. Targets **framework `0.5`** and depends on the [DIDComm binding `0.1`](../../didcomm/0.1/spec.md). The wake-handle conveyance from device to VTA is the [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md) Trust Task; the handle and allowlist shapes are [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy).
+`0.1` draft. Targets **framework `0.5.0`** and depends on the [DIDComm binding `0.1`](../../didcomm/0.1/spec.md). The wake-handle conveyance from device to VTA is the [`device/set-wake/0.1`](../../../specs/device/set-wake/0.1/spec.md) Trust Task; the handle and allowlist shapes are [`WakeHandle`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeHandle) and [`WakeTriggerPolicy`](../../../specs/device/_shared/0.1/device-binding.schema.json#/$defs/WakeTriggerPolicy).
 
 ## 1. Binding URI
 

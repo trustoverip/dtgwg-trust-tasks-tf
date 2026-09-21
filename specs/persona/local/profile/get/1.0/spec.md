@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Local Profile — Get
 summary: Read one context-local profile.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, local, context, throwaway]
 authors:

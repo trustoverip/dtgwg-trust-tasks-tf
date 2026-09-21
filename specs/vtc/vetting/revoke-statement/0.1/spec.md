@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Vetting — Revoke Statement
 summary: A vetter withdraws a Vetting Statement it issued by telling the community that relies on it. From then on the statement does not count, and the community records that it was withdrawn.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: governance
 keywords:
   - vtc
@@ -70,7 +70,7 @@ The notice is not a published status list. A list holding a handful of one vette
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
 ## Conformance
 

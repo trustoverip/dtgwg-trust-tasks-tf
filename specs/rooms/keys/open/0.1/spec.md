@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Keys — Open
 summary: "An agent asks the party holding its principal's room keys to open one sealed record; the plaintext comes back and the key never does."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: ai-agents
 keywords:
   - room

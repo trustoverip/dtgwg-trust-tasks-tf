@@ -4,7 +4,7 @@ version: "0.1"
 title: WebVH Servers — Reconcile
 summary: A producer asks an agent to compare the DIDs a hosting server holds for it against the DIDs it has records for, and to report where the two disagree.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:
   - webvh

@@ -4,7 +4,7 @@ version: "0.1"
 title: Vetting — Request
 summary: An applicant asks one existing member to vet their identity for one community. The vetter accepts and shows it is eligible to vet, or refuses.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - vetting
@@ -74,7 +74,7 @@ These tasks run between two people's agents. No community service is a party to 
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
 ## Conformance
 

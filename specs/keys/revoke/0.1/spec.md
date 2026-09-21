@@ -4,7 +4,7 @@ version: "0.1"
 title: Keys — Revoke
 summary: A producer retires a key from further use; the record is kept so signatures it already made remain attributable.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: key-management
 keywords:
   - keys

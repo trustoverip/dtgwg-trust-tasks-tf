@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Profile — Get
 summary: A holder reads one profile, either as composed or resolved against the pool into the claims it would actually present.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, profile, projection, resolution]
 authors:

@@ -4,7 +4,7 @@ version: "1.0"
 title: VTA Services — Enable
 summary: An operator advertises a transport, writing it into the agent's signed DID document.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:
   - vta

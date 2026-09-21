@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Disclosure — History
 summary: What the holder has shared, with whom and when — and which contexts a given attribute has reached, which is the account the agent-scoped pool owes them.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, privacy, correlation]
 authors:

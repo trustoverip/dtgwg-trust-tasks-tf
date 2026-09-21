@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Records — Get
 summary: "A member reads one record from a data room, presenting the same authority chain a write presents and needing no host session."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room
