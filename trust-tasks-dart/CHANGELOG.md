@@ -11,6 +11,70 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.7 — 2026-09-21
+
+
+### Added
+
+- **vtc/join-requests/supplement**: Let a deferred applicant answer, instead of starting over (#526)
+
+Keyring finding KR-03, the half not closed by `join-requests/withdraw/0.1`
+  (#518). A community that cannot decide a request on what it was given defers it
+  and says what more it needs — and until now the applicant had nowhere to put
+  the answer. The request stays open, `join-requests/submit`'s dedup rule refuses
+  a second application, and the only ways out are to withdraw (discarding the
+  vetting already gathered) or to wait for a retention sweep neither party
+  controls. A deferral was a dead end dressed as a question.
+
+  This task is the answer: the applicant re-presents against the request that
+  already exists, the community re-runs its admission policy, and returns a fresh
+  verdict.
+
+  ## The response is submit's response
+
+  `{requestId, verdict}` over the shared `Verdict`, exactly as
+  `join-requests/submit/0.2` returns. A supplement has precisely the outcomes a
+  submission has — including a further `requestMore`, because the community is
+  entitled to still not be satisfied, and including `deny` — so a client that can
+  read one reads the other with no second code path.
+
+  ## Three decisions that had a tempting wrong answer
+
+  **The presentation replaces, it does not accumulate.** Merging a new
+  presentation with the old one produces a claim set the applicant never
+  presented and never signed as a whole, covered by no single proof; a consumer
+  could not then say what the applicant actually asserted at the moment it
+  admitted them. The cost is that the applicant re-presents everything rather
+  than only the shortfall, so the spec tells a deferring community to describe
+  the whole requirement in its `presentationDefinition`.
+
+  **Replacement governs the presentation and nothing else.** Vetting attestations
+  are attached to the request, not to the presentation, and a consumer MUST NOT
+  discard them when the presentation is replaced. A vetter who has already
+  attested does not attest again because the applicant answered a question about
+  a credential. This is what makes supplementing meaningfully different from
+  withdraw-and-resubmit, which throws that work away.
+
+  **A merely-queued request cannot be supplemented** — `notAwaitingEvidence`, a
+  precondition and not an authorization rule. A `refer`red request waits on the
+  community, not on the applicant; accepting new evidence into it would replace
+  what a maintainer is reviewing underneath them, leaving the document they were
+  reading no longer the one they were asked to decide. An applicant who wants to
+  change a request nobody asked them to change withdraws and submits afresh,
+  which is visible to everyone.
+
+  ## Other declarations
+
+  Authorization is ownership, as on withdraw: the proven issuer must be the
+  applicant on the request, which is the whole entitlement because an applicant
+  holds no membership or capability. `notFound` covers both "no open request" and
+  "not yours", so the task cannot be used to probe which request ids exist.
+
+  `issuedAt` is REQUIRED because a supplement is replayable in a way a submission
+  is not: the request it targets outlives it, so a replay re-runs the policy
+  against evidence the applicant has since replaced and can overwrite a newer
+  verdict with an older one.
+
 ## 0.1.6 — 2026-09-20
 
 
