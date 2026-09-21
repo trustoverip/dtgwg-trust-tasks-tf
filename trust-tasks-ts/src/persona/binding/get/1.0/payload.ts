@@ -29,7 +29,11 @@ export interface PersonaBindingGetResponsePayload {
    */
   profileId?: Ulid;
   /**
-   * The holder's label for the bound profile, so an application can show which identity is in use. Names a composition; reveals none of it.
+   * The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.
+   */
+  label?: string;
+  /**
+   * The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.
    */
   profileName?: string;
   /**
@@ -118,10 +122,16 @@ export const PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/Ulid",
           "description": "Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized."
         },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none."
+        },
         "profileName": {
           "type": "string",
           "maxLength": 128,
-          "description": "The holder's label for the bound profile, so an application can show which identity is in use. Names a composition; reveals none of it."
+          "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`."
         },
         "claimCount": {
           "type": "integer",
@@ -189,10 +199,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/Ulid",
           "description": "Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized."
         },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none."
+        },
         "profileName": {
           "type": "string",
           "maxLength": 128,
-          "description": "The holder's label for the bound profile, so an application can show which identity is in use. Names a composition; reveals none of it."
+          "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`."
         },
         "claimCount": {
           "type": "integer",

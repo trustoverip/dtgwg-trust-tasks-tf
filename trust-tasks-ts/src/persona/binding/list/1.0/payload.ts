@@ -26,7 +26,11 @@ export interface PersonaBindingListResponsePayload {
     personaDid: string;
     bound: boolean;
     /**
-     * The holder's label for the bound profile. Names a composition; reveals none of it.
+     * The name the holder chose for this context to call the face. Absent when they chose none.
+     */
+    label?: string;
+    /**
+     * The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.
      */
     profileName?: string;
     claimCount?: number;
@@ -121,10 +125,16 @@ export const PAYLOAD_SCHEMA = {
               "bound": {
                 "type": "boolean"
               },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "The name the holder chose for this context to call the face. Absent when they chose none."
+              },
               "profileName": {
                 "type": "string",
                 "maxLength": 128,
-                "description": "The holder's label for the bound profile. Names a composition; reveals none of it."
+                "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get."
               },
               "claimCount": {
                 "type": "integer",
@@ -192,10 +202,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "bound": {
                 "type": "boolean"
               },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "The name the holder chose for this context to call the face. Absent when they chose none."
+              },
               "profileName": {
                 "type": "string",
                 "maxLength": 128,
-                "description": "The holder's label for the bound profile. Names a composition; reveals none of it."
+                "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get."
               },
               "claimCount": {
                 "type": "integer",

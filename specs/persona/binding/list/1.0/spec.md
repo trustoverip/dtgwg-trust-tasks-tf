@@ -73,6 +73,10 @@ A conforming **maintainer** **MUST** confine the enumeration to the caller's own
 context; **MUST NOT** return any claim value or attribute identifier; and **MUST
 NOT** offer a cross-context enumeration on this task.
 
+A maintainer **MUST** omit `profileName` unless the caller is holder-authorized,
+and **SHOULD** return the binding's `label` in its place; see
+[persona/binding/set](../../set/1.0/spec.md).
+
 ## Authorization
 
 **Context-scoped**, confined to the caller's own context. Safe to expose because

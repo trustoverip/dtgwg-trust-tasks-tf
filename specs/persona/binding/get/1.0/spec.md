@@ -97,10 +97,17 @@ The request carries identifiers. The response carries the holder's **label** for
 a composition — their own words, which may themselves be revealing ("Job hunting")
 — and a count. It carries no values.
 
-The smallest response that answers the task is `bound`. `profileName` and
-`claimCount` are affordances for rendering, and a maintainer that judged a label
-too revealing to hand an application **MAY** omit it; a producer **MUST NOT**
-treat its absence as an error.
+The smallest response that answers the task is `bound`. `label` and
+`claimCount` are affordances for rendering; a producer **MUST NOT** treat the
+absence of either as an error.
+
+`profileName` is the holder's **own** name for the face, and a maintainer **MUST**
+omit it unless the caller is holder-authorized. It used to be returned to any
+caller in the context, on the reasoning that a name "reveals none of" the
+composition. The name is the revealing part: it is the holder's filing, and
+binding a face to a persona is not consent to tell a context what they call it.
+The holder chooses what a context may call the face with `label` on
+[persona/binding/set](../../set/1.0/spec.md).
 
 ### Correlation
 
@@ -116,7 +123,7 @@ Nothing here reveals the holder's other contexts, other personas, or the pool.
 ### Retention
 
 A point-in-time view with no evidentiary value. An application **MAY** cache
-`bound` and `profileName` for a session's UI and **SHOULD** discard them after,
+`bound` and `label` for a session's UI and **SHOULD** discard them after,
 since a binding can be cleared at any time and a stale cache would show an
 identity that is no longer in use.
 

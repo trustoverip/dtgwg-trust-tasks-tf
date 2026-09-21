@@ -12,6 +12,7 @@ class ResponsePersonasItem {
   const ResponsePersonasItem({
     required this.personaDid,
     required this.bound,
+    this.label,
     this.profileName,
     this.claimCount,
     this.isLocal,
@@ -22,6 +23,7 @@ class ResponsePersonasItem {
       ResponsePersonasItem(
         personaDid: json['personaDid'] as String,
         bound: json['bound'] as bool,
+        label: json['label'] as String?,
         profileName: json['profileName'] as String?,
         claimCount: json['claimCount'] as int?,
         isLocal: json['isLocal'] as bool?,
@@ -30,7 +32,12 @@ class ResponsePersonasItem {
   final String personaDid;
   final bool bound;
 
-  /// The holder's label for the bound profile. Names a composition; reveals none of it.
+  /// The name the holder chose for this context to call the face. Absent when they chose
+  /// none.
+  final String? label;
+
+  /// The holder's OWN name for the bound face. A maintainer MUST omit it unless the
+  /// caller is holder-authorized; see persona/binding/get.
   final String? profileName;
   final int? claimCount;
 
@@ -44,6 +51,7 @@ class ResponsePersonasItem {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'personaDid': personaDid,
         'bound': bound,
+        if (label != null) 'label': label!,
         if (profileName != null) 'profileName': profileName!,
         if (claimCount != null) 'claimCount': claimCount!,
         if (isLocal != null) 'isLocal': isLocal!,
@@ -131,11 +139,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/persona/binding/list/1.0","title":"Persona Binding List — payload","description":"Enumerate the personas present in one context. This context only — an application learns which identities operate where it does, and nothing about anywhere else the holder operates.","type":"object","additionalProperties":false,"required":["contextId"],"properties":{"contextId":{"type":"string","minLength":1},"cursor":{"type":"string","maxLength":4096},"limit":{"type":"integer","minimum":1,"maximum":500,"default":100},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"Persona Binding List — response payload","description":"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.","type":"object","additionalProperties":false,"required":["personas"],"properties":{"personas":{"type":"array","maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["personaDid","bound"],"properties":{"personaDid":{"type":"string","minLength":1},"bound":{"type":"boolean"},"profileName":{"type":"string","maxLength":128,"description":"The holder\'s label for the bound profile. Names a composition; reveals none of it."},"claimCount":{"type":"integer","minimum":0},"isLocal":{"type":"boolean","description":"True when the bound profile is context-local rather than imported from the holder\'s pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down."}}}},"nextCursor":{"type":"string","maxLength":4096},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/persona/binding/list/1.0","title":"Persona Binding List — payload","description":"Enumerate the personas present in one context. This context only — an application learns which identities operate where it does, and nothing about anywhere else the holder operates.","type":"object","additionalProperties":false,"required":["contextId"],"properties":{"contextId":{"type":"string","minLength":1},"cursor":{"type":"string","maxLength":4096},"limit":{"type":"integer","minimum":1,"maximum":500,"default":100},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"Persona Binding List — response payload","description":"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.","type":"object","additionalProperties":false,"required":["personas"],"properties":{"personas":{"type":"array","maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["personaDid","bound"],"properties":{"personaDid":{"type":"string","minLength":1},"bound":{"type":"boolean"},"label":{"type":"string","minLength":1,"maxLength":128,"description":"The name the holder chose for this context to call the face. Absent when they chose none."},"profileName":{"type":"string","maxLength":128,"description":"The holder\'s OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get."},"claimCount":{"type":"integer","minimum":0},"isLocal":{"type":"boolean","description":"True when the bound profile is context-local rather than imported from the holder\'s pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down."}}}},"nextCursor":{"type":"string","maxLength":4096},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Persona Binding List — response payload","description":"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.","type":"object","additionalProperties":false,"required":["personas"],"properties":{"personas":{"type":"array","maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["personaDid","bound"],"properties":{"personaDid":{"type":"string","minLength":1},"bound":{"type":"boolean"},"profileName":{"type":"string","maxLength":128,"description":"The holder\'s label for the bound profile. Names a composition; reveals none of it."},"claimCount":{"type":"integer","minimum":0},"isLocal":{"type":"boolean","description":"True when the bound profile is context-local rather than imported from the holder\'s pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down."}}}},"nextCursor":{"type":"string","maxLength":4096},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Persona Binding List — response payload","description":"Success response to persona/binding/list. Type https://trusttasks.org/spec/persona/binding/list/1.0#response. Carries the same thin summary as persona/binding/get, for the same reason: an application needs to know which identity is in use, not what it contains.","type":"object","additionalProperties":false,"required":["personas"],"properties":{"personas":{"type":"array","maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["personaDid","bound"],"properties":{"personaDid":{"type":"string","minLength":1},"bound":{"type":"boolean"},"label":{"type":"string","minLength":1,"maxLength":128,"description":"The name the holder chose for this context to call the face. Absent when they chose none."},"profileName":{"type":"string","maxLength":128,"description":"The holder\'s OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get."},"claimCount":{"type":"integer","minimum":0},"isLocal":{"type":"boolean","description":"True when the bound profile is context-local rather than imported from the holder\'s pool. Worth surfacing: a local persona is one the application itself may have composed, and an application should be able to tell what it authored from what the holder pushed down."}}}},"nextCursor":{"type":"string","maxLength":4096},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

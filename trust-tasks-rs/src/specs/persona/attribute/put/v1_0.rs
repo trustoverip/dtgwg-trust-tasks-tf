@@ -1084,6 +1084,54 @@ impl ::std::convert::TryFrom<::std::string::String> for ReleaseRequirement {
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
+///    "heldByPin": {
+///      "description": "Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.",
+///      "type": "array",
+///      "items": {
+///        "type": "object",
+///        "required": [
+///          "pinVersion",
+///          "profileId"
+///        ],
+///        "properties": {
+///          "pinVersion": {
+///            "$ref": "#/definitions/Version"
+///          },
+///          "profileId": {
+///            "$ref": "#/definitions/Ulid"
+///          }
+///        },
+///        "additionalProperties": false
+///      },
+///      "maxItems": 256
+///    },
+///    "refreshed": {
+///      "description": "Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.",
+///      "type": "array",
+///      "items": {
+///        "type": "object",
+///        "required": [
+///          "contextId",
+///          "personaDid",
+///          "profileId"
+///        ],
+///        "properties": {
+///          "contextId": {
+///            "type": "string",
+///            "minLength": 1
+///          },
+///          "personaDid": {
+///            "type": "string",
+///            "minLength": 1
+///          },
+///          "profileId": {
+///            "$ref": "#/definitions/Ulid"
+///          }
+///        },
+///        "additionalProperties": false
+///      },
+///      "maxItems": 256
+///    },
 ///    "updatedAt": {
 ///      "type": "string",
 ///      "format": "date-time"
@@ -1115,6 +1163,16 @@ pub struct Response {
     pub created_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.
+    #[serde(
+        rename = "heldByPin",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub held_by_pin: ::std::vec::Vec<ResponseHeldByPinItem>,
+    ///Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub refreshed: ::std::vec::Vec<ResponseRefreshedItem>,
     #[serde(rename = "updatedAt")]
     pub updated_at: ::chrono::DateTime<::chrono::offset::Utc>,
     pub version: Version,
@@ -1248,6 +1306,224 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseCorrelationSever
         value: ::std::string::String,
     ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
+    }
+}
+///`ResponseHeldByPinItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "pinVersion",
+///    "profileId"
+///  ],
+///  "properties": {
+///    "pinVersion": {
+///      "$ref": "#/definitions/Version"
+///    },
+///    "profileId": {
+///      "$ref": "#/definitions/Ulid"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ResponseHeldByPinItem {
+    #[serde(rename = "pinVersion")]
+    pub pin_version: Version,
+    #[serde(rename = "profileId")]
+    pub profile_id: Ulid,
+}
+impl ResponseHeldByPinItem {
+    pub fn builder() -> builder::ResponseHeldByPinItem {
+        Default::default()
+    }
+}
+///`ResponseRefreshedItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "contextId",
+///    "personaDid",
+///    "profileId"
+///  ],
+///  "properties": {
+///    "contextId": {
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "personaDid": {
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "profileId": {
+///      "$ref": "#/definitions/Ulid"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ResponseRefreshedItem {
+    #[serde(rename = "contextId")]
+    pub context_id: ResponseRefreshedItemContextId,
+    #[serde(rename = "personaDid")]
+    pub persona_did: ResponseRefreshedItemPersonaDid,
+    #[serde(rename = "profileId")]
+    pub profile_id: Ulid,
+}
+impl ResponseRefreshedItem {
+    pub fn builder() -> builder::ResponseRefreshedItem {
+        Default::default()
+    }
+}
+///`ResponseRefreshedItemContextId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseRefreshedItemContextId(::std::string::String);
+impl ::std::ops::Deref for ResponseRefreshedItemContextId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseRefreshedItemContextId> for ::std::string::String {
+    fn from(value: ResponseRefreshedItemContextId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseRefreshedItemContextId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseRefreshedItemContextId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseRefreshedItemContextId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseRefreshedItemContextId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseRefreshedItemContextId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`ResponseRefreshedItemPersonaDid`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseRefreshedItemPersonaDid(::std::string::String);
+impl ::std::ops::Deref for ResponseRefreshedItemPersonaDid {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseRefreshedItemPersonaDid> for ::std::string::String {
+    fn from(value: ResponseRefreshedItemPersonaDid) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseRefreshedItemPersonaDid {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseRefreshedItemPersonaDid {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseRefreshedItemPersonaDid {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseRefreshedItemPersonaDid {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseRefreshedItemPersonaDid {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 /**
@@ -1739,6 +2015,14 @@ pub mod builder {
             ::std::string::String,
         >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        held_by_pin: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseHeldByPinItem>,
+            ::std::string::String,
+        >,
+        refreshed: ::std::result::Result<
+            ::std::vec::Vec<super::ResponseRefreshedItem>,
+            ::std::string::String,
+        >,
         updated_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         version: ::std::result::Result<super::Version, ::std::string::String>,
@@ -1751,6 +2035,8 @@ pub mod builder {
                 created: Err("no value supplied for created".to_string()),
                 created_at: Ok(Default::default()),
                 ext: Ok(Default::default()),
+                held_by_pin: Ok(Default::default()),
+                refreshed: Ok(Default::default()),
                 updated_at: Err("no value supplied for updated_at".to_string()),
                 version: Err("no value supplied for version".to_string()),
             }
@@ -1809,6 +2095,26 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for ext: {e}"));
             self
         }
+        pub fn held_by_pin<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseHeldByPinItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.held_by_pin = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for held_by_pin: {e}"));
+            self
+        }
+        pub fn refreshed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ResponseRefreshedItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.refreshed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for refreshed: {e}"));
+            self
+        }
         pub fn updated_at<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -1839,6 +2145,8 @@ pub mod builder {
                 created: value.created?,
                 created_at: value.created_at?,
                 ext: value.ext?,
+                held_by_pin: value.held_by_pin?,
+                refreshed: value.refreshed?,
                 updated_at: value.updated_at?,
                 version: value.version?,
             })
@@ -1852,6 +2160,8 @@ pub mod builder {
                 created: Ok(value.created),
                 created_at: Ok(value.created_at),
                 ext: Ok(value.ext),
+                held_by_pin: Ok(value.held_by_pin),
+                refreshed: Ok(value.refreshed),
                 updated_at: Ok(value.updated_at),
                 version: Ok(value.version),
             }
@@ -1912,6 +2222,130 @@ pub mod builder {
             }
         }
     }
+    #[derive(Clone, Debug)]
+    pub struct ResponseHeldByPinItem {
+        pin_version: ::std::result::Result<super::Version, ::std::string::String>,
+        profile_id: ::std::result::Result<super::Ulid, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseHeldByPinItem {
+        fn default() -> Self {
+            Self {
+                pin_version: Err("no value supplied for pin_version".to_string()),
+                profile_id: Err("no value supplied for profile_id".to_string()),
+            }
+        }
+    }
+    impl ResponseHeldByPinItem {
+        pub fn pin_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Version>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pin_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pin_version: {e}"));
+            self
+        }
+        pub fn profile_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Ulid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.profile_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for profile_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseHeldByPinItem> for super::ResponseHeldByPinItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseHeldByPinItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                pin_version: value.pin_version?,
+                profile_id: value.profile_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseHeldByPinItem> for ResponseHeldByPinItem {
+        fn from(value: super::ResponseHeldByPinItem) -> Self {
+            Self {
+                pin_version: Ok(value.pin_version),
+                profile_id: Ok(value.profile_id),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseRefreshedItem {
+        context_id:
+            ::std::result::Result<super::ResponseRefreshedItemContextId, ::std::string::String>,
+        persona_did:
+            ::std::result::Result<super::ResponseRefreshedItemPersonaDid, ::std::string::String>,
+        profile_id: ::std::result::Result<super::Ulid, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseRefreshedItem {
+        fn default() -> Self {
+            Self {
+                context_id: Err("no value supplied for context_id".to_string()),
+                persona_did: Err("no value supplied for persona_did".to_string()),
+                profile_id: Err("no value supplied for profile_id".to_string()),
+            }
+        }
+    }
+    impl ResponseRefreshedItem {
+        pub fn context_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRefreshedItemContextId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_id: {e}"));
+            self
+        }
+        pub fn persona_did<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseRefreshedItemPersonaDid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.persona_did = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for persona_did: {e}"));
+            self
+        }
+        pub fn profile_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Ulid>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.profile_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for profile_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseRefreshedItem> for super::ResponseRefreshedItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseRefreshedItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_id: value.context_id?,
+                persona_did: value.persona_did?,
+                profile_id: value.profile_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseRefreshedItem> for ResponseRefreshedItem {
+        fn from(value: super::ResponseRefreshedItem) -> Self {
+            Self {
+                context_id: Ok(value.context_id),
+                persona_did: Ok(value.persona_did),
+                profile_id: Ok(value.profile_id),
+            }
+        }
+    }
 }
 /// Generation of default values for serde.
 pub mod defaults {
@@ -1925,7 +2359,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/put. Type https://trusttasks.org/spec/persona/attribute/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/attribute/put:versionConflict, whose details carry the maintainer's current version and value.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"correlation\": {\n          \"additionalProperties\": false,\n          \"description\": \"Advisory result of the correlation check the maintainer runs over the new value (see persona/correlation/analyze). Returned on the write so a producer's builder can warn at the moment of composition rather than requiring a second round trip. Advisory only: the write has already applied, and a maintainer MUST NOT refuse a write on correlation grounds — the holder decides.\",\n          \"properties\": {\n            \"severity\": {\n              \"enum\": [\n                \"none\",\n                \"low\",\n                \"high\"\n              ],\n              \"type\": \"string\"\n            },\n            \"sharedWithProfileCount\": {\n              \"description\": \"How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"severity\"\n          ],\n          \"type\": \"object\"\n        },\n        \"created\": {\n          \"description\": \"True when this write created the attribute, false when it replaced one. A producer that omitted `attributeId` can still be told which happened, because a retried create with a supplied id is a replacement.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"version\",\n        \"created\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Persona Attribute Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/attribute/put/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Create or replace one attribute in the holder's pool. Omit `attributeId` to create; supply it to replace. `expectedVersion` makes the write conditional.\",\n  \"properties\": {\n    \"attributeId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Omit to create — the maintainer assigns one and returns it. Supply to replace an existing attribute, or to make a create idempotent under retry; a supplied id that already exists is a replacement, and a producer that meant to create MUST pair it with `expectedVersion: 0`.\"\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\",\n      \"description\": \"Optional precondition. Omit for last-writer-wins. Supply the version a prior read returned to make the write conditional; supply 0 to create only.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"label\": {\n      \"description\": \"The holder's own words, for their own picker. Never disclosed to a verifier.\",\n      \"maxLength\": 128,\n      \"type\": \"string\"\n    },\n    \"provenance\": {\n      \"$ref\": \"#/$defs/Provenance\"\n    },\n    \"release\": {\n      \"$ref\": \"#/$defs/ReleaseRequirement\",\n      \"description\": \"What it takes to disclose this value. OPTIONAL, with the same meaning for absence as `sensitivity`.\"\n    },\n    \"sensitivity\": {\n      \"$ref\": \"#/$defs/Sensitivity\",\n      \"description\": \"How carefully this value is shown to the holder. OPTIONAL, and its absence is meaningful: it records that the holder made no explicit decision, so a consumer resolves it from the claim-type registry. Sending the resolved value back would freeze it — a later tightening of the registry would then protect new attributes and leave this one exposed.\"\n    },\n    \"type\": {\n      \"$ref\": \"#/$defs/ClaimType\"\n    },\n    \"value\": {\n      \"description\": \"The fact itself. MUST agree with `valueType`; a maintainer MUST refuse a document where it does not. For a `credentialBacked` provenance this is the initial display cache — the maintainer re-derives it from the credential and MAY overwrite what was supplied.\"\n    },\n    \"valueType\": {\n      \"$ref\": \"#/$defs/ValueType\"\n    }\n  },\n  \"required\": [\n    \"type\",\n    \"valueType\",\n    \"value\",\n    \"provenance\"\n  ],\n  \"title\": \"Persona Attribute Put — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/put. Type https://trusttasks.org/spec/persona/attribute/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/attribute/put:versionConflict, whose details carry the maintainer's current version and value.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"correlation\": {\n          \"additionalProperties\": false,\n          \"description\": \"Advisory result of the correlation check the maintainer runs over the new value (see persona/correlation/analyze). Returned on the write so a producer's builder can warn at the moment of composition rather than requiring a second round trip. Advisory only: the write has already applied, and a maintainer MUST NOT refuse a write on correlation grounds — the holder decides.\",\n          \"properties\": {\n            \"severity\": {\n              \"enum\": [\n                \"none\",\n                \"low\",\n                \"high\"\n              ],\n              \"type\": \"string\"\n            },\n            \"sharedWithProfileCount\": {\n              \"description\": \"How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"severity\"\n          ],\n          \"type\": \"object\"\n        },\n        \"created\": {\n          \"description\": \"True when this write created the attribute, false when it replaced one. A producer that omitted `attributeId` can still be told which happened, because a retried create with a supplied id is a replacement.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"heldByPin\": {\n          \"description\": \"Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"pinVersion\": {\n                \"$ref\": \"#/$defs/Version\"\n              },\n              \"profileId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              }\n            },\n            \"required\": [\n              \"profileId\",\n              \"pinVersion\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"refreshed\": {\n          \"description\": \"Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"contextId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"profileId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              }\n            },\n            \"required\": [\n              \"profileId\",\n              \"contextId\",\n              \"personaDid\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"version\",\n        \"created\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Persona Attribute Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/attribute/put/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Create or replace one attribute in the holder's pool. Omit `attributeId` to create; supply it to replace. `expectedVersion` makes the write conditional.\",\n  \"properties\": {\n    \"attributeId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Omit to create — the maintainer assigns one and returns it. Supply to replace an existing attribute, or to make a create idempotent under retry; a supplied id that already exists is a replacement, and a producer that meant to create MUST pair it with `expectedVersion: 0`.\"\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\",\n      \"description\": \"Optional precondition. Omit for last-writer-wins. Supply the version a prior read returned to make the write conditional; supply 0 to create only.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"label\": {\n      \"description\": \"The holder's own words, for their own picker. Never disclosed to a verifier.\",\n      \"maxLength\": 128,\n      \"type\": \"string\"\n    },\n    \"provenance\": {\n      \"$ref\": \"#/$defs/Provenance\"\n    },\n    \"release\": {\n      \"$ref\": \"#/$defs/ReleaseRequirement\",\n      \"description\": \"What it takes to disclose this value. OPTIONAL, with the same meaning for absence as `sensitivity`.\"\n    },\n    \"sensitivity\": {\n      \"$ref\": \"#/$defs/Sensitivity\",\n      \"description\": \"How carefully this value is shown to the holder. OPTIONAL, and its absence is meaningful: it records that the holder made no explicit decision, so a consumer resolves it from the claim-type registry. Sending the resolved value back would freeze it — a later tightening of the registry would then protect new attributes and leave this one exposed.\"\n    },\n    \"type\": {\n      \"$ref\": \"#/$defs/ClaimType\"\n    },\n    \"value\": {\n      \"description\": \"The fact itself. MUST agree with `valueType`; a maintainer MUST refuse a document where it does not. For a `credentialBacked` provenance this is the initial display cache — the maintainer re-derives it from the credential and MAY overwrite what was supplied.\"\n    },\n    \"valueType\": {\n      \"$ref\": \"#/$defs/ValueType\"\n    }\n  },\n  \"required\": [\n    \"type\",\n    \"valueType\",\n    \"value\",\n    \"provenance\"\n  ],\n  \"title\": \"Persona Attribute Put — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1934,7 +2368,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/put. Type https://trusttasks.org/spec/persona/attribute/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/attribute/put:versionConflict, whose details carry the maintainer's current version and value.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"correlation\": {\n          \"additionalProperties\": false,\n          \"description\": \"Advisory result of the correlation check the maintainer runs over the new value (see persona/correlation/analyze). Returned on the write so a producer's builder can warn at the moment of composition rather than requiring a second round trip. Advisory only: the write has already applied, and a maintainer MUST NOT refuse a write on correlation grounds — the holder decides.\",\n          \"properties\": {\n            \"severity\": {\n              \"enum\": [\n                \"none\",\n                \"low\",\n                \"high\"\n              ],\n              \"type\": \"string\"\n            },\n            \"sharedWithProfileCount\": {\n              \"description\": \"How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"severity\"\n          ],\n          \"type\": \"object\"\n        },\n        \"created\": {\n          \"description\": \"True when this write created the attribute, false when it replaced one. A producer that omitted `attributeId` can still be told which happened, because a retried create with a supplied id is a replacement.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"version\",\n        \"created\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Persona Attribute Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/put. Type https://trusttasks.org/spec/persona/attribute/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/attribute/put:versionConflict, whose details carry the maintainer's current version and value.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"correlation\": {\n          \"additionalProperties\": false,\n          \"description\": \"Advisory result of the correlation check the maintainer runs over the new value (see persona/correlation/analyze). Returned on the write so a producer's builder can warn at the moment of composition rather than requiring a second round trip. Advisory only: the write has already applied, and a maintainer MUST NOT refuse a write on correlation grounds — the holder decides.\",\n          \"properties\": {\n            \"severity\": {\n              \"enum\": [\n                \"none\",\n                \"low\",\n                \"high\"\n              ],\n              \"type\": \"string\"\n            },\n            \"sharedWithProfileCount\": {\n              \"description\": \"How many other profiles already present this exact value. A count, not identifiers — the identifiers are available from the analyze task, which is where a producer should go to render remedies.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"severity\"\n          ],\n          \"type\": \"object\"\n        },\n        \"created\": {\n          \"description\": \"True when this write created the attribute, false when it replaced one. A producer that omitted `attributeId` can still be told which happened, because a retried create with a supplied id is a replacement.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"heldByPin\": {\n          \"description\": \"Faces that pin this attribute to an earlier version and so did NOT follow the edit — the counterparties that must keep seeing the value they verified. Named so the holder can decide, per face, whether that is still what they want. Absent when no face pins it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"pinVersion\": {\n                \"$ref\": \"#/$defs/Version\"\n              },\n              \"profileId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              }\n            },\n            \"required\": [\n              \"profileId\",\n              \"pinVersion\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"refreshed\": {\n          \"description\": \"Every place this write changed what a persona presents: each binding whose projection was re-pushed because a face wearing it shows this attribute live. An edit propagates by design, and a holder told only that it saved cannot tell whether it refreshed one face or nine. Holder-authorized, so identifiers are returned. Absent when nothing was bound to a face showing it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"contextId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"profileId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              }\n            },\n            \"required\": [\n              \"profileId\",\n              \"contextId\",\n              \"personaDid\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"version\",\n        \"created\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Persona Attribute Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

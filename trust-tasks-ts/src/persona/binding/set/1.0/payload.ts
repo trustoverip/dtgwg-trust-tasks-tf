@@ -28,6 +28,10 @@ export interface PersonaBindingSetPayload {
    * @maxItems 32
    */
   publicEntries?: Ulid[];
+  /**
+   * What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.
+   */
+  label?: string;
   expectedVersion?: ExpectedVersion;
   ext?: Ext;
 }
@@ -122,6 +126,12 @@ export const PAYLOAD_SCHEMA = {
         "$ref": "#/$defs/Ulid"
       },
       "description": "Attributes the holder opts into publishing on the persona's own DID document or equivalent public surface. Empty by default and MUST remain empty unless explicitly set: everything else is a per-verifier projection, and a published value is one document every relying party sees identically — a permanent correlation point the rest of this family exists to avoid."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all."
     },
     "expectedVersion": {
       "$ref": "#/$defs/ExpectedVersion"

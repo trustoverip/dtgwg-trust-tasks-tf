@@ -16,6 +16,10 @@ export interface PersonaLocalBindingSetPayload {
    * A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the whole boundary exists to prevent.
    */
   profileId?: Ulid | null;
+  /**
+   * What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.
+   */
+  label?: string;
   expectedVersion?: ExpectedVersion;
   ext?: Ext;
 }
@@ -85,6 +89,12 @@ export const PAYLOAD_SCHEMA = {
         }
       ],
       "description": "A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the whole boundary exists to prevent."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all."
     },
     "expectedVersion": {
       "$ref": "#/$defs/ExpectedVersion"
