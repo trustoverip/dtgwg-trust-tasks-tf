@@ -11,6 +11,17 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.9 — 2026-09-21
+
+
+### Specifications
+
+- **persona**: Lifecycle answers — disclosure currency, edit reach, binding label (#533)
+
+Additive members on existing 1.0 schemas, plus normative prose. From the
+  persona context-first design note (verifiable-trust-infrastructure,
+  docs/05-design-notes/persona-context-first.md, sections 3.2, 3.4, 9.2, 9.3).
+
 ## 0.1.8 — 2026-09-21
 
 
