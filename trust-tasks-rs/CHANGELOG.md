@@ -31,6 +31,57 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.11...trust-tasks-rs-v0.21.12) — 2026-09-21
+
+
+### Added
+
+- **trust-task-discovery**: Publish 0.2 with a three-part frameworkVersion ([#571](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/571))
+
+trust-task-discovery/0.1's response admits frameworkVersion only as
+  MAJOR.MINOR, so a responder cannot advertise a framework release as the
+  framework has written it since 0.4.0 (SPEC §5.1.1) — 0.6.0, or a later
+  PATCH. Widening 0.1 in place would make every 0.1 discoverer that
+  validates the response reject a conforming one, so this is 0.2.
+
+  - specs/trust-task-discovery/0.2: identical to 0.1 except the response's
+    frameworkVersion is MAJOR.MINOR.PATCH; adds "Relationship to 0.1"
+    (answer each version in the version asked; discoverers SHOULD ask 0.2)
+    and the four Security & Privacy sub-sections. Bindings generated.
+  - trust-tasks-rs: DiscoveryRegistry::respond_to_v0_2; the configured
+    release is held three-part and written MAJOR.MINOR in a 0.1 response.
+    Default "0.2" (stale) -> "0.6.0".
+  - trust-tasks-https: with_discovery/enable_discovery answer both 0.1 and
+    0.2, and advertise both.
+  - trust-tasks-dart-https: enableDiscovery answers both versions; default
+    frameworkVersion '0.5' -> '0.6.0'; example asks in 0.2.
+
+- **persona**: Retire a face, warn before deleting one, and let a binding end on its own ([#570](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/570))
+
+Removing a face means one of three things to the person doing it, and
+  the family had tasks for two: "not here" (a null binding/set) and "gone"
+  (profile/delete). This adds the middle one.
+
+  persona/profile/retire/1.0 — stop being a face everywhere and keep it.
+  Every binding to it is cleared and reported, it drops out of pickers and
+  default listings (profile/list `includeRetired`), and binding/set and
+  local/binding/set refuse it (`profileRetired`). Values and disclosure
+  history are kept. persona/profile/reinstate/1.0 undoes it and binds
+  nothing: wearing a face in a context is decided in that context.
+  Profile gains `status` and `retiredAt`.
+
+  profile/get and profile/delete return `disclosedTo` {partyCount,
+  contextCount}, and the delete spec tells a producer to show it before
+  sending: deleting a face does not un-tell anyone.
+
+  binding/set and local/binding/set take `until`; binding/get and
+  binding/list return it. At expiry the binding clears and, when the face
+  is then worn nowhere, it is retired — never deleted, and never retired
+  while another context still wears it. `untilNotFuture` refuses a past
+  `until` or one with a null profileId.
+
+
+
 ## [0.21.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.10...trust-tasks-rs-v0.21.11) — 2026-09-21
 
 

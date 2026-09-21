@@ -6,6 +6,33 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.21.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.21.11...trust-tasks-https-v0.21.12) — 2026-09-21
+
+
+### Added
+
+- **trust-task-discovery**: Publish 0.2 with a three-part frameworkVersion ([#571](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/571))
+
+trust-task-discovery/0.1's response admits frameworkVersion only as
+  MAJOR.MINOR, so a responder cannot advertise a framework release as the
+  framework has written it since 0.4.0 (SPEC §5.1.1) — 0.6.0, or a later
+  PATCH. Widening 0.1 in place would make every 0.1 discoverer that
+  validates the response reject a conforming one, so this is 0.2.
+
+  - specs/trust-task-discovery/0.2: identical to 0.1 except the response's
+    frameworkVersion is MAJOR.MINOR.PATCH; adds "Relationship to 0.1"
+    (answer each version in the version asked; discoverers SHOULD ask 0.2)
+    and the four Security & Privacy sub-sections. Bindings generated.
+  - trust-tasks-rs: DiscoveryRegistry::respond_to_v0_2; the configured
+    release is held three-part and written MAJOR.MINOR in a 0.1 response.
+    Default "0.2" (stale) -> "0.6.0".
+  - trust-tasks-https: with_discovery/enable_discovery answer both 0.1 and
+    0.2, and advertise both.
+  - trust-tasks-dart-https: enableDiscovery answers both versions; default
+    frameworkVersion '0.5' -> '0.6.0'; example asks in 0.2.
+
+
+
 ## [0.21.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.21.10...trust-tasks-https-v0.21.11) — 2026-09-21
 
 
