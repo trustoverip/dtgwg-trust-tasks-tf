@@ -120,7 +120,11 @@ There is a second precondition, and it is not an authorization one: the request 
 
 It **replaces** the presentation on the request rather than adding to it, and a consumer **MUST** evaluate its policy against this presentation alone. Merging it with what came before would produce a claim set that the applicant never presented and never signed as a whole, and which no single proof covers; a consumer cannot then say what the applicant actually asserted at the moment it admitted them. The practical consequence is that the applicant re-presents everything the community requires, not only the part that was missing, and a community that defers **SHOULD** describe the whole requirement in its `presentationDefinition` rather than only the shortfall.
 
-Replacement governs the *presentation* and nothing else. Evidence the community gathered about the applicant from third parties — vetting attestations in particular — is attached to the request, not to the presentation, and a consumer **MUST NOT** discard it when the presentation is replaced. A vetter who has already attested does not have to attest again because the applicant answered a question about a credential.
+Vetting attestations travel **in** the presentation, and are therefore replaced with it. A community counts an applicant's vetting by reading the attestations out of the presentation it was handed, so a replacing presentation that omits them is a presentation with no vetting, and a policy will read it that way. An applicant re-carries their vetting attestations along with everything else, and a community that defers **MUST** name them in its `presentationDefinition` alongside the rest of what it requires.
+
+What this does not cost is the vetters' work. A vetting attestation is a credential the applicant holds; re-presenting it is the applicant's act alone, and no vetter attests a second time because the applicant answered a question about some other credential.
+
+What a consumer **MUST NOT** do is carry a superseded presentation's attestations forward into the new decision. They were offered in a presentation the applicant has replaced, and counting them would decide the request on evidence the applicant is no longer presenting — the same defect as merging the two presentations, arriving by a different route.
 
 **`requestId`** — the request to supplement, **OPTIONAL**, for the same reason it is optional on [`join-requests/withdraw`](../../withdraw/0.1/spec.md) and [`join-requests/status`](../../status/0.1/spec.md): an applicant whose submit response was lost never received an id. When it is absent the consumer resolves the request from the authenticated applicant's own identifier; a consumer that is given one **MUST** prefer it over inferring the request from the caller.
 
@@ -195,7 +199,7 @@ Because the presentation replaces rather than accumulates, a producer **MUST NOT
 
 ### Correlation
 
-The supplement is bound to an existing request and is signed by the same identifier that submitted it, so it links the new presentation to the old one and to everything already gathered against the request. That linkage is the point of the task — it is what lets vetting survive — but it does mean that an applicant using a pairwise identifier for this community keeps one consistent identifier across the exchange, and cannot answer a deferral pseudonymously.
+The supplement is bound to an existing request and is signed by the same identifier that submitted it, so it links the new presentation to the old one and to everything already recorded against the request. That linkage is the point of the task — it is what lets the applicant keep their place in the queue rather than start again — but it does mean that an applicant using a pairwise identifier for this community keeps one consistent identifier across the exchange, and cannot answer a deferral pseudonymously.
 
 The `threadId` **SHOULD** be the one the submission established, so that the whole admission — submission, deferral, supplement, decision — reads as one exchange rather than as unrelated documents that happen to share an identifier.
 
