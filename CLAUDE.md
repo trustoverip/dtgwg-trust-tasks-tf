@@ -7,6 +7,27 @@ website (`website/`), and the generated client libraries (`trust-tasks-rs`,
 website registry; `cargo run -p trust-tasks-codegen` and `npm run build-ts-bindings`
 regenerate the libraries.
 
+## ⚠️ `SPEC.md` is generated — never edit it here
+
+`SPEC.md` is the Trust Tasks framework specification, **generated** from the
+canonical source, [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec),
+by `npm run generate-framework-spec` (`scripts/generate-framework-spec.mjs`).
+A framework change is a PR to that repository; this copy follows it. CI
+regenerates `SPEC.md` from canonical `main` before every build, so trusttasks.org
+always serves the latest canonical text, and the committed copy is refreshed by
+running the script and committing the result.
+
+- **Section numbers are assigned by the generator**, in canonical order — the
+  canonical text has none. When a canonical change moves a section, its number
+  and anchor move with it.
+- **The build fails on any `/SPEC.md#…` link that names no section** — from spec
+  prose, binding prose, or the binding specs' absolute GitHub links. When that
+  happens after a canonical change, either update the link, or add the old anchor
+  to `scripts/framework-spec-legacy-anchors.json` (old anchor → canonical named
+  anchor) so it keeps resolving as an alias.
+- `SPEC §N` in prose is a plain number the build cannot check; when a section is
+  renumbered, grep for it.
+
 ## ⚠️ Every commit MUST be DCO signed
 
 This repo enforces the **Developer Certificate of Origin**. *Every* commit needs
@@ -48,7 +69,8 @@ enforces that with a hand-maintained **allowlist** at
 the reserved namespace. Publishing a new one (`trust-task-control`,
 `trust-task-ok` when it lands) means updating **both**:
 
-1. `SPEC.md` §6.1 — the reserved-slug table, so the slug is documented.
+1. The reserved-slug table (SPEC §6.1) — a change to the canonical framework
+   repository (`SPEC.md` here is generated from it), so the slug is documented.
 2. `specs/spec.meta.schema.json` — the `enum`, so the build accepts it.
 
 Forget the second and `npm run build` fails with:

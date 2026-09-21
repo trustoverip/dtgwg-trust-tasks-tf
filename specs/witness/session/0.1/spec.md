@@ -83,7 +83,7 @@ the same witness — each party opens its own — and both name the same
 exchange and how a verifier holding both can see that they do.
 
 This follows from the framework's model rather than from preference. A *Trust
-Task* is bilateral ([SPEC.md §2](/SPEC.md#2-terminology)), and the
+Task* is bilateral ([SPEC.md §3](/SPEC.md#3-terminology)), and the
 challenge travels in a `#response`, which reaches the party that sent the
 request and nobody else. A single shared session would leave the second party
 with no conforming way to obtain the challenge it is required to bind to;

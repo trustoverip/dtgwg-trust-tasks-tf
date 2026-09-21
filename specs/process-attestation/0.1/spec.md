@@ -134,7 +134,7 @@ A conforming Verifier:
 
 ## Authorization
 
-This task is not *consequential* under [SPEC §2](/SPEC.md#2-terminology), so
+This task is not *consequential* under [SPEC §3](/SPEC.md#3-terminology), so
 [SPEC §7.3 item 15](/SPEC.md#73-specification-requirements) does not bind it. This
 section is carried anyway because the layering below is easy to get wrong, and its
 presence is not a conformance claim.
@@ -395,7 +395,7 @@ This specification is **not** `bearer`. `trust-ceremony-receipt` is, because a
 ceremony receipt is a public record of a completed flow that any party verifying the
 proof may legitimately rely on. A process-attestation response is scoped to the
 challenge one Verifier supplied, and accepting it audience-free would expose it to
-cross-recipient replay under [SPEC §10.1](/SPEC.md#101-replay): a response obtained
+cross-recipient replay under [SPEC §12.1](/SPEC.md#121-cross-recipient-replay): a response obtained
 by one Verifier could be presented to another as though freshly obtained.
 
 The artifact digest in a request may itself be sensitive. Where the existence of a

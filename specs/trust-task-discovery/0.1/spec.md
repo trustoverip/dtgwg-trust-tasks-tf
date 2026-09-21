@@ -112,7 +112,7 @@ A pattern in any other shape is treated as an exact slug match (no wildcards). W
 
 Multiple patterns in the request `patterns` array are combined with **OR** semantics: a slug matches the query if it matches at least one pattern.
 
-The array is bounded at **16** entries. The bound is not a capability limit — a single `*` already returns everything the responder will admit to — it is parser hardening in the manner of [SPEC.md §10.2](/SPEC.md#102-parser-hardening): an unbounded array of patterns, each matched against every published slug, is work a responder performs on an unauthenticated request. A discoverer that genuinely wants more than sixteen namespaces asks for `*` and filters locally.
+The array is bounded at **16** entries. The bound is not a capability limit — a single `*` already returns everything the responder will admit to — it is parser hardening in the manner of [SPEC.md §12.2](/SPEC.md#122-parser-hardening): an unbounded array of patterns, each matched against every published slug, is work a responder performs on an unauthenticated request. A discoverer that genuinely wants more than sixteen namespaces asks for `*` and filters locally.
 
 ## Privacy considerations
 

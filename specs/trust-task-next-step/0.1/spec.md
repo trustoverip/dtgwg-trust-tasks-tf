@@ -39,7 +39,7 @@ sideEffects:
 exposure:
   discloses: metadata
   actsAsSubject: false
-  rationale: "Names a Type URI the recipient is prepared to act upon, which is a capability hint about the recipient's configuration — the same disclosure a discovery response makes, and subject to the same restraint (SPEC §11.5)."
+  rationale: "Names a Type URI the recipient is prepared to act upon, which is a capability hint about the recipient's configuration — the same disclosure a discovery response makes, and subject to the same restraint (SPEC §10.6)."
 errorCodes: []
 related:
   - trust-task-error
@@ -115,11 +115,11 @@ Neither requires the other, and this specification is usable today at framework 
 
 **A next step is a redirection primitive, and redirection is a social-engineering surface.** A refusal that cannot be trusted is ignored; a redirection that cannot be trusted is *followed*. That asymmetry is why consumer rule 3 forbids acting on a next step whose origin cannot be authenticated either in-band or from the transport, and why `proof` is RECOMMENDED here on a stronger rationale than for an error response.
 
-**It confers no authorization whatsoever.** That a recipient suggests a task does not make performing it approved, safe, or policy-compliant. Every gate the consumer would otherwise apply still applies in full — the side-effect and exposure classifications of [SPEC.md §7.3](/SPEC.md#73-specification-requirements) items 13 and 14, any consent requirement, any approval policy. A consumer that performs a `destructive` task because a counterparty asked it to has been talked into it, not authorized. This mirrors the advisory status of a discovery response ([SPEC.md §11.4](/SPEC.md#114-status-of-the-response)): a suggestion narrows what a party chooses to send, and binds nothing.
+**It confers no authorization whatsoever.** That a recipient suggests a task does not make performing it approved, safe, or policy-compliant. Every gate the consumer would otherwise apply still applies in full — the side-effect and exposure classifications of [SPEC.md §7.3](/SPEC.md#73-specification-requirements) items 13 and 14, any consent requirement, any approval policy. A consumer that performs a `destructive` task because a counterparty asked it to has been talked into it, not authorized. This mirrors the advisory status of a discovery response ([SPEC.md §10.4](/SPEC.md#104-status-of-the-discovery-response)): a suggestion narrows what a party chooses to send, and binds nothing.
 
 **Downgrade.** A recipient can suggest a weaker path than the one a producer intended — a lesser authentication, a broader disclosure, a task with a softer proof requirement. The producer applies its own policy to the suggestion and **SHOULD** reject any continuation weaker than the one it was already attempting.
 
-**Loops.** Two parties can redirect each other indefinitely, and a chain of next steps consumes work at every hop. Consumer rule 6 requires a bound. This is local hardening in the manner of [SPEC.md §10.2](/SPEC.md#102-parser-hardening) rather than a wire-level construct: a counter on the wire would be trivially reset by either party.
+**Loops.** Two parties can redirect each other indefinitely, and a chain of next steps consumes work at every hop. Consumer rule 6 requires a bound. This is local hardening in the manner of [SPEC.md §12.2](/SPEC.md#122-parser-hardening) rather than a wire-level construct: a counter on the wire would be trivially reset by either party.
 
 **Disclosure.** `expects` names types the recipient is prepared to act upon, which fingerprints its configuration exactly as a discovery response does. A recipient that considers its supported task set sensitive **SHOULD** authenticate the producer before returning a next step, and **MAY** return an error instead. `message` reaches a party that may not be entitled to learn why a task is blocked, and **SHOULD** disclose nothing the producer could not already infer.
 

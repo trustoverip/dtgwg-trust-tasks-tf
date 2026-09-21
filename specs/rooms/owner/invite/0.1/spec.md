@@ -134,7 +134,7 @@ An **Owner** sends this to their **KeyHolder**. The payload is the top-level sch
 
 ## Response
 
-The **KeyHolder** returns the signed credential, using the sub-schema reachable via `$anchor: "response"`. Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §6.4](/SPEC.md#64-error-documents).
+The **KeyHolder** returns the signed credential, using the sub-schema reachable via `$anchor: "response"`. Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §8.1](/SPEC.md#81-the-trust-task-error-specification).
 
 ### The signed VIC, for delivery to the invitee — over DIDComm on a `private` room, where a host must not learn who was asked.
 

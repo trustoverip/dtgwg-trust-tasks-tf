@@ -85,7 +85,7 @@ This family deliberately has no single-vetter read to pair with this list ([CONT
 
 The authority this task presupposes is **being an identified caller**: an applicant or a member the community can authenticate. Nothing more is needed, because every entry was published by its vetter for exactly this audience. A community **MAY** restrict callers further under its own policy, for example to members and applicants with an open join request, or by rate limit.
 
-This task is not consequential ([SPEC §2](/SPEC.md#2-terminology)). It changes nothing, and what it discloses is metadata the vetters chose to publish. Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, identifying the caller establishes who asked, not that the community must answer.
+This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)). It changes nothing, and what it discloses is metadata the vetters chose to publish. Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, identifying the caller establishes who asked, not that the community must answer.
 
 ## Definitions
 

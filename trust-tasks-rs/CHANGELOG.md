@@ -3271,7 +3271,7 @@ assigns the number and dates this heading.
   document issuer {issuer}`. The recipient of that message is by construction
   *unauthenticated* — the proof did not verify — so it was a
   resolver-reachability and DID-document oracle, answered at the sender's
-  chosen rate. SPEC §10.4 makes the rule explicit for `identityMismatch` and
+  chosen rate. SPEC §12.4 makes the rule explicit for `identityMismatch` and
   generalises it to every code. The detail remains on the `Display` impl, which
   is what the operator logs.
 
@@ -3948,7 +3948,7 @@ wire compatibility, not source compatibility"* in CONTRIBUTING-SPECS.md.
   tell a withdrawal from a refusal.
 
 - **`trust-task-control/0.1`** payload types, generated from the new registry
-  entry — the task-control request of SPEC §12 (`cancel`, `suspend`, `resume`).
+  entry — the task-control request of SPEC §11 (`cancel`, `suspend`, `resume`).
 
 ### Changed
 
@@ -5550,7 +5550,7 @@ This is a roll-up release covering everything merged since 0.1.1 (PRs #40–#56)
   `#request`-fragmented and bare forms route together, per SPEC
   §4.4.1 item 1.
 
-### Added — discovery (SPEC §11)
+### Added — discovery (SPEC §10)
 
 - `discovery` module with `match_slug` / `query_matches` primitives and a
   `DiscoveryRegistry` builder. `respond_to(&query)` consumes a typed

@@ -132,7 +132,7 @@ impl DiscoveryRegistry {
     /// Suppress the `frameworkVersion` field in the response payload.
     /// The field is OPTIONAL in 0.1; callers who want to remain silent
     /// about their framework version (e.g. for privacy reasons per
-    /// SPEC §11.5) can opt out with this.
+    /// SPEC §10.6) can opt out with this.
     pub fn no_framework_version(mut self) -> Self {
         self.framework_version = None;
         self
@@ -174,7 +174,7 @@ impl DiscoveryRegistry {
 
     /// Register a [`Payload`] type by reading its `TYPE_URI` constant.
     /// The bare URI (no `#request` / `#response` fragment) is stored;
-    /// per SPEC §11.3 the response always lists bare URIs.
+    /// per SPEC §10.3 the response always lists bare URIs.
     pub fn with<P: Payload>(self) -> Self {
         let uri = P::type_uri();
         self.with_type_uri(uri)
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn prefix_wildcard_does_not_match_bare_prefix() {
-        // SPEC §11.2 — `acl/*` requires the trailing slash; `acl` alone
+        // SPEC §10.2 — `acl/*` requires the trailing slash; `acl` alone
         // does not satisfy the pattern.
         assert!(!match_slug("acl/*", "acl"));
         assert!(!match_slug("acl/*", "aclx"));

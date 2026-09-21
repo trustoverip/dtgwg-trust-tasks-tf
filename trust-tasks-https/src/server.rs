@@ -78,7 +78,7 @@ use crate::auth::{Auth, BearerAuth};
 use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
 
-/// Maximum accepted request-body size (SPEC §10.2), applied by
+/// Maximum accepted request-body size (SPEC §12.2), applied by
 /// [`HttpsServer::into_router`]. Trust Task payloads are small; 256 KiB is
 /// generous headroom while bounding pre-auth memory use. Callers needing a
 /// different bound can rebuild the router with their own
@@ -448,7 +448,7 @@ impl HttpsServerBuilder {
     /// By default the discovery handler installed by [`Self::with_discovery`]
     /// / [`Self::enable_discovery`] requires a transport-authenticated
     /// sender and answers everyone else with `permissionDenied`: a discovery
-    /// response enumerates the full route table, and SPEC §10 says a
+    /// response enumerates the full route table, and SPEC §12 says a
     /// responder **SHOULD** authenticate the discoverer before answering.
     ///
     /// Call this when the supported-task set is genuinely public. Order does
@@ -480,7 +480,7 @@ impl HttpsServerBuilder {
     ///
     /// Unless [`Self::public_discovery`] is set, the handler answers a
     /// caller with no transport-authenticated sender with `permissionDenied`
-    /// rather than enumerating the route table (SPEC §10, discovery
+    /// rather than enumerating the route table (SPEC §12, discovery
     /// privacy).
     ///
     /// Use this when the server's discoverable set differs from its
@@ -594,7 +594,7 @@ impl HttpsServer {
     /// integration tests that want to spawn the app inline.
     ///
     /// The router applies an explicit [`DefaultBodyLimit`] of
-    /// [`MAX_BODY_BYTES`] (256 KiB) as an audited DoS control (SPEC §10.2): the body is
+    /// [`MAX_BODY_BYTES`] (256 KiB) as an audited DoS control (SPEC §12.2): the body is
     /// buffered and parsed *before* authentication, so an unbounded body would
     /// otherwise be a pre-auth memory-exhaustion vector. JSON nesting depth is
     /// separately bounded by `serde_json`'s default 128-level recursion limit,
@@ -1073,7 +1073,7 @@ fn reject_response(
 ) -> Response {
     // Status follows the error document actually emitted, not the inbound
     // reason. The suppressed identity-mismatch path rewrites the body to a
-    // generic `malformedRequest` (SPEC §10.4); the status MUST match so it is
+    // generic `malformedRequest` (SPEC §12.4); the status MUST match so it is
     // indistinguishable from a plain parse failure (no 403-vs-400 oracle for an
     // unauthenticated prober).
     let error_doc = build_error_response(handler, request, reason);
@@ -1129,7 +1129,7 @@ fn build_error_response(
 /// generic `malformedRequest`/400 that a body parse failure produces.
 ///
 /// Crucially we MUST NOT echo the `identityMismatch` code or status here
-/// (SPEC §10.4): an unauthenticated prober who POSTs a spoofed in-band
+/// (SPEC §12.4): an unauthenticated prober who POSTs a spoofed in-band
 /// identity would otherwise learn, from the code + 4xx, that this consumer
 /// performs the cross-check and that the identity was contested — an
 /// identity-probing oracle. Collapsing to the indistinguishable generic

@@ -1209,7 +1209,7 @@ mod tests {
     /// This test asserted the opposite until 0.11.18. The verifier's text is
     /// the only place a consumer's DID-resolution behaviour is described in
     /// English, and the party receiving it is by construction unauthenticated
-    /// — the proof did not verify. SPEC §10.4 extends the §8.1
+    /// — the proof did not verify. SPEC §12.4 extends the §8.1
     /// `identityMismatch` rule to every code for exactly this reason. The
     /// detail is still on the `Display` impl, which is what the operator logs.
     #[tokio::test]

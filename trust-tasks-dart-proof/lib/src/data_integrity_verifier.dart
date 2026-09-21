@@ -6,7 +6,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 /// The same taxonomy `trust-tasks-proof` uses in Rust, so a failure logged by a
 /// Dart consumer reads the same as one logged by a Rust consumer. All of them
 /// reach the wire as `proofInvalid`: [ConsumeOutcome] never carries a
-/// verifier's own words (SPEC §10.4). The kind and [ProofVerification.detail]
+/// verifier's own words (SPEC §12.4). The kind and [ProofVerification.detail]
 /// are for your logs.
 enum ProofFailureKind {
   /// The document has no `proof`, or the proof is missing a member or carries
@@ -38,7 +38,7 @@ final class ProofVerification {
   final ProofFailureKind? failure;
 
   /// Diagnostic text for logs. Never send it to the peer: it can name DIDs a
-  /// resolver was asked about, and whether it answered (SPEC §10.4).
+  /// resolver was asked about, and whether it answered (SPEC §12.4).
   final String? detail;
 
   /// Whether the proof verified.

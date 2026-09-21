@@ -3,7 +3,7 @@
 // Run it:
 //   dart run example/main.dart
 //
-// The server answers trust-task-discovery (SPEC §11); the client asks it what
+// The server answers trust-task-discovery (SPEC §10); the client asks it what
 // it supports, then re-sends the identical document, which the server absorbs
 // as a retry rather than executing twice (bindings/https/0.2 §5.1).
 

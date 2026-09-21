@@ -536,7 +536,7 @@ function resolveIssuedAtRequirement(meta) {
 }
 
 /*
- * Is this a *consequential Trust Task* (SPEC §2)?
+ * Is this a *consequential Trust Task* (SPEC §3)?
  *
  * The predicate is spelled out once in §2 and is a pure function of
  * declarations items 13 and 14 already require of every spec:
@@ -700,6 +700,35 @@ function checkOutcomeEvidence(specIndex) {
     }
   }
   console.log(`  Outcome evidence (§7.3 item 20): ${declared} spec(s) declare outcomeEvidence`);
+}
+
+/*
+ * Every fragment a link into SPEC.md can land on: each heading's anchor under
+ * the website's slug rule (with its `-2`, `-3` de-duplication), and each
+ * explicit `<a id>` — the aliases scripts/generate-framework-spec.mjs emits so
+ * that links written against an earlier numbering keep resolving. Headings
+ * inside code fences are not headings.
+ */
+function specMdAnchors() {
+  const anchors = new Set();
+  const src = fs.readFileSync(path.join(ROOT, 'SPEC.md'), 'utf8');
+  const slug = (t) =>
+    t.replace(/<[^>]+>/g, '').replace(/&amp;/g, '').toLowerCase()
+      .replace(/[^a-z0-9 \-]+/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  let fence = false;
+  for (const line of src.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) { fence = !fence; continue; }
+    if (fence) continue;
+    const h = /^#{2,6}\s+(.*)$/.exec(line);
+    if (h) {
+      const base = slug(h[1]);
+      let id = base;
+      for (let i = 2; anchors.has(id); i++) id = `${base}-${i}`;
+      anchors.add(id);
+    }
+    for (const m of line.matchAll(/<a id="([^"]+)"><\/a>/g)) anchors.add(m[1]);
+  }
+  return anchors;
 }
 
 /*
@@ -2128,6 +2157,37 @@ function main() {
   // the drift above happened at all. `/SPEC.md#anchor` is the same string from
   // every depth, and the website resolves it onto the rendered /specification
   // route. Checking them is what keeps the new form from being an unverified one.
+  // A link into SPEC.md must also land on a section: the file always exists, so
+  // a fragment naming no heading was the one failure the check above let through.
+  // SPEC.md is generated from the canonical framework repository and its section
+  // numbers follow the canonical order, so this is what fails when a canonical
+  // change moves a section something here links to.
+  // Binding specs are included, and so is the absolute GitHub form of the link,
+  // which is how the binding specs write it.
+  const frameworkAnchors = specMdAnchors();
+  let frameworkLinks = 0;
+  const frameworkLinkSources = entries.map(({ slug, version, specPath }) => [`${slug}/${version}/spec.md`, specPath]);
+  const bindingsDir = path.join(ROOT, 'bindings');
+  if (fs.existsSync(bindingsDir)) {
+    const walk = (d) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const full = path.join(d, e.name);
+        if (e.isDirectory()) walk(full);
+        else if (e.name === 'spec.md') frameworkLinkSources.push([path.relative(ROOT, full), full]);
+      }
+    };
+    walk(bindingsDir);
+  }
+  const frameworkLinkRe =
+    /\]\((?:\/|(?:\.\.\/)+|https:\/\/github\.com\/trustoverip\/dtgwg-trust-tasks-tf\/blob\/main\/)SPEC\.md#([^)\s]+)\)/g;
+  for (const [loc, file] of frameworkLinkSources) {
+    for (const m of fs.readFileSync(file, 'utf8').matchAll(frameworkLinkRe)) {
+      frameworkLinks++;
+      if (!frameworkAnchors.has(m[1])) {
+        fail(loc, `link to SPEC.md#${m[1]} names no section of the framework specification`);
+      }
+    }
+  }
   for (const { dir, slug, version, specPath } of entries) {
     const prose = fs.readFileSync(specPath, 'utf8');
     for (const m of prose.matchAll(/\]\((\.\.[^)#\s]*?)(#[^)\s]*)?\)/g)) {
@@ -2150,6 +2210,8 @@ function main() {
       }
     }
   }
+
+  console.log(`  Framework links: ${frameworkLinks} link(s) into SPEC.md checked against ${frameworkAnchors.size} anchor(s)`);
 
   if (errors.length) {
     console.error('\nBuild failed with the following problems:');

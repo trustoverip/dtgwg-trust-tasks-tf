@@ -6,14 +6,14 @@ import 'package:trust_tasks/trust_tasks.dart';
 
 import 'binding.dart';
 
-/// Largest request body the server reads (SPEC §10.2). Trust Task documents are
+/// Largest request body the server reads (SPEC §12.2). Trust Task documents are
 /// small, and the body is parsed before the sender is authenticated, so an
 /// unbounded read would be a pre-authentication memory exhaustion vector.
 const int maxBodyBytes = 256 * 1024;
 
 /// Wire message for a body that is not a Trust Task document at all, and for
 /// the suppressed `identityMismatch` answer (§8.1) — the same words for both, so
-/// the two cannot be told apart (SPEC §10.4).
+/// the two cannot be told apart (SPEC §12.4).
 const String malformedBodyWireMessage =
     'request body is not a well-formed Trust Task document';
 
@@ -283,10 +283,10 @@ final class HttpsServer {
             );
   }
 
-  /// Answer `trust-task-discovery/0.1` (SPEC §11) with every Type URI this
+  /// Answer `trust-task-discovery/0.1` (SPEC §10) with every Type URI this
   /// server has a handler for, read at request time.
   ///
-  /// A discovery response enumerates the route table, and SPEC §10 says a
+  /// A discovery response enumerates the route table, and SPEC §12 says a
   /// responder SHOULD authenticate the discoverer. So by default a caller with
   /// no transport-authenticated sender is refused with `permissionDenied`; pass
   /// [public] when the supported set is genuinely public.
@@ -396,7 +396,7 @@ final class HttpsServer {
       );
     } on Object {
       // The decoder's own words name members and types — this consumer's
-      // internal layout (SPEC §10.4). The category is what a producer can act on.
+      // internal layout (SPEC §12.4). The category is what a producer can act on.
       return _reject(
         transport,
         TrustTaskDocument<Object?>.fromJson(json, (p) => p),
@@ -512,7 +512,7 @@ final class HttpsServer {
       case Suppressed():
         // §8.1 says emit nothing; HTTP cannot. Answer exactly as for a body
         // that did not parse, so a prober cannot learn the identity was
-        // contested (SPEC §10.4).
+        // contested (SPEC §12.4).
         return _malformedBody();
       case DuplicateOutcome(:final priorResponse, :final inFlight):
         // §5.1 item 4 and the §4 table: the first execution's result under the
@@ -624,7 +624,7 @@ bool _didMethodAllowed(String verificationMethod, Set<String> allowed) {
   return allowed.contains(rest.substring(0, colon));
 }
 
-/// SPEC §11 slug-glob matching: `*`, `<prefix>/*`, or an exact slug; an empty
+/// SPEC §10 slug-glob matching: `*`, `<prefix>/*`, or an exact slug; an empty
 /// pattern list matches everything.
 bool _queryMatches(List<String> patterns, String typeUri) {
   if (patterns.isEmpty) return true;

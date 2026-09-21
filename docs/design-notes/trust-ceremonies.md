@@ -5,7 +5,7 @@
 | **Status** | Draft — proposed, not implemented |
 | **Date** | 2026-08-09 |
 | **Applies to** | Any interaction composed of more than one *Trust Task* between two or more parties |
-| **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §2, §4.9–§4.9.2, §4.10 item 5, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/join-requests/*`, `specs/vtc/members/{solicit-vmc,request-vmc,vmc}/0.1`, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1`, `specs/vta/credentials/issue/0.2` |
+| **Related** | `docs/adr/0001-naming-the-multi-task-flow-layer.md`, SPEC §3, §4.9–§4.9.2, §4.10 item 5, §6.1, §7.3 items 13–14, §8.6, §9.3, §11, `specs/vtc/join-requests/*`, `specs/vtc/members/{solicit-vmc,request-vmc,vmc}/0.1`, `specs/vtc/ceremonies/list/0.1`, `specs/audit/verify/0.1`, `specs/vta/credentials/issue/0.2` |
 
 *This note is non-normative rationale, and takes the six decisions ADR 0001
 deferred. Much of it is now normative elsewhere: framework 0.4 carries the
@@ -46,7 +46,7 @@ endorsements, member onboarding spanning a witness and a registry, a credential
 exchange with a consent step in the middle.
 
 These are built today as several bilateral tasks correlated by `threadId`. That
-part is right, and SPEC §2 already settles it:
+part is right, and SPEC §3 already settles it:
 
 > Exchanges involving more than two parties are modeled as multiple bilateral
 > *Trust Tasks* linked by the framework's `threadId` member.
@@ -619,7 +619,7 @@ ceremony is emphatically not a self-contained document, and no amount of design
 makes it one.
 
 Unbounded depth is also a resource question. A verifier **SHOULD** declare a
-maximum depth it will resolve and reject beyond it, exactly as SPEC §10.2 and
+maximum depth it will resolve and reject beyond it, exactly as SPEC §12.2 and
 §10.3 treat parser and schema-validation limits. The model imposes no limit; the
 implementation always does, and saying so is better than pretending otherwise.
 
@@ -1328,7 +1328,7 @@ decomposition explicitly:
 > **not** the request that reaches the member, and it does not carry a
 > credential.
 
-That is SPEC §2's bilateral rule applied by hand, and it is exactly the shape a
+That is SPEC §3's bilateral rule applied by hand, and it is exactly the shape a
 ceremony describes.
 
 ### 13.2 The layer is already being hand-rolled

@@ -123,7 +123,7 @@ A consumer that cannot make that match — because no open request exists for th
 
 This task is **not** open to any caller. A community maintainer who wants to end a request uses the maintainer-facing decision task instead; the two are separate because "the applicant changed their mind" and "the community said no" are different outcomes and a member reading the record later is entitled to tell them apart.
 
-<!-- scaffold note retired: this task is *consequential* ([SPEC §2](/SPEC.md#2-terminology)), because it declares `sideEffects.level: mutating`, `exposure.actsAsSubject: true`. [SPEC §7.3 item 15](/SPEC.md#73-specification-requirements) requires it to describe the class of authorization evidence a consumer needs.
+<!-- scaffold note retired: this task is *consequential* ([SPEC §3](/SPEC.md#3-terminology)), because it declares `sideEffects.level: mutating`, `exposure.actsAsSubject: true`. [SPEC §7.3 item 15](/SPEC.md#73-specification-requirements) requires it to describe the class of authorization evidence a consumer needs.
 
 Name the **authority**, not the pipeline step. "The consumer verifies the proof, then executes" describes a check; it never says what entitles the producer to the outcome. Write the entitlement in one sentence — ownership of the resource, a held capability, membership of the exchange named in `parties`, an accepted prior proposal, possession of a token — and say which conformance rule enforces it.
 

@@ -227,7 +227,7 @@ async fn identity_mismatch_when_in_band_issuer_differs_from_token() {
             // Binding spec §4: identityMismatch is in the flat 422 bucket.
             assert_eq!(http_status, 422);
             assert_eq!(error.payload.code, StandardCode::IdentityMismatch.into());
-            // SPEC §10.4: message MUST NOT name either VID.
+            // SPEC §12.4: message MUST NOT name either VID.
             let msg = error.payload.message.as_deref().unwrap_or("");
             assert!(!msg.contains("alice"), "wire leak: {msg}");
             assert!(!msg.contains("carol"), "wire leak: {msg}");
@@ -496,7 +496,7 @@ async fn happy_path_acl_grant_with_verifier() {
 /// `proof_invalid_when_verifier_rejects`. A verifier's error text names DIDs
 /// the consumer tried to resolve, whether a resolver answered, and what a
 /// fetched DID document contained; the party reading it is by construction
-/// unauthenticated, because the proof did not verify. SPEC §10.4 states the
+/// unauthenticated, because the proof did not verify. SPEC §12.4 states the
 /// rule for `identityMismatch` and generalises it to every standard code:
 /// messages are "derived from the code identifier and the *Trust Task
 /// specification*'s public vocabulary, not from consumer-side authentication
@@ -584,11 +584,11 @@ async fn permission_denied_from_spec_handler() {
     }
 }
 
-// ─── SPEC §10.2 parser hardening (pre-auth DoS controls) ──────────────────
+// ─── SPEC §12.2 parser hardening (pre-auth DoS controls) ──────────────────
 
 /// An over-limit body is rejected by the router's `DefaultBodyLimit` before
 /// it is buffered, parsed, or authenticated — an audited memory-exhaustion
-/// control (SPEC §10.2). 512 KiB exceeds the 256 KiB cap.
+/// control (SPEC §12.2). 512 KiB exceeds the 256 KiB cap.
 #[tokio::test]
 async fn oversized_body_is_rejected_before_processing() {
     let addr = spawn_server().await;
@@ -621,7 +621,7 @@ async fn deeply_nested_body_fails_to_parse_not_overflow() {
 
 // ─── Regressions from the PR #75 security re-review ───────────────────────
 
-/// SPEC §10.4 — the suppressed identity-mismatch path must be indistinguishable
+/// SPEC §12.4 — the suppressed identity-mismatch path must be indistinguishable
 /// from a plain parse failure: same HTTP status AND same body code. Previously
 /// the body was a generic `malformedRequest` but the status stayed 403 (derived
 /// from the original IdentityMismatch reason), leaking a 403-vs-400 oracle to an
@@ -1224,7 +1224,7 @@ async fn spawn_discovery_server(public: bool) -> SocketAddr {
 
 /// REGRESSION. `enable_discovery()` installed the registry with no auth
 /// predicate, so any unauthenticated POST got back the server's full route
-/// table. SPEC §10 says a responder SHOULD authenticate the discoverer first.
+/// table. SPEC §12 says a responder SHOULD authenticate the discoverer first.
 #[tokio::test]
 async fn discovery_requires_an_authenticated_sender_by_default() {
     let addr = spawn_discovery_server(false).await;
@@ -1413,7 +1413,7 @@ fn binding_uri_names_the_current_binding_version() {
 // server.
 
 /// A [`ReplayGuard`] whose store is down. Its message deliberately names a
-/// host and a scheme, because SPEC §10.4 says none of that may reach the wire.
+/// host and a scheme, because SPEC §12.4 says none of that may reach the wire.
 struct FailingReplayGuard;
 
 #[async_trait::async_trait]
@@ -1656,7 +1656,7 @@ async fn guard_error_fails_closed_to_unavailable_and_does_not_dispatch() {
         0,
         "a guard error MUST NOT be executed through"
     );
-    // SPEC §10.4: the store's identity and failure mode stay in the log.
+    // SPEC §12.4: the store's identity and failure mode stay in the log.
     let message = doc["payload"]["message"].as_str().unwrap_or("");
     assert!(!message.contains("redis"), "wire leak: {message}");
     assert!(
@@ -1816,7 +1816,7 @@ async fn a_widened_window_accepts_what_the_default_refuses() {
     assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
 }
 
-// ─── SPEC §10.4 — the serde path must not reach the wire ──────────────────
+// ─── SPEC §12.4 — the serde path must not reach the wire ──────────────────
 
 /// REGRESSION. The server rendered `serde_json::Error`'s `Display` straight
 /// onto the wire on both of its deserialisation paths — "unknown field

@@ -1,7 +1,7 @@
 /**
  * The `## Security & Privacy` section lint.
  *
- * SPEC §10 and §7.3 make security and privacy a first-class obligation on a
+ * SPEC §12 and §7.3 make security and privacy a first-class obligation on a
  * specification, and `CONTRIBUTING-SPECS.md` used to list the section under
  * "plus anything else useful". Nothing checked it, and the corpus shows what
  * that bought: of 349 published specs, 14 carry no such section at all, 206 of
@@ -170,7 +170,7 @@ export function checkSecurityPrivacySections(entries, io) {
       : `is missing the sub-heading${o.missingSubheadings.length === 1 ? '' : 's'} ` +
         o.missingSubheadings.map((h) => `\`### ${h}\``).join(', ');
     const msg =
-      `${o.rel}/spec.md ${why}. SPEC §10 and §7.3 make this a specification obligation; ` +
+      `${o.rel}/spec.md ${why}. SPEC §12 and §7.3 make this a specification obligation; ` +
       `CONTRIBUTING-SPECS.md carries the template. Fix the spec, or — only for content ` +
       `predating this lint — add '${o.rel}' to ${path.basename(ALLOWLIST_PATH)}.`;
     if (strict) io.fail(`${o.rel}/spec.md`, why);

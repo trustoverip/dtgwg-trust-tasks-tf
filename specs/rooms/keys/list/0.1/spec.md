@@ -121,7 +121,7 @@ An **Agent** sends this to its principal's **Oracle**. The payload carries nothi
 
 The **Oracle** answers with one entry per room, using the sub-schema reachable via `$anchor: "response"`.
 
-Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §6.4](/SPEC.md#64-error-documents).
+Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §8.1](/SPEC.md#81-the-trust-task-error-specification).
 
 ### Three rooms in three different states
 

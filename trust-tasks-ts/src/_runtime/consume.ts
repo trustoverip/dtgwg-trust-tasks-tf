@@ -432,7 +432,7 @@ export async function consumeInbound<P, R>(
           ok = false;
         }
         if (!ok) {
-          // A constant, never the verifier's own error text. SPEC §10.4
+          // A constant, never the verifier's own error text. SPEC §12.4
           // extends the §8.1 identity rule to every code, and a verifier's
           // vocabulary names DIDs it tried to resolve, whether a resolver
           // answered, and what a fetched DID document contained — a
@@ -577,7 +577,7 @@ export const ID_CONFLICT_WIRE_MESSAGE =
 
 /**
  * Wire message for a replay-record outage. A constant, so a store's hostname
- * or connection string never reaches the wire (SPEC §10.4).
+ * or connection string never reaches the wire (SPEC §12.4).
  */
 export const REPLAY_RECORD_UNAVAILABLE = "temporarily unavailable";
 

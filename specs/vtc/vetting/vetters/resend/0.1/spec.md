@@ -78,7 +78,7 @@ Repeating a request is safe: each one delivers the same credential again and cha
 
 The authority this task presupposes is **being the subject of a live vetter grant**. The credential is the vetter's already. Delivering it again gives the vetter nothing they were not given at the grant, and gives nobody else anything, because it goes only to the DID it names.
 
-This task is not consequential ([SPEC §2](/SPEC.md#2-terminology)): it changes no state at the community and discloses nothing secret. It is declared here anyway, so that nobody reads it as a way to obtain a credential. Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, identifying the sender establishes whose grant to look up, never that one exists.
+This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes no state at the community and discloses nothing secret. It is declared here anyway, so that nobody reads it as a way to obtain a credential. Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, identifying the sender establishes whose grant to look up, never that one exists.
 
 An administrator's own tools may deliver a vetter's credential again as well. That is out of scope for this task, and delivers the same credential.
 

@@ -264,7 +264,7 @@ type ConsumeOutcome[R any] struct {
 }
 
 // Wire messages the pipeline emits. Constants so a store's hostname, a verifier's
-// vocabulary or a consumer's clock never reaches the wire (SPEC §10.4), and so
+// vocabulary or a consumer's clock never reaches the wire (SPEC §12.4), and so
 // the Rust and TypeScript runtimes can be held equal to them.
 const (
 	// ProofNotAcceptedByPolicy is the message for the ProofRejectIfPresent path.
@@ -472,7 +472,7 @@ func ConsumeInbound[P, R any](
 				return zero, fmt.Errorf("trusttasks: marshal document for proof verification: %w", err)
 			}
 			if err := opts.ProofPolicy.Verifier.Verify(ctx, encoded); err != nil {
-				// A constant, never the verifier's own error text. SPEC §10.4
+				// A constant, never the verifier's own error text. SPEC §12.4
 				// extends the §8.1 identity rule to every code, and a verifier's
 				// vocabulary names DIDs it tried to resolve, whether a resolver
 				// answered, and what a fetched DID document contained — a

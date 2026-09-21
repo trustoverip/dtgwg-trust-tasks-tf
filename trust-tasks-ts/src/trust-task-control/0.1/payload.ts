@@ -4,7 +4,7 @@
  */
 
 /**
- * The task-control request defined at SPEC.md §12: a producer withdrawing, pausing, or resuming work a consumer has already accepted.
+ * The task-control request defined at SPEC.md §11: a producer withdrawing, pausing, or resuming work a consumer has already accepted.
  *
  * This is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.
  *
@@ -14,13 +14,13 @@ export interface TrustTaskControlPayload {
   /**
    * The control operation requested.
    *
-   * `cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §12.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §12.5).
+   * `cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §11.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §11.5).
    *
    * This is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.
    */
   operation: "cancel" | "suspend" | "resume";
   /**
-   * The specific Trust Task document this operation applies to. Per SPEC.md §12.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.
+   * The specific Trust Task document this operation applies to. Per SPEC.md §11.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.
    */
   target: {
     /**
@@ -42,7 +42,7 @@ export interface TrustTaskControlPayload {
   ext?: {};
 }
 /**
- * What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.
+ * What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §11.4 declines to require rollback.
  */
 export interface TrustTaskControlResponsePayload {
   /**
@@ -59,7 +59,7 @@ export interface TrustTaskControlResponsePayload {
   /**
    * `applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.
    *
-   * `appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).
+   * `appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).
    *
    * `alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.
    *
@@ -114,7 +114,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/trust-task-control/0.1",
   "title": "Trust Task Control — payload",
-  "description": "The task-control request defined at SPEC.md §12: a producer withdrawing, pausing, or resuming work a consumer has already accepted.\n\nThis is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.\n\nThe operation takes effect through SPEC.md §7.2 item 12: a valid, authorized control operation is one of the conditions a consumer re-evaluates immediately before each irreversible or externally visible effect. There is no separate race protocol.",
+  "description": "The task-control request defined at SPEC.md §11: a producer withdrawing, pausing, or resuming work a consumer has already accepted.\n\nThis is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.\n\nThe operation takes effect through SPEC.md §7.2 item 12: a valid, authorized control operation is one of the conditions a consumer re-evaluates immediately before each irreversible or externally visible effect. There is no separate race protocol.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -128,7 +128,7 @@ export const PAYLOAD_SCHEMA = {
         "suspend",
         "resume"
       ],
-      "description": "The control operation requested.\n\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §12.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §12.5).\n\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess."
+      "description": "The control operation requested.\n\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §11.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §11.5).\n\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess."
     },
     "target": {
       "type": "object",
@@ -136,7 +136,7 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "id"
       ],
-      "description": "The specific Trust Task document this operation applies to. Per SPEC.md §12.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.",
+      "description": "The specific Trust Task document this operation applies to. Per SPEC.md §11.2, `threadId`, `parentThreadId` and ceremony membership MUST NOT identify the target on their own: more than one document can occur in a single exchange or enactment.",
       "properties": {
         "id": {
           "type": "string",
@@ -165,7 +165,7 @@ export const PAYLOAD_SCHEMA = {
     "Response": {
       "$anchor": "response",
       "title": "Trust Task Control — response payload",
-      "description": "What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.",
+      "description": "What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §11.4 declines to require rollback.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -208,7 +208,7 @@ export const PAYLOAD_SCHEMA = {
             "alreadyCompleted",
             "unknownTask"
           ],
-          "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this."
+          "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this."
         },
         "effects": {
           "type": "array",
@@ -254,7 +254,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     "Response": {
       "$anchor": "response",
       "title": "Trust Task Control — response payload",
-      "description": "What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §12.4 declines to require rollback.",
+      "description": "What the consumer did. The `outcome` is the load-bearing member: it is what tells the producer whether a compensating action is required, since SPEC.md §11.4 declines to require rollback.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -297,7 +297,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "alreadyCompleted",
             "unknownTask"
           ],
-          "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §12.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this."
+          "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this."
         },
         "effects": {
           "type": "array",

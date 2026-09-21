@@ -132,7 +132,7 @@ A Welcome carries the current epoch's key and nothing under it, so a member who 
 
 The **Host** responds, using the sub-schema reachable via `$anchor: "response"`. `links` carries the rungs, highest `epoch` first and contiguous within the range returned: a host **MUST NOT** omit a rung it holds while returning a lower one, because a member cannot walk past a gap and would read the omission as history that had been severed.
 
-Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §6.4](/SPEC.md#64-error-documents).
+Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §8.1](/SPEC.md#81-the-trust-task-error-specification).
 
 ### The rungs that take a member from epoch 5 back to the room's beginning
 

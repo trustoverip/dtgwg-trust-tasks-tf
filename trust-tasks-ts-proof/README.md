@@ -28,7 +28,7 @@ const outcome = await consumeInbound({
 ```
 
 A document whose proof fails is rejected with `proofInvalid`, and nothing about
-*why* reaches the peer (SPEC §10.4). To log the reason, call `verifyDetailed`,
+*why* reaches the peer (SPEC §12.4). To log the reason, call `verifyDetailed`,
 which returns a `ProofVerification` whose `failure` is one of `malformedProof`,
 `issuerMismatch`, `unsupportedCryptosuite` or `signatureInvalid` — the same
 taxonomy as the Rust and Dart libraries.

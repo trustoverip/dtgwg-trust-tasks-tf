@@ -22,7 +22,7 @@ var _ trusttasks.ProofVerifier = (*Verifier)(nil)
 // FailureKind is why a proof did not verify — the same taxonomy the Rust and
 // TypeScript proof libraries use, so a failure logged by any of them reads the
 // same. Every kind reaches the wire as the single code proofInvalid; the kind
-// and the detail on [Error] are for your logs only (SPEC §10.4 — a verifier's
+// and the detail on [Error] are for your logs only (SPEC §12.4 — a verifier's
 // vocabulary names DIDs it resolved and what it found, an oracle for an
 // unauthenticated sender).
 type FailureKind string

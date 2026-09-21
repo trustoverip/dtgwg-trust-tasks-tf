@@ -32,7 +32,7 @@ final outcome = await consumeInbound(
 ```
 
 A document whose proof fails is rejected with `proofInvalid`, and nothing about
-*why* reaches the peer (SPEC §10.4). To log the reason, call `verifyDetailed`
+*why* reaches the peer (SPEC §12.4). To log the reason, call `verifyDetailed`
 yourself; it returns a `ProofVerification` whose `failure` is one of
 `malformedProof`, `issuerMismatch`, `unsupportedCryptosuite` or
 `signatureInvalid` — the same taxonomy as the Rust crate.

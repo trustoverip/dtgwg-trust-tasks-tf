@@ -48,7 +48,7 @@ proves only that *some* key signed, so that key's `did:key` must also be the
 issuer (SPEC §4.7, §7.2 item 7). On failure it returns a typed `*proof.Error`
 whose `Kind` (`malformedProof`, `issuerMismatch`, `unsupportedCryptosuite`,
 `signatureInvalid`) is for **your logs only** — every failure reaches the wire as
-the single `proofInvalid` code (SPEC §10.4).
+the single `proofInvalid` code (SPEC §12.4).
 
 ## Sign
 

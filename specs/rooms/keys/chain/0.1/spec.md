@@ -132,7 +132,7 @@ Three rungs, taking the key holder from the epoch its Welcome arrived at back to
 
 The **KeyHolder** responds, using the sub-schema reachable via `$anchor: "response"`.
 
-Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §6.4](/SPEC.md#64-error-documents).
+Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §8.1](/SPEC.md#81-the-trust-task-error-specification).
 
 ### The whole history is now reachable
 

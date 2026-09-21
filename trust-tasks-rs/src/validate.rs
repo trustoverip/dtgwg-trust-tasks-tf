@@ -68,7 +68,7 @@ impl<P: Payload> ValidatedPayload for P {}
 /// compiled schema around themselves; this helper is intended for the
 /// once-per-request pattern that consumer pipelines use.
 ///
-/// # ⚠ Schema-validation DoS surface (SPEC §10.3)
+/// # ⚠ Schema-validation DoS surface (SPEC §12.3)
 ///
 /// `schema_json` MUST be trusted by the caller. The underlying
 /// `jsonschema` crate compiles `pattern` keywords through a regex engine
