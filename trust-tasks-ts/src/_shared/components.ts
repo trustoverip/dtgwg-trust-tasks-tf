@@ -3349,6 +3349,14 @@ export interface Profile {
    */
   entries: ProfileEntry[];
   /**
+   * `retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`.
+   */
+  status?: "active" | "retired";
+  /**
+   * When the face was retired. Present exactly when `status` is `retired`.
+   */
+  retiredAt?: string;
+  /**
    * Vault identifiers of credentials associated with this profile as INVENTORY, distinct from the evidence relationship a `credentialBacked` attribute expresses. The two answer different questions — what can this persona prove, versus what backs this specific claim — and a consumer MUST NOT read one as the other.
    *
    * @maxItems 256

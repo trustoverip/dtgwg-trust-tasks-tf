@@ -241,6 +241,18 @@ type ResolvedClaim struct {
 // same slot: a slot exists to answer one question with one entry.
 type ProfileEntry = map[string]json.RawMessage
 
+// ProfileStatus `retired`: the face is worn nowhere, is left out of pickers and default
+// listings, and cannot be worn until reinstated (persona/profile/retire,
+// persona/profile/reinstate). Its disclosure history and every value it carries are kept
+// — retiring is 'stop being this', not 'forget this'. Absent reads as `active`.
+type ProfileStatus string
+
+// Values ProfileStatus may take, per this specification's schema.
+const (
+	ProfileStatusActive  ProfileStatus = "active"
+	ProfileStatusRetired ProfileStatus = "retired"
+)
+
 // Profile A named projection over the pool. Agent-scoped, like the pool it draws from.
 // `entries` is ordered and the order is display order.
 type Profile struct {
@@ -249,6 +261,15 @@ type Profile struct {
 	// The holder's name for this profile — "Work", "Gaming". Not disclosed.
 	Name    string         `json:"name"`
 	Entries []ProfileEntry `json:"entries"`
+
+	// `retired`: the face is worn nowhere, is left out of pickers and default listings, and
+	// cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate).
+	// Its disclosure history and every value it carries are kept — retiring is 'stop being
+	// this', not 'forget this'. Absent reads as `active`.
+	Status *ProfileStatus `json:"status,omitempty"`
+
+	// When the face was retired. Present exactly when `status` is `retired`.
+	RetiredAt *string `json:"retiredAt,omitempty"`
 
 	// Vault identifiers of credentials associated with this profile as INVENTORY, distinct
 	// from the evidence relationship a `credentialBacked` attribute expresses. The two answer

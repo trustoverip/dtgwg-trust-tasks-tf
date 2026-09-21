@@ -39,6 +39,12 @@ errorCodes:
   - code: persona/binding/set:versionConflict
     meaning: The expectedVersion precondition failed.
     retryable: false
+  - code: persona/binding/set:profileRetired
+    meaning: The named face is retired. It is not worn until persona/profile/reinstate — a retired face is one the holder has stopped being, and binding it back by accident would undo that.
+    retryable: false
+  - code: persona/binding/set:untilNotFuture
+    meaning: "`until` is not in the future, or accompanies a null `profileId`. Nothing is written."
+    retryable: false
 ---
 
 ## Abstract
@@ -100,6 +106,18 @@ holder-authorized. A face's name is the holder's filing — "Job hunting", "the
 divorce" — and binding a face to a persona is not consent to tell a context what
 the holder calls it. An absent `label` gives the context no name at all, which
 is a legitimate choice rather than a gap.
+
+A conforming maintainer **MUST** refuse to bind a retired face, with
+`persona/binding/set:profileRetired`.
+
+A conforming maintainer **MUST** refuse, with `persona/binding/set:untilNotFuture`, an
+`until` that is not in the future or that accompanies a null `profileId`. At
+`until` it **MUST** clear the binding exactly as a null `profileId` would, and
+then, when the face is worn nowhere, retire it as persona/profile/retire would —
+never delete it. A face still worn elsewhere stays active: the expiry was about
+this context, and retiring would take the face off contexts the holder said
+nothing about. A maintainer **MAY** act on an expiry late, but **MUST NOT**
+disclose a face through a binding whose `until` has passed.
 
 ## Authorization
 

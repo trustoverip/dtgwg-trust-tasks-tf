@@ -20,6 +20,10 @@ export interface PersonaLocalBindingSetPayload {
    * What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.
    */
   label?: string;
+  /**
+   * When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`.
+   */
+  until?: string;
   expectedVersion?: ExpectedVersion;
   ext?: Ext;
 }
@@ -95,6 +99,11 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "description": "What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all."
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`."
     },
     "expectedVersion": {
       "$ref": "#/$defs/ExpectedVersion"

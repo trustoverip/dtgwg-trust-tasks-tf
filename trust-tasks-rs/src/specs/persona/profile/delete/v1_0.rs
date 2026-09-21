@@ -262,6 +262,25 @@ impl Payload {
 ///    "profileId"
 ///  ],
 ///  "properties": {
+///    "disclosedTo": {
+///      "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.",
+///      "type": "object",
+///      "required": [
+///        "contextCount",
+///        "partyCount"
+///      ],
+///      "properties": {
+///        "contextCount": {
+///          "type": "integer",
+///          "minimum": 0.0
+///        },
+///        "partyCount": {
+///          "type": "integer",
+///          "minimum": 0.0
+///        }
+///      },
+///      "additionalProperties": false
+///    },
 ///    "existed": {
 ///      "description": "False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen.",
 ///      "type": "boolean"
@@ -291,6 +310,12 @@ impl Payload {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    #[serde(
+        rename = "disclosedTo",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub disclosed_to: ::std::option::Option<ResponseDisclosedTo>,
     ///False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen.
     pub existed: bool,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -307,6 +332,46 @@ pub struct Response {
 }
 impl Response {
     pub fn builder() -> builder::Response {
+        Default::default()
+    }
+}
+///How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.",
+///  "type": "object",
+///  "required": [
+///    "contextCount",
+///    "partyCount"
+///  ],
+///  "properties": {
+///    "contextCount": {
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "partyCount": {
+///      "type": "integer",
+///      "minimum": 0.0
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ResponseDisclosedTo {
+    #[serde(rename = "contextCount")]
+    pub context_count: u64,
+    #[serde(rename = "partyCount")]
+    pub party_count: u64,
+}
+impl ResponseDisclosedTo {
+    pub fn builder() -> builder::ResponseDisclosedTo {
         Default::default()
     }
 }
@@ -539,6 +604,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
+        disclosed_to: ::std::result::Result<
+            ::std::option::Option<super::ResponseDisclosedTo>,
+            ::std::string::String,
+        >,
         existed: ::std::result::Result<bool, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         profile_id: ::std::result::Result<super::Ulid, ::std::string::String>,
@@ -550,6 +619,7 @@ pub mod builder {
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
+                disclosed_to: Ok(Default::default()),
                 existed: Err("no value supplied for existed".to_string()),
                 ext: Ok(Default::default()),
                 profile_id: Err("no value supplied for profile_id".to_string()),
@@ -558,6 +628,16 @@ pub mod builder {
         }
     }
     impl Response {
+        pub fn disclosed_to<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseDisclosedTo>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.disclosed_to = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for disclosed_to: {e}"));
+            self
+        }
         pub fn existed<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<bool>,
@@ -603,6 +683,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                disclosed_to: value.disclosed_to?,
                 existed: value.existed?,
                 ext: value.ext?,
                 profile_id: value.profile_id?,
@@ -613,10 +694,65 @@ pub mod builder {
     impl ::std::convert::From<super::Response> for Response {
         fn from(value: super::Response) -> Self {
             Self {
+                disclosed_to: Ok(value.disclosed_to),
                 existed: Ok(value.existed),
                 ext: Ok(value.ext),
                 profile_id: Ok(value.profile_id),
                 unbound_personas: Ok(value.unbound_personas),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ResponseDisclosedTo {
+        context_count: ::std::result::Result<u64, ::std::string::String>,
+        party_count: ::std::result::Result<u64, ::std::string::String>,
+    }
+    impl ::std::default::Default for ResponseDisclosedTo {
+        fn default() -> Self {
+            Self {
+                context_count: Err("no value supplied for context_count".to_string()),
+                party_count: Err("no value supplied for party_count".to_string()),
+            }
+        }
+    }
+    impl ResponseDisclosedTo {
+        pub fn context_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.context_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for context_count: {e}"));
+            self
+        }
+        pub fn party_count<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<u64>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.party_count = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for party_count: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ResponseDisclosedTo> for super::ResponseDisclosedTo {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ResponseDisclosedTo,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                context_count: value.context_count?,
+                party_count: value.party_count?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ResponseDisclosedTo> for ResponseDisclosedTo {
+        fn from(value: super::ResponseDisclosedTo) -> Self {
+            Self {
+                context_count: Ok(value.context_count),
+                party_count: Ok(value.party_count),
             }
         }
     }
@@ -627,7 +763,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/delete. Type https://trusttasks.org/spec/persona/profile/delete/1.0#response. Deleting an absent profile is a success carrying existed: false, which is what makes a repeated delete converge.\",\n      \"properties\": {\n        \"existed\": {\n          \"description\": \"False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"unboundPersonas\": {\n          \"description\": \"Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"existed\"\n      ],\n      \"title\": \"Persona Profile Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/profile/delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Remove one profile. Refused by default while a persona is still bound to it, because a bound persona whose profile vanished would present nothing without the holder having said so.\",\n  \"properties\": {\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    },\n    \"unbind\": {\n      \"default\": false,\n      \"description\": \"When false (the default) a bound profile is refused and the error names the bound personas. When true the profile is removed and every binding to it is cleared, leaving those personas with no profile — which is a legal state, and one the holder is told about rather than discovering. Never the default: a persona that silently stopped presenting anything is a failure a holder finds out about from the other side.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"profileId\"\n  ],\n  \"title\": \"Persona Profile Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/delete. Type https://trusttasks.org/spec/persona/profile/delete/1.0#response. Deleting an absent profile is a success carrying existed: false, which is what makes a repeated delete converge.\",\n      \"properties\": {\n        \"disclosedTo\": {\n          \"additionalProperties\": false,\n          \"description\": \"How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.\",\n          \"properties\": {\n            \"contextCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"partyCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"partyCount\",\n            \"contextCount\"\n          ],\n          \"type\": \"object\"\n        },\n        \"existed\": {\n          \"description\": \"False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"unboundPersonas\": {\n          \"description\": \"Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"existed\"\n      ],\n      \"title\": \"Persona Profile Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/profile/delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Remove one profile. Refused by default while a persona is still bound to it, because a bound persona whose profile vanished would present nothing without the holder having said so.\",\n  \"properties\": {\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    },\n    \"unbind\": {\n      \"default\": false,\n      \"description\": \"When false (the default) a bound profile is refused and the error names the bound personas. When true the profile is removed and every binding to it is cleared, leaving those personas with no profile — which is a legal state, and one the holder is told about rather than discovering. Never the default: a persona that silently stopped presenting anything is a failure a holder finds out about from the other side.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"profileId\"\n  ],\n  \"title\": \"Persona Profile Delete — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -637,7 +773,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/delete. Type https://trusttasks.org/spec/persona/profile/delete/1.0#response. Deleting an absent profile is a success carrying existed: false, which is what makes a repeated delete converge.\",\n      \"properties\": {\n        \"existed\": {\n          \"description\": \"False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"unboundPersonas\": {\n          \"description\": \"Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"existed\"\n      ],\n      \"title\": \"Persona Profile Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/delete. Type https://trusttasks.org/spec/persona/profile/delete/1.0#response. Deleting an absent profile is a success carrying existed: false, which is what makes a repeated delete converge.\",\n      \"properties\": {\n        \"disclosedTo\": {\n          \"additionalProperties\": false,\n          \"description\": \"How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.\",\n          \"properties\": {\n            \"contextCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"partyCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"partyCount\",\n            \"contextCount\"\n          ],\n          \"type\": \"object\"\n        },\n        \"existed\": {\n          \"description\": \"False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"unboundPersonas\": {\n          \"description\": \"Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"existed\"\n      ],\n      \"title\": \"Persona Profile Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

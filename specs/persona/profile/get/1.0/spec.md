@@ -84,7 +84,8 @@ A conforming **maintainer** **MUST**:
 2. Return `resolved` only when asked, and in entry order.
 3. Re-derive credential-backed values during resolution, marking those it cannot as `stale` rather than returning a cached value whose backing has gone.
 4. Emit `persona/profile/get:notFound` rather than an empty success for an unknown identifier — a caller that cannot tell "absent" from "empty" will treat a typo as a profile that discloses nothing.
-5. Return every entry of the profile in `resolved`, including `inline` entries, omitting `attributeId`, `version` and `updatedAt` for those. A maintainer **MUST NOT** omit an entry it cannot fully describe, and **MUST NOT** synthesise an identifier for a value that has none.
+5. Return `disclosedTo`, counted from the disclosure history: every disclosure made while a persona wore this face.
+6. Return every entry of the profile in `resolved`, including `inline` entries, omitting `attributeId`, `version` and `updatedAt` for those. A maintainer **MUST NOT** omit an entry it cannot fully describe, and **MUST NOT** synthesise an identifier for a value that has none.
 
 ## Authorization
 

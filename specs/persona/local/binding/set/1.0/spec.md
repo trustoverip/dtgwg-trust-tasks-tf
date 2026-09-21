@@ -33,6 +33,12 @@ errorCodes:
   - code: persona/local/binding/set:notLocalProfile
     meaning: The identifier names a profile in the holder's pool rather than a context-local one. Honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the boundary exists to prevent.
     retryable: false
+  - code: persona/local/binding/set:profileRetired
+    meaning: The named context-local face is retired, and is not worn until persona/profile/reinstate.
+    retryable: false
+  - code: persona/local/binding/set:untilNotFuture
+    meaning: "`until` is not in the future, or accompanies a null `profileId`. Nothing is written."
+    retryable: false
 ---
 
 ## Abstract
@@ -66,7 +72,17 @@ and `personaDid`, and include a `proof` per [SPEC.md §4.7](/SPEC.md#47-proof).
 A conforming **maintainer** **MUST** confine the caller to its own context, and
 **MUST** resolve `profileId` **only** against the context-local address space —
 emitting `persona/local/binding/set:notLocalProfile` for an identifier that names
-a pool profile, rather than resolving it.
+a pool profile, rather than resolving it. It **MUST** refuse to bind a retired
+face, with `persona/local/binding/set:profileRetired`.
+
+A conforming maintainer **MUST** refuse, with `persona/local/binding/set:untilNotFuture`, an
+`until` that is not in the future or that accompanies a null `profileId`. At
+`until` it **MUST** clear the binding exactly as a null `profileId` would, and
+then, when the face is worn nowhere, retire it as persona/profile/retire would retire a pool face —
+never delete it. A face still worn elsewhere stays active: the expiry was about
+this context, and retiring would take the face off contexts the holder said
+nothing about. A maintainer **MAY** act on an expiry late, but **MUST NOT**
+disclose a face through a binding whose `until` has passed.
 
 ## Authorization
 

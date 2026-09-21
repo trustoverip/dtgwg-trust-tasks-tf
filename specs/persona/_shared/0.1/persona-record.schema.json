@@ -422,6 +422,17 @@
             "$ref": "#/$defs/ProfileEntry"
           }
         },
+        "status": {
+          "type": "string",
+          "enum": ["active", "retired"],
+          "default": "active",
+          "description": "`retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`."
+        },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the face was retired. Present exactly when `status` is `retired`."
+        },
         "credentialRefs": {
           "type": "array",
           "maxItems": 256,
