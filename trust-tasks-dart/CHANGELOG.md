@@ -11,6 +11,49 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.12 — 2026-09-21
+
+
+### Added
+
+- **messaging**: Add mediator queue, message, stats and traffic-monitor specifications (#549)
+
+Ten new messaging/* tasks (all 0.1, draft) so a mediator can be operated
+  entirely through Trust Tasks — by an administrator across every account, or
+  by an account controller over its own queues — instead of the REST
+  `/admin/status`, `/purge` and `/queue/status` routes and the retired DIDComm
+  admin protocols.
+
+
+
+### Other
+
+- Declare outcome evidence for witness/session and vetting/session (#550)
+
+Implements framework §7.3 item 20 in the registry
+(trustoverip/dtgwg-trust-tasks-spec#15 and #17).
+
+- spec.meta.schema.json: optional `outcomeEvidence` key (response Type
+  URI, binding by id + task digest or by fresh challenge, rationale).
+  Excluded from every binding generator, so no codegen change.
+- build-registry: checkOutcomeEvidence fails the build when the declared
+  response is missing, lacks a response payload, or does not require
+  proof and issuedAt (20.1-20.3); when the initiating spec is bearer or
+  has no REQUIRED recipient; or when a binding pointer names an
+  undeclared payload member (20.5). Warns when retention is not durable.
+- witness/session/0.1 declares witness/session/submit#response, bound
+  by the VWC's taskContext and taskDigestMultibase.
+- vetting/session/0.1 declares its own #response, bound by the card's
+  challenge; permitted under 20.5.2 because the statement's issuer is
+  the session's issuer.
+- witness/session/submit/0.1 cites SPEC §4.9.4 instead of its own
+  pairing rule, keeping only the witnessing-specific checks.
+- SPEC.md mirror: §4.9.4, §7.3 item 20, the outcome-evidence term, the
+  §10 correlator paragraph and the [VTI] reference, ported from the
+  canonical repo.
+
+Signed-off-by: Glenn Gore <glenn.g@affinidi.com>
+
 ## 0.1.11 — 2026-09-21
 
 
