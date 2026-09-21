@@ -83,9 +83,16 @@ re-sending with `unbind`.
 A conforming **maintainer** **MUST** reject the document unless the caller is
 **holder-authorized and unscoped**; **MUST** refuse a bound profile with
 `persona/profile/delete:bound` naming every bound persona unless `unbind` is
-true; **MUST NOT** remove or alter any attribute; and **MUST** return
+true; **MUST NOT** remove or alter any attribute; **MUST** return
 `existed: false` without assigning a new version for a profile that is already
-absent.
+absent; and **MUST** return `disclosedTo` for a face that existed.
+
+A delete does not un-tell anyone. The parties this face disclosed to keep what
+they were shown, and persona/disclosure/history keeps saying so. A conforming
+producer **SHOULD** read `disclosedTo` from persona/profile/get and show it —
+"disclosed to N parties across M contexts; deleting does not un-tell them" —
+before sending a delete, and **SHOULD** offer persona/profile/retire beside it,
+which ends the face without destroying it.
 
 ## Authorization
 

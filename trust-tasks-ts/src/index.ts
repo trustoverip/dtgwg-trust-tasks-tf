@@ -213,6 +213,8 @@ export * as PersonaProfileDelete_v1_0 from "./persona/profile/delete/1.0/payload
 export * as PersonaProfileGet_v1_0 from "./persona/profile/get/1.0/payload.js";
 export * as PersonaProfileList_v1_0 from "./persona/profile/list/1.0/payload.js";
 export * as PersonaProfilePut_v1_0 from "./persona/profile/put/1.0/payload.js";
+export * as PersonaProfileReinstate_v1_0 from "./persona/profile/reinstate/1.0/payload.js";
+export * as PersonaProfileRetire_v1_0 from "./persona/profile/retire/1.0/payload.js";
 export * as PersonaRenderersList_v1_0 from "./persona/renderers/list/1.0/payload.js";
 export * as PolicyShared_v0_1 from "./policy/_shared/0.1/policy.js";
 export * as PolicyShared_v0_2 from "./policy/_shared/0.2/policy.js";

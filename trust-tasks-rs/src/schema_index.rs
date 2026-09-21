@@ -719,6 +719,14 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/profile/put/1.0#response" => <crate::specs::persona::profile::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/reinstate/1.0" => <crate::specs::persona::profile::reinstate::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/reinstate/1.0#response" => <crate::specs::persona::profile::reinstate::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/retire/1.0" => <crate::specs::persona::profile::retire::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/retire/1.0#response" => <crate::specs::persona::profile::retire::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/renderers/list/1.0" => <crate::specs::persona::renderers::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/renderers/list/1.0#response" => <crate::specs::persona::renderers::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2735,6 +2743,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/profile/put/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::profile::put::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/reinstate/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::profile::reinstate::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/retire/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::profile::retire::v1_0::Payload,
         >()),
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/renderers/list/1.0" => Some(crate::SpecPolicy::of::<

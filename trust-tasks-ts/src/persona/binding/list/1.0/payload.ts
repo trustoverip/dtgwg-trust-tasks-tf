@@ -30,6 +30,10 @@ export interface PersonaBindingListResponsePayload {
      */
     label?: string;
     /**
+     * When this binding ends on its own. Absent when it lasts until changed.
+     */
+    until?: string;
+    /**
      * The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized; see persona/binding/get.
      */
     profileName?: string;
@@ -131,6 +135,11 @@ export const PAYLOAD_SCHEMA = {
                 "maxLength": 128,
                 "description": "The name the holder chose for this context to call the face. Absent when they chose none."
               },
+              "until": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this binding ends on its own. Absent when it lasts until changed."
+              },
               "profileName": {
                 "type": "string",
                 "maxLength": 128,
@@ -207,6 +216,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "minLength": 1,
                 "maxLength": 128,
                 "description": "The name the holder chose for this context to call the face. Absent when they chose none."
+              },
+              "until": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When this binding ends on its own. Absent when it lasts until changed."
               },
               "profileName": {
                 "type": "string",

@@ -61,7 +61,8 @@ A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is
 
 A conforming **maintainer** **MUST** reject the document unless the caller is
 **holder-authorized and unscoped**, **MUST** return profiles in a stable order
-across the pages of one enumeration, and **MUST NOT** resolve entries.
+across the pages of one enumeration, **MUST NOT** resolve entries, and **MUST**
+leave retired faces out unless `includeRetired` is true.
 
 ## Authorization
 

@@ -468,6 +468,22 @@ class ResolvedClaim {
 /// entries carry the same slot: a slot exists to answer one question with one entry.
 typedef ProfileEntry = Map<String, dynamic>;
 
+/// `retired`: the face is worn nowhere, is left out of pickers and default listings,
+/// and cannot be worn until reinstated (persona/profile/retire,
+/// persona/profile/reinstate). Its disclosure history and every value it carries are
+/// kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ProfileStatus(String value) {
+  static const ProfileStatus active = ProfileStatus('active');
+  static const ProfileStatus retired = ProfileStatus('retired');
+
+  /// Every value this specification's schema permits.
+  static const List<ProfileStatus> values = <ProfileStatus>[active, retired];
+}
+
 /// A named projection over the pool. Agent-scoped, like the pool it draws from.
 /// `entries` is ordered and the order is display order.
 class Profile {
@@ -475,6 +491,8 @@ class Profile {
     required this.profileId,
     required this.name,
     required this.entries,
+    this.status,
+    this.retiredAt,
     this.credentialRefs,
     required this.version,
     this.createdAt,
@@ -488,6 +506,10 @@ class Profile {
         entries: (json['entries'] as List<dynamic>)
             .map((e) => e as Map<String, dynamic>)
             .toList(),
+        status: json['status'] == null
+            ? null
+            : ProfileStatus(json['status'] as String),
+        retiredAt: json['retiredAt'] as String?,
         credentialRefs: json['credentialRefs'] == null
             ? null
             : (json['credentialRefs'] as List<dynamic>)
@@ -504,6 +526,15 @@ class Profile {
   final String name;
   final List<ProfileEntry> entries;
 
+  /// `retired`: the face is worn nowhere, is left out of pickers and default listings,
+  /// and cannot be worn until reinstated (persona/profile/retire,
+  /// persona/profile/reinstate). Its disclosure history and every value it carries are
+  /// kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`.
+  final ProfileStatus? status;
+
+  /// When the face was retired. Present exactly when `status` is `retired`.
+  final String? retiredAt;
+
   /// Vault identifiers of credentials associated with this profile as INVENTORY,
   /// distinct from the evidence relationship a `credentialBacked` attribute expresses.
   /// The two answer different questions — what can this persona prove, versus what backs
@@ -518,6 +549,8 @@ class Profile {
         'profileId': profileId,
         'name': name,
         'entries': entries,
+        if (status != null) 'status': status!.value,
+        if (retiredAt != null) 'retiredAt': retiredAt!,
         if (credentialRefs != null) 'credentialRefs': credentialRefs!,
         'version': version,
         if (createdAt != null) 'createdAt': createdAt!,

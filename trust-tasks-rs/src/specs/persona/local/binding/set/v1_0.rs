@@ -238,6 +238,11 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///          "type": "null"
 ///        }
 ///      ]
+///    },
+///    "until": {
+///      "description": "When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`.",
+///      "type": "string",
+///      "format": "date-time"
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -270,6 +275,9 @@ pub struct Payload {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub profile_id: ::std::option::Option<Ulid>,
+    ///When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -839,6 +847,10 @@ pub mod builder {
         persona_did: ::std::result::Result<super::PayloadPersonaDid, ::std::string::String>,
         profile_id:
             ::std::result::Result<::std::option::Option<super::Ulid>, ::std::string::String>,
+        until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -849,6 +861,7 @@ pub mod builder {
                 label: Ok(Default::default()),
                 persona_did: Err("no value supplied for persona_did".to_string()),
                 profile_id: Ok(Default::default()),
+                until: Ok(Default::default()),
             }
         }
     }
@@ -913,6 +926,18 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for profile_id: {e}"));
             self
         }
+        pub fn until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for until: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Payload> for super::Payload {
         type Error = super::error::ConversionError;
@@ -924,6 +949,7 @@ pub mod builder {
                 label: value.label?,
                 persona_did: value.persona_did?,
                 profile_id: value.profile_id?,
+                until: value.until?,
             })
         }
     }
@@ -936,6 +962,7 @@ pub mod builder {
                 label: Ok(value.label),
                 persona_did: Ok(value.persona_did),
                 profile_id: Ok(value.profile_id),
+                until: Ok(value.until),
             }
         }
     }
@@ -1041,7 +1068,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/local/binding/set. Type https://trusttasks.org/spec/persona/local/binding/set/1.0#response.\",\n      \"properties\": {\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"oneOf\": [\n            {\n              \"$ref\": \"#/$defs/Ulid\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ]\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"personaDid\",\n        \"version\"\n      ],\n      \"title\": \"Persona Local Binding Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/local/binding/set/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Bind a context-local profile to a persona in the same context. Safely context-callable — unlike persona/binding/set — precisely because both objects it names live below the boundary and neither reaches the holder's pool.\",\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"personaDid\": {\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"profileId\": {\n      \"description\": \"A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the whole boundary exists to prevent.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        {\n          \"type\": \"null\"\n        }\n      ]\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"personaDid\"\n  ],\n  \"title\": \"Persona Local Binding Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/local/binding/set. Type https://trusttasks.org/spec/persona/local/binding/set/1.0#response.\",\n      \"properties\": {\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"oneOf\": [\n            {\n              \"$ref\": \"#/$defs/Ulid\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ]\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"personaDid\",\n        \"version\"\n      ],\n      \"title\": \"Persona Local Binding Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/local/binding/set/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Bind a context-local profile to a persona in the same context. Safely context-callable — unlike persona/binding/set — precisely because both objects it names live below the boundary and neither reaches the holder's pool.\",\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"What this context may call the face the persona wears here, chosen by the holder for this context. Returned by persona/binding/get and persona/binding/list in place of the holder's own name for the face, which is theirs and may say far more than they would tell a context ('the divorce'). Omit to give the context no name at all.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"personaDid\": {\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"profileId\": {\n      \"description\": \"A LOCAL profile, or null to clear. A maintainer MUST refuse an identifier that names a pool profile: honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the whole boundary exists to prevent.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        {\n          \"type\": \"null\"\n        }\n      ]\n    },\n    \"until\": {\n      \"description\": \"When this binding ends on its own. At `until` the maintainer clears the binding as a null persona/binding/set would; if the face is then worn nowhere, it is retired as persona/profile/retire would a pool face, never deleted, so its history survives. Absent means the binding lasts until changed. For the face worn for one weekend — a conference, a listing — so that ending it is a default rather than a discipline. A maintainer MUST refuse an `until` that is not in the future, and one given with a null `profileId`.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"personaDid\"\n  ],\n  \"title\": \"Persona Local Binding Set — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

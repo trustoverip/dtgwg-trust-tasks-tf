@@ -15,6 +15,10 @@ export interface PersonaProfileListPayload {
    */
   cursor?: string;
   limit?: number;
+  /**
+   * Include retired faces. Off by default: a retired face is one the holder has stopped being, and a picker that offered it back would undo the decision by accident.
+   */
+  includeRetired?: boolean;
   ext?: Ext;
 }
 /**
@@ -74,6 +78,11 @@ export const PAYLOAD_SCHEMA = {
       "minimum": 1,
       "maximum": 500,
       "default": 100
+    },
+    "includeRetired": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include retired faces. Off by default: a retired face is one the holder has stopped being, and a picker that offered it back would undo the decision by accident."
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -145,6 +154,20 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ProfileEntry"
           }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "retired"
+          ],
+          "default": "active",
+          "description": "`retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`."
+        },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the face was retired. Present exactly when `status` is `retired`."
         },
         "credentialRefs": {
           "type": "array",
@@ -472,6 +495,20 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ProfileEntry"
           }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "retired"
+          ],
+          "default": "active",
+          "description": "`retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`."
+        },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the face was retired. Present exactly when `status` is `retired`."
         },
         "credentialRefs": {
           "type": "array",
