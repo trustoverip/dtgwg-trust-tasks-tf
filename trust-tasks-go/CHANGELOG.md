@@ -11,6 +11,8 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.1.14 — 2026-09-21
+
 ## 0.1.13 — 2026-09-21
 
 ## 0.1.12 — 2026-09-21
