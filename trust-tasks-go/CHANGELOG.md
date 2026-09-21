@@ -11,6 +11,18 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.1.15 — 2026-09-21
+
+
+### Specifications
+
+- Bring framework 0.6.0 into the registry (SPEC.md + specs/_framework/0.6) (#555)
+
+Companion to trustoverip/dtgwg-trust-tasks-spec#18. Publishes the 0.6
+  envelope schema (0.5's shape unchanged, so 0.6.0 becomes targetable; no
+  spec is re-targeted) and brings the SPEC.md mirror to 0.6: version and
+  date header, plus the Appendix B entry.
+
 ## 0.1.14 — 2026-09-21
 
 ## 0.1.13 — 2026-09-21
