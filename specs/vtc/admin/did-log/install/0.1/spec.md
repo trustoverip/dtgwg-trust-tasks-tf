@@ -2,7 +2,7 @@
 slug: vtc/admin/did-log/install
 version: "0.1"
 title: "VTC Admin DID Log Install"
-summary: "Hand a community its own did:webvh log, extended by entries its key holder signed, so the community verifies it and serves it in place of the one it serves now."
+summary: "Hand a community that self-hosts its did:webvh log a copy extended by entries its key holder signed, so the community verifies it and serves it in place of the one it serves now."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: identity
@@ -50,7 +50,7 @@ errorCodes:
     meaning: The supplied log does not keep every entry the community serves now, unchanged and in order — it is shorter, rewritten or forked.
     retryable: false
   - code: vtc/admin/did-log/install:notServedHere
-    meaning: The community does not serve its own did:webvh log, so there is nothing here to replace.
+    meaning: The community does not self-host its did:webvh log — it is published by a DID host, which receives new entries from the key holder directly — so there is nothing here to replace.
     retryable: false
 related: []
 ---
@@ -59,7 +59,7 @@ related: []
 
 The **VTC Admin DID Log Install** Trust Task delivers a community's own `did:webvh` log to the community, extended by entries its key holder has signed, so the community verifies it and serves it in place of the log it serves now.
 
-A community serves its own `did.jsonl` but does not hold the keys that sign it: the agent that provisioned it does. So any change to the community's DID document after it was minted — a transport added to its services, a key rotated — produces a new log entry the community cannot make and has no way to receive. Before this task an operator copied the file onto the community's host by hand. As a Trust Task the delivery is authorised, audited, and checked by the party that will serve the result.
+A community's `did:webvh` log is published one of two ways. Where a DID host publishes it, the agent holding the DID's keys sends each new entry to that host, and this task is not needed. A community can instead **self-host** its log, serving `did.jsonl` itself — and then it serves a log it cannot extend, because the keys that sign it are held by the agent that provisioned it, which has no way to reach the community's copy. So any change to a self-hosted community's DID document after it was minted — a transport added to its services, a key rotated — produces an entry the community has no way to receive. Before this task an operator copied the file onto the community's host by hand. As a Trust Task the delivery is authorised, audited, and checked by the party that will serve the result.
 
 ## Status of this Document
 
@@ -78,7 +78,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 1. verify `log` as a `did:webvh` log in full — every entry's proof under the update keys in force at that entry, the SCID, and the entry-hash chain — and refuse with `invalidLog` if any check fails;
 2. refuse with `wrongDid` if the log's DID is not the community's own;
 3. refuse with `notAnExtension` unless every entry it serves now appears in `log`, byte for byte and in the same order, as its first entries — so a shorter log, a rewritten entry, or a fork from any earlier entry is refused;
-4. refuse with `notServedHere` if it does not serve its own `did:webvh` log.
+4. refuse with `notServedHere` if it does not self-host its `did:webvh` log — a log a DID host publishes is extended at that host, and a copy installed here would never be the one resolvers read.
 
 It MUST then replace the served log atomically — a resolver reads either the whole previous log or the whole new one, never a mixture — and answer with the resulting `versionId`, the previous one, and the number of entries added. Installing the log already served is not an error: it changes nothing and answers `entriesAdded: 0`.
 
