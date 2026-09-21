@@ -156,6 +156,10 @@ export type DataCommitment = DigestMultibase;
  */
 export type Decision = "approve" | "deny";
 /**
+ * `queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.
+ */
+export type DeliveryState = "queued" | "delivered";
+/**
  * Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
  */
 export type DeviceAttestation_DeviceV0_1 =
@@ -365,6 +369,10 @@ export type Provenance =
  */
 export type PushRegistration = Apns | Fcm | WebPush;
 /**
+ * Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.
+ */
+export type Queue = "receive" | "send";
+/**
  * How many records the room held when `DataCommitment` was computed — the number of leaves in that tree, tombstones included, since a tombstone is a record.
  *
  * **Why a root needs this.** Certificate Transparency's signed tree head is a root *and a tree size*; this family shipped the root alone, and the half that was dropped is the half that makes a listing checkable. A reader holding a **complete, unfiltered** listing cannot recompute the root — a leaf commits to a whole record and a listing returns a projection without the body — but it can count. A host that omits a record from a listing while committing to a tree that holds it now contradicts itself in the same response, with no second party and no anchor involved.
@@ -534,6 +542,26 @@ export type SyncEvent_SyncV0_2 =
   | VaultDeletedEvent_SyncV0_2
   | AclChangedEvent_SyncV0_2
   | PolicyChangedEvent_SyncV0_2;
+/**
+ * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
+ */
+export type TrafficChannel = "websocket" | "rest" | "peerMediator" | "internal";
+/**
+ * `inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge).
+ */
+export type TrafficDirection = "inbound" | "outbound" | "internal";
+/**
+ * What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.
+ */
+export type TrafficStage =
+  | "received"
+  | "stored"
+  | "delivered"
+  | "forwarded"
+  | "refused"
+  | "deleted"
+  | "expired"
+  | "purged";
 /**
  * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
  */
@@ -755,6 +783,10 @@ export type Vid = string;
  * How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
  */
 export type Visibility = "open" | "attributed" | "private";
+/**
+ * The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.
+ */
+export type WireProtocol = "didcomm" | "didcommV1" | "tsp" | "other";
 
 /**
  * The mediator's view of one served account.
@@ -2790,6 +2822,253 @@ export interface MemberResponse {
    */
   extensions: {};
 }
+/**
+ * Metadata of one stored message. Never carries the message body.
+ */
+export interface MessageMeta {
+  /**
+   * The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.
+   */
+  msgId: string;
+  queue: Queue;
+  /**
+   * Stored size in bytes.
+   */
+  size: number;
+  /**
+   * When the mediator stored the message.
+   */
+  receivedAt: string;
+  /**
+   * When the mediator will expire the message if it is not deleted first.
+   */
+  expiresAt?: string;
+  /**
+   * The sender, where the mediator knows it. Absent for anonymous messages.
+   */
+  from?: Vid;
+  /**
+   * The recipient account.
+   */
+  to?: Vid;
+  protocol?: WireProtocol;
+  deliveryState?: DeliveryState;
+  /**
+   * When the message was first handed to the recipient. Present only when deliveryState is `delivered`.
+   */
+  deliveredAt?: string;
+}
+/**
+ * One observed step in the life of one message at the mediator. Carries metadata only — never a message body.
+ */
+export interface MonitorEvent {
+  /**
+   * When the step happened, with sub-second precision where the mediator has it.
+   */
+  at: string;
+  direction: TrafficDirection;
+  stage: TrafficStage;
+  channel: TrafficChannel;
+  protocol: WireProtocol;
+  /**
+   * The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.
+   */
+  msgId?: string;
+  /**
+   * The sender, where the mediator knows it.
+   */
+  from?: Vid;
+  /**
+   * The recipient, where the mediator knows it.
+   */
+  to?: Vid;
+  /**
+   * Frame size in bytes.
+   */
+  size?: number;
+  /**
+   * The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.
+   */
+  messageType?: string;
+  /**
+   * Present when stage is `refused`, and on any other stage that failed.
+   */
+  outcome?: TrafficOutcome;
+  /**
+   * For `delivered` and `forwarded`: milliseconds since the message was stored.
+   */
+  latencyMs?: number;
+}
+/**
+ * Selects which events a monitor subscription receives. Every member present narrows the selection (members are ANDed; values within one member are ORed). An empty filter selects everything the requester is entitled to see.
+ */
+export interface MonitorFilter {
+  /**
+   * Only events whose `from` or `to` is one of these accounts.
+   *
+   * @minItems 1
+   * @maxItems 100
+   */
+  dids?: [Vid, ...Vid[]];
+  /**
+   * @minItems 1
+   */
+  directions?: [TrafficDirection, ...TrafficDirection[]];
+  /**
+   * @minItems 1
+   */
+  stages?: [TrafficStage, ...TrafficStage[]];
+  /**
+   * @minItems 1
+   */
+  protocols?: [WireProtocol, ...WireProtocol[]];
+  /**
+   * @minItems 1
+   */
+  channels?: [TrafficChannel, ...TrafficChannel[]];
+  /**
+   * Only events whose `messageType` starts with one of these strings. Events with no `messageType` never match when this member is present.
+   *
+   * @minItems 1
+   * @maxItems 20
+   */
+  messageTypePrefixes?:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ];
+  /**
+   * Only events that carry an `outcome`.
+   */
+  failuresOnly?: boolean;
+}
 export interface PasskeyVerificationMethod {
   /**
    * The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
@@ -2819,6 +3098,18 @@ export interface PasskeyVerificationMethod {
    * Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
    */
   label?: string;
+}
+/**
+ * The share of one queue attributable to one counterparty: in a send queue, the recipient; in a receive queue, the sender.
+ */
+export interface PeerDepth {
+  /**
+   * The counterparty's identifier, in the same form the mediator uses for accounts.
+   */
+  peer: Vid;
+  count: number;
+  bytes: number;
+  oldestAgeSeconds?: number;
 }
 /**
  * A community's published position on personhood.
@@ -3210,6 +3501,35 @@ export interface QueryContext {
   [k: string]: string | undefined;
 }
 /**
+ * The depth of one queue and its effective limit.
+ */
+export interface QueueDepth {
+  /**
+   * Messages currently in the queue.
+   */
+  count: number;
+  /**
+   * Total stored size of those messages, in bytes.
+   */
+  bytes: number;
+  /**
+   * The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.
+   */
+  limit?: number;
+  /**
+   * count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.
+   */
+  saturation?: number;
+  /**
+   * Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.
+   */
+  oldestAgeSeconds?: number;
+  /**
+   * Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.
+   */
+  deliveredUnacked?: number;
+}
+/**
  * Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.
  */
 export interface QueueLimits {
@@ -3221,6 +3541,15 @@ export interface QueueLimits {
    * Maximum queued receive messages; -1 = unlimited.
    */
   receiveQueueLimit?: number;
+}
+/**
+ * Both queues of one account.
+ */
+export interface QueueSummary {
+  did: Vid;
+  accountType?: AccountType;
+  receive: QueueDepth;
+  send: QueueDepth;
 }
 /**
  * What the agent checked on the member's behalf, and what it found.
@@ -3756,6 +4085,19 @@ export interface TokenBundle {
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
   ext?: Ext;
+}
+/**
+ * Why a frame was refused or failed.
+ */
+export interface TrafficOutcome {
+  /**
+   * The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).
+   */
+  code: string;
+  /**
+   * Short human-readable explanation. Not machine-parsed.
+   */
+  detail?: string;
 }
 export interface TrustRecord {
   entity_id: string;

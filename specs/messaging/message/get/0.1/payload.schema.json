@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/message/get/0.1",
+  "title": "Messaging — Get Message — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "msgId"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The account whose queue holds the message. Omitted = the requester's own account. A requester without administrative standing may name only itself."
+    },
+    "msgId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Get Message — response payload",
+      "description": "The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "meta": {
+          "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/MessageMeta"
+        },
+        "message": {
+          "type": "string",
+          "description": "The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.",
+          "maxLength": 10485760
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "required": [
+        "meta",
+        "message"
+      ]
+    }
+  }
+}

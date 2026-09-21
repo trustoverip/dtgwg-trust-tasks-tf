@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/queue/purge/0.1",
+  "title": "Messaging — Purge Queue — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "queue"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "The account whose queue to purge. Omitted = the requester's own account. A requester without administrative standing may name only itself."
+    },
+    "queue": {
+      "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/Queue"
+    },
+    "peer": {
+      "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
+      "description": "Only messages exchanged with this counterparty: in a send queue, the recipient; in a receive queue, the sender."
+    },
+    "olderThanSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Only messages queued at least this long."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Report what would be purged and purge nothing. Default false."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Purge Queue — response payload",
+      "description": "The success response to a messaging/queue/purge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/purge/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "matched": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Messages that matched the selection."
+        },
+        "matchedBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purged": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Messages actually removed. 0 on a dry run."
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "required": [
+        "matched",
+        "purged",
+        "dryRun"
+      ]
+    }
+  }
+}

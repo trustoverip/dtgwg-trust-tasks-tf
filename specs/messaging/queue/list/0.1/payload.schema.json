@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/queue/list/0.1",
+  "title": "Messaging — List Queues — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "queue": {
+      "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/Queue",
+      "description": "Which queue to rank by. Default `receive`."
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "count",
+        "bytes",
+        "oldest",
+        "saturation"
+      ],
+      "description": "Ranking key, descending. Default `count`."
+    },
+    "minCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Omit accounts whose ranked queue holds fewer messages than this. Default 1 (skip empty queues)."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Maximum accounts per page. The mediator chooses a default when omitted."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — List Queues — response payload",
+      "description": "The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "queues": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/QueueSummary"
+          }
+        },
+        "snapshotAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the ranking was computed. A mediator MAY serve the ranking from a periodic survey rather than a live scan."
+        },
+        "truncated": {
+          "type": "boolean",
+          "description": "The ranking did not cover every account."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      },
+      "required": [
+        "queues",
+        "snapshotAt"
+      ]
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/monitor/event/0.1",
+  "title": "Messaging — Traffic Monitor Event — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subscriptionId",
+    "seq",
+    "events",
+    "dropped",
+    "expiresAt"
+  ],
+  "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Batch sequence number, starting at 1 and increasing by exactly 1 per batch within a subscription. A gap means batches were lost in transit."
+    },
+    "events": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "../../../_shared/0.1/mediator-ops.schema.json#/$defs/MonitorEvent"
+      },
+      "description": "Events in the order the mediator observed them. May be empty on a heartbeat batch."
+    },
+    "dropped": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Events that matched the filter but were discarded since the previous batch — rate ceiling exceeded or subscriber not connected."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The subscription's current expiry, so the subscriber can renew before it lapses."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  }
+}

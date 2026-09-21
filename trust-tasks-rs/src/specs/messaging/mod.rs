@@ -4,4 +4,8 @@ pub mod access_list;
 pub mod account;
 pub mod acl;
 pub mod admin;
+pub mod message;
+pub mod monitor;
 pub mod ping;
+pub mod queue;
+pub mod stats;
