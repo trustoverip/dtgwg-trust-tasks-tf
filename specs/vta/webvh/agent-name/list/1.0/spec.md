@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Agent-Name — List"
 summary: "List every agent name a DID holds, enabled or not."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:
   - vta

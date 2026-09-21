@@ -86,6 +86,14 @@ function checkDefinition(file, def, validate) {
     return;
   }
 
+  // SPEC §5.1.1 (adopted in 0.4.0): a definition published from then on MUST
+  // declare the three-part form, so a two-part value naming 0.5 or later cannot
+  // be a pre-rule declaration. Mirrors `twoPartAfterRule` in build-registry.mjs.
+  const tfv = /^(\d+)\.(\d+)$/.exec(String(def.targetFrameworkVersion));
+  if (tfv && (Number(tfv[1]) > 0 || Number(tfv[2]) >= 5)) {
+    err(f, `targetFrameworkVersion "${def.targetFrameworkVersion}" is two-part, but that release postdates the three-part rule of SPEC §5.1.1 — declare "${def.targetFrameworkVersion}.0"`);
+  }
+
   const steps = Object.entries(def.steps);
   const stepNames = new Set(Object.keys(def.steps));
   const roleNames = new Set(Object.keys(def.roles));

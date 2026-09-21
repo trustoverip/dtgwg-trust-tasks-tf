@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Contact — Delete
 summary: Remove a contact and its revisions, reporting honestly how many survived because a disclosure record still references them.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, contact, privacy]
 authors:

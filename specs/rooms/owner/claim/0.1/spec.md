@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Owner — Claim
 summary: "A nominated successor claims ownership of a room whose owner has stopped renewing it — an act, never an automatic promotion."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

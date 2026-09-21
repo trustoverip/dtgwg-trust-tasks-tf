@@ -41,6 +41,36 @@ describe("rewrites a Type URI to its schema", () => {
     );
   });
 
+  it("serves the framework at its three-part Type URI", () => {
+    // SPEC §5.1.1: the framework's Type URI is MAJOR.MINOR.PATCH. A `.0`
+    // release is stored under MAJOR.MINOR, which is also its two-part alias.
+    assert.equal(
+      route("/spec/trust-task/0.5.0", SCHEMA),
+      "/specs/_framework/0.5/trust-task.schema.json",
+    );
+    assert.equal(
+      route("/spec/trust-task/0.6.0", SCHEMA),
+      "/specs/_framework/0.6/trust-task.schema.json",
+    );
+  });
+
+  it("never substitutes a different PATCH for the one requested", () => {
+    // A PATCH release is its own envelope (SPEC §5.1.1): 0.6.1 must not be
+    // answered with 0.6.0's schema.
+    assert.equal(
+      route("/spec/trust-task/0.6.1", SCHEMA),
+      "/specs/_framework/0.6.1/trust-task.schema.json",
+    );
+  });
+
+  it("rejects a three-part version on a task slug", () => {
+    // Only the framework's version is three-part; every task slug is MAJOR.MINOR.
+    assert.notEqual(
+      route("/spec/acl/grant/0.1.0", SCHEMA),
+      "/specs/acl/grant/0.1.0/payload.schema.json",
+    );
+  });
+
   it("maps a single-segment slug", () => {
     assert.equal(
       route("/spec/acl/grant/0.1", SCHEMA),

@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — List
 summary: A querying party asks an ACL maintainer to enumerate the entries currently in its access-control list, with optional filters and paging.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - acl

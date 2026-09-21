@@ -30,7 +30,9 @@ schemas were deployed the whole time, just at `/specs/<slug>/<version>/payload.s
 ## What it does
 
 ```
-/spec/trust-task/<M.m>   + application/schema+json ->  /specs/_framework/<M.m>/trust-task.schema.json
+/spec/trust-task/<M.m.p> + application/schema+json ->  /specs/_framework/<M.m>/trust-task.schema.json   (p = 0)
+                                                    ->  /specs/_framework/<M.m.p>/trust-task.schema.json (p > 0)
+/spec/trust-task/<M.m>   + application/schema+json ->  /specs/_framework/<M.m>/trust-task.schema.json   (alias of M.m.0)
 /spec/<slug…>/<M.m>      + application/schema+json ->  /specs/<slug…>/<M.m>/payload.schema.json
 /ceremony/<slug…>/<M.m>  + application/json        ->  /ceremonies/<slug…>/<M.m>/ceremony.json
 /assets/…, /specs/…, /bindings/…, /ceremonies/…,
@@ -95,6 +97,24 @@ aws cloudfront publish-function \
   --name trust-tasks-type-uri-negotiation \
   --if-match "$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation \
                   --query 'ETag' --output text)"
+```
+
+### Update the published function
+
+After changing `type-uri-negotiation.js` (and `npm run test:infra` passing), push the new code and publish it. The distribution picks up the published version; nothing needs re-associating.
+
+```sh
+aws cloudfront update-function \
+  --name trust-tasks-type-uri-negotiation \
+  --function-config Comment="Type URI + ceremony definition negotiation with SPA fallback (SPEC 6.2 / 6.7)",Runtime=cloudfront-js-2.0 \
+  --function-code fileb://type-uri-negotiation.js \
+  --if-match "$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation --query 'ETag' --output text)"
+
+aws cloudfront publish-function \
+  --name trust-tasks-type-uri-negotiation \
+  --if-match "$(aws cloudfront describe-function --name trust-tasks-type-uri-negotiation --query 'ETag' --output text)"
+
+./verify.sh    # confirms the live routes, including the three-part framework URIs
 ```
 
 ### Associate it with the distribution

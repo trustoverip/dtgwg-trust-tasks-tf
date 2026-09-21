@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Claim Types — List
 summary: Serve the claim-type registry an agent resolves against, so a client reads the table rather than shipping a copy of it.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, privacy, correlation]
 authors:

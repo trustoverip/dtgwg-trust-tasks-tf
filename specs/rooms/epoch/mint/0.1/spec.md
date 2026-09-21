@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Epoch — Mint
 summary: "A room's owner advances its key epoch, which is how a member is removed: the new key is distributed only to those who remain."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

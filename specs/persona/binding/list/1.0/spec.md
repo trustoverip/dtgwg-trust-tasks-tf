@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Binding — List
 summary: An application enumerates the bindings in its own context — which personas operate here and what each presents — and learns nothing about anywhere else the holder operates.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, context, least-disclosure]
 authors:

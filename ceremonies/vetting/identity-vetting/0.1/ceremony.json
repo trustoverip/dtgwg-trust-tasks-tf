@@ -4,7 +4,7 @@
   "title": "Identity vetting",
   "summary": "One vetter checks one applicant's identity for one community: the applicant asks, the two meet in a session, and the vetter issues a Vetting Statement or declines. An applicant runs one enactment per vetter.",
   "status": "draft",
-  "targetFrameworkVersion": "0.5",
+  "targetFrameworkVersion": "0.5.0",
   "authors": [
     "Glenn Gore (https://github.com/stormer78)"
   ],

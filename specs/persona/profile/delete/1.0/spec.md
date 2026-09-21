@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Profile — Delete
 summary: A holder removes a profile; the removal is refused while a persona is bound to it, unless the holder explicitly unbinds, so no persona silently stops presenting anything.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, profile, referential-integrity, tombstone]
 authors:

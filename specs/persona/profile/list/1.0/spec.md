@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Profile — List
 summary: A holder enumerates their profiles as composed, paginated, with no option to resolve — because resolving every profile at once would decrypt the whole pool to answer a question about names.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, profile, pagination, data-minimisation]
 authors:

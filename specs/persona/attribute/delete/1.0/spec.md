@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Attribute — Delete
 summary: A holder removes one fact from their attribute pool; the removal is refused while any profile still references it, unless the holder explicitly cascades, so that deleting one fact never silently changes what a profile discloses.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona

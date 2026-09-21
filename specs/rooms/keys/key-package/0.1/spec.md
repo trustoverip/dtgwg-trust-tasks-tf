@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Keys — Key-Package
 summary: "An invited party asks the agent that will hold its room keys to mint an MLS KeyPackage, so the room's owner has something to add."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: ai-agents
 keywords:
   - room

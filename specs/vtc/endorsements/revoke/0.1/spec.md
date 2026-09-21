@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Endorsements — Revoke
 summary: Revoke an issued endorsement credential by flipping its published status-list bit; reports alreadyRevoked on re-revocation rather than succeeding silently.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: credentials
 keywords:
   - vtc

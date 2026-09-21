@@ -4,7 +4,7 @@ version: "0.1"
 title: VRC Relationships — Propose
 summary: One person proposes a peer-to-peer relationship to another, naming the pairwise DID they will use for it; the counterparty accepts or declines, and says whether the exchange will be witnessed. Opens the relationship exchange every later document of the exchange threads to.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: credentials
 keywords:
   - vrc

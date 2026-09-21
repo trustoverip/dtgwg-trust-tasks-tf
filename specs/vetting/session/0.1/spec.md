@@ -4,7 +4,7 @@ version: "0.1"
 title: Vetting — Session
 summary: A vetter opens a vetting session with an applicant it agreed to vet, while the two are together; the applicant answers with a signed Vetting Card bound to this session. The session document's id is what the resulting Vetting Statement cites as taskContext.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - vetting
@@ -84,7 +84,7 @@ A vetter who has accepted an applicant's [`vetting/request`](../../request/0.1/s
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
 ## The session's name, and the statement it produces
 

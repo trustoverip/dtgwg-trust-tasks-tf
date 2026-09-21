@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Profile — Put
 summary: A holder composes a named projection over their attribute pool, referencing facts rather than copying them, with four entry forms covering reuse, pinning, per-profile override and profile-local values.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona

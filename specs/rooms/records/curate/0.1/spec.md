@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Records — Curate
 summary: "A member changes a record's standing in a data room — demote, retract, restore, pin — without rewriting it, under an authority action distinct from write."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

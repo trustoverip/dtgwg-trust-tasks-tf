@@ -4,7 +4,7 @@ version: "0.2"
 title: Rooms Keys — Present
 summary: "An agent asks the party holding its principal's room credentials to produce a presentation for one room operation, scoped to that action and granted to the agent that asked."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: ai-agents
 keywords:
   - room

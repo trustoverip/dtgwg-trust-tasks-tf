@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Disclosure — Preview
 summary: Determine exactly what a disclosure would reveal, to whom, at what proof strength and through which renderer — signing nothing and sending nothing, so that no disclosure can occur without first producing the summary a human can be shown.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, disclosure, selective-disclosure, zero-knowledge, correlation]
 authors:

@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Servers — Remove"
 summary: "A super-administrator removes a hosting registration; DIDs the server already serves keep resolving."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:
   - vta

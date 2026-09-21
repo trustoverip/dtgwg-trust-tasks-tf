@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Vetting — Grant Vetter Role
 summary: A community administrator makes a member a vetter. The community issues the member a revocable CommunityRole endorsement credential for the vetter role, and a member who already holds a live grant gets it back unchanged.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: governance
 keywords:
   - vtc
@@ -65,7 +65,7 @@ A vetter who has lost the credential asks for it again with [`vtc/vetting/vetter
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
 ## Conformance
 

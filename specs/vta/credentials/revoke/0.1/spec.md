@@ -4,7 +4,7 @@ version: "0.1"
 title: VTA Credentials — Revoke
 summary: A context authority revokes a credential it previously issued, ending a cross-context share before its natural expiry.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: credentials
 keywords:
   - credentials

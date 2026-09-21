@@ -1041,6 +1041,23 @@ function checkExampleDocuments() {
   for (const version of frameworkVersions) {
     const p = path.join(frameworkDir, version, 'trust-task.schema.json');
     if (!fs.existsSync(p)) continue;
+    // A `.0` release lives under MAJOR.MINOR (see frameworkEnvelopeKey), so a
+    // directory named `M.N.0` would be a second copy of it.
+    if (!/^\d+\.\d+$/.test(version) && !/^\d+\.\d+\.[1-9]\d*$/.test(version)) {
+      fail(`_framework/${version}/`, `framework directory must be MAJOR.MINOR (for a .0 release) or MAJOR.MINOR.PATCH with PATCH > 0`);
+    }
+    // Its $id is the framework's Type URI: three-part from 0.4.0, the release
+    // that adopted the §5.1.1 rule; two-part for 0.1–0.3, published before it.
+    // Either way the two-part URI is still served, as an alias of `.0`.
+    const threePartVersion = /^\d+\.\d+$/.test(version) ? `${version}.0` : version;
+    const [vMaj, vMin] = version.split('.').map(Number);
+    const [tMaj, tMin] = FIRST_THREE_PART_TYPE_URI;
+    const underRule = vMaj > tMaj || (vMaj === tMaj && vMin >= tMin);
+    const expectedId = `https://trusttasks.org/spec/trust-task/${underRule ? threePartVersion : version}`;
+    const envelopeId = readJson(p).$id;
+    if (envelopeId !== expectedId) {
+      fail(`_framework/${version}/trust-task.schema.json`, `$id is '${envelopeId}', expected '${expectedId}' (SPEC §5.1.1)`);
+    }
     try {
       validators.set(version, ajv.compile(readJson(p)));
     } catch (e) {
@@ -1058,7 +1075,7 @@ function checkExampleDocuments() {
     if (data?.targetFrameworkVersion) {
       targetByTypePrefix.set(
         `https://trusttasks.org/spec/${slug}/${version}`,
-        frameworkMinor(data.targetFrameworkVersion)
+        frameworkEnvelopeKey(data.targetFrameworkVersion)
       );
     }
   }
@@ -1129,18 +1146,62 @@ function checkExampleDocuments() {
 }
 
 /*
- * `targetFrameworkVersion` accepts both `MAJOR.MINOR` (what all 349 published
- * specs declare) and `MAJOR.MINOR.PATCH` (what the canonical framework spec
- * repo, trustoverip/dtgwg-trust-tasks-spec, now normatively requires). The
- * envelope schemas on disk are keyed by `MAJOR.MINOR` — `specs/_framework/0.4/`
- * — because a patch release does not change the envelope. Truncating here is
- * what stops a spec written to the canonical text from landing in the
- * "no envelope schema compiled, NOT validated" bucket, which is a silent loss
- * of coverage dressed up as a warning nobody reads.
+ * The `specs/_framework/` directory holding the envelope for a declared target
+ * framework version (SPEC §5.1.1).
+ *
+ * The framework is versioned MAJOR.MINOR.PATCH. A two-part `M.N` — what every
+ * specification published before that rule declares — resolves as `M.N.0`, and
+ * a `.0` release is stored once, under `M.N`, which is also the two-part alias
+ * the registry serves it at. A later PATCH is a different envelope stored under
+ * its full version, and is never substituted: §5.1.1 forbids validating against
+ * a PATCH other than the one targeted, which is what truncating to MAJOR.MINOR
+ * used to do. A PATCH with no directory therefore lands in the "no envelope
+ * schema compiled" failure below, rather than being validated against its `.0`.
+ * CloudFront applies the same mapping to the Type URI
+ * (infra/cloudfront/type-uri-negotiation.js).
  */
-function frameworkMinor(v) {
-  const m = /^(\d+\.\d+)(?:\.\d+)?$/.exec(String(v));
-  return m ? m[1] : String(v);
+function frameworkEnvelopeKey(v) {
+  const m = /^(\d+)\.(\d+)(?:\.(\d+))?$/.exec(String(v));
+  if (!m) return String(v);
+  return m[3] === undefined || m[3] === '0' ? `${m[1]}.${m[2]}` : `${m[1]}.${m[2]}.${m[3]}`;
+}
+
+/*
+ * SPEC §5.1.1, adopted in framework 0.4.0: releases are written
+ * MAJOR.MINOR.PATCH, and "a specification published or re-issued from this
+ * version onward MUST declare the three-part form". 0.5.0 is the first release
+ * made after the rule, so a two-part value naming 0.5 or later cannot be a
+ * pre-rule declaration. Two-part values naming 0.1–0.4 may be, and the rule keeps
+ * them conformant (they resolve as `M.N.0`). A retired specification is frozen
+ * (§5.3) and is not asked to change.
+ */
+const FIRST_THREE_PART_FRAMEWORK = [0, 5];
+// The release that adopted the rule: its Type URI, and every later one's, is
+// three-part (0.4.0's changelog: "this document's Type URI becomes …/0.4.0").
+const FIRST_THREE_PART_TYPE_URI = [0, 4];
+function twoPartAfterRule(v) {
+  const m = /^(\d+)\.(\d+)$/.exec(String(v));
+  if (!m) return false;
+  const [maj, min] = [Number(m[1]), Number(m[2])];
+  const [fMaj, fMin] = FIRST_THREE_PART_FRAMEWORK;
+  return maj > fMaj || (maj === fMaj && min >= fMin);
+}
+function checkTargetFrameworkForm(v, rel, status) {
+  if (twoPartAfterRule(v) && status !== 'retired') {
+    fail(
+      rel,
+      `targetFrameworkVersion "${v}" is two-part, but framework ${v} postdates the three-part rule of ` +
+        `SPEC §5.1.1 — declare "${v}.0"`
+    );
+    return;
+  }
+  // The declared release must exist: a consumer selects the envelope schema by
+  // it (§7.2 item 1), and a PATCH is never substituted for another, so a target
+  // with no envelope here is one no consumer can validate against.
+  const key = frameworkEnvelopeKey(v);
+  if (v !== undefined && !fs.existsSync(path.join(SPECS_DIR, '_framework', key, 'trust-task.schema.json'))) {
+    fail(rel, `targetFrameworkVersion "${v}" names no published framework release — no specs/_framework/${key}/trust-task.schema.json`);
+  }
 }
 
 /** Whether a schema states how unrecognized members are treated (§7.3 item 7.4). */
@@ -1837,7 +1898,7 @@ function checkBindingFrameworkTarget() {
   // Deliberately only the **bold** form. Prose comparing versions in passing
   // ("targets framework `0.5` rather than `0.3`") is history, not a claim about
   // this binding's current target, and must not be swept into the check.
-  const CLAIM = /[Tt]argets \*\*framework `([0-9]+\.[0-9]+)`\*\*/g;
+  const CLAIM = /[Tt]argets \*\*framework `([0-9]+\.[0-9]+(?:\.[0-9]+)?)`\*\*/g;
 
   for (const slug of fs.readdirSync(BINDINGS_DIR, { withFileTypes: true })) {
     if (!slug.isDirectory() || slug.name.startsWith('_') || slug.name.startsWith('.')) continue;
@@ -1854,6 +1915,7 @@ function checkBindingFrameworkTarget() {
         fail(rel, 'no targetFrameworkVersion in front matter — SPEC §9.1 requires a binding to state the framework version it targets');
         continue;
       }
+      checkTargetFrameworkForm(declared, rel, data.status);
 
       const claims = [...body.matchAll(CLAIM)].map((m) => m[1]);
       if (claims.length === 0) {
@@ -2009,6 +2071,7 @@ function main() {
     if (meta.status === 'retired' && !meta.supersededBy) {
       warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
+    checkTargetFrameworkForm(meta.targetFrameworkVersion, `${rel}/spec.md`, meta.status);
     checkErrorCodeNamespaces(meta, rel);
     errorCodeCasing.check(meta, rel);
     checkIdentifierScopeJustification(meta, body, rel);
