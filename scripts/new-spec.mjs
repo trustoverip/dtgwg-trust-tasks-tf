@@ -146,7 +146,7 @@ function titleFromSlug(slug) {
     : words(segs[0]);
 }
 
-/** SPEC §2: mutating/destructive, secret disclosure, or acting as the subject. */
+/** SPEC §3: mutating/destructive, secret disclosure, or acting as the subject. */
 function isConsequential({ sideEffects, discloses, actsAsSubject }) {
   return sideEffects === 'mutating' || sideEffects === 'destructive' || discloses === 'secret' || actsAsSubject;
 }
@@ -303,7 +303,7 @@ function renderSpecMd(ctx) {
   const authorization = ctx.consequential
     ? `## Authorization
 
-TODO — **required**: this task is *consequential* ([SPEC §2](/SPEC.md#2-terminology)), because it declares \`sideEffects.level: ${ctx.sideEffects}\`${ctx.discloses === 'secret' ? ', `exposure.discloses: secret`' : ''}${ctx.actsAsSubject ? ', `exposure.actsAsSubject: true`' : ''}. [SPEC §7.3 item 15](/SPEC.md#73-specification-requirements) requires it to describe the class of authorization evidence a consumer needs.
+TODO — **required**: this task is *consequential* ([SPEC §3](/SPEC.md#3-terminology)), because it declares \`sideEffects.level: ${ctx.sideEffects}\`${ctx.discloses === 'secret' ? ', `exposure.discloses: secret`' : ''}${ctx.actsAsSubject ? ', `exposure.actsAsSubject: true`' : ''}. [SPEC §7.3 item 15](/SPEC.md#73-specification-requirements) requires it to describe the class of authorization evidence a consumer needs.
 
 Name the **authority**, not the pipeline step. "The consumer verifies the proof, then executes" describes a check; it never says what entitles the producer to the outcome. Write the entitlement in one sentence — ownership of the resource, a held capability, membership of the exchange named in \`parties\`, an accepted prior proposal, possession of a token — and say which conformance rule enforces it.
 

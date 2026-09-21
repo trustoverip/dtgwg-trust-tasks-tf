@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node scripts/build-registry.mjs",
     "validate": "node scripts/build-registry.mjs --validate-only",
+    "generate-framework-spec": "node scripts/generate-framework-spec.mjs",
     "new-spec": "node scripts/new-spec.mjs",
     "codemod:spec-links": "node scripts/codemod-spec-links.mjs",
     "serve": "node scripts/serve-website.mjs",

@@ -47,13 +47,13 @@ exposure:
   rationale: "The response describes effects the controlled task produced — identifiers, references, and prose about what was created or changed. That is descriptive data about the exchange the producer initiated, not secret material, and it is disclosed only to the party that initiated the work."
 errorCodes:
   - code: trust-task-control:notAuthorized
-    meaning: The issuer is not the target document's initiator, and the consumer's policy does not recognize it as authorized to control the task (SPEC.md §12.1). Distinct from `permissionDenied`, which concerns authority to invoke this specification at all.
+    meaning: The issuer is not the target document's initiator, and the consumer's policy does not recognize it as authorized to control the task (SPEC.md §11.1). Distinct from `permissionDenied`, which concerns authority to invoke this specification at all.
     retryable: false
   - code: trust-task-control:notControllable
     meaning: The consumer holds the target task but will not apply the requested operation to it — typically because the task has passed a point its specification declares unsafe to interrupt, or because the consumer does not implement `suspend`/`resume`.
     retryable: false
   - code: trust-task-control:alreadyCancelled
-    meaning: The target task was already cancelled. Cancellation is terminal (SPEC.md §12.3), so it can be neither repeated nor undone; a producer that still wants the work issues a new document.
+    meaning: The target task was already cancelled. Cancellation is terminal (SPEC.md §11.3), so it can be neither repeated nor undone; a producer that still wants the work issues a new document.
     retryable: false
 related:
   - trust-task-error
@@ -64,7 +64,7 @@ related:
 
 **Trust Task Control** is how a *producer* stops work it has already asked for.
 It is the registry publication of the mechanism defined at
-[SPEC.md §12](/SPEC.md#12-task-control), and it carries three
+[SPEC.md §11](/SPEC.md#11-task-control), and it carries three
 operations: `cancel`, `suspend`, and `resume`.
 
 It is a **request**, not a response. A *consumer* that stops work on its own
@@ -76,7 +76,7 @@ otherwise tell apart from a retained document.
 
 **Cancellation prevents future effects. It does not undo past ones.** The
 framework declines to require rollback
-([SPEC.md §12.4](/SPEC.md#124-control-does-not-roll-back)), because many
+([SPEC.md §11.4](/SPEC.md#114-control-does-not-roll-back)), because many
 effects are irreversible by construction and because the state needed to reverse
 one is frequently the material the task existed to destroy. What this
 specification provides instead is **information**: the response reports what
@@ -100,7 +100,7 @@ A conforming **producer** (the controlling party) **MUST**:
 
 1. Emit a *Trust Task document* whose `type` is
    `https://trusttasks.org/spec/trust-task-control/0.1`, carrying a `proof`
-   ([SPEC.md §12.1](/SPEC.md#121-authorization)) and an in-band
+   ([SPEC.md §11.1](/SPEC.md#111-control-authorization)) and an in-band
    `recipient` per the audience-binding rule of
    [SPEC.md §4.8.2](/SPEC.md#482-audience-binding).
 2. Identify the target by its `id` in `payload.target.id`, and **SHOULD**
@@ -110,13 +110,13 @@ A conforming **producer** (the controlling party) **MUST**:
    exchange it acts upon.
 4. **MUST NOT** request that a suspension resume automatically after an interval
    of its own choosing; there is no member for it, and
-   [SPEC.md §12.5](/SPEC.md#125-suspension-and-resumption) forbids it.
+   [SPEC.md §11.5](/SPEC.md#115-suspension-and-resumption) forbids it.
 
 A conforming **consumer** (the executing party) **MUST**:
 
 1. Apply the [SPEC.md §7.2](/SPEC.md#72-consumer-requirements) pipeline.
 2. Establish authorization per
-   [SPEC.md §12.1](/SPEC.md#121-authorization): the target document's
+   [SPEC.md §11.1](/SPEC.md#111-control-authorization): the target document's
    `issuer` is authorized by default, and any other party only under the
    *consumer*'s own policy. Reject an unauthorized control document with
    `trust-task-control:notAuthorized`.
@@ -177,7 +177,7 @@ provides generally.
 `target` (REQUIRED) — `{ id, typeUri? }`. `id` is the sole identifying member;
 `threadId`, `parentThreadId` and ceremony membership **MUST NOT** identify the
 target on their own
-([SPEC.md §12.2](/SPEC.md#122-identifying-the-target)).
+([SPEC.md §11.2](/SPEC.md#112-identifying-the-target)).
 
 `reason` (optional) — human-readable explanation, for operator UI and audit. A
 *consumer* **MUST NOT** condition its handling on this value.
@@ -319,7 +319,7 @@ compensate, not to convey the content of the effect.
 
 **Silence means nothing.** A *producer* that receives no response cannot
 conclude that the task was cancelled, nor that it was not. Task control is
-best-effort ([SPEC.md §12.8](/SPEC.md#128-support-is-optional)), a
+best-effort ([SPEC.md §11.8](/SPEC.md#118-support-is-optional)), a
 *consumer* may not implement it, and a notification may be lost. A *producer*
 that reissues on the assumption that silence meant success can cause exactly the
 second consequential effect

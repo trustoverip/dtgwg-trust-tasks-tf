@@ -196,7 +196,7 @@ fn unknown_extension_code_collapses_to_task_failed() {
     );
 }
 
-/// SPEC.md §10.4 — wire error messages MUST NOT leak consumer-side
+/// SPEC.md §12.4 — wire error messages MUST NOT leak consumer-side
 /// authentication context. `RejectReason::wire_message` returns sanitised
 /// strings for the identity-bearing variants; `From<RejectReason> for
 /// ErrorPayload` uses them.

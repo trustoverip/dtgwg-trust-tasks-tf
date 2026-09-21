@@ -346,7 +346,7 @@ to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
 ### Fixed
 
-- **SPEC §10.4: the deserializer's rendering no longer reaches the wire.** Both
+- **SPEC §12.4: the deserializer's rendering no longer reaches the wire.** Both
   places the server deserialized a body — the document parse and the payload
   downcast — put `serde_json::Error`'s `Display` into the rejection message,
   which spells the member path, the byte offset, and sometimes the full set of
@@ -392,7 +392,7 @@ to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
 - `proof_invalid_when_verifier_rejects` asserted that the verifier's own error
   description reaches the wire. It does not any more, and should not have:
-  SPEC §10.4 makes that a resolver-reachability and DID-document oracle for a
+  SPEC §12.4 makes that a resolver-reachability and DID-document oracle for a
   sender who is by construction unauthenticated. The test is renamed
   `proof_invalid_wire_message_withholds_the_verifier_description` and now
   asserts both halves — the constant on the wire, and the description still
@@ -457,7 +457,7 @@ accepted. Nothing on the wire moved; read the first entry before upgrading.
 - **BREAKING: discovery requires an authenticated discoverer by default.**
   `enable_discovery()` / `with_discovery()` built the registry with no auth
   predicate, so any unauthenticated POST got back the server's full route table.
-  SPEC §10 says a responder **SHOULD** authenticate the discoverer first. Opt
+  SPEC §12 says a responder **SHOULD** authenticate the discoverer first. Opt
   back in with the new `HttpsServerBuilder::public_discovery()`.
 
 - **BREAKING: `Content-Type: application/json` is now required**, per the

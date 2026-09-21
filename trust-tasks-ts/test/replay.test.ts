@@ -338,7 +338,7 @@ describe("SPEC §4.2 / §7.2 — freshness bounds", () => {
 
   it("does not name the consumer's clock in the future-dated message", () => {
     // Echoing the delta would be a remote `ntpdate` for an unauthenticated
-    // sender (SPEC §10.4).
+    // sender (SPEC §12.4).
     const msg = validateFreshness(doc({ issuedAt: "2031-01-01T00:00:00Z" }), NOW, skew)?.message;
     assert.ok(!msg?.includes("2026"), `wire message leaked the clock: ${msg}`);
     assert.ok(!msg?.includes("2031"), `wire message echoed the input: ${msg}`);
@@ -417,7 +417,7 @@ describe("canonicalization and digest", () => {
   });
 });
 
-describe("SPEC §10.4 — error messages carry no consumer internals", () => {
+describe("SPEC §12.4 — error messages carry no consumer internals", () => {
   it("reports proofInvalid with a constant, not the verifier's text", async () => {
     const outcome = await consumeInbound<Payload, Response>({
       transport: new StaticTransport({ issuer: PEER, recipient: ME }),

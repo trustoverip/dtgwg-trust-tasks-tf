@@ -65,7 +65,7 @@ Contributions are governed by the ToIP Foundation's contribution process:
 - By opening a pull request, contributors agree to the Open Web Foundation **Contributor License Agreement** in [`CONTRIBUTING.md`](CONTRIBUTING.md). That agreement grants the patent and copyright rights necessary to incorporate contributions into the published specification.
 - Source code in this repository (`scripts/`, `website/`, build tooling) is contributed under the license in [`SOURCE_CODE.md`](SOURCE_CODE.md).
 
-For framework-level changes (`SPEC.md`, the build pipeline, the registry website) the contributor guide is the present file plus [`CONTRIBUTING.md`](CONTRIBUTING.md). For individual Trust Task specifications, follow [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
+The framework specification is maintained in [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec); `SPEC.md` here is generated from it. For changes to the build pipeline or the registry website the contributor guide is the present file plus [`CONTRIBUTING.md`](CONTRIBUTING.md). For individual Trust Task specifications, follow [`CONTRIBUTING-SPECS.md`](CONTRIBUTING-SPECS.md).
 
 ## Licensing
 

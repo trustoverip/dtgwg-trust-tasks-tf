@@ -2058,10 +2058,10 @@ function FrameworkSpecPage({ setRoute }) {
       <PageHero
         eyebrow="Framework specification"
         title="The Trust Tasks framework"
-        lede="The normative framework specification — document structure, version scheme, namespace, error responses, and transport bindings — rendered from SPEC.md in the repository."
+        lede="The normative framework specification — document structure, version scheme, namespace, error responses, and transport bindings — generated from its canonical source, trustoverip/dtgwg-trust-tasks-spec."
       >
         <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", marginTop: "var(--tt-space-4)" }}>
-          <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md" target="_blank" rel="noreferrer">View on GitHub →</a>
+          <a className="btn btn--ghost" href="https://github.com/trustoverip/dtgwg-trust-tasks-spec" target="_blank" rel="noreferrer">View the canonical source →</a>
           <a className="btn btn--ghost" href="/registry" onClick={(e) => { e.preventDefault(); setRoute({ name: "registry" }); }}>Browse the registry →</a>
         </div>
       </PageHero>

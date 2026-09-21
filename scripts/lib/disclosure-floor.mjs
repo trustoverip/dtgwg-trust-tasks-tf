@@ -185,7 +185,7 @@ export function checkDisclosureFloor(meta, schema, payloadSchemaPath, rel, io) {
     `${which}. SPEC §7.3 item 14 reserves \`none\` for "an acknowledgement or a determination ` +
     `only"; a response carrying released material is \`secret\` (confidential material the ` +
     `caller retains) or at least \`metadata\`. The value feeds the *consequential Trust Task* ` +
-    `definition (SPEC §2) that consumers gate execution on, so \`none\` here under-gates a ` +
+    `definition (SPEC §3) that consumers gate execution on, so \`none\` here under-gates a ` +
     `real disclosure. Correct the declaration and add the \`rationale\` item 14 then requires, ` +
     `or — only where the member genuinely is not released material — add '${rel}' to ` +
     `ALLOWLIST in scripts/lib/disclosure-floor.mjs with a reason.`;

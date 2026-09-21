@@ -17,7 +17,7 @@
 //! reorder, and re-deliver". Aries store-and-forward mediation admits
 //! arbitrary delay on top. A queued message replayed after an acknowledgement
 //! is lost is the most likely duplicate in this system by a wide margin — far
-//! more likely than a hostile replay — and SPEC §10.1 is explicit that at the
+//! more likely than a hostile replay — and SPEC §12.1 is explicit that at the
 //! document layer the two are indistinguishable, which is why item 11 is a
 //! normative requirement rather than an anti-abuse measure.
 //!

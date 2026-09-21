@@ -19,7 +19,7 @@ TSP can convey a document **directly** between two endpoints, or **routed** thro
 
 ## Status of This Document
 
-`0.1` draft. Targets **framework `0.5`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-error-codes), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). It parallels the [`didcomm/0.1`](../../didcomm/0.1/spec.md) and [`https/0.1`](../../https/0.1/spec.md) bindings in structure; note those two predate the 0.2 convention and still use the frozen 0.1 snake_case codes (a separate sweep should align them). TSP envelope and message structure follow the ToIP TSP specification (Implementers Draft, Rev 2). A reference TSP implementation is [OpenWallet Foundation Labs `tsp`](https://github.com/openwallet-foundation-labs/tsp); the Affinidi `affinidi-tsp` crate is a second implementation.
+`0.1` draft. Targets **framework `0.5`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). It parallels the [`didcomm/0.1`](../../didcomm/0.1/spec.md) and [`https/0.1`](../../https/0.1/spec.md) bindings in structure; note those two predate the 0.2 convention and still use the frozen 0.1 snake_case codes (a separate sweep should align them). TSP envelope and message structure follow the ToIP TSP specification (Implementers Draft, Rev 2). A reference TSP implementation is [OpenWallet Foundation Labs `tsp`](https://github.com/openwallet-foundation-labs/tsp); the Affinidi `affinidi-tsp` crate is a second implementation.
 
 ## 1. Binding URI
 
@@ -106,7 +106,7 @@ TSP is a one-way message substrate. There is no request/response pair at the tra
 | `validated` | **No counterpart.** [SPEC §7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) items 1–10 are internal to the *consumer* and are never signalled. |
 | `accepted` | **No counterpart**, unless the *Trust Task specification* defines a reply that acknowledges acceptance. The duplicate-execution record of [§7.1](#71-duplicate-execution-record) is written internally. Where the *consumer* is understood but **blocked**, the framework's reserved `trust-task-next-step` document is carried as an ordinary envelope of [§2](#2-document-carriage) and the document remains `accepted` with the exchange open. |
 | `executing` | **No counterpart.** Nothing is emitted when work begins. |
-| `suspended` | The response to the `trust-task-control` document that suspended it ([SPEC §12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#12-task-control)), packed per [§2](#2-document-carriage) and delivered per [§6](#6-responses-and-error-delivery). TSP expresses no transport-level counterpart: a relationship left idle, a route that stops carrying traffic, or an intermediary that stops forwarding is not suspension. |
+| `suspended` | The response to the `trust-task-control` document that suspended it ([SPEC §11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#11-task-control)), packed per [§2](#2-document-carriage) and delivered per [§6](#6-responses-and-error-delivery). TSP expresses no transport-level counterpart: a relationship left idle, a route that stops carrying traffic, or an intermediary that stops forwarding is not suspension. |
 | `responded` | A `<type>#response` document packed into a fresh Trust Task envelope and sent back toward the producer per [§6](#6-responses-and-error-delivery) — over the existing relationship in direct and nested mode, or over the routed reply path where one was established. Where the specification defines no success response, the framework's empty `{}` `#response` is the courtesy acknowledgement, sent the same way. |
 | `errored` | A `trust-task-error` document, packed and delivered the same way ([§4](#4-error-mapping), [§6](#6-responses-and-error-delivery)). Two rows of [§4](#4-error-mapping)'s table produce no reply at all: a TSP signature or HPKE authentication failure leaves no authenticated sender to route one to, and a payload whose `type` is not the envelope type is rejected at the binding layer without entering the pipeline. And see the return-path caveat below — over this transport `errored` can be reached and remain unobservable even when the *consumer* emits the error. |
 | `cancelled` | The response to the `trust-task-control` document, for a *producer*-requested cancellation; a `trust-task-error` carrying `cancelled` where the *consumer* stopped of its own accord. Nothing at the TSP layer expresses this — see below. |
@@ -159,7 +159,7 @@ A `#response`-variant *Trust Task document* and a `trust-task-error` document ar
 
 * **Direct / nested:** address the response from the consumer's VID to the authenticated producer VID over the existing relationship.
 * **Routed:** use the TSP routed reply path ([TSP spec §7.1.3](https://trustoverip.github.io/tswg-tsp-specification/)) when one was established; otherwise the response follows whatever return path the relationship provides.
-* **Fire-and-forget:** where no return relationship exists, response and error delivery are best-effort and **MAY** be undeliverable. Producers that require a response **SHOULD** ensure a return path exists before sending. The framework's `id`-keyed idempotency ([SPEC §10.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#101-cross-recipient-replay)) lets a producer safely retry where the binding cannot guarantee delivery.
+* **Fire-and-forget:** where no return relationship exists, response and error delivery are best-effort and **MAY** be undeliverable. Producers that require a response **SHOULD** ensure a return path exists before sending. The framework's `id`-keyed idempotency ([SPEC §12.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#121-cross-recipient-replay)) lets a producer safely retry where the binding cannot guarantee delivery.
 
 ## 7. Transport security profile
 
@@ -168,7 +168,7 @@ For [SPEC §4.7.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main
 * **Sender authentication** — TSP HPKE authenticated encryption binds the sender's static key into the key agreement; a successful open proves the message came from the holder of `VID_sndr`'s keys.
 * **Integrity** — a signature over the TSP envelope and payload.
 * **Confidentiality** — authenticated encryption of the payload to the recipient's key. Confidentiality from **intermediaries** holds only in direct mode and in the nested layers sealed to the final recipient (see [§5.3](#53-proof-and-identity-under-routing)).
-* **Freshness** — TSP relationship-forming carries nonces; data messages do not inherently prevent replay. Consumers whose tasks have persistent effect **SHOULD** apply the framework's `id`-keyed idempotency cache ([SPEC §10.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#101-cross-recipient-replay)).
+* **Freshness** — TSP relationship-forming carries nonces; data messages do not inherently prevent replay. Consumers whose tasks have persistent effect **SHOULD** apply the framework's `id`-keyed idempotency cache ([SPEC §12.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#121-cross-recipient-replay)).
 
 These guarantees apply end-to-end between producer and consumer in **direct** and **nested** modes; in **non-nested routed** mode they apply only hop-by-hop (see [§5.3](#53-proof-and-identity-under-routing)).
 
@@ -193,7 +193,7 @@ A *consumer* implementing a *consequential Trust Task* over this binding
    since each intermediary may hold and re-forward the sealed inner message.
 2. **Comparison is over the document, not the `id` alone.** A second document
    under a reused `id` whose content differs — including a re-signed or
-   re-stamped `proof` — is **not** the retry of [§8.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#84-retries-and-idempotency) and **MUST** be rejected
+   re-stamped `proof` — is **not** the retry of [§8.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#84-retry-semantics) and **MUST** be rejected
    with `idConflict`.
 3. **Retention and the acceptance window are one bound.** The record **MUST**
    be retained at least as long as the *consumer* remains willing to execute
@@ -224,7 +224,7 @@ in a different shape.
 
 ## 8. Discovery wiring
 
-A consumer **MAY** advertise the set of *Type URIs* it dispatches by handling `https://trusttasks.org/spec/trust-task-discovery/0.1` ([SPEC §11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#11-discovery-and-capability-negotiation)). A discovery request is carried as an ordinary Trust Task envelope over TSP per [§2](#2-document-carriage); no separate mechanism is defined.
+A consumer **MAY** advertise the set of *Type URIs* it dispatches by handling `https://trusttasks.org/spec/trust-task-discovery/0.1` ([SPEC §10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#10-discovery-and-capability-negotiation)). A discovery request is carried as an ordinary Trust Task envelope over TSP per [§2](#2-document-carriage); no separate mechanism is defined.
 
 ## 9. Versioning
 

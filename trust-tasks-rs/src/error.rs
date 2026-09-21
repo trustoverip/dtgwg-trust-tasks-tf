@@ -266,7 +266,7 @@ pub enum StandardCode {
     /// its content differs (SPEC.md §7.2 item 11).
     IdConflict,
     /// The consumer stopped the task on its own initiative — operator action,
-    /// policy, capacity, or a compliance hold (SPEC.md §12). Distinct from a
+    /// policy, capacity, or a compliance hold (SPEC.md §11). Distinct from a
     /// producer-requested cancellation, which is answered by a response to the
     /// `trust-task-control` document rather than by an error.
     Cancelled,
@@ -553,7 +553,7 @@ impl RejectReason {
     ///
     /// # `ProofInvalid` is sanitised
     ///
-    /// SPEC §10.4 states the rule for `identityMismatch` and then generalises
+    /// SPEC §12.4 states the rule for `identityMismatch` and then generalises
     /// it: "the same principle applies to every standard code: error messages
     /// **SHOULD** be derived from the code identifier and the *Trust Task
     /// specification*'s public vocabulary, not from consumer-side

@@ -5,7 +5,7 @@
 | **Status** | Proposed |
 | **Date** | 2026-08-09 |
 | **Applies to** | The prospective framework layer that composes several *Trust Tasks* into one flow |
-| **Related** | `docs/design-notes/trust-ceremonies.md` (the design deferred below), SPEC §2 (bilateral model), §4.9–§4.9.2 (threading), §6.1 (slug reservation), §8.6 (reserved response types), §9.3 (`/binding/` subtree), `specs/vtc/ceremonies/list/0.1` |
+| **Related** | `docs/design-notes/trust-ceremonies.md` (the design deferred below), SPEC §3 (bilateral model), §4.9–§4.9.2 (threading), §6.1 (slug reservation), §8.6 (reserved response types), §9.3 (`/binding/` subtree), `specs/vtc/ceremonies/list/0.1` |
 
 *This ADR decides a **name and a vocabulary**. It does not decide the design of
 the layer, which is deferred to a design note. It is recorded separately, and
@@ -231,7 +231,7 @@ carry the §2 disambiguation table so the distinction is not left to inference.
   naming lineage, keeping only its machinery.
 - Two senses of one word now exist in the repo. The §6 table is mandatory
   wherever both appear, and that is a standing documentation obligation.
-- `Enactment` is an unfamiliar term of art and will need defining in SPEC §2.
+- `Enactment` is an unfamiliar term of art and will need defining in SPEC §3.
 
 **Not decided here.** The definition format; the threading model and whether a
 `ceremony` envelope member is added; evidence levels and who issues a receipt;

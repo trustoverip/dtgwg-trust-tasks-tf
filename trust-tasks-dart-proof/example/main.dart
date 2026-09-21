@@ -42,7 +42,7 @@ Future<void> main() async {
 
   Future<void> deliver(String label, Map<String, dynamic> json) async {
     // verifyDetailed says *why* a proof failed. Log it; never send it — the
-    // pipeline answers the peer with a bare proofInvalid (SPEC §10.4).
+    // pipeline answers the peer with a bare proofInvalid (SPEC §12.4).
     print('$label: ${await verifier.verifyDetailed(json)}');
 
     final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(

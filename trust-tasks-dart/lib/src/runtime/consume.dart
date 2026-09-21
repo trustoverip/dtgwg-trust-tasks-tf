@@ -275,7 +275,7 @@ const String idConflictWireMessage =
     '(SPEC §7.2 item 11)';
 
 /// Wire message for a replay-record outage. A constant, so a store's hostname or
-/// connection string never reaches the wire (SPEC §10.4).
+/// connection string never reaches the wire (SPEC §12.4).
 const String replayRecordUnavailable = 'temporarily unavailable';
 
 /// The business handler, called only once every framework check has passed.
@@ -397,7 +397,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
           ok = false;
         }
         if (!ok) {
-          // A constant, never the verifier's own error text. SPEC §10.4 extends
+          // A constant, never the verifier's own error text. SPEC §12.4 extends
           // the §8.1 identity rule to every code, and a verifier's vocabulary
           // names DIDs it tried to resolve, whether a resolver answered, and
           // what a fetched DID document contained — a resolver-reachability

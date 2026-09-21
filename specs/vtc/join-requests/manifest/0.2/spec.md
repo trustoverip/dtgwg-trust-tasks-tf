@@ -99,7 +99,7 @@ requirementsDigest = multibase( multihash( SHA-256( JCS( criterion ∖ requireme
 
 ## Authorization
 
-This task is not consequential ([SPEC §2](/SPEC.md#2-terminology)): it changes nothing and discloses only the community's own published policy. It presupposes no authorization evidence beyond the community's own policy on who may read its criteria. A community that requires a `proof` does so to rate-limit or attribute discovery, not to authorize it; see Security & Privacy.
+This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes nothing and discloses only the community's own published policy. It presupposes no authorization evidence beyond the community's own policy on who may read its criteria. A community that requires a `proof` does so to rate-limit or attribute discovery, not to authorize it; see Security & Privacy.
 
 ## Definitions
 

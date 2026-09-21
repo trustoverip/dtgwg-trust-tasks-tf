@@ -9,7 +9,7 @@ import { fromMultibase, publicKeyFromDidKey, type Cryptosuite } from "./keys.js"
 /** Why a proof failed to verify — the same taxonomy the Rust and Dart proof
  * libraries use, so a failure logged by any of them reads the same. All reach
  * the wire as `proofInvalid`; these and {@link ProofVerification.detail} are for
- * your logs (SPEC §10.4). */
+ * your logs (SPEC §12.4). */
 export type ProofFailureKind =
   | "malformedProof"
   | "issuerMismatch"
@@ -21,7 +21,7 @@ export interface ProofVerification {
   valid: boolean;
   /** Set when `valid` is false. */
   failure?: ProofFailureKind;
-  /** Diagnostic text for logs; never send it to the peer (SPEC §10.4). */
+  /** Diagnostic text for logs; never send it to the peer (SPEC §12.4). */
   detail?: string;
 }
 

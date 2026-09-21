@@ -6,6 +6,15 @@ on:
   pull_request:
     branches:
       - main
+  # SPEC.md is generated from the canonical framework repository, which this
+  # repository does not see change. The schedule redeploys so trusttasks.org
+  # picks up canonical changes without waiting for a push here; dispatch lets
+  # the canonical repository (or a maintainer) trigger it at once.
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [framework-spec-updated]
 
 jobs:
   build:
@@ -24,6 +33,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+
+      # From canonical main, before the build, so the build validates every
+      # `/SPEC.md#…` link against the text that will actually be served.
+      - name: Generate SPEC.md from the canonical framework specification
+        run: |
+          npm run generate-framework-spec
+          if ! git diff --quiet -- SPEC.md; then
+            echo "::warning file=SPEC.md::The committed SPEC.md is behind canonical main. The site serves the regenerated copy; run 'npm run generate-framework-spec' and commit it to refresh the repository copy."
+          fi
 
       - name: Build registry (validate + generate)
         # Strict Security & Privacy: fail on a spec that carries neither the
@@ -47,7 +65,7 @@ jobs:
         run: cp SPEC.md website/SPEC.md
 
       - name: Upload website artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v7
         with:
           name: website
@@ -56,7 +74,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Download website artifact

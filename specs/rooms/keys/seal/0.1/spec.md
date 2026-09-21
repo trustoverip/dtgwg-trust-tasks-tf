@@ -128,7 +128,7 @@ An **Agent** sends this to its principal's **Oracle**. The payload is the top-le
 
 The **Oracle** responds with the sealed record, using the sub-schema reachable via `$anchor: "response"`. `epoch` is the one it sealed under — the caller does not choose it, and a host will reject a record whose epoch is not the room's current one.
 
-Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §6.4](/SPEC.md#64-error-documents).
+Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §8.1](/SPEC.md#81-the-trust-task-error-specification).
 
 ### Ready to hand to a host
 
