@@ -64,8 +64,8 @@ act that lets it: "use this address in my other faces too".
 inside one context — that is the boundary, not an implementation detail — so
 promoting any entry moves the whole face above contexts. The maintainer:
 
-1. creates a pool attribute for each promoted value (or references one that
-   already holds exactly that type and value);
+1. creates a pool attribute for each promoted value (or references a
+   self-asserted one that already holds exactly that type and value);
 2. writes a pool face with the same id and the same entries, the promoted ones
    now references, the rest still carried inline;
 3. rebinds every persona in the context that wore the local face to the pool

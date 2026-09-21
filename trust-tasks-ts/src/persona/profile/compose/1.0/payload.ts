@@ -53,7 +53,7 @@ export interface NewClaim {
   label?: string;
   slot?: Slot;
   /**
-   * `local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a pool attribute holding exactly this type and value, creating one when none exists.
+   * `local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a self-asserted pool attribute holding exactly this type and value, creating one when none exists.
    */
   share?: "local" | "pool";
 }
@@ -223,7 +223,7 @@ export const PAYLOAD_SCHEMA = {
             "pool"
           ],
           "default": "local",
-          "description": "`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a pool attribute holding exactly this type and value, creating one when none exists."
+          "description": "`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a self-asserted pool attribute holding exactly this type and value, creating one when none exists."
         }
       }
     },
@@ -442,7 +442,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "pool"
           ],
           "default": "local",
-          "description": "`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a pool attribute holding exactly this type and value, creating one when none exists."
+          "description": "`local` (the default) keeps the value in this face alone: it is carried inline and enters no pool, so no other face can come to present it by accident. `pool` makes it reusable — the maintainer references a self-asserted pool attribute holding exactly this type and value, creating one when none exists."
         }
       }
     },
