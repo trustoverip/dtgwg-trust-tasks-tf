@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Contact — Get
 summary: Read one contact at its current or a named earlier revision, with an optional cheap timeline of what changed when.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, contact, revision, history]
 authors:

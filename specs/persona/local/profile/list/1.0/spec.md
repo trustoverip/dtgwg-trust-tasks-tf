@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Local Profile — List
 summary: Enumerate a context's local profiles from an address space that structurally cannot contain a pool profile.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, local, context, throwaway]
 authors:

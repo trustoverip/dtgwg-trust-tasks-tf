@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Local Binding — Set
 summary: Bind a context-local profile to a persona in the same context — safely context-callable, because both objects live below the boundary.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, local, context, throwaway]
 authors:

@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Binding — Set
 summary: A holder assigns a profile to a persona DID in a context, or clears it; this is the push that carries a composition across the context boundary, and it is the family's critical authorization gate.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, binding, context, authorization, correlation]
 authors:

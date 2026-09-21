@@ -186,6 +186,13 @@
           }
         }
       }
+    },
+    {
+      "name": "two-part target for a release under the three-part rule",
+      "why": "SPEC §5.1.1, adopted in 0.4.0 — a two-part target naming 0.5 or later cannot be a pre-rule declaration.",
+      "set": {
+        "/targetFrameworkVersion": "0.5"
+      }
     }
   ]
 }

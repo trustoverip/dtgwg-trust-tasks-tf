@@ -4,7 +4,7 @@ version: "0.1"
 title: Auth — Whoami
 summary: A subject asks an auth service to introspect the current session — returning the Session object, role assignments, effective scopes and effective capabilities — so the client can reconcile state with the server's view.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: authentication
 keywords:
   - auth

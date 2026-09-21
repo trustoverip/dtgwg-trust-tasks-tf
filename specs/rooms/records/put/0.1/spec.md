@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Records — Put
 summary: "A member writes a record to a data room, authorized by an authority chain the room itself issued rather than by anything the host stores."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

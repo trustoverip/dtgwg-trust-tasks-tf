@@ -4,7 +4,7 @@ version: "0.1"
 title: Trust Spanning Protocol (TSP) transport binding
 summary: Carries Trust Task documents inside ToIP Trust Spanning Protocol messages; the authenticated sender VID maps to the framework's transport-authenticated party identity, with direct, nested, and routed carriage defined.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 bindingURI: https://trusttasks.org/binding/tsp/0.1
 envelopeType: https://trusttasks.org/binding/tsp/0.1/envelope
 authors:
@@ -19,7 +19,7 @@ TSP can convey a document **directly** between two endpoints, or **routed** thro
 
 ## Status of This Document
 
-`0.1` draft. Targets **framework `0.5`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). It parallels the [`didcomm/0.1`](../../didcomm/0.1/spec.md) and [`https/0.1`](../../https/0.1/spec.md) bindings in structure; note those two predate the 0.2 convention and still use the frozen 0.1 snake_case codes (a separate sweep should align them). TSP envelope and message structure follow the ToIP TSP specification (Implementers Draft, Rev 2). A reference TSP implementation is [OpenWallet Foundation Labs `tsp`](https://github.com/openwallet-foundation-labs/tsp); the Affinidi `affinidi-tsp` crate is a second implementation.
+`0.1` draft. Targets **framework `0.5.0`** and uses the framework's lowerCamelCase error-code vocabulary ([SPEC §4.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#410-naming-conventions), [§8.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#83-standard-error-codes)). It parallels the [`didcomm/0.1`](../../didcomm/0.1/spec.md) and [`https/0.1`](../../https/0.1/spec.md) bindings in structure; note those two predate the 0.2 convention and still use the frozen 0.1 snake_case codes (a separate sweep should align them). TSP envelope and message structure follow the ToIP TSP specification (Implementers Draft, Rev 2). A reference TSP implementation is [OpenWallet Foundation Labs `tsp`](https://github.com/openwallet-foundation-labs/tsp); the Affinidi `affinidi-tsp` crate is a second implementation.
 
 ## 1. Binding URI
 

@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Records — List
 summary: "A member lists record metadata in a data room, with prefix, watermark and cursor — never bodies, which are fetched individually."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

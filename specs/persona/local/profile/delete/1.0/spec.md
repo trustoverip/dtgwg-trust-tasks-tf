@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Local Profile — Delete
 summary: Remove a context-local profile, refusing while a persona is bound unless the caller unbinds.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, local, context, throwaway]
 authors:

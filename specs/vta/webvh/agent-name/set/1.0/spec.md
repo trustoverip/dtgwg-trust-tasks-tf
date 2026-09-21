@@ -4,7 +4,7 @@ version: "1.0"
 title: "VTA WebVH Agent-Name — Set"
 summary: "An administrator binds an agent name to a DID."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:
   - vta

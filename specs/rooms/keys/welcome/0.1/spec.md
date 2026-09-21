@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Keys — Welcome
 summary: "A room's owner delivers an MLS Welcome to the agent that will hold a new member's room keys, authorized by the invitation the room already issued."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: ai-agents
 keywords:
   - room

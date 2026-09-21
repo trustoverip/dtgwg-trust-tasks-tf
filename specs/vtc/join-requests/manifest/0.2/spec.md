@@ -4,7 +4,7 @@ version: "0.2"
 title: VTC Join-Requests — Manifest
 summary: Discover a community's join criteria before applying — including, per criterion, the identity-vetting evidence it requires and a digest naming that exact version of the requirements.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: governance
 keywords:
   - vtc
@@ -56,7 +56,7 @@ The response **MAY** also carry **`branding`** — a display name, an accent col
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
 ### Changes from 0.1
 

@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Keys — Commit
 summary: "A room's owner delivers an MLS Commit to a member's key-holding agent, advancing it one epoch; every member must apply every commit, in order."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: ai-agents
 keywords:
   - room

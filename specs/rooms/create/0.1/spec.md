@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms — Create
 summary: "An owner registers a data room with a host, naming the room's own identifier, its visibility, and the party accountable for it."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

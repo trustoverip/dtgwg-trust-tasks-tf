@@ -4,7 +4,7 @@ version: "0.1"
 title: ACL — Show
 summary: A querying party asks an ACL maintainer for the entry corresponding to a specific subject.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - acl

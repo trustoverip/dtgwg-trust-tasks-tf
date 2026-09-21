@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Disclosure — Present
 summary: Produce the signed disclosure a preview described, consuming the preview so that a disclosure can never occur without the summary having been produced first.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, disclosure, presentation, audit]
 authors:

@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Local Profile — Put
 summary: An application composes a throwaway profile inside its own context from values it supplies, with pool references refused — which is what keeps the local surface pool-free.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, local, context, throwaway]
 authors:

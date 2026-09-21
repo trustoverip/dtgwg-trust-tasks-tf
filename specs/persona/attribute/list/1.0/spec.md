@@ -4,7 +4,7 @@ version: "1.0"
 title: Persona Attribute — List
 summary: A holder enumerates their own attribute pool, narrowed by vocabulary prefix and paginated, with values withheld unless explicitly requested so a picker can render the pool without decrypting every fact in it.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
   - persona

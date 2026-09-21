@@ -22,6 +22,9 @@ check() {
 echo "Type URI content negotiation — $BASE"
 # The framework envelope schema (§7.2 item 1).
 check /spec/trust-task/0.2 application/schema+json json '"$id"'
+# The three-part framework Type URI (SPEC §5.1.1), and the .0 alias it shares.
+check /spec/trust-task/0.5.0 application/schema+json json '"$id"'
+check /spec/trust-task/0.6.0 application/schema+json json '"$id"'
 # A task payload schema (§7.2 item 2, §7.3 item 7.5).
 check /spec/acl/grant/0.1 application/schema+json json '"$id"'
 # Multi-segment slug.

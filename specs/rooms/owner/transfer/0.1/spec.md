@@ -4,7 +4,7 @@ version: "0.1"
 title: Rooms Owner — Transfer
 summary: "A room's owner hands ownership to another member, deliberately and while still present."
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: access-control
 keywords:
   - room

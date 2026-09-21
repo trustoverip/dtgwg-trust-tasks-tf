@@ -4,7 +4,7 @@ version: "0.1"
 title: VTC Vetting — List Vetters
 summary: Find a community's listed vetters by language, location, method or event. Only vetters who chose to be listed and hold a live grant appear, and only with what they published.
 status: draft
-targetFrameworkVersion: "0.5"
+targetFrameworkVersion: "0.5.0"
 category: governance
 keywords:
   - vtc
@@ -53,7 +53,7 @@ Each entry is what the vetter published, plus their DID and when their grant exp
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
 
 ## Conformance
 
