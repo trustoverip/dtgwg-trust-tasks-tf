@@ -1584,6 +1584,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/install/claim/start/0.2#response" => <crate::specs::vtc::install::claim::start::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/deliver/0.1" => <crate::specs::vtc::invitations::deliver::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/deliver/0.1#response" => <crate::specs::vtc::invitations::deliver::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/invitations/issue/0.1" => <crate::specs::vtc::invitations::issue::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/invitations/issue/0.1#response" => <crate::specs::vtc::invitations::issue::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3763,6 +3767,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::vtc::install::claim::start::v0_2::Payload,
         >()),
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/deliver/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::invitations::deliver::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/invitations/issue/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::invitations::issue::v0_1::Payload,
         >()),
@@ -5712,6 +5720,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/install/claim/start/0.2" => {
             Some(crate::specs::vtc::install::claim::start::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/deliver/0.1" => {
+            Some(crate::specs::vtc::invitations::deliver::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/invitations/issue/0.1" => {

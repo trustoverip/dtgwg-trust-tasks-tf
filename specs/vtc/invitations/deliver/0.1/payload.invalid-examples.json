@@ -1,0 +1,7 @@
+[
+  { "note": "`id` is required.", "payload": { "channel": "message" } },
+  { "note": "`channel` is required: delivering and handing over are different disclosures, so neither is a default.", "payload": { "id": "urn:uuid:00000000-0000-4000-8000-000000000001" } },
+  { "note": "`channel` is `message` or `offer`.", "payload": { "id": "urn:uuid:00000000-0000-4000-8000-000000000001", "channel": "email" } },
+  { "note": "`id` must not be empty.", "payload": { "id": "", "channel": "offer" } },
+  { "note": "Unknown top-level member is rejected: the invited DID is the invitation's, not the caller's to redirect.", "payload": { "id": "urn:uuid:00000000-0000-4000-8000-000000000001", "channel": "message", "subjectDid": "did:example:someone-else" } }
+]
