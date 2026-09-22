@@ -35,11 +35,15 @@ export interface PersonaProfileComposePayload {
    */
   personaDid?: string;
   /**
-   * What the context may call the face, as on persona/binding/set. Meaningful only with `personaDid`; a maintainer MUST refuse it without one rather than drop it.
+   * Wear the new face in `contextId` as the persona the holder already uses in `contextId` — the one DID with a binding there, current or cleared. None is refused (`noPersonaHere`): a persona is minted on its own, through the DID-template path, never as a side effect of wearing a face. Several are refused (`personaAmbiguous`, naming them): picking one for the holder would decide which of their identities a context sees. Not with `personaDid`, which names the persona instead.
+   */
+  wear?: boolean;
+  /**
+   * What the context may call the face, as on persona/binding/set. Meaningful only when the face is worn (`personaDid` or `wear`); a maintainer MUST refuse it otherwise rather than drop it.
    */
   label?: string;
   /**
-   * When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only with `personaDid`, and refused without one or in the past (`untilNotFuture`).
+   * When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only when the face is worn (`personaDid` or `wear`), and refused otherwise or in the past (`untilNotFuture`).
    */
   until?: string;
   ext?: Ext;
@@ -171,16 +175,21 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 2048,
       "description": "Wear the new face as this persona in `contextId`, in the same act. Omit to compose without wearing it."
     },
+    "wear": {
+      "type": "boolean",
+      "default": false,
+      "description": "Wear the new face in `contextId` as the persona the holder already uses in `contextId` — the one DID with a binding there, current or cleared. None is refused (`noPersonaHere`): a persona is minted on its own, through the DID-template path, never as a side effect of wearing a face. Several are refused (`personaAmbiguous`, naming them): picking one for the holder would decide which of their identities a context sees. Not with `personaDid`, which names the persona instead."
+    },
     "label": {
       "type": "string",
       "minLength": 1,
       "maxLength": 128,
-      "description": "What the context may call the face, as on persona/binding/set. Meaningful only with `personaDid`; a maintainer MUST refuse it without one rather than drop it."
+      "description": "What the context may call the face, as on persona/binding/set. Meaningful only when the face is worn (`personaDid` or `wear`); a maintainer MUST refuse it otherwise rather than drop it."
     },
     "until": {
       "type": "string",
       "format": "date-time",
-      "description": "When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only with `personaDid`, and refused without one or in the past (`untilNotFuture`)."
+      "description": "When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only when the face is worn (`personaDid` or `wear`), and refused otherwise or in the past (`untilNotFuture`)."
     },
     "ext": {
       "$ref": "#/$defs/Ext"
