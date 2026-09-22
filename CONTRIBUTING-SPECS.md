@@ -422,12 +422,22 @@ If validation fails, the script prints the offending file and a specific reason.
 
 ## Regenerate the bindings and bump the libraries
 
-Adding or changing anything under `specs/` (a new task, a schema edit, a new category a task uses) changes the generated client libraries. You **MUST** regenerate both bindings and bump both library versions **in the same PR** — otherwise the merge to `main` never publishes your spec's bindings to crates.io / npm.
+Adding or changing anything under `specs/` (a new task, a schema edit, a new category a task uses) changes the generated client libraries. You **MUST** regenerate **all four** bindings **in the same PR** — otherwise the merge to `main` never publishes your spec's bindings to crates.io / npm / pub.dev.
 
 ```sh
 cargo run -p trust-tasks-codegen && cargo fmt --all   # 1. regenerate Rust bindings, commit the diff
 npm run build-ts-bindings                             # 2. regenerate TS bindings, commit the diff
+npm run build-go-bindings                             # 3. regenerate Go bindings, commit the diff
+npm run build-dart-bindings                           # 4. regenerate Dart bindings, commit the diff
 ```
+
+Then confirm they agree with the registry before you push — this is the check CI runs, and it fails the build:
+
+```sh
+npm run check-bindings
+```
+
+This guide used to list only the first two, which is how a spec reaches CI with `no generated Dart library declares typeUri …`: `build-go-bindings` has its own drift job (`.github/workflows/go.yml`) and `check-bindings` requires a Dart library for every spec.
 
 **Do not bump either library's version, and do not write a `CHANGELOG.md` entry.** That changed when this repo moved to release-plz: versions and changelogs are assigned by a **Release PR**, and merging your PR no longer publishes anything. A version edited in a feature PR collides with every other open PR touching that package. See [RELEASING.md](RELEASING.md).
 
