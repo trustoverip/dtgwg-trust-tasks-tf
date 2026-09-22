@@ -11,6 +11,41 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.15 — 2026-09-22
+
+
+### Added
+
+- **persona**: Where a face may be worn, where it is, and what it has done (#577)
+
+* feat(persona): where a face may be worn, where it is, and what it has done
+
+  Design note (VTI docs/05-design-notes/persona-context-first.md) §5.4 and
+  §9.6, and `until` on compose.
+
+  FaceReach — a pool face may carry `reach`: `{kind: anywhere}` (the
+  default, and what absent means) or `{kind: only, contextIds: [...]}`.
+  binding/set refuses to wear a face outside it (`outsideReach`), and
+  profile/put refuses to narrow it past a context the face is worn in now
+  (`boundOutsideReach`, naming them). A tagged object rather than a bare
+  context list, so "unrestricted" and "nowhere" cannot be confused: `only`
+  needs at least one context, and nowhere is a retired face.
+
+  persona/profile/usage/1.0 — where one face is worn now, with each
+  binding's `until` and the face's reach beside them. Holder-only: it is
+  the map of which personas are one face.
+
+  persona/profile/timeline/1.0 — one face's history joined, oldest first:
+  composed, worn, unworn, expired, disclosed, valueChanged, promoted,
+  retired, reinstated. Never a value and never a private label. A
+  maintainer records from now on what it would not otherwise keep — a
+  binding taken off leaves no trace in the one that replaces it — and may
+  omit what happened before and left no record.
+
+  profile/compose takes `until`, for the face composed at the door of a
+  conference; `untilNotFuture` refuses one in the past or without a
+  personaDid.
+
 ## 0.1.14 — 2026-09-21
 
 
