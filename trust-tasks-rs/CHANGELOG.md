@@ -31,6 +31,21 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.18](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.17...trust-tasks-rs-v0.21.18) — 2026-09-22
+
+
+### Specifications
+
+- **messaging/account**: Opt-in activity timestamps on account/get and account/list ([#594](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/594))
+
+Account gains optional lastReceivedAt (the last message accepted for it,
+  may lag by up to 60 s) and lastAuthenticatedAt (its last completed
+  authentication), both Unix epoch seconds. A mediator returns them only
+  when the request sets includeActivity: generated clients reject unknown
+  members, so a requester that did not ask must never see them.
+
+
+
 ## [0.21.17](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.16...trust-tasks-rs-v0.21.17) — 2026-09-22
 
 
