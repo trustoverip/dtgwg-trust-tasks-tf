@@ -38,6 +38,10 @@ export interface PersonaProfileComposePayload {
    * What the context may call the face, as on persona/binding/set. Meaningful only with `personaDid`; a maintainer MUST refuse it without one rather than drop it.
    */
   label?: string;
+  /**
+   * When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only with `personaDid`, and refused without one or in the past (`untilNotFuture`).
+   */
+  until?: string;
   ext?: Ext;
 }
 /**
@@ -172,6 +176,11 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "description": "What the context may call the face, as on persona/binding/set. Meaningful only with `personaDid`; a maintainer MUST refuse it without one rather than drop it."
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When wearing the face here ends on its own, as persona/binding/set `until`: at it the binding clears and the face, if worn nowhere else, is retired — never deleted. For the face composed at the door of a conference or a listing, which is where a throwaway face is usually made. Meaningful only with `personaDid`, and refused without one or in the past (`untilNotFuture`)."
     },
     "ext": {
       "$ref": "#/$defs/Ext"

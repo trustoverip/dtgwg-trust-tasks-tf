@@ -468,6 +468,17 @@ class ResolvedClaim {
 /// entries carry the same slot: a slot exists to answer one question with one entry.
 typedef ProfileEntry = Map<String, dynamic>;
 
+/// Where a pool face may be worn. `anywhere` is the default and what an absent member
+/// means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to
+/// wear it in any other (persona/binding/set `outsideReach`). A tagged object rather
+/// than a bare list of contexts, deliberately: an empty list has been read as both
+/// 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two
+/// cannot be confused is worth more than one where they must be remembered. So `only`
+/// requires at least one context, and 'nowhere' is not a reach — it is a retired face.
+/// A context-local face has no reach: it lives in its context and is worn there by
+/// construction.
+typedef FaceReach = Object?;
+
 /// `retired`: the face is worn nowhere, is left out of pickers and default listings,
 /// and cannot be worn until reinstated (persona/profile/retire,
 /// persona/profile/reinstate). Its disclosure history and every value it carries are
@@ -491,6 +502,7 @@ class Profile {
     required this.profileId,
     required this.name,
     required this.entries,
+    this.reach,
     this.status,
     this.retiredAt,
     this.credentialRefs,
@@ -506,6 +518,7 @@ class Profile {
         entries: (json['entries'] as List<dynamic>)
             .map((e) => e as Map<String, dynamic>)
             .toList(),
+        reach: json['reach'],
         status: json['status'] == null
             ? null
             : ProfileStatus(json['status'] as String),
@@ -525,6 +538,7 @@ class Profile {
   /// The holder's name for this profile — "Work", "Gaming". Not disclosed.
   final String name;
   final List<ProfileEntry> entries;
+  final FaceReach? reach;
 
   /// `retired`: the face is worn nowhere, is left out of pickers and default listings,
   /// and cannot be worn until reinstated (persona/profile/retire,
@@ -549,6 +563,7 @@ class Profile {
         'profileId': profileId,
         'name': name,
         'entries': entries,
+        if (reach != null) 'reach': reach!,
         if (status != null) 'status': status!.value,
         if (retiredAt != null) 'retiredAt': retiredAt!,
         if (credentialRefs != null) 'credentialRefs': credentialRefs!,

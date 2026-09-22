@@ -1425,6 +1425,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::VERSION_CONFLICT,
     error_codes::PROFILE_RETIRED,
     error_codes::UNTIL_NOT_FUTURE,
+    error_codes::OUTSIDE_REACH,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -1476,6 +1477,15 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const UNTIL_NOT_FUTURE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:untilNotFuture",
+        retryable: false,
+    };
+    /// `persona/binding/set:outsideReach`
+    ///
+    /// The face's `reach` does not include this context. Nothing is written. The holder widens the reach with persona/profile/put, or wears another face here.
+    ///
+    /// Declared `retryable: false`.
+    pub const OUTSIDE_REACH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/binding/set:outsideReach",
         retryable: false,
     };
 }

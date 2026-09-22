@@ -23,6 +23,10 @@
       "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ProfileEntry" },
       "description": "Ordered; the order is display order. An empty array is legal and means a profile that discloses nothing — useful as a starting point, and not the same as no profile at all."
     },
+    "reach": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/FaceReach",
+      "description": "Where this face may be worn. Omit for anywhere. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately."
+    },
     "credentialRefs": {
       "type": "array",
       "maxItems": 256,

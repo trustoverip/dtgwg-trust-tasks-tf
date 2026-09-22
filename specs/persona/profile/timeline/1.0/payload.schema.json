@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/timeline/1.0",
+  "title": "Persona Profile Timeline — payload",
+  "description": "What one face has done, in order: composed, worn and taken off, what it told whom, when a value it shows changed, retired and reinstated. Types, versions, contexts and parties — never a value, never one of the holder's private labels.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileId"],
+  "properties": {
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "contextId": { "type": "string", "minLength": 1, "description": "The context of a context-local face. Omit for a pool face." },
+    "since": { "type": "string", "format": "date-time", "description": "Only events at or after this time." },
+    "cursor": { "type": "string", "maxLength": 4096, "description": "Opaque continuation token from a prior response. A producer MUST NOT construct or parse one." },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "TimelineEvent": {
+      "title": "TimelineEvent",
+      "description": "One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["at", "kind"],
+      "properties": {
+        "at": { "type": "string", "format": "date-time" },
+        "kind": {
+          "type": "string",
+          "enum": ["composed", "worn", "unworn", "expired", "disclosed", "valueChanged", "promoted", "retired", "reinstated"],
+          "description": "`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`."
+        },
+        "contextId": { "type": "string", "minLength": 1 },
+        "personaDid": { "type": "string", "minLength": 1 },
+        "verifierDid": { "type": "string", "minLength": 1 },
+        "claimTypes": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" }
+        },
+        "version": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version" }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Timeline — response payload",
+      "description": "Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "events"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "events": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "$ref": "#/$defs/TimelineEvent" }
+        },
+        "nextCursor": { "type": "string", "maxLength": 4096, "description": "Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page." },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

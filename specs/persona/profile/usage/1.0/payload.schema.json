@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/profile/usage/1.0",
+  "title": "Persona Profile Usage — payload",
+  "description": "Where one face is worn now: every context and persona wearing it. The answer a holder needs to audit a face's reach, and to see the contexts a face is part of before changing or retiring it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileId"],
+  "properties": {
+    "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "contextId": { "type": "string", "minLength": 1, "description": "The context of a context-local face. Omit for a pool face." },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Profile Usage — response payload",
+      "description": "Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "usage"],
+      "properties": {
+        "profileId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "reach": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/FaceReach", "description": "The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face." },
+        "usage": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["contextId", "personaDid", "boundAt"],
+            "properties": {
+              "contextId": { "type": "string", "minLength": 1 },
+              "personaDid": { "type": "string", "minLength": 1 },
+              "boundAt": { "type": "string", "format": "date-time" },
+              "until": { "type": "string", "format": "date-time", "description": "When wearing it here ends on its own. Absent when it lasts until changed." }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

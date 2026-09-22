@@ -241,6 +241,17 @@ type ResolvedClaim struct {
 // same slot: a slot exists to answer one question with one entry.
 type ProfileEntry = map[string]json.RawMessage
 
+// FaceReach Where a pool face may be worn. `anywhere` is the default and what an absent
+// member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse
+// to wear it in any other (persona/binding/set `outsideReach`). A tagged object rather
+// than a bare list of contexts, deliberately: an empty list has been read as both
+// 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two
+// cannot be confused is worth more than one where they must be remembered. So `only`
+// requires at least one context, and 'nowhere' is not a reach — it is a retired face. A
+// context-local face has no reach: it lives in its context and is worn there by
+// construction.
+type FaceReach = json.RawMessage
+
 // ProfileStatus `retired`: the face is worn nowhere, is left out of pickers and default
 // listings, and cannot be worn until reinstated (persona/profile/retire,
 // persona/profile/reinstate). Its disclosure history and every value it carries are kept
@@ -261,6 +272,7 @@ type Profile struct {
 	// The holder's name for this profile — "Work", "Gaming". Not disclosed.
 	Name    string         `json:"name"`
 	Entries []ProfileEntry `json:"entries"`
+	Reach   *FaceReach     `json:"reach,omitempty"`
 
 	// `retired`: the face is worn nowhere, is left out of pickers and default listings, and
 	// cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate).

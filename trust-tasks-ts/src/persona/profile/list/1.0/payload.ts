@@ -3,7 +3,7 @@
  * Source: specs/persona/profile/list/1.0/payload.schema.json
  */
 
-import type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
+import type { ClaimType, Ext, FaceReach, Profile, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**
@@ -37,7 +37,7 @@ export interface PersonaProfileListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, Ext, Profile, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version };
+export type { ClaimType, Ext, FaceReach, Profile, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/profile/list/1.0" as const;
@@ -155,6 +155,9 @@ export const PAYLOAD_SCHEMA = {
             "$ref": "#/$defs/ProfileEntry"
           }
         },
+        "reach": {
+          "$ref": "#/$defs/FaceReach"
+        },
         "status": {
           "type": "string",
           "enum": [
@@ -196,6 +199,47 @@ export const PAYLOAD_SCHEMA = {
       "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
       "type": "integer",
       "minimum": 1
+    },
+    "FaceReach": {
+      "title": "FaceReach",
+      "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "anywhere"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "contextIds"
+          ],
+          "properties": {
+            "kind": {
+              "const": "only"
+            },
+            "contextIds": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "ProfileEntry": {
       "title": "ProfileEntry",
@@ -496,6 +540,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "$ref": "#/$defs/ProfileEntry"
           }
         },
+        "reach": {
+          "$ref": "#/$defs/FaceReach"
+        },
         "status": {
           "type": "string",
           "enum": [
@@ -537,6 +584,47 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
       "type": "integer",
       "minimum": 1
+    },
+    "FaceReach": {
+      "title": "FaceReach",
+      "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "anywhere"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "contextIds"
+          ],
+          "properties": {
+            "kind": {
+              "const": "only"
+            },
+            "contextIds": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "ProfileEntry": {
       "title": "ProfileEntry",
