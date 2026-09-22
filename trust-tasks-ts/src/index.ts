@@ -485,6 +485,7 @@ export * as VtcInstallClaimFinish_v0_1 from "./vtc/install/claim/finish/0.1/payl
 export * as VtcInstallClaimFinish_v0_2 from "./vtc/install/claim/finish/0.2/payload.js";
 export * as VtcInstallClaimStart_v0_1 from "./vtc/install/claim/start/0.1/payload.js";
 export * as VtcInstallClaimStart_v0_2 from "./vtc/install/claim/start/0.2/payload.js";
+export * as VtcInvitationsDeliver_v0_1 from "./vtc/invitations/deliver/0.1/payload.js";
 export * as VtcInvitationsIssue_v0_1 from "./vtc/invitations/issue/0.1/payload.js";
 export * as VtcInvitationsList_v0_1 from "./vtc/invitations/list/0.1/payload.js";
 export * as VtcInvitationsRevoke_v0_1 from "./vtc/invitations/revoke/0.1/payload.js";

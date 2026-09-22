@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/invitations/deliver/0.1",
+  "title": "VTC Invitations Deliver — payload",
+  "description": "Deliver an issued invitation to the DID it admits: push an offer to that DID, or return the offer for a QR code. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "channel"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Identifier of the invitation to deliver, as `vtc/invitations/list` reports it."
+    },
+    "channel": {
+      "type": "string",
+      "enum": ["message", "offer"],
+      "description": "`message`: the community sends a `credential-exchange/offer` to the invited DID over a transport that DID advertises. `offer`: the community returns the offer, for the inviter to hand over out of band — typically as a QR code."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Invitations Deliver — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "channel", "expiresAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The invitation's identifier, echoed."
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["message", "offer"],
+          "description": "The channel used, echoed."
+        },
+        "offer": {
+          "type": "object",
+          "description": "Present exactly when `channel` is `offer`: an OID4VCI Credential Offer object, carried verbatim, whose pre-authorized code redeems only for the invited DID. Its members are OID4VCI's and are deliberately not re-specified here."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this delivery's offer lapses. Never later than the invitation's own expiry."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
