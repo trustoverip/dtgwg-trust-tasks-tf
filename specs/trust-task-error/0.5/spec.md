@@ -237,7 +237,7 @@ Where the failure will be retained as evidence (for example, a compliance refusa
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:bank.example#key-1",
     "created": "2026-05-16T14:22:00Z",
     "proofPurpose": "assertionMethod",
