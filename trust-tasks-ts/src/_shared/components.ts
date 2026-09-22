@@ -348,6 +348,10 @@ export type ProofRung = "predicate" | "derived" | "selectiveDisclosure" | "whole
  * `credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.
  *
  * `generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.
+ *
+ * `derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.
+ *
+ * For how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.
  */
 export type Provenance =
   | {
@@ -382,6 +386,17 @@ export type Provenance =
        * When true (the default and the only useful setting), a distinct value is minted for each verifier.
        */
       perVerifier?: boolean;
+    }
+  | {
+      kind: "derived";
+      /**
+       * The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.
+       */
+      source: string;
+      /**
+       * When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.
+       */
+      derivedAt: string;
     };
 /**
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
@@ -1106,6 +1121,12 @@ export interface Attribute {
    * Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.
    */
   release?: ReleaseRequirement;
+  /**
+   * Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.
+   *
+   * @maxItems 64
+   */
+  endorsements?: string[];
   version: Version_PersonaV0_1;
   /**
    * Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.

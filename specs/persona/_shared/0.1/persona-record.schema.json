@@ -38,7 +38,7 @@
     },
     "Provenance": {
       "title": "Provenance",
-      "description": "Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\n\n`selfAsserted` — the holder supplied it.\n\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\n\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.",
+      "description": "Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\n\n`selfAsserted` — the holder supplied it.\n\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\n\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\n\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\n\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.",
       "type": "object",
       "required": [
         "kind"
@@ -107,6 +107,25 @@
               "type": "boolean",
               "default": true,
               "description": "When true (the default and the only useful setting), a distinct value is minted for each verifier."
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["kind", "source", "derivedAt"],
+          "properties": {
+            "kind": { "const": "derived" },
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-z][A-Za-z0-9.-]*$",
+              "description": "The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share."
+            },
+            "derivedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it."
             }
           }
         }
@@ -179,6 +198,13 @@
         "release": {
           "$ref": "#/$defs/ReleaseRequirement",
           "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry."
+        },
+        "endorsements": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none."
         },
         "version": {
           "$ref": "#/$defs/Version"

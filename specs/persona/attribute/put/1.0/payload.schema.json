@@ -33,6 +33,13 @@
     "provenance": {
       "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Provenance"
     },
+    "endorsements": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Vault identifiers of credentials in which a third party endorses this value. Inventory, not evidence — see the `endorsements` member of the shared Attribute. Replaced whole by each put; omit or send empty for none."
+    },
     "sensitivity": {
       "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Sensitivity",
       "description": "How carefully this value is shown to the holder. OPTIONAL, and its absence is meaningful: it records that the holder made no explicit decision, so a consumer resolves it from the claim-type registry. Sending the resolved value back would freeze it — a later tightening of the registry would then protect new attributes and leave this one exposed."

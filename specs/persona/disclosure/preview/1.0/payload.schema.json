@@ -48,7 +48,7 @@
                   "over": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType" }
                 }
               },
-              "provenance": { "type": "string", "enum": ["selfAsserted", "credentialBacked", "generated"] },
+              "provenance": { "type": "string", "enum": ["selfAsserted", "credentialBacked", "generated", "derived"] },
               "rung": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ProofRung" },
               "newToThisVerifier": { "type": "boolean", "description": "True when this verifier has not previously received this claim type from this persona. What makes a preview rankable rather than a flat list — a holder needs the unusual ask to stand out from the routine one." },
               "stale": { "type": "boolean", "description": "True when a credential-backed claim could not be re-derived. Such a claim MUST NOT be disclosed; it is shown in the preview so the holder learns why the disclosure will be short." }
