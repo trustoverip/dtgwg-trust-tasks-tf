@@ -20,6 +20,7 @@ affinidi = [
     "dep:affinidi-crypto",
     "dep:affinidi-encoding",
     "dep:affinidi-did-resolver-cache-sdk",
+    "dep:affinidi-did-common",
 ]
 
 [dependencies]
@@ -34,9 +35,12 @@ affinidi-data-integrity = { version = "0.7", optional = true }
 affinidi-crypto = { version = "0.2", optional = true }
 affinidi-encoding = { version = "0.1", optional = true }
 affinidi-did-resolver-cache-sdk = { version = "0.8", optional = true }
+# 0.4.2: `VerificationMethod::decode_public_key` (Multikey and JWK).
+affinidi-did-common = { version = "0.4.2", optional = true }
 
 [dev-dependencies]
 affinidi-secrets-resolver = "0.5"
 affinidi-did-common = "0.4"
+base64 = "0.22"
 tokio = { version = "1", features = ["macros", "rt"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }

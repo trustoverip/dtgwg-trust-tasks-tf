@@ -5171,6 +5171,7 @@ dependencies = [
  "affinidi-encoding",
  "affinidi-secrets-resolver",
  "async-trait",
+ "base64 0.22.1",
  "chrono",
  "serde",
  "serde_json",
