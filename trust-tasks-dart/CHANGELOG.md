@@ -11,6 +11,16 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.17 — 2026-09-22
+
+
+### Added
+
+- **persona**: Wear a face without naming a persona DID (#589)
+
+Design note (VTI docs/05-design-notes/persona-context-first.md) §9.7: a
+  holder should say "wear this face here", not bring a DID.
+
 ## 0.1.16 — 2026-09-22
 
 
