@@ -1268,3 +1268,75 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_AUTHORIZED,
+    error_codes::VERSION_CONFLICT,
+    error_codes::CHAIN_TOO_DEEP,
+    error_codes::SUBJECT_BINDING_MISSING,
+    error_codes::EPOCH_MISMATCH,
+    error_codes::RECORD_TOO_LARGE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/records/put:notAuthorized`
+    ///
+    /// The presentation does not confer `write` at this room's scope, or its chain does not reach the room.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/put:notAuthorized",
+        retryable: false,
+    };
+    /// `rooms/records/put:versionConflict`
+    ///
+    /// `expectedVersion` did not match. The response carries the current version and record.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/put:versionConflict",
+        retryable: false,
+    };
+    /// `rooms/records/put:chainTooDeep`
+    ///
+    /// The authority chain exceeds the maximum of 8 links.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/put:chainTooDeep",
+        retryable: false,
+    };
+    /// `rooms/records/put:subjectBindingMissing`
+    ///
+    /// A `private` room presentation omitted the required same-subject proof.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_BINDING_MISSING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/put:subjectBindingMissing",
+        retryable: false,
+    };
+    /// `rooms/records/put:epochMismatch`
+    ///
+    /// The record was sealed under an epoch that is not the room's current one.
+    ///
+    /// Declared `retryable: false`.
+    pub const EPOCH_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/put:epochMismatch",
+        retryable: false,
+    };
+    /// `rooms/records/put:recordTooLarge`
+    ///
+    /// The record exceeds the host's per-record limit.
+    ///
+    /// Declared `retryable: false`.
+    pub const RECORD_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/records/put:recordTooLarge",
+        retryable: false,
+    };
+}

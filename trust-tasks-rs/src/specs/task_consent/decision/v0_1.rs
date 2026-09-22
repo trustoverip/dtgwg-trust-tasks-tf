@@ -868,6 +868,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NO_PENDING,
+    error_codes::CHALLENGE_MISMATCH,
+    error_codes::NOT_AN_APPROVER,
+    error_codes::REQUESTER_EXCLUDED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `task-consent/decision:noPending`
+    ///
+    /// No live pending consent exists for the `payloadDigest` — never raised, already decided, or lapsed.
+    ///
+    /// Declared `retryable: false`.
+    pub const NO_PENDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/decision:noPending",
+        retryable: false,
+    };
+    /// `task-consent/decision:challengeMismatch`
+    ///
+    /// The `challenge` does not match the pending request for this digest.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/decision:challengeMismatch",
+        retryable: false,
+    };
+    /// `task-consent/decision:notAnApprover`
+    ///
+    /// The proven signer is not a member of the approver set the policy named.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AN_APPROVER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/decision:notAnApprover",
+        retryable: false,
+    };
+    /// `task-consent/decision:requesterExcluded`
+    ///
+    /// The proven signer is the task's requester and the policy set `excludeRequester`.
+    ///
+    /// Declared `retryable: false`.
+    pub const REQUESTER_EXCLUDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "task-consent/decision:requesterExcluded",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

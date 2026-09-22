@@ -1198,6 +1198,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_ACCOUNT,
+    error_codes::UNKNOWN_MESSAGE,
+    error_codes::ROOT_ADMIN_REQUIRED,
+    error_codes::MESSAGE_TOO_LARGE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `messaging/message/get:unknownAccount`
+    ///
+    /// The named account (`did`) has no account at this mediator.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/message/get:unknownAccount",
+        retryable: false,
+    };
+    /// `messaging/message/get:unknownMessage`
+    ///
+    /// No message with this `msgId` is held in the named account's queues — it never existed, was deleted, or expired.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_MESSAGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/message/get:unknownMessage",
+        retryable: false,
+    };
+    /// `messaging/message/get:rootAdminRequired`
+    ///
+    /// The request names another account's message, and the requester is not a rootAdmin. An admin may see another account's message metadata through messaging/message/list, but not its body.
+    ///
+    /// Declared `retryable: false`.
+    pub const ROOT_ADMIN_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/message/get:rootAdminRequired",
+        retryable: false,
+    };
+    /// `messaging/message/get:messageTooLarge`
+    ///
+    /// The stored message exceeds the 10 MiB this task can carry. It is refused rather than truncated; it remains in the queue and can still be listed or deleted.
+    ///
+    /// Declared `retryable: false`.
+    pub const MESSAGE_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/message/get:messageTooLarge",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

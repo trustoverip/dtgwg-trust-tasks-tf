@@ -765,6 +765,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_ORPHANED,
+    error_codes::DID_MISMATCH,
+    error_codes::LISTING_UNAVAILABLE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/webvh/servers/retire-orphan:notOrphaned`
+    ///
+    /// The agent holds a record for this slot, so it is not an orphan and this task is the wrong instrument. Deleting a DID the agent still controls is an ordinary delete, with its own authorization.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_ORPHANED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/servers/retire-orphan:notOrphaned",
+        retryable: false,
+    };
+    /// `vta/webvh/servers/retire-orphan:didMismatch`
+    ///
+    /// The slot does not serve the DID the producer named. The report the producer acted on is stale, and proceeding would retire something it never saw.
+    ///
+    /// Declared `retryable: false`.
+    pub const DID_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/servers/retire-orphan:didMismatch",
+        retryable: false,
+    };
+    /// `vta/webvh/servers/retire-orphan:listingUnavailable`
+    ///
+    /// The agent cannot obtain the server's listing, so it cannot confirm the slot is orphaned — and will not act on the producer's word for it.
+    ///
+    /// Declared `retryable: true`.
+    pub const LISTING_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/servers/retire-orphan:listingUnavailable",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

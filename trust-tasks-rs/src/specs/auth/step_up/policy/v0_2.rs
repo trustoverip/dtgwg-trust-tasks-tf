@@ -603,6 +603,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_AUTHORIZED,
+    error_codes::UNKNOWN_OPERATION,
+    error_codes::LOCKOUT_REFUSED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/step-up/policy:notAuthorized`
+    ///
+    /// The issuer is not authorized to set the maintainer's step-up policy.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/policy:notAuthorized",
+        retryable: false,
+    };
+    /// `auth/step-up/policy:unknownOperation`
+    ///
+    /// A floor names an operation-class the maintainer does not recognize or does not gate.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_OPERATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/policy:unknownOperation",
+        retryable: false,
+    };
+    /// `auth/step-up/policy:lockoutRefused`
+    ///
+    /// The requested policy would enable enforcement for an operation-class while leaving no party able to satisfy it, locking the maintainer's administrators out. The maintainer refuses rather than apply a self-lockout.
+    ///
+    /// Declared `retryable: false`.
+    pub const LOCKOUT_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/policy:lockoutRefused",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

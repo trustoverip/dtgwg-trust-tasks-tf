@@ -3902,6 +3902,98 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::INVALID_BOOTSTRAP_REQUEST,
+    error_codes::TEMPLATE_NOT_FOUND,
+    error_codes::TEMPLATE_VARS_INVALID,
+    error_codes::CONTEXT_NOT_FOUND,
+    error_codes::CONTEXT_REQUIRED,
+    error_codes::FORBIDDEN,
+    error_codes::ENVELOPE_UNSUPPORTED,
+    error_codes::ASSERTION_UNSUPPORTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `provision/integration:invalidBootstrapRequest`
+    ///
+    /// The presented VP failed structural validation (missing required field, malformed `holder`, unsupported cryptosuite, freshness window passed, signature does not verify, `verificationMethod` does not resolve under `holder`).
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_BOOTSTRAP_REQUEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:invalidBootstrapRequest",
+        retryable: false,
+    };
+    /// `provision/integration:templateNotFound`
+    ///
+    /// The integration or admin template named in the ask is not registered at the maintainer. Operator must upload it via the maintainer's template-management surface before retrying.
+    ///
+    /// Declared `retryable: false`.
+    pub const TEMPLATE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:templateNotFound",
+        retryable: false,
+    };
+    /// `provision/integration:templateVarsInvalid`
+    ///
+    /// The template's `requiredVars` are not satisfied by `template.vars`, or unknown vars were supplied. Producer SHOULD consult the template's declaration and retry with corrected bindings.
+    ///
+    /// Declared `retryable: false`.
+    pub const TEMPLATE_VARS_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:templateVarsInvalid",
+        retryable: false,
+    };
+    /// `provision/integration:contextNotFound`
+    ///
+    /// The requested `context` does not exist at the maintainer and `createContext` was either omitted or denied. When the caller has super-admin privileges they MAY retry with `createContext = true` to provision the context inline.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:contextNotFound",
+        retryable: false,
+    };
+    /// `provision/integration:contextRequired`
+    ///
+    /// `payload.context` was omitted and the maintainer could not infer a unique target context from the relayer's grant. The relayer either holds admin role in multiple contexts (rule #1 ambiguous) or is a super-admin and the maintainer has multiple contexts registered (rule #2 ambiguous). The relayer SHOULD retry with an explicit `context` value selected from `details.candidates`.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:contextRequired",
+        retryable: false,
+    };
+    /// `provision/integration:forbidden`
+    ///
+    /// The authenticated caller is not authorised to provision into `context` (or to create it). Distinct from the framework's `unauthorized` — the caller was authenticated successfully but lacks the role.
+    ///
+    /// Declared `retryable: false`.
+    pub const FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:forbidden",
+        retryable: false,
+    };
+    /// `provision/integration:envelopeUnsupported`
+    ///
+    /// The maintainer cannot emit a sealed bundle in any cipher envelope the holder's `did:key` supports. The wire shape pins HPKE/X25519-HKDF-SHA256/ChaCha20-Poly1305 as the only envelope today; the code reserves the slot for future envelope negotiation.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:envelopeUnsupported",
+        retryable: false,
+    };
+    /// `provision/integration:assertionUnsupported`
+    ///
+    /// The producer requested an `assertion` mode (e.g. `attested` for TEE deployments) that the maintainer does not support in its current configuration.
+    ///
+    /// Declared `retryable: false`.
+    pub const ASSERTION_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "provision/integration:assertionUnsupported",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

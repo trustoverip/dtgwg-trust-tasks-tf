@@ -802,6 +802,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_ACCOUNT,
+    error_codes::ROOT_ADMIN_REQUIRED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `messaging/message/delete:unknownAccount`
+    ///
+    /// The named account (`did`) has no account at this mediator.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/message/delete:unknownAccount",
+        retryable: false,
+    };
+    /// `messaging/message/delete:rootAdminRequired`
+    ///
+    /// The target account holds the admin, rootAdmin, or mediator role, and the requester is not a rootAdmin.
+    ///
+    /// Declared `retryable: false`.
+    pub const ROOT_ADMIN_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/message/delete:rootAdminRequired",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

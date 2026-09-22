@@ -710,6 +710,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_NOT_RECOGNIZED,
+    error_codes::RATE_LIMITED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/challenge:subjectNotRecognized`
+    ///
+    /// The producer named a `subject` that the auth service does not know how to authenticate (e.g. an unregistered DID, or a VID scheme outside the issuer's trust framework).
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_NOT_RECOGNIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/challenge:subjectNotRecognized",
+        retryable: false,
+    };
+    /// `auth/challenge:rateLimited`
+    ///
+    /// The producer (by source identifier — IP, DID, or both) has exceeded the issuer's challenge-issuance budget. The producer SHOULD back off; details.retryAfter MAY carry a seconds-until-retry hint.
+    ///
+    /// Declared `retryable: true`.
+    pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/challenge:rateLimited",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

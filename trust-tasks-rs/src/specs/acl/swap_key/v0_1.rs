@@ -1543,6 +1543,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_NOT_FOUND,
+    error_codes::SUBJECT_ALREADY_IN_USE,
+    error_codes::LINK_PROOF_REQUIRED,
+    error_codes::LINK_PROOF_INVALID,
+    error_codes::NOT_HOLDER,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `acl/swap-key:subjectNotFound`
+    ///
+    /// The `currentSubject` is not present in the ACL.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/swap-key:subjectNotFound",
+        retryable: false,
+    };
+    /// `acl/swap-key:subjectAlreadyInUse`
+    ///
+    /// The `newSubject` is already bound to a different AclEntry. The maintainer's policy decides whether to support "merge" semantics; the default is to refuse, leaving the operator to remove the existing entry first.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_ALREADY_IN_USE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/swap-key:subjectAlreadyInUse",
+        retryable: false,
+    };
+    /// `acl/swap-key:linkProofRequired`
+    ///
+    /// The maintainer requires evidence that `newSubject` consents to taking over (see "Link proof"). The producer SHOULD retry with `linkProof` populated.
+    ///
+    /// Declared `retryable: false`.
+    pub const LINK_PROOF_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/swap-key:linkProofRequired",
+        retryable: false,
+    };
+    /// `acl/swap-key:linkProofInvalid`
+    ///
+    /// The supplied `linkProof` failed verification.
+    ///
+    /// Declared `retryable: false`.
+    pub const LINK_PROOF_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/swap-key:linkProofInvalid",
+        retryable: false,
+    };
+    /// `acl/swap-key:notHolder`
+    ///
+    /// The document's `issuer` is not the `currentSubject` and the maintainer's policy does not permit cross-subject swaps. This is the default policy — see "Administrative swap" for the exception.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_HOLDER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/swap-key:notHolder",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

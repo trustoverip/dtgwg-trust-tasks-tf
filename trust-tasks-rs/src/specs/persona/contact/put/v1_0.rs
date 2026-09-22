@@ -1999,3 +1999,23 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::DOCUMENT_TOO_LARGE];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/contact/put:documentTooLarge`
+    ///
+    /// The document exceeds the maintainer's stated per-record cap. The cap and the actual size are both returned, so a producer can tell how far over it is rather than guessing.
+    ///
+    /// Declared `retryable: false`.
+    pub const DOCUMENT_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/contact/put:documentTooLarge",
+        retryable: false,
+    };
+}

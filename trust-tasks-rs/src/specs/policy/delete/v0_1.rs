@@ -545,6 +545,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::VERSION_CONFLICT,
+    error_codes::WOULD_ORPHAN_CONTEXTS,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `policy/delete:notFound`
+    ///
+    /// No policy with this id.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "policy/delete:notFound",
+        retryable: false,
+    };
+    /// `policy/delete:versionConflict`
+    ///
+    /// `expectedVersion` mismatch.
+    ///
+    /// Declared `retryable: true`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "policy/delete:versionConflict",
+        retryable: true,
+    };
+    /// `policy/delete:wouldOrphanContexts`
+    ///
+    /// Deleting this policy would leave one or more contexts with no applicable policy. The maintainer's policy on this is configurable — if deny-by-default is in place, this is benign; if the policy was the only `allow` for the context, you'd be locking yourself out. Override by setting an `ext` flag.
+    ///
+    /// Declared `retryable: false`.
+    pub const WOULD_ORPHAN_CONTEXTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "policy/delete:wouldOrphanContexts",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

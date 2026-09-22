@@ -1413,6 +1413,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ROLE_NOT_RECOGNIZED,
+    error_codes::STATE_MISMATCH,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `acl/change-role:roleNotRecognized`
+    ///
+    /// The fromRole or toRole string is not part of the ACL maintainer's role vocabulary.
+    ///
+    /// Declared `retryable: false`.
+    pub const ROLE_NOT_RECOGNIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/change-role:roleNotRecognized",
+        retryable: false,
+    };
+    /// `acl/change-role:stateMismatch`
+    ///
+    /// The subject's current role does not match payload.fromRole; the change was based on stale state.
+    ///
+    /// Declared `retryable: true`.
+    pub const STATE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "acl/change-role:stateMismatch",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

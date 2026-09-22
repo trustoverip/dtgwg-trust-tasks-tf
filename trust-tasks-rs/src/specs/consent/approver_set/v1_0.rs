@@ -791,6 +791,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_AUTHORIZED, error_codes::INVALID_BINDING];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `consent/approver-set:notAuthorized`
+    ///
+    /// The issuer is not an admin of the named context.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/approver-set:notAuthorized",
+        retryable: false,
+    };
+    /// `consent/approver-set:invalidBinding`
+    ///
+    /// The binding is malformed, or names an unknown context/approver.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_BINDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/approver-set:invalidBinding",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

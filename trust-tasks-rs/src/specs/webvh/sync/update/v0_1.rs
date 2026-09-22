@@ -721,6 +721,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_AUTHORIZED, error_codes::INVALID_LOG];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `webvh/sync/update:notAuthorized`
+    ///
+    /// Sender DID is not the configured control plane for the receiving server.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "webvh/sync/update:notAuthorized",
+        retryable: false,
+    };
+    /// `webvh/sync/update:invalidLog`
+    ///
+    /// The `logContent` failed structural validation or hash-chain verification.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_LOG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "webvh/sync/update:invalidLog",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

@@ -468,6 +468,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CHALLENGE_MISMATCH,
+    error_codes::PRESENTATION_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `witness/session/submit:challengeMismatch`
+    ///
+    /// The presentation is not bound to this session's challenge and domain — a replay from another session, or a stale binding.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "witness/session/submit:challengeMismatch",
+        retryable: false,
+    };
+    /// `witness/session/submit:presentationInvalid`
+    ///
+    /// The presentation failed verification — its own proof, its holder binding, or its party bindings against the session.
+    ///
+    /// Declared `retryable: false`.
+    pub const PRESENTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "witness/session/submit:presentationInvalid",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

@@ -672,6 +672,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::HOST_UNREACHABLE, error_codes::HOST_REFUSED];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/owner/register:hostUnreachable`
+    ///
+    /// The named host could not be resolved, advertises no transport this recipient speaks, or did not answer.
+    ///
+    /// Declared `retryable: true`.
+    pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/register:hostUnreachable",
+        retryable: true,
+    };
+    /// `rooms/owner/register:hostRefused`
+    ///
+    /// The host answered and declined — commonly its own creation policy. Its reason is carried in `details`.
+    ///
+    /// Declared `retryable: false`.
+    pub const HOST_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/register:hostRefused",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

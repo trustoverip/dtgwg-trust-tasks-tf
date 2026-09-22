@@ -450,6 +450,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::CONTEXT_FORBIDDEN];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/memory/list:contextForbidden`
+    ///
+    /// The caller is not permitted to read memory in the named context.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/memory/list:contextForbidden",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

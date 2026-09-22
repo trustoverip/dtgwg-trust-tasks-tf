@@ -999,6 +999,78 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_OWNER,
+    error_codes::NAME_RESERVED,
+    error_codes::NAME_TAKEN,
+    error_codes::ALSO_KNOWN_AS_MISMATCH,
+    error_codes::INVALID_DID_DATA,
+    error_codes::UNKNOWN_DOMAIN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management/agent-name/set:not_owner`
+    ///
+    /// The caller is not the DID slot's current owner or an admin.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/set:not_owner",
+        retryable: false,
+    };
+    /// `did-management/agent-name/set:name_reserved`
+    ///
+    /// The requested name is on the host's reserved list (e.g. `admin`, `support`) and cannot be claimed by a tenant.
+    ///
+    /// Declared `retryable: false`.
+    pub const NAME_RESERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/set:name_reserved",
+        retryable: false,
+    };
+    /// `did-management/agent-name/set:name_taken`
+    ///
+    /// The name is already bound to a different DID on this hosting domain.
+    ///
+    /// Declared `retryable: false`.
+    pub const NAME_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/set:name_taken",
+        retryable: false,
+    };
+    /// `did-management/agent-name/set:also_known_as_mismatch`
+    ///
+    /// The submitted `didData` does not claim the requested name via `alsoKnownAs`. A host MUST refuse to serve a name the document does not claim.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALSO_KNOWN_AS_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/set:also_known_as_mismatch",
+        retryable: false,
+    };
+    /// `did-management/agent-name/set:invalid_did_data`
+    ///
+    /// The submitted `didData` failed proof or structural validation for the target DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_DID_DATA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/agent-name/set:invalid_did_data",
+        retryable: false,
+    };
+    /// `did-management:unknown_domain`
+    ///
+    /// The submitted `domain` is not a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknown_domain",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

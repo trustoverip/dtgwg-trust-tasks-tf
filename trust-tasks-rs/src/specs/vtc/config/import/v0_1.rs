@@ -2204,6 +2204,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::COMMUNITY_DID_MISMATCH,
+    error_codes::UNSUPPORTED_SCHEMA_VERSION,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/config/import:communityDidMismatch`
+    ///
+    /// The document was taken from a different community than the one importing it.
+    ///
+    /// Declared `retryable: false`.
+    pub const COMMUNITY_DID_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/config/import:communityDidMismatch",
+        retryable: false,
+    };
+    /// `vtc/config/import:unsupportedSchemaVersion`
+    ///
+    /// The document's schemaVersion is one this consumer does not implement.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNSUPPORTED_SCHEMA_VERSION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/config/import:unsupportedSchemaVersion",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

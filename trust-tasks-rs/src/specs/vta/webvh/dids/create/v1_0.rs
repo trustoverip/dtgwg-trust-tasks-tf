@@ -1384,6 +1384,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::PATH_TAKEN, error_codes::TEMPLATE_NOT_FOUND];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/webvh/dids/create:pathTaken`
+    ///
+    /// The requested path is already in use on the hosting server.
+    ///
+    /// Declared `retryable: false`.
+    pub const PATH_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/create:pathTaken",
+        retryable: false,
+    };
+    /// `vta/webvh/dids/create:templateNotFound`
+    ///
+    /// The named DID template does not exist in the selected scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const TEMPLATE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/webvh/dids/create:templateNotFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

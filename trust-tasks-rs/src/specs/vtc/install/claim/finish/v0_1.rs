@@ -788,6 +788,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::INVALID_TOKEN,
+    error_codes::REGISTRATION_MISMATCH,
+    error_codes::BINDING_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/install/claim/finish:invalidToken`
+    ///
+    /// The install token is missing, malformed, expired, or already consumed.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/install/claim/finish:invalidToken",
+        retryable: false,
+    };
+    /// `vtc/install/claim/finish:registrationMismatch`
+    ///
+    /// The registrationId does not match an open enrolment for this token.
+    ///
+    /// Declared `retryable: false`.
+    pub const REGISTRATION_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/install/claim/finish:registrationMismatch",
+        retryable: false,
+    };
+    /// `vtc/install/claim/finish:bindingInvalid`
+    ///
+    /// The WebAuthn attestation or the DID-binding signature failed verification.
+    ///
+    /// Declared `retryable: false`.
+    pub const BINDING_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/install/claim/finish:bindingInvalid",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

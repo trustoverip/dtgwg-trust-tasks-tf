@@ -4260,6 +4260,88 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CONTEXT_NOT_FOUND,
+    error_codes::NOT_FOUND,
+    error_codes::VERSION_CONFLICT,
+    error_codes::SEALED_SECRET_INVALID,
+    error_codes::SECRET_REQUIRED,
+    error_codes::ENVELOPE_UNSUPPORTED,
+    error_codes::CONTEXT_CHANGE_FORBIDDEN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/upsert:contextNotFound`
+    ///
+    /// The supplied `contextId` does not exist.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:contextNotFound",
+        retryable: false,
+    };
+    /// `vault/upsert:notFound`
+    ///
+    /// An `id` was supplied (update path) but no entry with that id exists in the consumer's visible scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:notFound",
+        retryable: false,
+    };
+    /// `vault/upsert:versionConflict`
+    ///
+    /// An `expectedVersion` was supplied and does not match the current version. The consumer SHOULD re-read the entry (vault/get) and retry the upsert with the up-to-date version.
+    ///
+    /// Declared `retryable: true`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:versionConflict",
+        retryable: true,
+    };
+    /// `vault/upsert:sealedSecretInvalid`
+    ///
+    /// The sealedSecret envelope failed verification (digest mismatch, signature invalid, recipient key unknown, or armor malformed).
+    ///
+    /// Declared `retryable: false`.
+    pub const SEALED_SECRET_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:sealedSecretInvalid",
+        retryable: false,
+    };
+    /// `vault/upsert:secretRequired`
+    ///
+    /// A create or rotation was attempted without `sealedSecret` for a secretKind that requires one.
+    ///
+    /// Declared `retryable: false`.
+    pub const SECRET_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:secretRequired",
+        retryable: false,
+    };
+    /// `vault/upsert:envelopeUnsupported`
+    ///
+    /// The `sealedSecret.envelope` kind is not one the maintainer implements (e.g. a TSP message arriving at a maintainer that only speaks `didcommAuthcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` to learn which envelope kinds the maintainer accepts.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:envelopeUnsupported",
+        retryable: false,
+    };
+    /// `vault/upsert:contextChangeForbidden`
+    ///
+    /// The consumer attempted to change `contextId` on an existing entry. Move-between-contexts MUST be done as delete + recreate.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_CHANGE_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/upsert:contextChangeForbidden",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

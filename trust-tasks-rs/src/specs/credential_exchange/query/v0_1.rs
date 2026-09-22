@@ -432,6 +432,36 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/query/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.\",\n  \"properties\": {\n    \"dcql_query\": {\n      \"description\": \"An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"nonce\": {\n      \"description\": \"Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"dcql_query\",\n    \"nonce\",\n    \"purpose\"\n  ],\n  \"title\": \"Credential Exchange Query — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::CONSENT_REQUIRED, error_codes::NO_MATCH];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `credential-exchange/query:consentRequired`
+    ///
+    /// The holder deferred the query for an out-of-band decision. Not a failure — the verifier should expect a later presentation on the same thread, or nothing.
+    ///
+    /// Declared `retryable: true`.
+    pub const CONSENT_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/query:consentRequired",
+        retryable: true,
+    };
+    /// `credential-exchange/query:noMatch`
+    ///
+    /// The holder holds no credential satisfying the query.
+    ///
+    /// Declared `retryable: false`.
+    pub const NO_MATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/query:noMatch",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

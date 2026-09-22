@@ -395,6 +395,110 @@ impl TrustTaskCode {
     }
 }
 
+/// An extended error code a *Trust Task specification* declares in its
+/// `errorCodes` front matter (SPEC.md §7.3 item 9, §8.5).
+///
+/// `trust-tasks-codegen` emits one of these per declaration, as a constant in
+/// the generated module's `error_codes` submodule, and collects them into that
+/// module's `ERROR_CODES` slice. [`crate::schema_index::error_codes_for`]
+/// serves the same slice by Type URI, for a consumer that dispatches on the URI
+/// and has no module to name.
+///
+/// The point is that the code string is **read from the specification**, not
+/// written at the call site. A hand-written literal can name a code the
+/// specification never declared, and nothing notices: the consumer on the other
+/// end degrades it to `taskFailed` (§8.5) and the distinction the specification
+/// drew is lost without a trace.
+///
+/// ```rust,ignore
+/// use trust_tasks_rs::specs::acl::grant::v0_1 as grant;
+///
+/// // Emit it — `retryable` comes from the declaration, not a guess.
+/// let payload: ErrorPayload = grant::error_codes::ROLE_NOT_RECOGNIZED.into();
+///
+/// // Or keep the wire string, in a `const` context.
+/// const ROLE_NOT_RECOGNIZED: &str = grant::error_codes::ROLE_NOT_RECOGNIZED.code;
+/// ```
+///
+/// `#[non_exhaustive]` so the declaration's other members (`meaning`,
+/// `detailsSchema`) can be carried later without a breaking change.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub struct DeclaredErrorCode {
+    /// The fully qualified code as it appears on the wire, `<namespace>:<local>`
+    /// — e.g. `"acl/grant:roleNotRecognized"`. The namespace is the declaring
+    /// specification's slug or a family prefix of it (§8.5 rule 2).
+    pub code: &'static str,
+
+    /// The `retryable` value the specification declares for this code — the
+    /// value an emitter SHOULD send (§8.4).
+    pub retryable: bool,
+}
+
+impl DeclaredErrorCode {
+    /// The namespace before the colon: the declaring specification's slug, or
+    /// a family prefix of it.
+    pub fn namespace(&self) -> &'static str {
+        self.code
+            .split_once(':')
+            .map(|(namespace, _)| namespace)
+            .unwrap_or(self.code)
+    }
+
+    /// The local part after the colon, e.g. `"roleNotRecognized"`.
+    pub fn local(&self) -> &'static str {
+        self.code
+            .split_once(':')
+            .map(|(_, local)| local)
+            .unwrap_or("")
+    }
+
+    /// Whether `code` is this declared code.
+    ///
+    /// A method rather than `PartialEq<DeclaredErrorCode> for TrustTaskCode`:
+    /// a second `PartialEq` impl on `TrustTaskCode` makes every
+    /// `assert_eq!(code, StandardCode::X.into())` ambiguous, which would break
+    /// consumers that compile today.
+    ///
+    /// Compares namespace and local part, so a [`TrustTaskCode`] parsed off the
+    /// wire and one built with [`Payload::extended_code`](crate::Payload::extended_code)
+    /// both match.
+    pub fn matches(&self, code: &TrustTaskCode) -> bool {
+        match code {
+            TrustTaskCode::Extended { slug, local } => {
+                slug == self.namespace() && local == self.local()
+            }
+            TrustTaskCode::Standard(_) => false,
+        }
+    }
+}
+
+impl fmt::Display for DeclaredErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.code)
+    }
+}
+
+impl From<DeclaredErrorCode> for TrustTaskCode {
+    /// Infallible: the generator refuses to emit a code that does not parse,
+    /// so a [`DeclaredErrorCode`] from `crate::specs` always converts.
+    fn from(declared: DeclaredErrorCode) -> Self {
+        TrustTaskCode::Extended {
+            slug: declared.namespace().to_string(),
+            local: declared.local().to_string(),
+        }
+    }
+}
+
+impl From<DeclaredErrorCode> for ErrorPayload {
+    /// An error payload carrying `declared`, with `retryable` set to the value
+    /// the specification declares rather than the §8.5 `taskFailed` default
+    /// [`ErrorPayload::new`] applies to an extended code it knows nothing about.
+    fn from(declared: DeclaredErrorCode) -> Self {
+        ErrorPayload::new(TrustTaskCode::from(declared)).with_retryable(declared.retryable)
+    }
+}
+
 /// Typed rejection conditions a conforming consumer raises while applying
 /// SPEC.md §7.2.
 ///

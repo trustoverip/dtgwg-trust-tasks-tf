@@ -1084,3 +1084,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_LOCAL_PROFILE,
+    error_codes::PROFILE_RETIRED,
+    error_codes::UNTIL_NOT_FUTURE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/local/binding/set:notLocalProfile`
+    ///
+    /// The identifier names a profile in the holder's pool rather than a context-local one. Honouring it would let a context-scoped caller bind the holder's composition, which is the one escalation the boundary exists to prevent.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_LOCAL_PROFILE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/local/binding/set:notLocalProfile",
+        retryable: false,
+    };
+    /// `persona/local/binding/set:profileRetired`
+    ///
+    /// The named context-local face is retired, and is not worn until persona/profile/reinstate.
+    ///
+    /// Declared `retryable: false`.
+    pub const PROFILE_RETIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/local/binding/set:profileRetired",
+        retryable: false,
+    };
+    /// `persona/local/binding/set:untilNotFuture`
+    ///
+    /// `until` is not in the future, or accompanies a null `profileId`. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNTIL_NOT_FUTURE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/local/binding/set:untilNotFuture",
+        retryable: false,
+    };
+}

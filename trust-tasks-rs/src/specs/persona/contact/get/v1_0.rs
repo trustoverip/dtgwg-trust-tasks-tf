@@ -2171,3 +2171,33 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::REVISION_REAPED];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/contact/get:notFound`
+    ///
+    /// No contact exists at that identifier in this context.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/contact/get:notFound",
+        retryable: false,
+    };
+    /// `persona/contact/get:revisionReaped`
+    ///
+    /// The named revision existed and has been reaped under the retention policy. Distinct from notFound on purpose — a caller comparing against history must be able to tell "never existed" from "no longer kept", because only the second means their comparison is unsound rather than mistaken.
+    ///
+    /// Declared `retryable: false`.
+    pub const REVISION_REAPED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/contact/get:revisionReaped",
+        retryable: false,
+    };
+}

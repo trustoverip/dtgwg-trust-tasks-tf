@@ -272,6 +272,36 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/present/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Holder to verifier: an OID4VP vp_token carrying the selectively-disclosed, holder-bound presentation. Replies on the query thread.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"vp_token\": {\n      \"description\": \"The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC presentation: the consented disclosures plus a mandatory key-binding JWT over the verifier's nonce and audience. A JSON **object** is a W3C Data-Integrity VP whose proof carries the same nonce and domain. A consumer selects the verification path from the value's type rather than a separate format discriminator, so a new credential format needs no new member here. snake_case is OID4VP's own name for this field.\",\n      \"type\": [\n        \"string\",\n        \"object\"\n      ]\n    }\n  },\n  \"required\": [\n    \"vp_token\"\n  ],\n  \"title\": \"Credential Exchange Present — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::STALE_NONCE, error_codes::AUDIENCE_MISMATCH];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `credential-exchange/present:staleNonce`
+    ///
+    /// The presentation is bound to a nonce the verifier no longer considers fresh.
+    ///
+    /// Declared `retryable: false`.
+    pub const STALE_NONCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/present:staleNonce",
+        retryable: false,
+    };
+    /// `credential-exchange/present:audienceMismatch`
+    ///
+    /// The presentation is bound to a different audience than the verifier.
+    ///
+    /// Declared `retryable: false`.
+    pub const AUDIENCE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/present:audienceMismatch",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

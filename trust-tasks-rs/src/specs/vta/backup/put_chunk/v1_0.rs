@@ -860,6 +860,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::CHUNK_OUT_OF_RANGE,
+    error_codes::DIGEST_MISMATCH,
+    error_codes::CHUNK_SIZE_MISMATCH,
+    error_codes::TERMINAL_STATE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/backup/put-chunk:notFound`
+    ///
+    /// The recipient holds no open chunked import slot under this identifier that this producer may act on. Deliberately conflates "no such bundle", "an export bundle", "a stream slot", and "not yours" — see Correlation.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/put-chunk:notFound",
+        retryable: false,
+    };
+    /// `vta/backup/put-chunk:chunkOutOfRange`
+    ///
+    /// `index` is not below the manifest's `chunkCount`.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHUNK_OUT_OF_RANGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/put-chunk:chunkOutOfRange",
+        retryable: false,
+    };
+    /// `vta/backup/put-chunk:digestMismatch`
+    ///
+    /// `digestMultibase` does not equal the manifest's digest for `index`, or `data` does not hash to it. Nothing is stored, and a chunk already held at `index` is left untouched. `details.expectedDigestMultibase` restates the manifest entry so the producer can tell a wrong index from corrupted bytes.
+    ///
+    /// Declared `retryable: false`.
+    pub const DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/put-chunk:digestMismatch",
+        retryable: false,
+    };
+    /// `vta/backup/put-chunk:chunkSizeMismatch`
+    ///
+    /// `data` decodes to the wrong number of bytes for `index`: not exactly `chunkSize` for any chunk but the last, or not the remainder for the last. Nothing is stored.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHUNK_SIZE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/put-chunk:chunkSizeMismatch",
+        retryable: false,
+    };
+    /// `vta/backup/put-chunk:terminalState`
+    ///
+    /// The slot was already finalized, aborted or has expired. Nothing more will be accepted under this identifier; a new initiate-import is needed.
+    ///
+    /// Declared `retryable: false`.
+    pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/put-chunk:terminalState",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

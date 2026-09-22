@@ -553,6 +553,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::DECLINED, error_codes::NOT_MEMBER];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/relationships/request:declined`
+    ///
+    /// The issuing member declined to issue a VRC. Replaces the bespoke `vrc/1.0/rejected` message of the legacy exchange; the human-readable reason travels in the error payload's `message`.
+    ///
+    /// Declared `retryable: false`.
+    pub const DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/relationships/request:declined",
+        retryable: false,
+    };
+    /// `vtc/relationships/request:notMember`
+    ///
+    /// The requester is not a member of a community the issuing member shares, so no relationship can be asserted.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/relationships/request:notMember",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

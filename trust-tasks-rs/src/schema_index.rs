@@ -4083,3 +4083,1874 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         _ => None,
     }
 }
+
+/// The extended error codes the specification behind `type_uri` declares
+/// (SPEC §7.3 item 9, §8.5), or `None` if this build knows no spec for it.
+///
+/// Pass the bare request Type URI. Error codes belong to the specification, not
+/// to one of its variants, so there are no `#response` entries.
+///
+/// `Some(&[])` and `None` are different answers: the first is a specification
+/// that declares no task-specific codes, the second a Type URI this build does
+/// not know. A census that treats them alike would pass every task it has never
+/// heard of.
+///
+/// The same slice is `ERROR_CODES` on the generated module; this exists for a
+/// consumer holding only the URI — a conformance census over every task it
+/// dispatches, say, which could otherwise only compare the codes it emits
+/// against a list it maintains by hand.
+pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorCode]> {
+    match type_uri {
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.1" => {
+            Some(crate::specs::acl::change_role::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.1" => {
+            Some(crate::specs::acl::grant::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.1" => {
+            Some(crate::specs::acl::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.1" => {
+            Some(crate::specs::acl::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.1" => {
+            Some(crate::specs::acl::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/swap-key/0.1" => {
+            Some(crate::specs::acl::swap_key::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.1" => {
+            Some(crate::specs::acl::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "audit")]
+        "https://trusttasks.org/spec/audit/list/0.1" => {
+            Some(crate::specs::audit::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "audit")]
+        "https://trusttasks.org/spec/audit/verify/0.1" => {
+            Some(crate::specs::audit::verify::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/authenticate/0.1" => {
+            Some(crate::specs::auth::authenticate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/challenge/0.1" => {
+            Some(crate::specs::auth::challenge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::finish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2" => {
+            Some(crate::specs::auth::passkey::enroll::finish::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::invite::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::start::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/start/0.2" => {
+            Some(crate::specs::auth::passkey::enroll::start::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/list/0.1" => {
+            Some(crate::specs::auth::passkey::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/login/finish/0.1" => {
+            Some(crate::specs::auth::passkey::login::finish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/login/finish/0.2" => {
+            Some(crate::specs::auth::passkey::login::finish::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/login/start/0.1" => {
+            Some(crate::specs::auth::passkey::login::start::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/login/start/0.2" => {
+            Some(crate::specs::auth::passkey::login::start::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1" => {
+            Some(crate::specs::auth::passkey::revoke::finish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" => {
+            Some(crate::specs::auth::passkey::revoke::start::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/refresh/0.1" => {
+            Some(crate::specs::auth::refresh::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/revoke-session/0.1" => {
+            Some(crate::specs::auth::revoke_session::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/sessions/list/0.1" => {
+            Some(crate::specs::auth::sessions::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.1" => {
+            Some(crate::specs::auth::step_up::approve_request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.2" => {
+            Some(crate::specs::auth::step_up::approve_request::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" => {
+            Some(crate::specs::auth::step_up::approve_response::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.2" => {
+            Some(crate::specs::auth::step_up::approve_response::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.3" => {
+            Some(crate::specs::auth::step_up::approve_response::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/policy/0.1" => {
+            Some(crate::specs::auth::step_up::policy::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/policy/0.2" => {
+            Some(crate::specs::auth::step_up::policy::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/whoami/0.1" => {
+            Some(crate::specs::auth::whoami::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "chat")]
+        "https://trusttasks.org/spec/chat/message/0.1" => {
+            Some(crate::specs::chat::message::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "config")]
+        "https://trusttasks.org/spec/config/patch/0.1" => {
+            Some(crate::specs::config::patch::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "config")]
+        "https://trusttasks.org/spec/config/reload/0.1" => {
+            Some(crate::specs::config::reload::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "config")]
+        "https://trusttasks.org/spec/config/restart/0.1" => {
+            Some(crate::specs::config::restart::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "config")]
+        "https://trusttasks.org/spec/config/show/0.1" => {
+            Some(crate::specs::config::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "confirm")]
+        "https://trusttasks.org/spec/confirm/request/0.1" => {
+            Some(crate::specs::confirm::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "confirm")]
+        "https://trusttasks.org/spec/confirm/response/0.1" => {
+            Some(crate::specs::confirm::response::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/approve-request/0.1" => {
+            Some(crate::specs::consent::approve_request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/approver-list/1.0" => {
+            Some(crate::specs::consent::approver_list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/approver-set/1.0" => {
+            Some(crate::specs::consent::approver_set::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/decision/1.0" => {
+            Some(crate::specs::consent::decision::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/list/1.0" => {
+            Some(crate::specs::consent::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/request/1.0" => {
+            Some(crate::specs::consent::request::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "consent")]
+        "https://trusttasks.org/spec/consent/revoke/1.0" => {
+            Some(crate::specs::consent::revoke::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/issue/0.1" => {
+            Some(crate::specs::credential_exchange::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/offer/0.1" => {
+            Some(crate::specs::credential_exchange::offer::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/pending/approve/0.1" => {
+            Some(crate::specs::credential_exchange::pending::approve::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/pending/deny/0.1" => {
+            Some(crate::specs::credential_exchange::pending::deny::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/pending/list/0.1" => {
+            Some(crate::specs::credential_exchange::pending::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/present/0.1" => {
+            Some(crate::specs::credential_exchange::present::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/query/0.1" => {
+            Some(crate::specs::credential_exchange::query::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "credential-exchange")]
+        "https://trusttasks.org/spec/credential-exchange/request/0.1" => {
+            Some(crate::specs::credential_exchange::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/disable/0.1" => {
+            Some(crate::specs::device::disable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/heartbeat/0.1" => {
+            Some(crate::specs::device::heartbeat::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/heartbeat/0.2" => {
+            Some(crate::specs::device::heartbeat::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/list/0.1" => {
+            Some(crate::specs::device::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/list/0.2" => {
+            Some(crate::specs::device::list::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/register/0.1" => {
+            Some(crate::specs::device::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/register/0.2" => {
+            Some(crate::specs::device::register::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/set-wake/0.1" => {
+            Some(crate::specs::device::set_wake::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/set-wake/0.2" => {
+            Some(crate::specs::device::set_wake::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/wipe/0.1" => {
+            Some(crate::specs::device::wipe::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        "https://trusttasks.org/spec/device/wipe/0.2" => {
+            Some(crate::specs::device::wipe::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/check/0.1" => {
+            Some(crate::specs::did_management::agent_name::check::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/disable/0.1" => {
+            Some(crate::specs::did_management::agent_name::disable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/enable/0.1" => {
+            Some(crate::specs::did_management::agent_name::enable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/list/0.1" => {
+            Some(crate::specs::did_management::agent_name::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/remove/0.1" => {
+            Some(crate::specs::did_management::agent_name::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/set/0.1" => {
+            Some(crate::specs::did_management::agent_name::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/update/0.1" => {
+            Some(crate::specs::did_management::agent_name::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/change-owner/0.1" => {
+            Some(crate::specs::did_management::did::change_owner::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/check-name/0.1" => {
+            Some(crate::specs::did_management::did::check_name::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/delete/0.1" => {
+            Some(crate::specs::did_management::did::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/disable/0.1" => {
+            Some(crate::specs::did_management::did::disable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/enable/0.1" => {
+            Some(crate::specs::did_management::did::enable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/info/0.1" => {
+            Some(crate::specs::did_management::did::info::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/list/0.1" => {
+            Some(crate::specs::did_management::did::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/problem-report/0.1" => {
+            Some(crate::specs::did_management::did::problem_report::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/publish/0.1" => {
+            Some(crate::specs::did_management::did::publish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/register/0.1" => {
+            Some(crate::specs::did_management::did::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/rollback/0.1" => {
+            Some(crate::specs::did_management::did::rollback::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/set-state/0.1" => {
+            Some(crate::specs::did_management::did::set_state::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/assign/0.1" => {
+            Some(crate::specs::did_management::domain::assign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/create/0.1" => {
+            Some(crate::specs::did_management::domain::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/disable/0.1" => {
+            Some(crate::specs::did_management::domain::disable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/enable/0.1" => {
+            Some(crate::specs::did_management::domain::enable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/purge/0.1" => {
+            Some(crate::specs::did_management::domain::purge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/set-default/0.1" => {
+            Some(crate::specs::did_management::domain::set_default::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/set-state/0.1" => {
+            Some(crate::specs::did_management::domain::set_state::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/unassign/0.1" => {
+            Some(crate::specs::did_management::domain::unassign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/update/0.1" => {
+            Some(crate::specs::did_management::domain::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/me/domains/0.1" => {
+            Some(crate::specs::did_management::me::domains::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/admin-register/0.1" => {
+            Some(crate::specs::did_management::registry::admin_register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/deregister/0.1" => {
+            Some(crate::specs::did_management::registry::deregister::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/health/0.1" => {
+            Some(crate::specs::did_management::server::health::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/register/0.1" => {
+            Some(crate::specs::did_management::server::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/stats-sync/0.1" => {
+            Some(crate::specs::did_management::server::stats_sync::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-trust")]
+        "https://trusttasks.org/spec/git-trust/grant/0.1" => {
+            Some(crate::specs::git_trust::grant::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-trust")]
+        "https://trusttasks.org/spec/git-trust/revoke/0.1" => {
+            Some(crate::specs::git_trust::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "governance")]
+        "https://trusttasks.org/spec/governance/capability/disable/0.1" => {
+            Some(crate::specs::governance::capability::disable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "governance")]
+        "https://trusttasks.org/spec/governance/capability/enable/0.1" => {
+            Some(crate::specs::governance::capability::enable::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "governance")]
+        "https://trusttasks.org/spec/governance/capability/list/0.1" => {
+            Some(crate::specs::governance::capability::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/create/0.1" => {
+            Some(crate::specs::keys::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/derive-and-sign/0.1" => {
+            Some(crate::specs::keys::derive_and_sign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/derive-and-sign-document/0.1" => {
+            Some(crate::specs::keys::derive_and_sign_document::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/export-secret/0.1" => {
+            Some(crate::specs::keys::export_secret::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/import/0.1" => {
+            Some(crate::specs::keys::import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/list/0.1" => {
+            Some(crate::specs::keys::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/rename/0.1" => {
+            Some(crate::specs::keys::rename::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/revoke/0.1" => {
+            Some(crate::specs::keys::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/set-exportability/0.1" => {
+            Some(crate::specs::keys::set_exportability::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/show/0.1" => {
+            Some(crate::specs::keys::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        "https://trusttasks.org/spec/keys/sign/0.1" => {
+            Some(crate::specs::keys::sign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/access-list/add/0.1" => {
+            Some(crate::specs::messaging::access_list::add::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/access-list/clear/0.1" => {
+            Some(crate::specs::messaging::access_list::clear::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/access-list/get/0.1" => {
+            Some(crate::specs::messaging::access_list::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/access-list/list/0.1" => {
+            Some(crate::specs::messaging::access_list::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/access-list/remove/0.1" => {
+            Some(crate::specs::messaging::access_list::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/access-list/update/0.1" => {
+            Some(crate::specs::messaging::access_list::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/add/0.1" => {
+            Some(crate::specs::messaging::account::add::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/change-queue-limits/0.1" => {
+            Some(crate::specs::messaging::account::change_queue_limits::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/change-type/0.1" => {
+            Some(crate::specs::messaging::account::change_type::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/get/0.1" => {
+            Some(crate::specs::messaging::account::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/list/0.1" => {
+            Some(crate::specs::messaging::account::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/remove/0.1" => {
+            Some(crate::specs::messaging::account::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/account/update/0.1" => {
+            Some(crate::specs::messaging::account::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/acl/get/0.1" => {
+            Some(crate::specs::messaging::acl::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/acl/set/0.1" => {
+            Some(crate::specs::messaging::acl::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/admin/add/0.1" => {
+            Some(crate::specs::messaging::admin::add::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/admin/audit-log/0.1" => {
+            Some(crate::specs::messaging::admin::audit_log::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/admin/config/0.1" => {
+            Some(crate::specs::messaging::admin::config::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/admin/list/0.1" => {
+            Some(crate::specs::messaging::admin::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/admin/strip/0.1" => {
+            Some(crate::specs::messaging::admin::strip::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/delete/0.1" => {
+            Some(crate::specs::messaging::message::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/get/0.1" => {
+            Some(crate::specs::messaging::message::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/list/0.1" => {
+            Some(crate::specs::messaging::message::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/event/0.1" => {
+            Some(crate::specs::messaging::monitor::event::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => {
+            Some(crate::specs::messaging::monitor::subscribe::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1" => {
+            Some(crate::specs::messaging::monitor::unsubscribe::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/ping/0.1" => {
+            Some(crate::specs::messaging::ping::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/list/0.1" => {
+            Some(crate::specs::messaging::queue::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/purge/0.1" => {
+            Some(crate::specs::messaging::queue::purge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/queue/status/0.1" => {
+            Some(crate::specs::messaging::queue::status::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/stats/show/0.1" => {
+            Some(crate::specs::messaging::stats::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/delete/1.0" => {
+            Some(crate::specs::persona::attribute::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/list/1.0" => {
+            Some(crate::specs::persona::attribute::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/promote/1.0" => {
+            Some(crate::specs::persona::attribute::promote::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/purge-version/1.0" => {
+            Some(crate::specs::persona::attribute::purge_version::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/put/1.0" => {
+            Some(crate::specs::persona::attribute::put::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/get/1.0" => {
+            Some(crate::specs::persona::binding::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/list/1.0" => {
+            Some(crate::specs::persona::binding::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/binding/set/1.0" => {
+            Some(crate::specs::persona::binding::set::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/claim-types/list/1.0" => {
+            Some(crate::specs::persona::claim_types::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/delete/1.0" => {
+            Some(crate::specs::persona::contact::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/get/1.0" => {
+            Some(crate::specs::persona::contact::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/list/1.0" => {
+            Some(crate::specs::persona::contact::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/contact/put/1.0" => {
+            Some(crate::specs::persona::contact::put::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.0" => {
+            Some(crate::specs::persona::correlation::analyze::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/history/1.0" => {
+            Some(crate::specs::persona::disclosure::history::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/present/1.0" => {
+            Some(crate::specs::persona::disclosure::present::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/disclosure/preview/1.0" => {
+            Some(crate::specs::persona::disclosure::preview::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/facet/delete/1.0" => {
+            Some(crate::specs::persona::facet::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/facet/list/1.0" => {
+            Some(crate::specs::persona::facet::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/facet/put/1.0" => {
+            Some(crate::specs::persona::facet::put::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/binding/set/1.0" => {
+            Some(crate::specs::persona::local::binding::set::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/delete/1.0" => {
+            Some(crate::specs::persona::local::profile::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/get/1.0" => {
+            Some(crate::specs::persona::local::profile::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/list/1.0" => {
+            Some(crate::specs::persona::local::profile::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/local/profile/put/1.0" => {
+            Some(crate::specs::persona::local::profile::put::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/compose/1.0" => {
+            Some(crate::specs::persona::profile::compose::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/delete/1.0" => {
+            Some(crate::specs::persona::profile::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/get/1.0" => {
+            Some(crate::specs::persona::profile::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/list/1.0" => {
+            Some(crate::specs::persona::profile::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/put/1.0" => {
+            Some(crate::specs::persona::profile::put::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/reinstate/1.0" => {
+            Some(crate::specs::persona::profile::reinstate::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/profile/retire/1.0" => {
+            Some(crate::specs::persona::profile::retire::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/renderers/list/1.0" => {
+            Some(crate::specs::persona::renderers::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/activate/0.1" => {
+            Some(crate::specs::policy::activate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/active/0.1" => {
+            Some(crate::specs::policy::active::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/delete/0.1" => {
+            Some(crate::specs::policy::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/evaluate/0.1" => {
+            Some(crate::specs::policy::evaluate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/evaluate/0.2" => {
+            Some(crate::specs::policy::evaluate::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/evaluate/0.3" => {
+            Some(crate::specs::policy::evaluate::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/get/0.1" => {
+            Some(crate::specs::policy::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/list/0.1" => {
+            Some(crate::specs::policy::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/list/0.2" => {
+            Some(crate::specs::policy::list::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/upsert/0.1" => {
+            Some(crate::specs::policy::upsert::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "policy")]
+        "https://trusttasks.org/spec/policy/upsert/0.2" => {
+            Some(crate::specs::policy::upsert::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "process-attestation")]
+        "https://trusttasks.org/spec/process-attestation/0.1" => {
+            Some(crate::specs::process_attestation::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "provision")]
+        "https://trusttasks.org/spec/provision/integration/0.1" => {
+            Some(crate::specs::provision::integration::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "provision")]
+        "https://trusttasks.org/spec/provision/integration/0.2" => {
+            Some(crate::specs::provision::integration::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "provision")]
+        "https://trusttasks.org/spec/provision/integration/0.3" => {
+            Some(crate::specs::provision::integration::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        "https://trusttasks.org/spec/push/provision/0.1" => {
+            Some(crate::specs::push::provision::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        "https://trusttasks.org/spec/push/provision/0.2" => {
+            Some(crate::specs::push::provision::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        "https://trusttasks.org/spec/push/register/0.1" => {
+            Some(crate::specs::push::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        "https://trusttasks.org/spec/push/register/0.2" => {
+            Some(crate::specs::push::register::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        "https://trusttasks.org/spec/push/wake/0.1" => {
+            Some(crate::specs::push::wake::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "push")]
+        "https://trusttasks.org/spec/push/wake/0.2" => {
+            Some(crate::specs::push::wake::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/authorization/0.1" => {
+            Some(crate::specs::registry::authorization::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/did/rotate/0.1" => {
+            Some(crate::specs::registry::did::rotate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/recognition/0.1" => {
+            Some(crate::specs::registry::recognition::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/create/0.1" => {
+            Some(crate::specs::registry::record::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/delete/0.1" => {
+            Some(crate::specs::registry::record::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/list/0.1" => {
+            Some(crate::specs::registry::record::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/put/0.1" => {
+            Some(crate::specs::registry::record::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/query/0.1" => {
+            Some(crate::specs::registry::record::query::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/read/0.1" => {
+            Some(crate::specs::registry::record::read::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "registry")]
+        "https://trusttasks.org/spec/registry/record/update/0.1" => {
+            Some(crate::specs::registry::record::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/create/0.1" => {
+            Some(crate::specs::rooms::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => {
+            Some(crate::specs::rooms::epoch::chain::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/commits/0.1" => {
+            Some(crate::specs::rooms::epoch::commits::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/mint/0.1" => {
+            Some(crate::specs::rooms::epoch::mint::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/epoch/prune/0.1" => {
+            Some(crate::specs::rooms::epoch::prune::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.1" => {
+            Some(crate::specs::rooms::keys::backfill::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.1" => {
+            Some(crate::specs::rooms::keys::browse::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/chain/0.1" => {
+            Some(crate::specs::rooms::keys::chain::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/commit/0.1" => {
+            Some(crate::specs::rooms::keys::commit::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/key-package/0.1" => {
+            Some(crate::specs::rooms::keys::key_package::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/list/0.1" => {
+            Some(crate::specs::rooms::keys::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/open/0.1" => {
+            Some(crate::specs::rooms::keys::open::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/present/0.1" => {
+            Some(crate::specs::rooms::keys::present::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/present/0.2" => {
+            Some(crate::specs::rooms::keys::present::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/read/0.1" => {
+            Some(crate::specs::rooms::keys::read::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/seal/0.1" => {
+            Some(crate::specs::rooms::keys::seal::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/keys/welcome/0.1" => {
+            Some(crate::specs::rooms::keys::welcome::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/anchor/0.1" => {
+            Some(crate::specs::rooms::owner::anchor::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/claim/0.1" => {
+            Some(crate::specs::rooms::owner::claim::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/invite/0.1" => {
+            Some(crate::specs::rooms::owner::invite::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.1" => {
+            Some(crate::specs::rooms::owner::issue_authority::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2" => {
+            Some(crate::specs::rooms::owner::issue_authority::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1" => {
+            Some(crate::specs::rooms::owner::issue_membership::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/register/0.1" => {
+            Some(crate::specs::rooms::owner::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/owner/transfer/0.1" => {
+            Some(crate::specs::rooms::owner::transfer::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/curate/0.1" => {
+            Some(crate::specs::rooms::records::curate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/get/0.1" => {
+            Some(crate::specs::rooms::records::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/list/0.1" => {
+            Some(crate::specs::rooms::records::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        "https://trusttasks.org/spec/rooms/records/put/0.1" => {
+            Some(crate::specs::rooms::records::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "sync")]
+        "https://trusttasks.org/spec/sync/event/0.1" => {
+            Some(crate::specs::sync::event::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "sync")]
+        "https://trusttasks.org/spec/sync/event/0.2" => {
+            Some(crate::specs::sync::event::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "task-consent")]
+        "https://trusttasks.org/spec/task-consent/decision/0.1" => {
+            Some(crate::specs::task_consent::decision::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "task-consent")]
+        "https://trusttasks.org/spec/task-consent/granted/0.1" => {
+            Some(crate::specs::task_consent::granted::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "task-consent")]
+        "https://trusttasks.org/spec/task-consent/request/0.1" => {
+            Some(crate::specs::task_consent::request::v0_1::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-ceremony-receipt/0.1" => {
+            Some(crate::specs::trust_ceremony_receipt::v0_1::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-task-control/0.1" => {
+            Some(crate::specs::trust_task_control::v0_1::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-task-discovery/0.1" => {
+            Some(crate::specs::trust_task_discovery::v0_1::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-task-discovery/0.2" => {
+            Some(crate::specs::trust_task_discovery::v0_2::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-task-next-step/0.1" => {
+            Some(crate::specs::trust_task_next_step::v0_1::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-task-ok/0.1" => {
+            Some(crate::specs::trust_task_ok::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/archive/0.1" => {
+            Some(crate::specs::vault::credentials::archive::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/delete/0.1" => {
+            Some(crate::specs::vault::credentials::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/get/0.1" => {
+            Some(crate::specs::vault::credentials::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/purge/0.1" => {
+            Some(crate::specs::vault::credentials::purge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/query/0.1" => {
+            Some(crate::specs::vault::credentials::query::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/receive/0.1" => {
+            Some(crate::specs::vault::credentials::receive::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/restore/0.1" => {
+            Some(crate::specs::vault::credentials::restore::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/credentials/unarchive/0.1" => {
+            Some(crate::specs::vault::credentials::unarchive::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/delete/0.1" => {
+            Some(crate::specs::vault::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/get/0.1" => {
+            Some(crate::specs::vault::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/get/0.2" => {
+            Some(crate::specs::vault::get::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/get/0.3" => {
+            Some(crate::specs::vault::get::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/list/0.1" => {
+            Some(crate::specs::vault::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/list/0.2" => {
+            Some(crate::specs::vault::list::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/list/0.3" => {
+            Some(crate::specs::vault::list::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/proxy-login/0.1" => {
+            Some(crate::specs::vault::proxy_login::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/proxy-login/0.2" => {
+            Some(crate::specs::vault::proxy_login::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/release/0.1" => {
+            Some(crate::specs::vault::release::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/release/0.2" => {
+            Some(crate::specs::vault::release::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/sign-trust-task/0.1" => {
+            Some(crate::specs::vault::sign_trust_task::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/sign-trust-task/0.2" => {
+            Some(crate::specs::vault::sign_trust_task::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/sync/0.1" => {
+            Some(crate::specs::vault::sync::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/sync/0.2" => {
+            Some(crate::specs::vault::sync::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/upsert/0.1" => {
+            Some(crate::specs::vault::upsert::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/upsert/0.2" => {
+            Some(crate::specs::vault::upsert::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/upsert/0.3" => {
+            Some(crate::specs::vault::upsert::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/usage/0.1" => {
+            Some(crate::specs::vault::usage::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vault")]
+        "https://trusttasks.org/spec/vault/usage/0.2" => {
+            Some(crate::specs::vault::usage::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/decline/0.1" => {
+            Some(crate::specs::vetting::decline::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/request/0.1" => {
+            Some(crate::specs::vetting::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vetting")]
+        "https://trusttasks.org/spec/vetting/session/0.1" => {
+            Some(crate::specs::vetting::session::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vrc")]
+        "https://trusttasks.org/spec/vrc/relationships/issue/0.1" => {
+            Some(crate::specs::vrc::relationships::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vrc")]
+        "https://trusttasks.org/spec/vrc/relationships/propose/0.1" => {
+            Some(crate::specs::vrc::relationships::propose::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/app-state/delete/1.0" => {
+            Some(crate::specs::vta::app_state::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/app-state/get/1.0" => {
+            Some(crate::specs::vta::app_state::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/app-state/get-many/1.0" => {
+            Some(crate::specs::vta::app_state::get_many::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/app-state/list/1.0" => {
+            Some(crate::specs::vta::app_state::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/app-state/put/1.0" => {
+            Some(crate::specs::vta::app_state::put::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/app-state/put-many/1.0" => {
+            Some(crate::specs::vta::app_state::put_many::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/abort/1.0" => {
+            Some(crate::specs::vta::backup::abort::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/complete-export/1.0" => {
+            Some(crate::specs::vta::backup::complete_export::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/finalize-import/1.0" => {
+            Some(crate::specs::vta::backup::finalize_import::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/finalize-import/1.1" => {
+            Some(crate::specs::vta::backup::finalize_import::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/get-chunk/1.0" => {
+            Some(crate::specs::vta::backup::get_chunk::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-export/1.0" => {
+            Some(crate::specs::vta::backup::initiate_export::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-export/1.1" => {
+            Some(crate::specs::vta::backup::initiate_export::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-import/1.0" => {
+            Some(crate::specs::vta::backup::initiate_import::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/initiate-import/1.1" => {
+            Some(crate::specs::vta::backup::initiate_import::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/backup/put-chunk/1.0" => {
+            Some(crate::specs::vta::backup::put_chunk::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/create/1.0" => {
+            Some(crate::specs::vta::contexts::create::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/delete/1.0" => {
+            Some(crate::specs::vta::contexts::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/did-templates/create/1.0" => {
+            Some(crate::specs::vta::contexts::did_templates::create::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0" => {
+            Some(crate::specs::vta::contexts::did_templates::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/did-templates/get/1.0" => {
+            Some(crate::specs::vta::contexts::did_templates::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/did-templates/list/1.0" => {
+            Some(crate::specs::vta::contexts::did_templates::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0" => {
+            Some(crate::specs::vta::contexts::did_templates::render::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0" => {
+            Some(crate::specs::vta::contexts::did_templates::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/get/1.0" => {
+            Some(crate::specs::vta::contexts::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/list/1.0" => {
+            Some(crate::specs::vta::contexts::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0" => {
+            Some(crate::specs::vta::contexts::preview_delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/secrets/1.0" => {
+            Some(crate::specs::vta::contexts::secrets::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/update/1.0" => {
+            Some(crate::specs::vta::contexts::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/contexts/update-did/1.0" => {
+            Some(crate::specs::vta::contexts::update_did::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/issue/0.1" => {
+            Some(crate::specs::vta::credentials::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/issue/0.2" => {
+            Some(crate::specs::vta::credentials::issue::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/list/0.1" => {
+            Some(crate::specs::vta::credentials::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/credentials/revoke/0.1" => {
+            Some(crate::specs::vta::credentials::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/create/1.0" => {
+            Some(crate::specs::vta::did_templates::create::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/create/2.0" => {
+            Some(crate::specs::vta::did_templates::create::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.0" => {
+            Some(crate::specs::vta::did_templates::create::v3_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/delete/1.0" => {
+            Some(crate::specs::vta::did_templates::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/delete/2.0" => {
+            Some(crate::specs::vta::did_templates::delete::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/get/1.0" => {
+            Some(crate::specs::vta::did_templates::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/get/2.0" => {
+            Some(crate::specs::vta::did_templates::get::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.0" => {
+            Some(crate::specs::vta::did_templates::get::v3_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/list/1.0" => {
+            Some(crate::specs::vta::did_templates::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/list/2.0" => {
+            Some(crate::specs::vta::did_templates::list::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.0" => {
+            Some(crate::specs::vta::did_templates::list::v3_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/render/1.0" => {
+            Some(crate::specs::vta::did_templates::render::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/render/2.0" => {
+            Some(crate::specs::vta::did_templates::render::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/update/1.0" => {
+            Some(crate::specs::vta::did_templates::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/update/2.0" => {
+            Some(crate::specs::vta::did_templates::update::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.0" => {
+            Some(crate::specs::vta::did_templates::update::v3_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/management/reload-services/1.0" => {
+            Some(crate::specs::vta::management::reload_services::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/memory/delete/0.1" => {
+            Some(crate::specs::vta::memory::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/memory/list/0.1" => {
+            Some(crate::specs::vta::memory::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/memory/put/0.1" => {
+            Some(crate::specs::vta::memory::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1" => {
+            Some(crate::specs::vta::passkey_vms::enroll_challenge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1" => {
+            Some(crate::specs::vta::passkey_vms::enroll_submit::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/passkey-vms/list/0.1" => {
+            Some(crate::specs::vta::passkey_vms::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1" => {
+            Some(crate::specs::vta::passkey_vms::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/disable/1.0" => {
+            Some(crate::specs::vta::services::disable::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/drain/cancel/1.0" => {
+            Some(crate::specs::vta::services::drain::cancel::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/drain/list/1.0" => {
+            Some(crate::specs::vta::services::drain::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/enable/1.0" => {
+            Some(crate::specs::vta::services::enable::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/get/1.0" => {
+            Some(crate::specs::vta::services::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/list/1.0" => {
+            Some(crate::specs::vta::services::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/rollback/1.0" => {
+            Some(crate::specs::vta::services::rollback::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/services/update/1.0" => {
+            Some(crate::specs::vta::services::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0" => {
+            Some(crate::specs::vta::webvh::agent_name::check::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/agent-name/disable/1.0" => {
+            Some(crate::specs::vta::webvh::agent_name::disable::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/agent-name/enable/1.0" => {
+            Some(crate::specs::vta::webvh::agent_name::enable::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0" => {
+            Some(crate::specs::vta::webvh::agent_name::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/agent-name/remove/1.0" => {
+            Some(crate::specs::vta::webvh::agent_name::remove::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0" => {
+            Some(crate::specs::vta::webvh::agent_name::set::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/create/1.0" => {
+            Some(crate::specs::vta::webvh::dids::create::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/delete/1.0" => {
+            Some(crate::specs::vta::webvh::dids::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/get/1.0" => {
+            Some(crate::specs::vta::webvh::dids::get::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/list/1.0" => {
+            Some(crate::specs::vta::webvh::dids::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0" => {
+            Some(crate::specs::vta::webvh::dids::realign_keys::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/register-with-server/1.0" => {
+            Some(crate::specs::vta::webvh::dids::register_with_server::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0" => {
+            Some(crate::specs::vta::webvh::dids::rotate_keys::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" => {
+            Some(crate::specs::vta::webvh::dids::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1" => {
+            Some(crate::specs::vta::webvh::servers::domains::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/servers/list/1.0" => {
+            Some(crate::specs::vta::webvh::servers::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1" => {
+            Some(crate::specs::vta::webvh::servers::reconcile::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/servers/register/1.0" => {
+            Some(crate::specs::vta::webvh::servers::register::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/servers/remove/1.0" => {
+            Some(crate::specs::vta::webvh::servers::remove::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1" => {
+            Some(crate::specs::vta::webvh::servers::retire_orphan::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/bootstrap/0.1" => {
+            Some(crate::specs::vtc::admin::bootstrap::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => {
+            Some(crate::specs::vtc::admin::invites::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/invites/list/0.1" => {
+            Some(crate::specs::vtc::admin::invites::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/admin/invites/revoke/0.1" => {
+            Some(crate::specs::vtc::admin::invites::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/auth/admin-session/0.1" => {
+            Some(crate::specs::vtc::auth::admin_session::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/auth/recognise/0.1" => {
+            Some(crate::specs::vtc::auth::recognise::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/auth/recognise/0.2" => {
+            Some(crate::specs::vtc::auth::recognise::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1" => {
+            Some(crate::specs::vtc::auth::recognise::challenge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/backup/export/0.1" => {
+            Some(crate::specs::vtc::backup::export::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/backup/import/0.1" => {
+            Some(crate::specs::vtc::backup::import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/ceremonies/list/0.1" => {
+            Some(crate::specs::vtc::ceremonies::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/community/profile/show/0.1" => {
+            Some(crate::specs::vtc::community::profile::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/community/profile/update/0.1" => {
+            Some(crate::specs::vtc::community::profile::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/config/export/0.1" => {
+            Some(crate::specs::vtc::config::export::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/config/import/0.1" => {
+            Some(crate::specs::vtc::config::import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/directory/query/0.1" => {
+            Some(crate::specs::vtc::directory::query::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsement-types/delete/0.1" => {
+            Some(crate::specs::vtc::endorsement_types::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1" => {
+            Some(crate::specs::vtc::endorsement_types::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsement-types/register/0.1" => {
+            Some(crate::specs::vtc::endorsement_types::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsements/issue/0.1" => {
+            Some(crate::specs::vtc::endorsements::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsements/list/0.1" => {
+            Some(crate::specs::vtc::endorsements::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1" => {
+            Some(crate::specs::vtc::endorsements::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/endorsements/show/0.1" => {
+            Some(crate::specs::vtc::endorsements::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/install/claim/finish/0.1" => {
+            Some(crate::specs::vtc::install::claim::finish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/install/claim/finish/0.2" => {
+            Some(crate::specs::vtc::install::claim::finish::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/install/claim/start/0.1" => {
+            Some(crate::specs::vtc::install::claim::start::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/install/claim/start/0.2" => {
+            Some(crate::specs::vtc::install::claim::start::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/issue/0.1" => {
+            Some(crate::specs::vtc::invitations::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/list/0.1" => {
+            Some(crate::specs::vtc::invitations::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/invitations/revoke/0.1" => {
+            Some(crate::specs::vtc::invitations::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/accept/0.1" => {
+            Some(crate::specs::vtc::join_requests::accept::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/approve/0.1" => {
+            Some(crate::specs::vtc::join_requests::approve::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/decide/0.1" => {
+            Some(crate::specs::vtc::join_requests::decide::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/list/0.1" => {
+            Some(crate::specs::vtc::join_requests::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1" => {
+            Some(crate::specs::vtc::join_requests::manifest::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2" => {
+            Some(crate::specs::vtc::join_requests::manifest::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/reject/0.1" => {
+            Some(crate::specs::vtc::join_requests::reject::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/show/0.1" => {
+            Some(crate::specs::vtc::join_requests::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/status/0.1" => {
+            Some(crate::specs::vtc::join_requests::status::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/submit/0.1" => {
+            Some(crate::specs::vtc::join_requests::submit::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/submit/0.2" => {
+            Some(crate::specs::vtc::join_requests::submit::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/submit-receipt/0.1" => {
+            Some(crate::specs::vtc::join_requests::submit_receipt::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/supplement/0.1" => {
+            Some(crate::specs::vtc::join_requests::supplement::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/join-requests/withdraw/0.1" => {
+            Some(crate::specs::vtc::join_requests::withdraw::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/admin-remove/0.1" => {
+            Some(crate::specs::vtc::members::admin_remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/credentials/0.1" => {
+            Some(crate::specs::vtc::members::credentials::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/list/0.1" => {
+            Some(crate::specs::vtc::members::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/personhood/assert/0.1" => {
+            Some(crate::specs::vtc::members::personhood::assert::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1" => {
+            Some(crate::specs::vtc::members::personhood::challenge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1" => {
+            Some(crate::specs::vtc::members::personhood::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/purge/0.1" => {
+            Some(crate::specs::vtc::members::purge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/removal-notice/0.1" => {
+            Some(crate::specs::vtc::members::removal_notice::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/removed/0.1" => {
+            Some(crate::specs::vtc::members::removed::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/renew/0.1" => {
+            Some(crate::specs::vtc::members::renew::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/request-vmc/0.1" => {
+            Some(crate::specs::vtc::members::request_vmc::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/rotate/0.1" => {
+            Some(crate::specs::vtc::members::rotate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/rotate-challenge/0.1" => {
+            Some(crate::specs::vtc::members::rotate_challenge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/self-remove/0.1" => {
+            Some(crate::specs::vtc::members::self_remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/self-remove-receipt/0.1" => {
+            Some(crate::specs::vtc::members::self_remove_receipt::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/show/0.1" => {
+            Some(crate::specs::vtc::members::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1" => {
+            Some(crate::specs::vtc::members::solicit_vmc::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/update/0.1" => {
+            Some(crate::specs::vtc::members::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/vmc/0.1" => {
+            Some(crate::specs::vtc::members::vmc::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/policies/test/0.1" => {
+            Some(crate::specs::vtc::policies::test::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/recognition/check/0.1" => {
+            Some(crate::specs::vtc::recognition::check::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/diagnostics/0.1" => {
+            Some(crate::specs::vtc::registry::diagnostics::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/records/list/0.1" => {
+            Some(crate::specs::vtc::registry::records::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/discard/0.1" => {
+            Some(crate::specs::vtc::registry::sync_jobs::discard::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/list/0.1" => {
+            Some(crate::specs::vtc::registry::sync_jobs::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1" => {
+            Some(crate::specs::vtc::registry::sync_jobs::retry::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/graph/0.1" => {
+            Some(crate::specs::vtc::relationships::graph::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/graph/0.2" => {
+            Some(crate::specs::vtc::relationships::graph::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/list/0.1" => {
+            Some(crate::specs::vtc::relationships::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/list/0.2" => {
+            Some(crate::specs::vtc::relationships::list::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/publish/0.1" => {
+            Some(crate::specs::vtc::relationships::publish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/publish/0.2" => {
+            Some(crate::specs::vtc::relationships::publish::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/request/0.1" => {
+            Some(crate::specs::vtc::relationships::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/request/0.2" => {
+            Some(crate::specs::vtc::relationships::request::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/relationships/revoke/0.1" => {
+            Some(crate::specs::vtc::relationships::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1" => {
+            Some(crate::specs::vtc::vetting::revoke_statement::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1" => {
+            Some(crate::specs::vtc::vetting::vetters::grant::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/list/0.1" => {
+            Some(crate::specs::vtc::vetting::vetters::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/profile/0.1" => {
+            Some(crate::specs::vtc::vetting::vetters::profile::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/vetting/vetters/resend/0.1" => {
+            Some(crate::specs::vtc::vetting::vetters::resend::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/delete/0.1" => {
+            Some(crate::specs::vtc::website::files::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/list/0.1" => {
+            Some(crate::specs::vtc::website::files::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/generations/list/0.1" => {
+            Some(crate::specs::vtc::website::generations::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/rollback/0.1" => {
+            Some(crate::specs::vtc::website::rollback::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/delete/0.1" => {
+            Some(crate::specs::webvh::sync::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/update/0.1" => {
+            Some(crate::specs::webvh::sync::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/publish/0.1" => {
+            Some(crate::specs::webvh::witness::publish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "witness")]
+        "https://trusttasks.org/spec/witness/session/0.1" => {
+            Some(crate::specs::witness::session::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "witness")]
+        "https://trusttasks.org/spec/witness/session/submit/0.1" => {
+            Some(crate::specs::witness::session::submit::v0_1::ERROR_CODES)
+        }
+        _ => None,
+    }
+}

@@ -1460,6 +1460,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::TOKEN_NOT_FOUND,
+    error_codes::TOKEN_EXPIRED,
+    error_codes::TOKEN_REVOKED,
+    error_codes::SCOPE_WIDENING_REFUSED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/refresh:tokenNotFound`
+    ///
+    /// The refreshToken does not refer to any session the auth service issued.
+    ///
+    /// Declared `retryable: false`.
+    pub const TOKEN_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/refresh:tokenNotFound",
+        retryable: false,
+    };
+    /// `auth/refresh:tokenExpired`
+    ///
+    /// The refreshToken's refreshExpiresIn has elapsed.
+    ///
+    /// Declared `retryable: false`.
+    pub const TOKEN_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/refresh:tokenExpired",
+        retryable: false,
+    };
+    /// `auth/refresh:tokenRevoked`
+    ///
+    /// The refreshToken was explicitly invalidated (typically via auth/revoke-session, or by a step-up event that rotated all session refresh tokens).
+    ///
+    /// Declared `retryable: false`.
+    pub const TOKEN_REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/refresh:tokenRevoked",
+        retryable: false,
+    };
+    /// `auth/refresh:scopeWideningRefused`
+    ///
+    /// The requested scope exceeds the original session's scope. Refresh MUST NOT broaden privilege.
+    ///
+    /// Declared `retryable: false`.
+    pub const SCOPE_WIDENING_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/refresh:scopeWideningRefused",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

@@ -1377,6 +1377,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::NOT_AWAITING_EVIDENCE,
+    error_codes::ALREADY_DECIDED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/join-requests/supplement:notFound`
+    ///
+    /// The applicant has no open request, or the named `requestId` is not theirs. Answered the same way for both, so that a caller cannot use this task to probe whether a given request id exists on this community.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/supplement:notFound",
+        retryable: false,
+    };
+    /// `vtc/join-requests/supplement:notAwaitingEvidence`
+    ///
+    /// The request is open, but the community has not asked this applicant for anything — it is queued for a decision the community owes. Retrying is futile until the community defers the request, which is why this is distinct from a transient failure.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AWAITING_EVIDENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/supplement:notAwaitingEvidence",
+        retryable: false,
+    };
+    /// `vtc/join-requests/supplement:alreadyDecided`
+    ///
+    /// The request has reached a terminal state — approved, rejected or withdrawn — so there is no open decision left to supplement. Distinct from `notFound` because the applicant is entitled to know the outcome of their own request, and because retrying will never change it.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_DECIDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/supplement:alreadyDecided",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

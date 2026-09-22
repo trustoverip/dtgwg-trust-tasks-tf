@@ -767,6 +767,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ALREADY_EXISTS,
+    error_codes::VISIBILITY_NOT_PERMITTED,
+    error_codes::NOT_AUTHORIZED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/create:alreadyExists`
+    ///
+    /// A room with that identifier is already registered with this host.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/create:alreadyExists",
+        retryable: false,
+    };
+    /// `rooms/create:visibilityNotPermitted`
+    ///
+    /// The host's governance does not permit rooms of this visibility.
+    ///
+    /// Declared `retryable: false`.
+    pub const VISIBILITY_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/create:visibilityNotPermitted",
+        retryable: false,
+    };
+    /// `rooms/create:notAuthorized`
+    ///
+    /// The caller may not create rooms on this host.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/create:notAuthorized",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

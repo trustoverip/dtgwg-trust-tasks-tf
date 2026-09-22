@@ -622,6 +622,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CREDENTIAL_INVALID,
+    error_codes::ISSUER_NOT_RECOGNISED,
+    error_codes::ROLE_NOT_MAPPED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/auth/recognise:credentialInvalid`
+    ///
+    /// The vec or vmc failed proof verification, was expired, or was revoked via credentialStatus.
+    ///
+    /// Declared `retryable: false`.
+    pub const CREDENTIAL_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/auth/recognise:credentialInvalid",
+        retryable: false,
+    };
+    /// `vtc/auth/recognise:issuerNotRecognised`
+    ///
+    /// The foreign issuer DID is not in this community's cross_community_roles policy.
+    ///
+    /// Declared `retryable: false`.
+    pub const ISSUER_NOT_RECOGNISED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/auth/recognise:issuerNotRecognised",
+        retryable: false,
+    };
+    /// `vtc/auth/recognise:roleNotMapped`
+    ///
+    /// The foreign role has no mapping to a local role under policy.
+    ///
+    /// Declared `retryable: false`.
+    pub const ROLE_NOT_MAPPED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/auth/recognise:roleNotMapped",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

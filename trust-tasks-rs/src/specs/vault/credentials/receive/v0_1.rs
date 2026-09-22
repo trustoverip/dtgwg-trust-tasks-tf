@@ -1264,6 +1264,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::VERIFICATION_FAILED,
+    error_codes::FORMAT_UNSUPPORTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/credentials/receive:verificationFailed`
+    ///
+    /// The credential's proof did not verify against the issuer key resolved from its DID. The credential is not stored. A consumer MUST NOT retry unchanged.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERIFICATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/credentials/receive:verificationFailed",
+        retryable: false,
+    };
+    /// `vault/credentials/receive:formatUnsupported`
+    ///
+    /// The maintainer does not implement the declared `format`. Distinguished from a verification failure so a consumer can tell "this maintainer cannot hold this credential" from "this credential is not valid".
+    ///
+    /// Declared `retryable: false`.
+    pub const FORMAT_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/credentials/receive:formatUnsupported",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

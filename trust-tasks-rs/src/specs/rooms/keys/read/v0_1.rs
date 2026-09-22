@@ -1754,6 +1754,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_A_MEMBER,
+    error_codes::HOST_UNREACHABLE,
+    error_codes::HOST_REFUSED,
+    error_codes::CANNOT_OPEN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/keys/read:notAMember`
+    ///
+    /// The recipient holds no group state for this room, so it has nothing to present and nothing to open with.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/read:notAMember",
+        retryable: false,
+    };
+    /// `rooms/keys/read:hostUnreachable`
+    ///
+    /// The named host could not be resolved, advertises no transport this recipient speaks, or did not answer.
+    ///
+    /// Declared `retryable: true`.
+    pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/read:hostUnreachable",
+        retryable: true,
+    };
+    /// `rooms/keys/read:hostRefused`
+    ///
+    /// The host answered and declined. Its own code and reason are carried in `details` — commonly that it does not serve this room, or that no record has this key.
+    ///
+    /// Declared `retryable: false`.
+    pub const HOST_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/read:hostRefused",
+        retryable: false,
+    };
+    /// `rooms/keys/read:cannotOpen`
+    ///
+    /// The record was fetched and its epoch key is not held. `details.epoch` names the epoch; `rooms/keys/backfill` is the repair.
+    ///
+    /// Declared `retryable: false`.
+    pub const CANNOT_OPEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/read:cannotOpen",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

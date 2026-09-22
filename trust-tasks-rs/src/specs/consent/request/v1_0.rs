@@ -1396,6 +1396,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NO_APPROVER,
+    error_codes::SUBJECT_INVALID,
+    error_codes::RATE_LIMITED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `consent/request:noApprover`
+    ///
+    /// No approver is configured for this platform/context, so consent cannot be routed to a human.
+    ///
+    /// Declared `retryable: false`.
+    pub const NO_APPROVER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/request:noApprover",
+        retryable: false,
+    };
+    /// `consent/request:subjectInvalid`
+    ///
+    /// The subject is malformed, or names an agent the VTA does not recognise.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/request:subjectInvalid",
+        retryable: false,
+    };
+    /// `consent/request:rateLimited`
+    ///
+    /// The bridge has exceeded the VTA's pending-consent budget.
+    ///
+    /// Declared `retryable: true`.
+    pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "consent/request:rateLimited",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

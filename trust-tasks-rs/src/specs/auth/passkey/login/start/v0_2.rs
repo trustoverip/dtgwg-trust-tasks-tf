@@ -1194,6 +1194,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_NOT_RECOGNIZED,
+    error_codes::NO_CREDENTIALS,
+    error_codes::RATE_LIMITED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/login/start:subjectNotRecognized`
+    ///
+    /// A named `subject` is not registered with this auth service.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_NOT_RECOGNIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/start:subjectNotRecognized",
+        retryable: false,
+    };
+    /// `auth/passkey/login/start:noCredentials`
+    ///
+    /// The named subject has no enrolled passkeys.
+    ///
+    /// Declared `retryable: false`.
+    pub const NO_CREDENTIALS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/start:noCredentials",
+        retryable: false,
+    };
+    /// `auth/passkey/login/start:rateLimited`
+    ///
+    /// The producer has exceeded the issuer's login-start budget.
+    ///
+    /// Declared `retryable: true`.
+    pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/start:rateLimited",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

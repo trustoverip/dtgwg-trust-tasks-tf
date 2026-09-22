@@ -843,6 +843,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::TTL_TOO_LONG];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/admin/invites/create:ttlTooLong`
+    ///
+    /// The requested `ttlSeconds` exceeds the 24-hour maximum.
+    ///
+    /// Declared `retryable: false`.
+    pub const TTL_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/admin/invites/create:ttlTooLong",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

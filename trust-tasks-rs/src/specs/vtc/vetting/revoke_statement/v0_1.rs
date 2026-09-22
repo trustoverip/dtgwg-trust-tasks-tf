@@ -663,6 +663,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_MEMBER,
+    error_codes::ISSUER_MISMATCH,
+    error_codes::DIGEST_MISMATCH,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/vetting/revoke-statement:notMember`
+    ///
+    /// The sender is not, and has never been, a member of this community, so cannot be the issuer of a statement that counts here.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/vetting/revoke-statement:notMember",
+        retryable: false,
+    };
+    /// `vtc/vetting/revoke-statement:issuerMismatch`
+    ///
+    /// The community holds a statement with this id, and its issuer is not the sender. Only a statement's issuer can withdraw it.
+    ///
+    /// Declared `retryable: false`.
+    pub const ISSUER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/vetting/revoke-statement:issuerMismatch",
+        retryable: false,
+    };
+    /// `vtc/vetting/revoke-statement:digestMismatch`
+    ///
+    /// The community holds a statement with this id whose digest differs from the one in the notice.
+    ///
+    /// Declared `retryable: false`.
+    pub const DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/vetting/revoke-statement:digestMismatch",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

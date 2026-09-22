@@ -1628,6 +1628,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_UNKNOWN,
+    error_codes::METHOD_UNSUPPORTED,
+    error_codes::USER_DECLINED,
+    error_codes::RATE_LIMITED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/step-up/approve-request:subjectUnknown`
+    ///
+    /// The approver does not speak for the named subject.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-request:subjectUnknown",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-request:methodUnsupported`
+    ///
+    /// The approver cannot deliver an approve-response (e.g. the wallet has no key for the subject, or doesn't support the requested AAL).
+    ///
+    /// Declared `retryable: false`.
+    pub const METHOD_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-request:methodUnsupported",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-request:userDeclined`
+    ///
+    /// The user reviewed the request and declined consent.
+    ///
+    /// Declared `retryable: false`.
+    pub const USER_DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-request:userDeclined",
+        retryable: false,
+    };
+    /// `auth/step-up/approve-request:rateLimited`
+    ///
+    /// The relying party has exceeded the approver's request budget.
+    ///
+    /// Declared `retryable: true`.
+    pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/step-up/approve-request:rateLimited",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

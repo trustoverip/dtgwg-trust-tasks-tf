@@ -2398,3 +2398,55 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNRESOLVED_REFERENCE,
+    error_codes::PINNED_VERSION_UNAVAILABLE,
+    error_codes::DUPLICATE_SLOT,
+    error_codes::VERSION_CONFLICT,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/profile/put:unresolvedReference`
+    ///
+    /// An entry references an attribute the pool does not hold. The details name the offending `attributeId`s. The profile is not written — a profile with a dangling reference would silently disclose less than the holder composed.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNRESOLVED_REFERENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/put:unresolvedReference",
+        retryable: false,
+    };
+    /// `persona/profile/put:pinnedVersionUnavailable`
+    ///
+    /// An entry pins a version of an attribute the maintainer no longer retains. The details name the attribute and the versions available, so the caller can repin rather than guess.
+    ///
+    /// Declared `retryable: false`.
+    pub const PINNED_VERSION_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/put:pinnedVersionUnavailable",
+        retryable: false,
+    };
+    /// `persona/profile/put:duplicateSlot`
+    ///
+    /// Two entries carry the same `slot`. The details name the slot. A slot answers one question with one entry, so the profile is not written.
+    ///
+    /// Declared `retryable: false`.
+    pub const DUPLICATE_SLOT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/put:duplicateSlot",
+        retryable: false,
+    };
+    /// `persona/profile/put:versionConflict`
+    ///
+    /// The `expectedVersion` precondition failed. Details carry the maintainer's current version.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/put:versionConflict",
+        retryable: false,
+    };
+}

@@ -489,6 +489,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::POLICY_UNSATISFIED,
+    error_codes::PRESENTATION_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/join-requests/submit:policyUnsatisfied`
+    ///
+    /// The presentation did not satisfy the community's active join policy.
+    ///
+    /// Declared `retryable: false`.
+    pub const POLICY_UNSATISFIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/submit:policyUnsatisfied",
+        retryable: false,
+    };
+    /// `vtc/join-requests/submit:presentationInvalid`
+    ///
+    /// The Verifiable Presentation failed verification, or its holder did not match the proof signer.
+    ///
+    /// Declared `retryable: false`.
+    pub const PRESENTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/submit:presentationInvalid",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

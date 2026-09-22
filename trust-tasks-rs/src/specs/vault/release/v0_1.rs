@@ -2535,6 +2535,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::STEP_UP_REQUIRED,
+    error_codes::POLICY_DENY,
+    error_codes::ENVELOPE_UNSUPPORTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/release:notFound`
+    ///
+    /// No entry with this id exists in the consumer's scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/release:notFound",
+        retryable: false,
+    };
+    /// `vault/release:stepUpRequired`
+    ///
+    /// Policy demands a step-up proof. Same shape as vault/proxy-login:stepUpRequired.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/release:stepUpRequired",
+        retryable: true,
+    };
+    /// `vault/release:policyDeny`
+    ///
+    /// Policy refuses to release this secret to this consumer.
+    ///
+    /// Declared `retryable: false`.
+    pub const POLICY_DENY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/release:policyDeny",
+        retryable: false,
+    };
+    /// `vault/release:envelopeUnsupported`
+    ///
+    /// The consumer's published recipient key advertises envelope kinds the maintainer does not implement (e.g. consumer requests `tsp-message` against a maintainer that only emits `didcomm-authcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/release:envelopeUnsupported",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

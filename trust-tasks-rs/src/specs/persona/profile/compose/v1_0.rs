@@ -2290,3 +2290,45 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNRESOLVED_REFERENCE,
+    error_codes::DUPLICATE_SLOT,
+    error_codes::LABEL_WITHOUT_PERSONA,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/profile/compose:unresolvedReference`
+    ///
+    /// A held claim names an attribute the pool does not hold. The details name the offending `attributeId`s. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNRESOLVED_REFERENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/compose:unresolvedReference",
+        retryable: false,
+    };
+    /// `persona/profile/compose:duplicateSlot`
+    ///
+    /// Two claims carry the same `slot`. The details name the slot. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const DUPLICATE_SLOT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/compose:duplicateSlot",
+        retryable: false,
+    };
+    /// `persona/profile/compose:labelWithoutPersona`
+    ///
+    /// A `label` was given without a `personaDid`. A label names the face to the context it is worn in, and a face composed without being worn has no context to name it to. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const LABEL_WITHOUT_PERSONA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/compose:labelWithoutPersona",
+        retryable: false,
+    };
+}

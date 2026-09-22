@@ -1409,6 +1409,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_SUBSCRIPTION,
+    error_codes::TOO_MANY_SUBSCRIPTIONS,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `messaging/monitor/subscribe:unknownSubscription`
+    ///
+    /// The request names a `subscriptionId` the mediator does not hold for this requester — it never existed, has expired, was ended, or belongs to someone else. Omit `subscriptionId` to open a new subscription.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_SUBSCRIPTION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/monitor/subscribe:unknownSubscription",
+        retryable: false,
+    };
+    /// `messaging/monitor/subscribe:tooManySubscriptions`
+    ///
+    /// The requester already holds the maximum number of concurrent subscriptions the mediator allows. End one, or wait for one to expire.
+    ///
+    /// Declared `retryable: true`.
+    pub const TOO_MANY_SUBSCRIPTIONS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "messaging/monitor/subscribe:tooManySubscriptions",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

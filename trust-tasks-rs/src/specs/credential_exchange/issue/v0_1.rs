@@ -282,6 +282,38 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Issuer to holder: the issued credential. Exactly one of `credential_response` (cleartext, known holder over an authenticated channel) or `sealed` (an armored sealed-transfer bundle, for a secret-bearing credential or an unknown holder).\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"required\": [\n          \"sealed\"\n        ]\n      },\n      \"required\": [\n        \"credential_response\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"credential_response\"\n        ]\n      },\n      \"required\": [\n        \"sealed\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"credential_response\": {\n      \"description\": \"A cleartext OID4VCI Credential Response, carried verbatim. Format-agnostic: the `credential` within is a JSON string (SD-JWT-VC compact serialization) or a JSON object (a W3C Data-Integrity VC with its proof), and the holder infers the format from the value's shape rather than a separate discriminator. snake_case member names are OID4VCI's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"sealed\": {\n      \"description\": \"An armored sealed-transfer bundle encrypted to the holder. Used when the credential is secret-bearing or the holder is not yet known (invite / air-gap). Only the holder can open it, and an out-of-band digest pins integrity — there is no trust-on-first-use.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Credential Exchange Issue — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNOPENABLE_BUNDLE,
+    error_codes::UNSUPPORTED_FORMAT,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `credential-exchange/issue:unopenableBundle`
+    ///
+    /// The sealed bundle could not be opened, or its out-of-band digest did not match.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNOPENABLE_BUNDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/issue:unopenableBundle",
+        retryable: false,
+    };
+    /// `credential-exchange/issue:unsupportedFormat`
+    ///
+    /// The holder cannot process the delivered credential's format.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNSUPPORTED_FORMAT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "credential-exchange/issue:unsupportedFormat",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

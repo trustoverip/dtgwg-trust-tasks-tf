@@ -879,6 +879,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_AUTHORIZED,
+    error_codes::NON_SEQUENTIAL,
+    error_codes::CHAIN_TOO_DEEP,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/epoch/mint:notAuthorized`
+    ///
+    /// The presentation does not confer `admin` at this room's scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/epoch/mint:notAuthorized",
+        retryable: false,
+    };
+    /// `rooms/epoch/mint:nonSequential`
+    ///
+    /// The epoch is not exactly one greater than the current one.
+    ///
+    /// Declared `retryable: false`.
+    pub const NON_SEQUENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/epoch/mint:nonSequential",
+        retryable: false,
+    };
+    /// `rooms/epoch/mint:chainTooDeep`
+    ///
+    /// The authority chain exceeds the maximum of 8 links.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/epoch/mint:chainTooDeep",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

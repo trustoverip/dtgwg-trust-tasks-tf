@@ -766,6 +766,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::NOT_EXPORTABLE,
+    error_codes::NEVER_EXPORTABLE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `keys:notFound`
+    ///
+    /// No key record on this custodian carries the named `keyId`.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "keys:notFound",
+        retryable: false,
+    };
+    /// `keys/export-secret:notExportable`
+    ///
+    /// The key exists and the caller is entitled to it, but it is marked as not releasable. A refusal about the key rather than the caller — retrying with more authority does not change it, though a party with authority beyond the one that imposed the restriction can lift it first.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_EXPORTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "keys/export-secret:notExportable",
+        retryable: false,
+    };
+    /// `keys/export-secret:neverExportable`
+    ///
+    /// The key's private half is never released by this custodian under any circumstances or any authority — key material that exists only inside it, and is usable but not extractable. Distinct from notExportable, which names a decision that can be reversed; this one names a property that cannot.
+    ///
+    /// Declared `retryable: false`.
+    pub const NEVER_EXPORTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "keys/export-secret:neverExportable",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

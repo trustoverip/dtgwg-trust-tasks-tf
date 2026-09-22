@@ -987,6 +987,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_REGISTERED,
+    error_codes::INVALID_HANDLE,
+    error_codes::GATEWAY_UNREACHABLE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `device/set-wake:notRegistered`
+    ///
+    /// The issuer's DID has no DeviceBinding. The device MUST complete device/register before setting a wake channel.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/set-wake:notRegistered",
+        retryable: false,
+    };
+    /// `device/set-wake:invalidHandle`
+    ///
+    /// The supplied WakeHandle is malformed, or the named gateway rejected it as unknown/expired when the VTA attempted to provision the allowlist.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_HANDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/set-wake:invalidHandle",
+        retryable: false,
+    };
+    /// `device/set-wake:gatewayUnreachable`
+    ///
+    /// The VTA could not reach or authenticate to the named push gateway to provision the trigger allowlist. The handle is not recorded; the device SHOULD retry.
+    ///
+    /// Declared `retryable: true`.
+    pub const GATEWAY_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "device/set-wake:gatewayUnreachable",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

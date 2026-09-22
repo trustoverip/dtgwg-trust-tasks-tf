@@ -3680,6 +3680,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CONTEXT_NOT_FOUND,
+    error_codes::FILTER_CONFLICT,
+    error_codes::CURSOR_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/list:contextNotFound`
+    ///
+    /// The `contextId` filter does not match any context the maintainer knows about. Distinguished from an empty result so consumers can tell "no entries" from "wrong context id".
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/list:contextNotFound",
+        retryable: false,
+    };
+    /// `vault/list:filterConflict`
+    ///
+    /// The supplied filter combination is invalid (e.g. both `usedSince` and `neverUsed` set).
+    ///
+    /// Declared `retryable: false`.
+    pub const FILTER_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/list:filterConflict",
+        retryable: false,
+    };
+    /// `vault/list:cursorInvalid`
+    ///
+    /// The supplied `cursor` cannot be honoured (expired, malformed, or issued by a maintainer state the current maintainer no longer recognises). Consumers SHOULD retry from the first page without a cursor.
+    ///
+    /// Declared `retryable: true`.
+    pub const CURSOR_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/list:cursorInvalid",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

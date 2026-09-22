@@ -1031,6 +1031,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::FACE_ALREADY_PLACED,
+    error_codes::UNRESOLVED_REFERENCE,
+    error_codes::VERSION_CONFLICT,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/facet/put:faceAlreadyPlaced`
+    ///
+    /// One or more of the listed `faceIds` already belongs to a different facet. The details name each offending profile and the facet currently holding it, so a producer can offer to move it rather than guessing. The facet is not written.
+    ///
+    /// Declared `retryable: false`.
+    pub const FACE_ALREADY_PLACED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/facet/put:faceAlreadyPlaced",
+        retryable: false,
+    };
+    /// `persona/facet/put:unresolvedReference`
+    ///
+    /// A listed `faceId` or `attributeId` names a record the holder does not hold. The details name them. The facet is not written — an arrangement referring to something that never existed is a typo, and accepting it silently makes the typo permanent.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNRESOLVED_REFERENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/facet/put:unresolvedReference",
+        retryable: false,
+    };
+    /// `persona/facet/put:versionConflict`
+    ///
+    /// The `expectedVersion` precondition failed. Details carry the maintainer's current version.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/facet/put:versionConflict",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

@@ -2478,6 +2478,88 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::STEP_UP_REQUIRED,
+    error_codes::TARGET_UNREACHABLE,
+    error_codes::CREDENTIAL_REJECTED,
+    error_codes::NOT_PROXYABLE,
+    error_codes::POLICY_DENY,
+    error_codes::ENVELOPE_UNSUPPORTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vault/proxy-login:notFound`
+    ///
+    /// No entry with this id exists in the consumer's scope.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:notFound",
+        retryable: false,
+    };
+    /// `vault/proxy-login:stepUpRequired`
+    ///
+    /// Policy demands a step-up proof before the login can proceed. Consumer retries with `stepUpProof` populated.
+    ///
+    /// Declared `retryable: true`.
+    pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:stepUpRequired",
+        retryable: true,
+    };
+    /// `vault/proxy-login:targetUnreachable`
+    ///
+    /// The maintainer attempted the login at the third-party site but the site is unreachable, rate-limiting, or returned an unexpected response. Consumer SHOULD retry with backoff.
+    ///
+    /// Declared `retryable: true`.
+    pub const TARGET_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:targetUnreachable",
+        retryable: true,
+    };
+    /// `vault/proxy-login:credentialRejected`
+    ///
+    /// The maintainer attempted the login but the third party rejected the credential (wrong password, expired token, revoked passkey). Consumer SHOULD prompt the user to update the entry via vault/upsert.
+    ///
+    /// Declared `retryable: false`.
+    pub const CREDENTIAL_REJECTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:credentialRejected",
+        retryable: false,
+    };
+    /// `vault/proxy-login:notProxyable`
+    ///
+    /// This entry cannot be proxy-logged-in (e.g. the site requires browser-bound channel binding). Consumer falls back to vault/release for a fill flow.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_PROXYABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:notProxyable",
+        retryable: false,
+    };
+    /// `vault/proxy-login:policyDeny`
+    ///
+    /// Policy denies proxy-login for this consumer + entry combination outright (no step-up will satisfy it).
+    ///
+    /// Declared `retryable: false`.
+    pub const POLICY_DENY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:policyDeny",
+        retryable: false,
+    };
+    /// `vault/proxy-login:envelopeUnsupported`
+    ///
+    /// The maintainer cannot emit a `sealedSessionBlob` in any envelope kind the consumer accepts. Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
+    ///
+    /// Declared `retryable: false`.
+    pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vault/proxy-login:envelopeUnsupported",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

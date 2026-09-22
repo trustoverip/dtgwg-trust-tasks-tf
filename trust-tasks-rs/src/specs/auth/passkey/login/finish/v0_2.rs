@@ -1905,6 +1905,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::AUTH_NOT_FOUND,
+    error_codes::AUTH_EXPIRED,
+    error_codes::CREDENTIAL_UNKNOWN,
+    error_codes::ASSERTION_INVALID,
+    error_codes::STEP_UP_SESSION_NOT_FOUND,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/login/finish:authNotFound`
+    ///
+    /// The `authId` does not refer to any active login ceremony.
+    ///
+    /// Declared `retryable: false`.
+    pub const AUTH_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/finish:authNotFound",
+        retryable: false,
+    };
+    /// `auth/passkey/login/finish:authExpired`
+    ///
+    /// The login's start-time expiry has elapsed.
+    ///
+    /// Declared `retryable: true`.
+    pub const AUTH_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/finish:authExpired",
+        retryable: true,
+    };
+    /// `auth/passkey/login/finish:credentialUnknown`
+    ///
+    /// The asserted credential id is not registered with this auth service.
+    ///
+    /// Declared `retryable: false`.
+    pub const CREDENTIAL_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/finish:credentialUnknown",
+        retryable: false,
+    };
+    /// `auth/passkey/login/finish:assertionInvalid`
+    ///
+    /// The WebAuthn assertion failed verification. `details.reason` carries a machine-readable hint.
+    ///
+    /// Declared `retryable: false`.
+    pub const ASSERTION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/finish:assertionInvalid",
+        retryable: false,
+    };
+    /// `auth/passkey/login/finish:stepUpSessionNotFound`
+    ///
+    /// A step-up finish referenced a session id that the consumer does not hold or that has expired.
+    ///
+    /// Declared `retryable: false`.
+    pub const STEP_UP_SESSION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/login/finish:stepUpSessionNotFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

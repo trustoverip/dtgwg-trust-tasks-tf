@@ -838,6 +838,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_DOMAIN,
+    error_codes::IS_DEFAULT,
+    error_codes::ALREADY_PURGED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management:unknownDomain`
+    ///
+    /// The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknownDomain",
+        retryable: false,
+    };
+    /// `did-management/domain/set-state:isDefault`
+    ///
+    /// `state: disabled` was requested for the system default domain; the default must first be moved elsewhere via `domain/set-default`.
+    ///
+    /// Declared `retryable: false`.
+    pub const IS_DEFAULT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/domain/set-state:isDefault",
+        retryable: false,
+    };
+    /// `did-management/domain/set-state:alreadyPurged`
+    ///
+    /// `state: active` was requested for a domain already purged after its grace period expired; it can no longer be re-activated and must be recreated via `domain/create`.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_PURGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/domain/set-state:alreadyPurged",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

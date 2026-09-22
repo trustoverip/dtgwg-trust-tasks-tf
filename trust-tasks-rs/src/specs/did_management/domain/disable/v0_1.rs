@@ -733,6 +733,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::UNKNOWN_DOMAIN,
+    error_codes::IS_DEFAULT,
+    error_codes::ALREADY_DISABLED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management:unknown_domain`
+    ///
+    /// The submitted `name` does not match a known hosting domain. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknown_domain",
+        retryable: false,
+    };
+    /// `did-management/domain/disable:is_default`
+    ///
+    /// The domain is the system default; cannot disable until the default is moved elsewhere via `domain/set-default`.
+    ///
+    /// Declared `retryable: false`.
+    pub const IS_DEFAULT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/domain/disable:is_default",
+        retryable: false,
+    };
+    /// `did-management/domain/disable:already_disabled`
+    ///
+    /// The domain is already in the disabled state.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/domain/disable:already_disabled",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

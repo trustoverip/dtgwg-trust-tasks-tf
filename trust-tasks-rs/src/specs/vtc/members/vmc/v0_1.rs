@@ -800,6 +800,78 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::SUBJECT_MISMATCH,
+    error_codes::NOT_A_MEMBER,
+    error_codes::INVALID_CREDENTIAL,
+    error_codes::REQUEST_NOT_FOUND,
+    error_codes::REQUEST_NOT_APPROVED,
+    error_codes::REQUEST_APPLICANT_MISMATCH,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/members/vmc:subjectMismatch`
+    ///
+    /// The credential's `credentialSubject.id` is not this community's DID.
+    ///
+    /// Declared `retryable: false`.
+    pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/vmc:subjectMismatch",
+        retryable: false,
+    };
+    /// `vtc/members/vmc:notAMember`
+    ///
+    /// The sender is not an active member of this community.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/vmc:notAMember",
+        retryable: false,
+    };
+    /// `vtc/members/vmc:invalidCredential`
+    ///
+    /// The credential does not verify, or is not a MembershipCredential.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/vmc:invalidCredential",
+        retryable: false,
+    };
+    /// `vtc/members/vmc:requestNotFound`
+    ///
+    /// `requestId` was supplied but no join request with that id exists.
+    ///
+    /// Declared `retryable: false`.
+    pub const REQUEST_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/vmc:requestNotFound",
+        retryable: false,
+    };
+    /// `vtc/members/vmc:requestNotApproved`
+    ///
+    /// `requestId` names a join request that is not in the approved state, so there is nothing to reciprocate.
+    ///
+    /// Declared `retryable: false`.
+    pub const REQUEST_NOT_APPROVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/vmc:requestNotApproved",
+        retryable: false,
+    };
+    /// `vtc/members/vmc:requestApplicantMismatch`
+    ///
+    /// `requestId` names a join request whose applicant is not the delivering member.
+    ///
+    /// Declared `retryable: false`.
+    pub const REQUEST_APPLICANT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/vmc:requestApplicantMismatch",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

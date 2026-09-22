@@ -985,6 +985,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::REVOCATION_NOT_FOUND,
+    error_codes::REVOCATION_EXPIRED,
+    error_codes::USER_VERIFICATION_FAILED,
+    error_codes::LAST_CREDENTIAL,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/revoke/finish:revocationNotFound`
+    ///
+    /// No pending revocation with this id, or it belongs to a different subject.
+    ///
+    /// Declared `retryable: false`.
+    pub const REVOCATION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/finish:revocationNotFound",
+        retryable: false,
+    };
+    /// `auth/passkey/revoke/finish:revocationExpired`
+    ///
+    /// The revocationId outlived its window. Start a new ceremony.
+    ///
+    /// Declared `retryable: true`.
+    pub const REVOCATION_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/finish:revocationExpired",
+        retryable: true,
+    };
+    /// `auth/passkey/revoke/finish:userVerificationFailed`
+    ///
+    /// The assertion did not verify, did not match the challenge bound at start, or did not carry the UV flag. Deliberately one code for all three — see Security & Privacy.
+    ///
+    /// Declared `retryable: true`.
+    pub const USER_VERIFICATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/finish:userVerificationFailed",
+        retryable: true,
+    };
+    /// `auth/passkey/revoke/finish:lastCredential`
+    ///
+    /// Re-checked at commit time and the credential is now the subject's last, because another revocation completed in between. `details.remaining` MAY carry the count.
+    ///
+    /// Declared `retryable: false`.
+    pub const LAST_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/revoke/finish:lastCredential",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

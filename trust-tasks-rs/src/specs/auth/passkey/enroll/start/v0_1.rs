@@ -2209,6 +2209,38 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::MAX_CREDENTIALS_REACHED,
+    error_codes::ENROLLMENT_NOT_SUPPORTED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `auth/passkey/enroll/start:maxCredentialsReached`
+    ///
+    /// The subject already has the maximum number of passkeys this auth service is configured to bind. `details.limit` MAY carry the cap.
+    ///
+    /// Declared `retryable: false`.
+    pub const MAX_CREDENTIALS_REACHED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/enroll/start:maxCredentialsReached",
+        retryable: false,
+    };
+    /// `auth/passkey/enroll/start:enrollmentNotSupported`
+    ///
+    /// This auth service does not accept passkey enrollment (for example, a deployment that mandates an external IdP).
+    ///
+    /// Declared `retryable: false`.
+    pub const ENROLLMENT_NOT_SUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "auth/passkey/enroll/start:enrollmentNotSupported",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

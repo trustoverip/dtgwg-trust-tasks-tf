@@ -1417,3 +1417,65 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::PROFILE_NOT_FOUND,
+    error_codes::CONTEXT_NOT_FOUND,
+    error_codes::VERSION_CONFLICT,
+    error_codes::PROFILE_RETIRED,
+    error_codes::UNTIL_NOT_FUTURE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/binding/set:profileNotFound`
+    ///
+    /// The named profile does not exist. The binding is not written; a binding to a missing profile would present nothing while appearing configured.
+    ///
+    /// Declared `retryable: false`.
+    pub const PROFILE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/binding/set:profileNotFound",
+        retryable: false,
+    };
+    /// `persona/binding/set:contextNotFound`
+    ///
+    /// OPTIONAL diagnostic for a maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it". Where it cannot, the framework's standard permissionDenied is the conforming answer to both.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/binding/set:contextNotFound",
+        retryable: false,
+    };
+    /// `persona/binding/set:versionConflict`
+    ///
+    /// The expectedVersion precondition failed.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/binding/set:versionConflict",
+        retryable: false,
+    };
+    /// `persona/binding/set:profileRetired`
+    ///
+    /// The named face is retired. It is not worn until persona/profile/reinstate — a retired face is one the holder has stopped being, and binding it back by accident would undo that.
+    ///
+    /// Declared `retryable: false`.
+    pub const PROFILE_RETIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/binding/set:profileRetired",
+        retryable: false,
+    };
+    /// `persona/binding/set:untilNotFuture`
+    ///
+    /// `until` is not in the future, or accompanies a null `profileId`. Nothing is written.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNTIL_NOT_FUTURE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/binding/set:untilNotFuture",
+        retryable: false,
+    };
+}

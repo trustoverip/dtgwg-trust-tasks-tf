@@ -1430,6 +1430,58 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::CONTEXT_NOT_FOUND,
+    error_codes::DUPLICATE_KEY,
+    error_codes::ATOMIC_BATCH_REJECTED,
+    error_codes::BATCH_TOO_LARGE,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/app-state:contextNotFound`
+    ///
+    /// OPTIONAL diagnostic, for a maintainer whose authorization model can tell "no such context" from "not permitted to reach it". Where it cannot — an ACL that enumerates the contexts a caller may act in answers both the same way — the framework's standard `permissionDenied` (SPEC §8.3) is the conforming answer to both, and this code is never emitted. Refusing an unauthorized caller is NOT this code.
+    ///
+    /// Declared `retryable: false`.
+    pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/app-state:contextNotFound",
+        retryable: false,
+    };
+    /// `vta/app-state/put-many:duplicateKey`
+    ///
+    /// Two writes in the batch name the same key. Refused rather than serialised, because their relative order is undefined and any choice the maintainer made would be arbitrary.
+    ///
+    /// Declared `retryable: false`.
+    pub const DUPLICATE_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/app-state/put-many:duplicateKey",
+        retryable: false,
+    };
+    /// `vta/app-state/put-many:atomicBatchRejected`
+    ///
+    /// An `atomic` batch was not applied because at least one write failed its precondition or its size check. Nothing was written. The details carry the per-record outcomes, so the caller learns which writes failed and which were merely skipped.
+    ///
+    /// Declared `retryable: false`.
+    pub const ATOMIC_BATCH_REJECTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/app-state/put-many:atomicBatchRejected",
+        retryable: false,
+    };
+    /// `vta/app-state/put-many:batchTooLarge`
+    ///
+    /// The batch's aggregate size exceeds what the maintainer accepts in one request, independently of whether any single value is within the per-record cap. The caller must split the batch.
+    ///
+    /// Declared `retryable: false`.
+    pub const BATCH_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/app-state/put-many:batchTooLarge",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

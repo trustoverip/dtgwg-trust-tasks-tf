@@ -1022,6 +1022,68 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::PATH_TAKEN,
+    error_codes::INVALID_LOG,
+    error_codes::HOST_MISMATCH,
+    error_codes::INVALID_PATH,
+    error_codes::UNKNOWN_DOMAIN,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `did-management/did/register:pathTaken`
+    ///
+    /// The requested path is already reserved by a different owner and `force` was not set (or the caller lacks authority to force-replace).
+    ///
+    /// Declared `retryable: false`.
+    pub const PATH_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/did/register:pathTaken",
+        retryable: false,
+    };
+    /// `did-management/did/register:invalidLog`
+    ///
+    /// The `didData` payload failed structural or cryptographic-proof validation for the declared `method`.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_LOG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/did/register:invalidLog",
+        retryable: false,
+    };
+    /// `did-management/did/register:hostMismatch`
+    ///
+    /// The host segment embedded in the log's DID identifier does not match this hosting service or any configured hosting domain.
+    ///
+    /// Declared `retryable: false`.
+    pub const HOST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/did/register:hostMismatch",
+        retryable: false,
+    };
+    /// `did-management/did/register:invalidPath`
+    ///
+    /// The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots). Mirrors `did-management/did/check-name:invalidPath` for the atomic register flow.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_PATH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management/did/register:invalidPath",
+        retryable: false,
+    };
+    /// `did-management:unknownDomain`
+    ///
+    /// The submitted `domain` is not a known hosting domain on this consumer. See [the category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
+    ///
+    /// Declared `retryable: false`.
+    pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "did-management:unknownDomain",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

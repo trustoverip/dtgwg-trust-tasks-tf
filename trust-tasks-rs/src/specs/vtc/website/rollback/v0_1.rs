@@ -522,6 +522,36 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_MANAGED, error_codes::GENERATION_NOT_FOUND];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/website/rollback:notManaged`
+    ///
+    /// The website is in live mode, which has no generations to roll back to. Managed mode only.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_MANAGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/website/rollback:notManaged",
+        retryable: false,
+    };
+    /// `vtc/website/rollback:generationNotFound`
+    ///
+    /// No generation with the supplied label exists.
+    ///
+    /// Declared `retryable: false`.
+    pub const GENERATION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/website/rollback:generationNotFound",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

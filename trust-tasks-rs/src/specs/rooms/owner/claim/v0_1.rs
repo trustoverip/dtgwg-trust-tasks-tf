@@ -634,3 +634,55 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_NOMINATED,
+    error_codes::ROOM_STILL_LIVE,
+    error_codes::NOT_A_MEMBER,
+    error_codes::NOT_AUTHORIZED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `rooms/owner/claim:notNominated`
+    ///
+    /// The nomination is missing, invalid, not issued by this room, or does not name the claimant.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_NOMINATED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/claim:notNominated",
+        retryable: false,
+    };
+    /// `rooms/owner/claim:roomStillLive`
+    ///
+    /// The room has not been dormant long enough to be claimed. The owner is renewing it.
+    ///
+    /// Declared `retryable: false`.
+    pub const ROOM_STILL_LIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/claim:roomStillLive",
+        retryable: false,
+    };
+    /// `rooms/owner/claim:notAMember`
+    ///
+    /// The claimant presented no valid membership credential for this room, and so could not renew what they are claiming.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/claim:notAMember",
+        retryable: false,
+    };
+    /// `rooms/owner/claim:notAuthorized`
+    ///
+    /// The presentation does not verify against this room, or its chain does not reach it.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/owner/claim:notAuthorized",
+        retryable: false,
+    };
+}

@@ -779,3 +779,33 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::BOUND, error_codes::VERSION_CONFLICT];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `persona/profile/delete:bound`
+    ///
+    /// A persona is still bound to this profile and `unbind` was not set. The details name the bound persona DIDs so the holder can decide between rebinding them and unbinding.
+    ///
+    /// Declared `retryable: false`.
+    pub const BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/delete:bound",
+        retryable: false,
+    };
+    /// `persona/profile/delete:versionConflict`
+    ///
+    /// The expectedVersion precondition failed.
+    ///
+    /// Declared `retryable: false`.
+    pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "persona/profile/delete:versionConflict",
+        retryable: false,
+    };
+}

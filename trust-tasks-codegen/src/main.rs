@@ -387,6 +387,140 @@ fn read_member_required_flag(spec_md_path: &Path, member: &str) -> Result<bool> 
     }))
 }
 
+/// One `errorCodes` declaration from a spec's front matter (SPEC §7.3 item 9).
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ErrorCodeDecl {
+    /// Fully qualified wire form, `<namespace>:<local>`.
+    code: String,
+    /// The declaration's `meaning`, rendered as the constant's rustdoc.
+    meaning: String,
+    /// The declared `retryable`.
+    retryable: bool,
+    /// The constant's identifier inside the generated `error_codes` module —
+    /// the local part in SCREAMING_SNAKE_CASE.
+    ident: String,
+}
+
+/// Read the `errorCodes` a spec's front matter declares (SPEC §7.3 item 9).
+///
+/// Returns an empty Vec when the field is absent or empty, or the file is
+/// missing — "declares no task-specific codes" is the same answer in each case.
+fn read_error_codes(spec: &Spec) -> Result<Vec<ErrorCodeDecl>> {
+    let spec_md_path = spec.spec_md_path();
+    if !spec_md_path.exists() {
+        return Ok(Vec::new());
+    }
+    let text = fs::read_to_string(&spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+    let mut lines = text.lines();
+    if lines.next().unwrap_or("").trim() != "---" {
+        return Ok(Vec::new());
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    error_code_decls(&spec.slug, &value)
+        .with_context(|| format!("errorCodes in {}", spec_md_path.display()))
+}
+
+/// The `errorCodes` declarations in parsed front matter `value`, for the spec
+/// whose slug is `slug`.
+///
+/// The build (`scripts/build-registry.mjs`) already validates these against
+/// `spec.meta.schema.json` and the §8.5 namespace rule. They are re-checked
+/// here because what this function emits is a *constant a consumer puts on the
+/// wire*: `DeclaredErrorCode` converts to a `TrustTaskCode` infallibly on the
+/// strength of it, so a code that does not parse, or a namespace outside the
+/// slug's family, must stop generation rather than reach a library.
+fn error_code_decls(slug: &str, value: &serde_yaml::Value) -> Result<Vec<ErrorCodeDecl>> {
+    use heck::ToShoutySnakeCase;
+
+    let Some(entries) = value.get("errorCodes") else {
+        return Ok(Vec::new());
+    };
+    if entries.is_null() {
+        return Ok(Vec::new());
+    }
+    let entries = entries
+        .as_sequence()
+        .ok_or_else(|| anyhow!("`errorCodes` is not a list"))?;
+
+    // The slug itself plus each proper path prefix of it (§8.5 rule 2).
+    let permitted: Vec<&str> = slug
+        .match_indices('/')
+        .map(|(i, _)| &slug[..i])
+        .chain(std::iter::once(slug))
+        .collect();
+
+    let mut out: Vec<ErrorCodeDecl> = Vec::with_capacity(entries.len());
+    for entry in entries {
+        let code = entry
+            .get("code")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| anyhow!("an `errorCodes` entry has no string `code`"))?;
+        let retryable = entry
+            .get("retryable")
+            .and_then(|v| v.as_bool())
+            .ok_or_else(|| anyhow!("errorCodes[{code:?}] has no boolean `retryable`"))?;
+        let meaning = entry
+            .get("meaning")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .lines()
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+            .trim()
+            .to_string();
+
+        let (namespace, local) = code
+            .split_once(':')
+            .ok_or_else(|| anyhow!("errorCodes[{code:?}] has no `:` (SPEC §8.5)"))?;
+        if !permitted.contains(&namespace) {
+            return Err(anyhow!(
+                "errorCodes[{code:?}] is namespaced {namespace:?}, which is neither the slug \
+                 {slug:?} nor a path prefix of it (SPEC §8.5)"
+            ));
+        }
+        let mut chars = local.chars();
+        let well_formed = chars.next().is_some_and(|c| c.is_ascii_lowercase())
+            && chars.all(|c| c.is_ascii_alphanumeric() || c == '_');
+        if !well_formed {
+            return Err(anyhow!(
+                "errorCodes[{code:?}] has a local part {local:?} outside the \
+                 `[a-z][a-zA-Z0-9_]*` grammar of spec.meta.schema.json"
+            ));
+        }
+
+        let ident = local.to_shouty_snake_case();
+        // Two declarations whose local parts differ only in casing
+        // (`notFound`, `not_found`), or that share a local part under
+        // different namespaces (`keys:notFound`, `keys/revoke:notFound`), would
+        // claim one constant. Refuse rather than pick one silently.
+        if let Some(clash) = out.iter().find(|d| d.ident == ident) {
+            return Err(anyhow!(
+                "errorCodes[{code:?}] and errorCodes[{:?}] both map to the constant \
+                 `error_codes::{ident}`",
+                clash.code
+            ));
+        }
+        out.push(ErrorCodeDecl {
+            code: code.to_string(),
+            meaning,
+            retryable,
+            ident,
+        });
+    }
+    Ok(out)
+}
+
 /// Spec.md sections often embed illustrative `trust-task-error` responses
 /// next to the request/response examples. Drop any harvested example whose
 /// top-level `type` does not match this spec's URI — that way the
@@ -881,6 +1015,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     // parties, so its `recipient` member tracks the issuer party (§7.2 item 5).
     let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
     let issuer_required = read_member_required_flag(&spec.spec_md_path(), "issuer")?;
+    let error_codes = read_error_codes(spec)?;
     let module_tokens = render_module(
         spec,
         body,
@@ -892,6 +1027,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         is_issued_at_required,
         recipient_required,
         issuer_required,
+        &error_codes,
         &raw,
         response_raw.as_deref(),
     );
@@ -1221,6 +1357,7 @@ fn render_module(
     is_issued_at_required: IssuedAtRequired,
     recipient_required: bool,
     issuer_required: bool,
+    error_codes: &[ErrorCodeDecl],
     schema_json: &str,
     response_schema_json: Option<&str>,
 ) -> TokenStream {
@@ -1323,6 +1460,7 @@ fn render_module(
     };
 
     let conformance_mod = render_conformance_mod(examples, invalid_examples, has_response);
+    let error_codes_items = render_error_codes(error_codes);
 
     quote! {
         //! Generated by `trust-tasks-codegen` — do not edit by hand.
@@ -1345,7 +1483,68 @@ fn render_module(
 
         #response_payload_impl
 
+        #error_codes_items
+
         #conformance_mod
+    }
+}
+
+/// Emit the SPEC §7.3 item 9 declarations: a `pub const ERROR_CODES` slice on
+/// every module, and — when the specification declares any — a `pub mod
+/// error_codes` holding one `DeclaredErrorCode` constant per declaration.
+///
+/// `ERROR_CODES` is emitted even when empty, so "this specification declares no
+/// task-specific codes" is a value a consumer can read rather than an absent
+/// item it has to infer from a compile error. The submodule is not: an empty
+/// module is a namespace with nothing to name.
+fn render_error_codes(error_codes: &[ErrorCodeDecl]) -> TokenStream {
+    let slice_doc = quote! {
+        #[doc = " The extended error codes this specification declares (SPEC §7.3 item 9,"]
+        #[doc = " §8.5), in declaration order. Empty when it declares none."]
+    };
+    if error_codes.is_empty() {
+        return quote! {
+            #slice_doc
+            pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
+        };
+    }
+
+    let idents: Vec<proc_macro2::Ident> = error_codes
+        .iter()
+        .map(|d| quote::format_ident!("{}", d.ident))
+        .collect();
+    let consts = error_codes.iter().zip(&idents).map(|(d, ident)| {
+        let code = &d.code;
+        let retryable = d.retryable;
+        let head = format!(" `{code}`");
+        let meaning_lines: Vec<String> = d.meaning.lines().map(|l| format!(" {l}")).collect();
+        let retry_doc = format!(" Declared `retryable: {retryable}`.");
+        quote! {
+            #[doc = #head]
+            #[doc = ""]
+            #(#[doc = #meaning_lines])*
+            #[doc = ""]
+            #[doc = #retry_doc]
+            pub const #ident: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+                code: #code,
+                retryable: #retryable,
+            };
+        }
+    });
+
+    quote! {
+        #slice_doc
+        pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[#(error_codes::#idents),*];
+
+        /// One constant per extended error code this specification declares
+        /// (SPEC §7.3 item 9), named for its local part.
+        ///
+        /// Emit these rather than a string literal: the code is read from the
+        /// specification, so it cannot name a code the specification never
+        /// declared.
+        pub mod error_codes {
+            #(#consts)*
+        }
     }
 }
 
@@ -1490,6 +1689,9 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
     // *received*, and a `#response` has no audience-binding or proof
     // requirement of its own to enforce.
     let mut policy_arms = String::new();
+    // One arm per task, keyed on the bare request Type URI: an error code is
+    // declared by the specification, not by one of its variants.
+    let mut error_code_arms = String::new();
     for spec in specs {
         // The error payload is hand-modelled and has no generated module.
         if spec.slug == "trust-task-error" {
@@ -1523,6 +1725,13 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
         policy_arms.push_str(&gate);
         policy_arms.push_str(&format!(
             "        {:?} => Some(crate::SpecPolicy::of::<crate::specs::{}::{}::Payload>()),\n",
+            spec.type_uri(),
+            path,
+            spec.version_module(),
+        ));
+        error_code_arms.push_str(&gate);
+        error_code_arms.push_str(&format!(
+            "        {:?} => Some(crate::specs::{}::{}::ERROR_CODES),\n",
             spec.type_uri(),
             path,
             spec.version_module(),
@@ -1564,6 +1773,12 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
         request_arms == policy_arm_count,
         "schema_index: {request_arms} request schema arms but {policy_arm_count} policy arms — \
          the two matches must cover the same Type URIs"
+    );
+    let error_code_arm_count = error_code_arms.lines().filter(|l| l.contains("=>")).count();
+    anyhow::ensure!(
+        request_arms == error_code_arm_count,
+        "schema_index: {request_arms} request schema arms but {error_code_arm_count} error-code \
+         arms — the two matches must cover the same Type URIs"
     );
 
     let body = format!(
@@ -1617,6 +1832,27 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {{
 pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {{
     match type_uri {{
 {policy_arms}        _ => None,
+    }}
+}}
+
+/// The extended error codes the specification behind `type_uri` declares
+/// (SPEC §7.3 item 9, §8.5), or `None` if this build knows no spec for it.
+///
+/// Pass the bare request Type URI. Error codes belong to the specification, not
+/// to one of its variants, so there are no `#response` entries.
+///
+/// `Some(&[])` and `None` are different answers: the first is a specification
+/// that declares no task-specific codes, the second a Type URI this build does
+/// not know. A census that treats them alike would pass every task it has never
+/// heard of.
+///
+/// The same slice is `ERROR_CODES` on the generated module; this exists for a
+/// consumer holding only the URI — a conformance census over every task it
+/// dispatches, say, which could otherwise only compare the codes it emits
+/// against a list it maintains by hand.
+pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorCode]> {{
+    match type_uri {{
+{error_code_arms}        _ => None,
     }}
 }}
 "#
@@ -1991,5 +2227,123 @@ mod flatten_tests {
             }
         });
         assert_eq!(flattened(input.clone()), input);
+    }
+}
+
+#[cfg(test)]
+mod error_code_tests {
+    use super::*;
+
+    fn decls(slug: &str, yaml: &str) -> Result<Vec<ErrorCodeDecl>> {
+        let value: serde_yaml::Value = serde_yaml::from_str(yaml).unwrap();
+        error_code_decls(slug, &value)
+    }
+
+    #[test]
+    fn absent_null_and_empty_all_declare_nothing() {
+        assert!(decls("acl/grant", "slug: acl/grant").unwrap().is_empty());
+        assert!(decls("acl/grant", "errorCodes:").unwrap().is_empty());
+        assert!(decls("acl/grant", "errorCodes: []").unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_declaration_becomes_a_shouty_constant_in_declaration_order() {
+        let out = decls(
+            "vtc/join-requests/withdraw",
+            r#"
+errorCodes:
+  - code: vtc/join-requests/withdraw:notFound
+    meaning: >-
+      The applicant has no open request.
+    retryable: false
+  - code: vtc/join-requests/withdraw:alreadyDecided
+    meaning: Terminal.
+    retryable: true
+"#,
+        )
+        .unwrap();
+        assert_eq!(out.len(), 2);
+        assert_eq!(out[0].ident, "NOT_FOUND");
+        assert_eq!(out[0].code, "vtc/join-requests/withdraw:notFound");
+        assert_eq!(out[0].meaning, "The applicant has no open request.");
+        assert!(!out[0].retryable);
+        assert_eq!(out[1].ident, "ALREADY_DECIDED");
+        assert!(out[1].retryable);
+    }
+
+    /// Frozen framework 0.1 specs declare snake_case locals; they must name the
+    /// same shape of constant as a lowerCamelCase one.
+    #[test]
+    fn a_snake_case_local_names_the_same_shape_of_constant() {
+        let out = decls(
+            "acl/grant",
+            "errorCodes:\n  - code: acl/grant:role_not_recognized\n    meaning: x\n    retryable: false\n",
+        )
+        .unwrap();
+        assert_eq!(out[0].ident, "ROLE_NOT_RECOGNIZED");
+    }
+
+    /// SPEC §8.5 rule 2: a family namespace is a proper path prefix of the slug.
+    #[test]
+    fn a_family_namespace_is_accepted() {
+        let out = decls(
+            "keys/revoke",
+            "errorCodes:\n  - code: keys:notFound\n    meaning: x\n    retryable: false\n",
+        )
+        .unwrap();
+        assert_eq!(out[0].ident, "NOT_FOUND");
+    }
+
+    #[test]
+    fn an_unrelated_namespace_is_refused() {
+        let err = decls(
+            "keys/revoke",
+            "errorCodes:\n  - code: acl/grant:notFound\n    meaning: x\n    retryable: false\n",
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("neither the slug"), "{err}");
+        // `keys/rev` is a string prefix of the slug but not a path prefix.
+        assert!(decls(
+            "keys/revoke",
+            "errorCodes:\n  - code: keys/rev:notFound\n    meaning: x\n    retryable: false\n",
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn a_malformed_local_part_is_refused() {
+        for local in ["NotFound", "", "not-found", "1st"] {
+            let yaml = format!(
+                "errorCodes:\n  - code: \"keys/revoke:{local}\"\n    meaning: x\n    retryable: false\n"
+            );
+            assert!(decls("keys/revoke", &yaml).is_err(), "{local:?} accepted");
+        }
+    }
+
+    #[test]
+    fn a_missing_retryable_is_refused() {
+        assert!(decls(
+            "keys/revoke",
+            "errorCodes:\n  - code: keys/revoke:notFound\n    meaning: x\n",
+        )
+        .is_err());
+    }
+
+    /// Two declarations that would claim one constant: the generator must not
+    /// silently keep one of them.
+    #[test]
+    fn two_declarations_claiming_one_constant_are_refused() {
+        let casing = "errorCodes:\n  - code: keys/revoke:notFound\n    meaning: x\n    retryable: false\n  - code: keys/revoke:not_found\n    meaning: y\n    retryable: false\n";
+        assert!(decls("keys/revoke", casing).is_err());
+        let namespaces = "errorCodes:\n  - code: keys:notFound\n    meaning: x\n    retryable: false\n  - code: keys/revoke:notFound\n    meaning: y\n    retryable: false\n";
+        let err = decls("keys/revoke", namespaces).unwrap_err();
+        assert!(err.to_string().contains("error_codes::NOT_FOUND"), "{err}");
+    }
+
+    #[test]
+    fn an_empty_list_renders_an_empty_slice_and_no_submodule() {
+        let out = render_error_codes(&[]).to_string();
+        assert!(out.contains("pub const ERROR_CODES"));
+        assert!(!out.contains("mod error_codes"));
     }
 }

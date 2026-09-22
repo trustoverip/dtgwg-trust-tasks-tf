@@ -404,6 +404,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::RELOAD_FAILED];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/management/reload-services:reloadFailed`
+    ///
+    /// The recipient read its configuration and could not bring its services up on it. The agent's disposition afterwards is deployment-specific and this code does not assert one — see Failure leaves an indeterminate agent.
+    ///
+    /// Declared `retryable: true`.
+    pub const RELOAD_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/management/reload-services:reloadFailed",
+        retryable: true,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

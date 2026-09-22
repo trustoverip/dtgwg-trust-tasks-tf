@@ -1527,6 +1527,26 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::INVALID_CURSOR];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `audit/list:invalidCursor`
+    ///
+    /// The supplied cursor failed to verify — malformed, or minted before an audit-key rotation. The consumer restarts from the first page rather than retrying.
+    ///
+    /// Declared `retryable: false`.
+    pub const INVALID_CURSOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "audit/list:invalidCursor",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

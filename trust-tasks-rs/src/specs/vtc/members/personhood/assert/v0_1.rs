@@ -582,6 +582,48 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::CHALLENGE_EXPIRED,
+    error_codes::PRESENTATION_INVALID,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vtc/members/personhood/assert:notFound`
+    ///
+    /// No member with the supplied did exists.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/personhood/assert:notFound",
+        retryable: false,
+    };
+    /// `vtc/members/personhood/assert:challengeExpired`
+    ///
+    /// The presentation's challenge is unknown or expired. Open a new personhood/challenge.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/personhood/assert:challengeExpired",
+        retryable: false,
+    };
+    /// `vtc/members/personhood/assert:presentationInvalid`
+    ///
+    /// The Verifiable Presentation failed verification, its holder did not match did, or it did not satisfy the community's active personhood policy.
+    ///
+    /// Declared `retryable: false`.
+    pub const PRESENTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/members/personhood/assert:presentationInvalid",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,

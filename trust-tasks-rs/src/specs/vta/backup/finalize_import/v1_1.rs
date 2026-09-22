@@ -1048,6 +1048,88 @@ impl crate::Payload for Response {
 impl crate::RequestPayload for Payload {
     type Response = Response;
 }
+/// The extended error codes this specification declares (SPEC §7.3 item 9,
+/// §8.5), in declaration order. Empty when it declares none.
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
+    error_codes::NO_BYTES_UPLOADED,
+    error_codes::INCOMPLETE_UPLOAD,
+    error_codes::BUNDLE_DIGEST_MISMATCH,
+    error_codes::TERMINAL_STATE,
+    error_codes::MALFORMED_BUNDLE,
+    error_codes::DECRYPTION_FAILED,
+];
+/// One constant per extended error code this specification declares
+/// (SPEC §7.3 item 9), named for its local part.
+///
+/// Emit these rather than a string literal: the code is read from the
+/// specification, so it cannot name a code the specification never
+/// declared.
+pub mod error_codes {
+    /// `vta/backup/finalize-import:notFound`
+    ///
+    /// The recipient holds no import bundle under this identifier that this producer may act on. Deliberately conflates "no such bundle", "not an import bundle", and "not yours" — see Correlation.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:notFound",
+        retryable: false,
+    };
+    /// `vta/backup/finalize-import:noBytesUploaded`
+    ///
+    /// The slot was opened but nothing has been written to it yet. Upload to the descriptor's transportUrl, or write the chunks with put-chunk, first.
+    ///
+    /// Declared `retryable: true`.
+    pub const NO_BYTES_UPLOADED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:noBytesUploaded",
+        retryable: true,
+    };
+    /// `vta/backup/finalize-import:incompleteUpload`
+    ///
+    /// A chunked bundle is missing one or more chunks. `details` says how many and lists the first of them, so the producer can write exactly those and finalize again. Raised before the password is used.
+    ///
+    /// Declared `retryable: true`.
+    pub const INCOMPLETE_UPLOAD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:incompleteUpload",
+        retryable: true,
+    };
+    /// `vta/backup/finalize-import:bundleDigestMismatch`
+    ///
+    /// Every chunk of a chunked bundle verified individually, but the reassembled bytes do not match the whole-bundle `expectedSha256` or `expectedSizeBytes` committed at initiate-import. Raised before the password is used. The slot is not recoverable by rewriting chunks — abort it and upload again.
+    ///
+    /// Declared `retryable: false`.
+    pub const BUNDLE_DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:bundleDigestMismatch",
+        retryable: false,
+    };
+    /// `vta/backup/finalize-import:terminalState`
+    ///
+    /// The bundle was already committed, aborted or expired. A second commit is refused rather than repeated — see Why commit is not idempotent.
+    ///
+    /// Declared `retryable: false`.
+    pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:terminalState",
+        retryable: false,
+    };
+    /// `vta/backup/finalize-import:malformedBundle`
+    ///
+    /// The uploaded bytes are not a bundle this recipient can read. Raised before decryption is attempted, so it says nothing about whether the password was right.
+    ///
+    /// Declared `retryable: false`.
+    pub const MALFORMED_BUNDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:malformedBundle",
+        retryable: false,
+    };
+    /// `vta/backup/finalize-import:decryptionFailed`
+    ///
+    /// The bundle could not be decrypted or its authentication tag did not verify. Deliberately conflates a wrong password with tampered bytes — see Data carried.
+    ///
+    /// Declared `retryable: false`.
+    pub const DECRYPTION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/backup/finalize-import:decryptionFailed",
+        retryable: false,
+    };
+}
 #[cfg(test)]
 mod conformance {
     //! Round-trip tests harvested from the spec's `spec.md`,
