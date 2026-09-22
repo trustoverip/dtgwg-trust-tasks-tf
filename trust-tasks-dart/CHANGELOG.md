@@ -11,6 +11,69 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.18 — 2026-09-22
+
+
+### Added
+
+- **specs**: Add the ExtCritical framework def, and open vetting requirements to ext (#600)
+
+A community publishing an admission mode the join manifest does not
+  enumerate has had two options: put the parameters in an undeclared
+  member of `vetting` and watch them vanish, or wait for a version of the
+  manifest that names them. This adds the third.
+
+  framework 0.4 (specs/_framework/0.4/framework.schema.json)
+    Additive over 0.3: `Ext` and `DigestMultibase` carried forward
+    unchanged, `ExtCritical` new — the array naming the `ext` namespaces
+    a consumer must understand or refuse, per the framework change in
+    trustoverip/dtgwg-trust-tasks-spec#23. Neither rule it carries is
+    checkable by JSON Schema: that an entry names a namespace present in
+    the sibling `ext` is checkable only against that sibling, and whether
+    a namespace is load-bearing is not a schema question. The $def says
+    so, and both are consumer-side checks.
+
+  vtc/join-requests/manifest 0.2 (draft, edited in place per SPEC §5.2)
+    `vetting` gains `ext` and `extCritical`, and this draft's framework
+    $refs re-pin from 0.2 to 0.4, errata-style.
+
+    `vetting` was already `additionalProperties: true`, so an undeclared
+    member always validated. Validating is not arriving: a generated type
+    names the members the schema declares and drops the rest, so the
+    member was parsed and discarded, and discarded again on the
+    re-serialization `requirementsDigest` is computed over — a reader
+    recomputing the digest from what it parsed got a value that did not
+    match what it was sent. A declared member survives both.
+
+    A new response example shows a criterion carrying hidden-vetting
+    parameters under a namespace it controls, marked critical because an
+    applicant that ignored it would gather named statements and present
+    them to a criterion whose purpose is that it never receives them. Its
+    `requirementsDigest` is the real value for the criterion as printed.
+
+  Generated bindings regenerated: 472 specs across TypeScript, Rust, Go
+  and Dart all agree. `npm run validate` passes 472 specs; the manifest's
+  validate-gated fixtures run 5 tests; `cargo test --workspace` is 927.
+
+
+
+### Documentation
+
+- **specs**: Sign examples with eddsa-jcs-2022 (#599)
+
+* docs(specs): sign examples with eddsa-jcs-2022
+
+  30 draft specifications' examples carried "cryptosuite":
+  "eddsa-rdfc-2022", while the reference ecosystem signs with
+  eddsa-jcs-2022. Both suites are conformant, but implementers copy
+  examples, and the two canonicalize differently. Raised by NAOMS against
+  acl/change-role/0.1 (framework spec PR #21 makes the same fix to the
+  framework's own examples).
+
+  Editorial, made in place per CONTRIBUTING-SPECS: examples only, no
+  schema or wire change, no version folder. The 20 retired specifications
+  that carry the same example are frozen (SPEC §6.4) and left as they are.
+
 ## 0.1.17 — 2026-09-22
 
 
