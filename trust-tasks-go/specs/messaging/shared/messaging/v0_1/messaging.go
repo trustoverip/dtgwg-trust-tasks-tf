@@ -121,6 +121,16 @@ type Account struct {
 
 	// Number of entries in the account's access list.
 	AccessListCount *int64 `json:"accessListCount,omitempty"`
+
+	// Unix epoch seconds at which the mediator last accepted a message addressed to this
+	// account. Present only when the request set `includeActivity` and the mediator has
+	// recorded such a message; MAY lag the true time by up to 60 seconds.
+	LastReceivedAt *int64 `json:"lastReceivedAt,omitempty"`
+
+	// Unix epoch seconds at which this account last completed authentication with the
+	// mediator, over any transport. Present only when the request set `includeActivity` and
+	// the mediator has recorded an authentication.
+	LastAuthenticatedAt *int64 `json:"lastAuthenticatedAt,omitempty"`
 }
 
 // AdminAccount A privileged account at the mediator (an `admin` or `rootAdmin`).

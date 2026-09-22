@@ -853,6 +853,14 @@ export interface Account {
    * Number of entries in the account's access list.
    */
   accessListCount?: number;
+  /**
+   * Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds.
+   */
+  lastReceivedAt?: number;
+  /**
+   * Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication.
+   */
+  lastAuthenticatedAt?: number;
 }
 export interface AclChangedEvent_SyncV0_1 {
   kind: "acl.changed";

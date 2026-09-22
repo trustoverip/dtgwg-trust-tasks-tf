@@ -176,6 +176,16 @@ export const PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 0,
           "description": "Number of entries in the account's access list."
+        },
+        "lastReceivedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."
+        },
+        "lastAuthenticatedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."
         }
       }
     },
@@ -368,6 +378,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 0,
           "description": "Number of entries in the account's access list."
+        },
+        "lastReceivedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."
+        },
+        "lastAuthenticatedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."
         }
       }
     },

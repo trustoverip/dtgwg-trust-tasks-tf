@@ -197,6 +197,8 @@ class Account {
     this.receiveQueueCount,
     this.receiveQueueBytes,
     this.accessListCount,
+    this.lastReceivedAt,
+    this.lastAuthenticatedAt,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -212,6 +214,8 @@ class Account {
         receiveQueueCount: json['receiveQueueCount'] as int?,
         receiveQueueBytes: json['receiveQueueBytes'] as int?,
         accessListCount: json['accessListCount'] as int?,
+        lastReceivedAt: json['lastReceivedAt'] as int?,
+        lastAuthenticatedAt: json['lastAuthenticatedAt'] as int?,
       );
 
   /// The account's controlling DID, or — for privacy, and for mediators that key
@@ -238,6 +242,16 @@ class Account {
   /// Number of entries in the account's access list.
   final int? accessListCount;
 
+  /// Unix epoch seconds at which the mediator last accepted a message addressed to this
+  /// account. Present only when the request set `includeActivity` and the mediator has
+  /// recorded such a message; MAY lag the true time by up to 60 seconds.
+  final int? lastReceivedAt;
+
+  /// Unix epoch seconds at which this account last completed authentication with the
+  /// mediator, over any transport. Present only when the request set `includeActivity`
+  /// and the mediator has recorded an authentication.
+  final int? lastAuthenticatedAt;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'did': did,
@@ -249,6 +263,9 @@ class Account {
         if (receiveQueueCount != null) 'receiveQueueCount': receiveQueueCount!,
         if (receiveQueueBytes != null) 'receiveQueueBytes': receiveQueueBytes!,
         if (accessListCount != null) 'accessListCount': accessListCount!,
+        if (lastReceivedAt != null) 'lastReceivedAt': lastReceivedAt!,
+        if (lastAuthenticatedAt != null)
+          'lastAuthenticatedAt': lastAuthenticatedAt!,
       };
 }
 
