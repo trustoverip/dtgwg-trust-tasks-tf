@@ -31,6 +31,18 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.17](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.16...trust-tasks-rs-v0.21.17) — 2026-09-22
+
+
+### Added
+
+- **persona**: Wear a face without naming a persona DID ([#589](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/589))
+
+Design note (VTI docs/05-design-notes/persona-context-first.md) §9.7: a
+  holder should say "wear this face here", not bring a DID.
+
+
+
 ## [0.21.16](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.15...trust-tasks-rs-v0.21.16) — 2026-09-22
 
 
