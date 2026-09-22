@@ -59,6 +59,7 @@ A conforming **producer** (the requester) **MUST**:
 2. Where continuing a previous enumeration, set `payload.cursor` to the `nextCursor` returned by the prior page, echoed verbatim.
 3. **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 4. Set `payload.includeActivity` to `true` only to receive the activity timestamps (`lastReceivedAt`, `lastAuthenticatedAt`). A mediator that predates this member rejects the request as a schema violation, so a requester **SHOULD** set it only where it knows the mediator supports it.
+5. Set `payload.includeStats` to `true` only to receive the account's lifetime counters (`stats`). A mediator that predates this member rejects the request as a schema violation, so a requester **SHOULD** set it only where it knows the mediator supports it.
 
 A conforming **consumer** (the mediator) **MUST**:
 
@@ -68,6 +69,7 @@ A conforming **consumer** (the mediator) **MUST**:
 4. Return at most `limit` accounts where `limit` is present, otherwise a mediator-chosen default page size.
 5. Include `nextCursor` in the response when, and only when, further accounts remain beyond the returned page; omit it on the final page.
 6. Include `lastReceivedAt` and `lastAuthenticatedAt` in each returned account when, and only when, `payload.includeActivity` is `true`, and then only the timestamps it has recorded. It **MUST NOT** include them otherwise: a requester that did not ask may validate the response against a schema without them.
+7. Include `stats` in each returned account when, and only when, `payload.includeStats` is `true`, and then only the counters it keeps. It **MUST NOT** include them otherwise: a requester that did not ask may validate the response against a schema without them.
 
 ## Request
 
@@ -145,6 +147,8 @@ Because `nextCursor` is present, more accounts remain; the requester re-issues t
 A listing discloses the full roster of served accounts, their roles, and their capabilities — a sensitive enumeration of the mediator's clientele. A mediator **MUST** enforce its own authorization independent of the document, returning the framework's `permissionDenied` where the requester may not enumerate accounts, even though `proof` is only **RECOMMENDED** for this read-only task.
 
 The `cursor` is an opaque continuation token; a mediator **SHOULD** make it stateless and unforgeable so a requester cannot enumerate beyond its authorization by crafting cursor values. The page is point-in-time and **MAY** be inconsistent under concurrent account changes.
+
+The lifetime counters (`stats`) are operational metadata about the served party: how much it has sent and received, and over which protocols. They disclose volume rather than content, and a mediator **SHOULD** apply the same authorization to them as to the rest of the account view.
 
 The activity timestamps (`lastReceivedAt`, `lastAuthenticatedAt`) disclose when a party last received traffic and last connected — a behavioural signal beyond the account's configuration. A mediator **SHOULD** apply the same authorization to them as to the rest of the account view, and **MAY** record `lastReceivedAt` coarsely (it may lag by up to 60 seconds) so recording it does not add a write to every message.
 

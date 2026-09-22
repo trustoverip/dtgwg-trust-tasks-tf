@@ -187,6 +187,106 @@ class QueueLimits {
       };
 }
 
+/// Message counts split by wire protocol. An absent member is a protocol the mediator
+/// counted nothing for. The member names match the WireProtocol values the traffic
+/// monitor reports.
+class ProtocolCounts {
+  const ProtocolCounts({
+    this.didcomm,
+    this.didcommV1,
+    this.tsp,
+    this.other,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ProtocolCounts.fromJson(Map<String, dynamic> json) => ProtocolCounts(
+        didcomm: json['didcomm'] as int?,
+        didcommV1: json['didcommV1'] as int?,
+        tsp: json['tsp'] as int?,
+        other: json['other'] as int?,
+      );
+
+  /// DIDComm v2 (JWE/JWS).
+  final int? didcomm;
+
+  /// A DIDComm v1 envelope.
+  final int? didcommV1;
+
+  /// A Trust Spanning Protocol message.
+  final int? tsp;
+
+  /// Anything the mediator could not classify.
+  final int? other;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (didcomm != null) 'didcomm': didcomm!,
+        if (didcommV1 != null) 'didcommV1': didcommV1!,
+        if (tsp != null) 'tsp': tsp!,
+        if (other != null) 'other': other!,
+      };
+}
+
+/// What an account has sent and received over its lifetime, as the mediator counted
+/// it. Every member is optional: a mediator reports what it keeps, and a counter
+/// absent from a response was not kept rather than zero. Counters survive restarts and
+/// are not reset by reading them; removing an account discards them.
+class AccountStats {
+  const AccountStats({
+    this.messagesReceived,
+    this.messagesSent,
+    this.bytesReceived,
+    this.bytesSent,
+    this.receivedByProtocol,
+    this.sentByProtocol,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AccountStats.fromJson(Map<String, dynamic> json) => AccountStats(
+        messagesReceived: json['messagesReceived'] as int?,
+        messagesSent: json['messagesSent'] as int?,
+        bytesReceived: json['bytesReceived'] as int?,
+        bytesSent: json['bytesSent'] as int?,
+        receivedByProtocol: json['receivedByProtocol'] == null
+            ? null
+            : ProtocolCounts.fromJson(
+                json['receivedByProtocol'] as Map<String, dynamic>),
+        sentByProtocol: json['sentByProtocol'] == null
+            ? null
+            : ProtocolCounts.fromJson(
+                json['sentByProtocol'] as Map<String, dynamic>),
+      );
+
+  /// Messages the mediator accepted addressed to this account.
+  final int? messagesReceived;
+
+  /// Messages the mediator accepted from this account.
+  final int? messagesSent;
+
+  /// Total size of the messages counted by messagesReceived.
+  final int? bytesReceived;
+
+  /// Total size of the messages counted by messagesSent.
+  final int? bytesSent;
+
+  /// messagesReceived split by the wire protocol the message arrived in.
+  final ProtocolCounts? receivedByProtocol;
+
+  /// messagesSent split by the wire protocol the message was sent in.
+  final ProtocolCounts? sentByProtocol;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (messagesReceived != null) 'messagesReceived': messagesReceived!,
+        if (messagesSent != null) 'messagesSent': messagesSent!,
+        if (bytesReceived != null) 'bytesReceived': bytesReceived!,
+        if (bytesSent != null) 'bytesSent': bytesSent!,
+        if (receivedByProtocol != null)
+          'receivedByProtocol': receivedByProtocol!.toJson(),
+        if (sentByProtocol != null) 'sentByProtocol': sentByProtocol!.toJson(),
+      };
+}
+
 /// The mediator's view of one served account.
 class Account {
   const Account({
@@ -201,6 +301,7 @@ class Account {
     this.accessListCount,
     this.lastReceivedAt,
     this.lastAuthenticatedAt,
+    this.stats,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -218,6 +319,9 @@ class Account {
         accessListCount: json['accessListCount'] as int?,
         lastReceivedAt: json['lastReceivedAt'] as int?,
         lastAuthenticatedAt: json['lastAuthenticatedAt'] as int?,
+        stats: json['stats'] == null
+            ? null
+            : AccountStats.fromJson(json['stats'] as Map<String, dynamic>),
       );
 
   /// The account's controlling DID, or — for privacy, and for mediators that key
@@ -254,6 +358,10 @@ class Account {
   /// and the mediator has recorded an authentication.
   final int? lastAuthenticatedAt;
 
+  /// Lifetime counters the mediator keeps for this account. Present only when the
+  /// request set `includeStats`.
+  final AccountStats? stats;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'did': did,
@@ -268,6 +376,7 @@ class Account {
         if (lastReceivedAt != null) 'lastReceivedAt': lastReceivedAt!,
         if (lastAuthenticatedAt != null)
           'lastAuthenticatedAt': lastAuthenticatedAt!,
+        if (stats != null) 'stats': stats!.toJson(),
       };
 }
 
@@ -319,6 +428,7 @@ class Payload {
     this.cursor,
     this.limit,
     this.includeActivity,
+    this.includeStats,
     this.ext,
   });
 
@@ -330,6 +440,7 @@ class Payload {
         cursor: json['cursor'] as String?,
         limit: json['limit'] as int?,
         includeActivity: json['includeActivity'] as bool?,
+        includeStats: json['includeStats'] as bool?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -349,6 +460,10 @@ class Payload {
   /// `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned.
   final bool? includeActivity;
 
+  /// When true, the mediator includes each returned account's `stats` — its lifetime
+  /// counters — where it keeps them. Omitted or false = no stats are returned.
+  final bool? includeStats;
+
   /// Ecosystem-defined extension members per SPEC.md §4.5.1.
   final Ext? ext;
 
@@ -358,6 +473,7 @@ class Payload {
         if (cursor != null) 'cursor': cursor!,
         if (limit != null) 'limit': limit!,
         if (includeActivity != null) 'includeActivity': includeActivity!,
+        if (includeStats != null) 'includeStats': includeStats!,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -377,11 +493,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/messaging/account/list/0.1","title":"Messaging List Accounts — payload","type":"object","additionalProperties":false,"properties":{"accountType":{"\$ref":"#/\$defs/AccountType","description":"Role filter: return only accounts holding this role. Omitted = accounts of every role. Filtering on `admin` or `rootAdmin` enumerates the mediator\'s administrators."},"cursor":{"type":"string","minLength":1,"description":"Opaque continuation token from a prior page\'s nextCursor. Echoed verbatim; treated as unstructured by the requester."},"limit":{"type":"integer","minimum":1,"maximum":1000,"description":"Maximum number of accounts to return in this page. The mediator chooses a default when omitted."},"includeActivity":{"type":"boolean","description":"When true, the mediator includes each returned account\'s `lastReceivedAt` and `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"Response":{"\$anchor":"response","title":"Messaging List Accounts — response payload","description":"The success response to a messaging/account/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/list/0.1#response.","type":"object","additionalProperties":false,"required":["accounts"],"properties":{"accounts":{"type":"array","description":"The page of served account views.","items":{"\$ref":"#/\$defs/Account"}},"nextCursor":{"type":"string","minLength":1,"description":"Opaque continuation token. Present only when further accounts remain beyond this page; omitted on the final page."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Account":{"title":"Account","type":"object","additionalProperties":false,"required":["did","accountType","acl"],"description":"The mediator\'s view of one served account.","properties":{"did":{"\$ref":"#/\$defs/Vid","description":"The account\'s controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept."},"accountType":{"\$ref":"#/\$defs/AccountType"},"acl":{"\$ref":"#/\$defs/MediatorAcl"},"queueLimits":{"\$ref":"#/\$defs/QueueLimits"},"sendQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued send messages."},"sendQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued send messages."},"receiveQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued receive messages."},"receiveQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued receive messages."},"accessListCount":{"type":"integer","minimum":0,"description":"Number of entries in the account\'s access list."},"lastReceivedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."},"lastAuthenticatedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."}}},"QueueLimits":{"title":"QueueLimits","type":"object","additionalProperties":false,"description":"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.","properties":{"sendQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued send messages; -1 = unlimited."},"receiveQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued receive messages; -1 = unlimited."}}},"MediatorAcl":{"title":"MediatorAcl","type":"object","additionalProperties":false,"description":"The mediator\'s per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator\'s internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.","properties":{"accessListMode":{"type":"string","enum":["explicitAllow","explicitDeny"],"description":"How the account\'s access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone)."},"blocked":{"type":"boolean","description":"The account is blocked from authenticating and transacting."},"local":{"type":"boolean","description":"Messages for this account may be stored locally at this mediator for pickup."},"sendMessages":{"type":"boolean","description":"May send direct messages through the mediator."},"receiveMessages":{"type":"boolean","description":"May receive direct messages."},"sendForwarded":{"type":"boolean","description":"May send routing/forward (relay) messages."},"receiveForwarded":{"type":"boolean","description":"May be the next hop of a forwarded message."},"createInvites":{"type":"boolean","description":"May create out-of-band invitations."},"anonReceive":{"type":"boolean","description":"Accepts anonymous (no authenticated sender) messages."},"selfManageList":{"type":"boolean","description":"May self-manage its own access list."},"selfManageSendQueueLimit":{"type":"boolean","description":"May self-manage its own send-queue limit."},"selfManageReceiveQueueLimit":{"type":"boolean","description":"May self-manage its own receive-queue limit."},"didcommEnabled":{"type":"boolean","description":"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node."},"tspEnabled":{"type":"boolean","description":"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node."}}},"AccountType":{"title":"AccountType","type":"string","enum":["standard","admin","rootAdmin","mediator"],"description":"The account\'s role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator\'s own account. Only a rootAdmin may assign or modify the rootAdmin role."},"Vid":{"title":"Vid","type":"string","minLength":1,"description":"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account\'s controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/messaging/account/list/0.1","title":"Messaging List Accounts — payload","type":"object","additionalProperties":false,"properties":{"accountType":{"\$ref":"#/\$defs/AccountType","description":"Role filter: return only accounts holding this role. Omitted = accounts of every role. Filtering on `admin` or `rootAdmin` enumerates the mediator\'s administrators."},"cursor":{"type":"string","minLength":1,"description":"Opaque continuation token from a prior page\'s nextCursor. Echoed verbatim; treated as unstructured by the requester."},"limit":{"type":"integer","minimum":1,"maximum":1000,"description":"Maximum number of accounts to return in this page. The mediator chooses a default when omitted."},"includeActivity":{"type":"boolean","description":"When true, the mediator includes each returned account\'s `lastReceivedAt` and `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned."},"includeStats":{"type":"boolean","description":"When true, the mediator includes each returned account\'s `stats` — its lifetime counters — where it keeps them. Omitted or false = no stats are returned."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"Response":{"\$anchor":"response","title":"Messaging List Accounts — response payload","description":"The success response to a messaging/account/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/list/0.1#response.","type":"object","additionalProperties":false,"required":["accounts"],"properties":{"accounts":{"type":"array","description":"The page of served account views.","items":{"\$ref":"#/\$defs/Account"}},"nextCursor":{"type":"string","minLength":1,"description":"Opaque continuation token. Present only when further accounts remain beyond this page; omitted on the final page."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Account":{"title":"Account","type":"object","additionalProperties":false,"required":["did","accountType","acl"],"description":"The mediator\'s view of one served account.","properties":{"did":{"\$ref":"#/\$defs/Vid","description":"The account\'s controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept."},"accountType":{"\$ref":"#/\$defs/AccountType"},"acl":{"\$ref":"#/\$defs/MediatorAcl"},"queueLimits":{"\$ref":"#/\$defs/QueueLimits"},"sendQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued send messages."},"sendQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued send messages."},"receiveQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued receive messages."},"receiveQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued receive messages."},"accessListCount":{"type":"integer","minimum":0,"description":"Number of entries in the account\'s access list."},"lastReceivedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."},"lastAuthenticatedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."},"stats":{"\$ref":"#/\$defs/AccountStats","description":"Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`."}}},"AccountStats":{"title":"AccountStats","type":"object","additionalProperties":false,"description":"What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.","properties":{"messagesReceived":{"type":"integer","minimum":0,"description":"Messages the mediator accepted addressed to this account."},"messagesSent":{"type":"integer","minimum":0,"description":"Messages the mediator accepted from this account."},"bytesReceived":{"type":"integer","minimum":0,"description":"Total size of the messages counted by messagesReceived."},"bytesSent":{"type":"integer","minimum":0,"description":"Total size of the messages counted by messagesSent."},"receivedByProtocol":{"\$ref":"#/\$defs/ProtocolCounts","description":"messagesReceived split by the wire protocol the message arrived in."},"sentByProtocol":{"\$ref":"#/\$defs/ProtocolCounts","description":"messagesSent split by the wire protocol the message was sent in."}}},"ProtocolCounts":{"title":"ProtocolCounts","type":"object","additionalProperties":false,"description":"Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.","properties":{"didcomm":{"type":"integer","minimum":0,"description":"DIDComm v2 (JWE/JWS)."},"didcommV1":{"type":"integer","minimum":0,"description":"A DIDComm v1 envelope."},"tsp":{"type":"integer","minimum":0,"description":"A Trust Spanning Protocol message."},"other":{"type":"integer","minimum":0,"description":"Anything the mediator could not classify."}}},"QueueLimits":{"title":"QueueLimits","type":"object","additionalProperties":false,"description":"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.","properties":{"sendQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued send messages; -1 = unlimited."},"receiveQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued receive messages; -1 = unlimited."}}},"MediatorAcl":{"title":"MediatorAcl","type":"object","additionalProperties":false,"description":"The mediator\'s per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator\'s internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.","properties":{"accessListMode":{"type":"string","enum":["explicitAllow","explicitDeny"],"description":"How the account\'s access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone)."},"blocked":{"type":"boolean","description":"The account is blocked from authenticating and transacting."},"local":{"type":"boolean","description":"Messages for this account may be stored locally at this mediator for pickup."},"sendMessages":{"type":"boolean","description":"May send direct messages through the mediator."},"receiveMessages":{"type":"boolean","description":"May receive direct messages."},"sendForwarded":{"type":"boolean","description":"May send routing/forward (relay) messages."},"receiveForwarded":{"type":"boolean","description":"May be the next hop of a forwarded message."},"createInvites":{"type":"boolean","description":"May create out-of-band invitations."},"anonReceive":{"type":"boolean","description":"Accepts anonymous (no authenticated sender) messages."},"selfManageList":{"type":"boolean","description":"May self-manage its own access list."},"selfManageSendQueueLimit":{"type":"boolean","description":"May self-manage its own send-queue limit."},"selfManageReceiveQueueLimit":{"type":"boolean","description":"May self-manage its own receive-queue limit."},"didcommEnabled":{"type":"boolean","description":"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node."},"tspEnabled":{"type":"boolean","description":"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node."}}},"AccountType":{"title":"AccountType","type":"string","enum":["standard","admin","rootAdmin","mediator"],"description":"The account\'s role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator\'s own account. Only a rootAdmin may assign or modify the rootAdmin role."},"Vid":{"title":"Vid","type":"string","minLength":1,"description":"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account\'s controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Messaging List Accounts — response payload","description":"The success response to a messaging/account/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/list/0.1#response.","type":"object","additionalProperties":false,"required":["accounts"],"properties":{"accounts":{"type":"array","description":"The page of served account views.","items":{"\$ref":"#/\$defs/Account"}},"nextCursor":{"type":"string","minLength":1,"description":"Opaque continuation token. Present only when further accounts remain beyond this page; omitted on the final page."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Account":{"title":"Account","type":"object","additionalProperties":false,"required":["did","accountType","acl"],"description":"The mediator\'s view of one served account.","properties":{"did":{"\$ref":"#/\$defs/Vid","description":"The account\'s controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept."},"accountType":{"\$ref":"#/\$defs/AccountType"},"acl":{"\$ref":"#/\$defs/MediatorAcl"},"queueLimits":{"\$ref":"#/\$defs/QueueLimits"},"sendQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued send messages."},"sendQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued send messages."},"receiveQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued receive messages."},"receiveQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued receive messages."},"accessListCount":{"type":"integer","minimum":0,"description":"Number of entries in the account\'s access list."},"lastReceivedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."},"lastAuthenticatedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."}}},"QueueLimits":{"title":"QueueLimits","type":"object","additionalProperties":false,"description":"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.","properties":{"sendQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued send messages; -1 = unlimited."},"receiveQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued receive messages; -1 = unlimited."}}},"MediatorAcl":{"title":"MediatorAcl","type":"object","additionalProperties":false,"description":"The mediator\'s per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator\'s internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.","properties":{"accessListMode":{"type":"string","enum":["explicitAllow","explicitDeny"],"description":"How the account\'s access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone)."},"blocked":{"type":"boolean","description":"The account is blocked from authenticating and transacting."},"local":{"type":"boolean","description":"Messages for this account may be stored locally at this mediator for pickup."},"sendMessages":{"type":"boolean","description":"May send direct messages through the mediator."},"receiveMessages":{"type":"boolean","description":"May receive direct messages."},"sendForwarded":{"type":"boolean","description":"May send routing/forward (relay) messages."},"receiveForwarded":{"type":"boolean","description":"May be the next hop of a forwarded message."},"createInvites":{"type":"boolean","description":"May create out-of-band invitations."},"anonReceive":{"type":"boolean","description":"Accepts anonymous (no authenticated sender) messages."},"selfManageList":{"type":"boolean","description":"May self-manage its own access list."},"selfManageSendQueueLimit":{"type":"boolean","description":"May self-manage its own send-queue limit."},"selfManageReceiveQueueLimit":{"type":"boolean","description":"May self-manage its own receive-queue limit."},"didcommEnabled":{"type":"boolean","description":"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node."},"tspEnabled":{"type":"boolean","description":"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node."}}},"AccountType":{"title":"AccountType","type":"string","enum":["standard","admin","rootAdmin","mediator"],"description":"The account\'s role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator\'s own account. Only a rootAdmin may assign or modify the rootAdmin role."},"Vid":{"title":"Vid","type":"string","minLength":1,"description":"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account\'s controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Messaging List Accounts — response payload","description":"The success response to a messaging/account/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/list/0.1#response.","type":"object","additionalProperties":false,"required":["accounts"],"properties":{"accounts":{"type":"array","description":"The page of served account views.","items":{"\$ref":"#/\$defs/Account"}},"nextCursor":{"type":"string","minLength":1,"description":"Opaque continuation token. Present only when further accounts remain beyond this page; omitted on the final page."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}},"Account":{"title":"Account","type":"object","additionalProperties":false,"required":["did","accountType","acl"],"description":"The mediator\'s view of one served account.","properties":{"did":{"\$ref":"#/\$defs/Vid","description":"The account\'s controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept."},"accountType":{"\$ref":"#/\$defs/AccountType"},"acl":{"\$ref":"#/\$defs/MediatorAcl"},"queueLimits":{"\$ref":"#/\$defs/QueueLimits"},"sendQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued send messages."},"sendQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued send messages."},"receiveQueueCount":{"type":"integer","minimum":0,"description":"Current count of queued receive messages."},"receiveQueueBytes":{"type":"integer","minimum":0,"description":"Current byte size of queued receive messages."},"accessListCount":{"type":"integer","minimum":0,"description":"Number of entries in the account\'s access list."},"lastReceivedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."},"lastAuthenticatedAt":{"type":"integer","minimum":0,"description":"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."},"stats":{"\$ref":"#/\$defs/AccountStats","description":"Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`."}}},"AccountStats":{"title":"AccountStats","type":"object","additionalProperties":false,"description":"What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.","properties":{"messagesReceived":{"type":"integer","minimum":0,"description":"Messages the mediator accepted addressed to this account."},"messagesSent":{"type":"integer","minimum":0,"description":"Messages the mediator accepted from this account."},"bytesReceived":{"type":"integer","minimum":0,"description":"Total size of the messages counted by messagesReceived."},"bytesSent":{"type":"integer","minimum":0,"description":"Total size of the messages counted by messagesSent."},"receivedByProtocol":{"\$ref":"#/\$defs/ProtocolCounts","description":"messagesReceived split by the wire protocol the message arrived in."},"sentByProtocol":{"\$ref":"#/\$defs/ProtocolCounts","description":"messagesSent split by the wire protocol the message was sent in."}}},"ProtocolCounts":{"title":"ProtocolCounts","type":"object","additionalProperties":false,"description":"Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.","properties":{"didcomm":{"type":"integer","minimum":0,"description":"DIDComm v2 (JWE/JWS)."},"didcommV1":{"type":"integer","minimum":0,"description":"A DIDComm v1 envelope."},"tsp":{"type":"integer","minimum":0,"description":"A Trust Spanning Protocol message."},"other":{"type":"integer","minimum":0,"description":"Anything the mediator could not classify."}}},"QueueLimits":{"title":"QueueLimits","type":"object","additionalProperties":false,"description":"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.","properties":{"sendQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued send messages; -1 = unlimited."},"receiveQueueLimit":{"type":"integer","minimum":-1,"description":"Maximum queued receive messages; -1 = unlimited."}}},"MediatorAcl":{"title":"MediatorAcl","type":"object","additionalProperties":false,"description":"The mediator\'s per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator\'s internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.","properties":{"accessListMode":{"type":"string","enum":["explicitAllow","explicitDeny"],"description":"How the account\'s access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone)."},"blocked":{"type":"boolean","description":"The account is blocked from authenticating and transacting."},"local":{"type":"boolean","description":"Messages for this account may be stored locally at this mediator for pickup."},"sendMessages":{"type":"boolean","description":"May send direct messages through the mediator."},"receiveMessages":{"type":"boolean","description":"May receive direct messages."},"sendForwarded":{"type":"boolean","description":"May send routing/forward (relay) messages."},"receiveForwarded":{"type":"boolean","description":"May be the next hop of a forwarded message."},"createInvites":{"type":"boolean","description":"May create out-of-band invitations."},"anonReceive":{"type":"boolean","description":"Accepts anonymous (no authenticated sender) messages."},"selfManageList":{"type":"boolean","description":"May self-manage its own access list."},"selfManageSendQueueLimit":{"type":"boolean","description":"May self-manage its own send-queue limit."},"selfManageReceiveQueueLimit":{"type":"boolean","description":"May self-manage its own receive-queue limit."},"didcommEnabled":{"type":"boolean","description":"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node."},"tspEnabled":{"type":"boolean","description":"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node."}}},"AccountType":{"title":"AccountType","type":"string","enum":["standard","admin","rootAdmin","mediator"],"description":"The account\'s role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator\'s own account. Only a rootAdmin may assign or modify the rootAdmin role."},"Vid":{"title":"Vid","type":"string","minLength":1,"description":"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account\'s controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses."}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

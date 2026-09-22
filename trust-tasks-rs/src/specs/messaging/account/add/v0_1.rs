@@ -91,6 +91,10 @@ pub mod error {
 ///      "description": "Current count of queued send messages.",
 ///      "type": "integer",
 ///      "minimum": 0.0
+///    },
+///    "stats": {
+///      "description": "Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.",
+///      "$ref": "#/definitions/AccountStats"
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -161,9 +165,119 @@ pub struct Account {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub send_queue_count: ::std::option::Option<u64>,
+    ///Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub stats: ::std::option::Option<AccountStats>,
 }
 impl Account {
     pub fn builder() -> builder::Account {
+        Default::default()
+    }
+}
+///What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "AccountStats",
+///  "description": "What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.",
+///  "type": "object",
+///  "properties": {
+///    "bytesReceived": {
+///      "description": "Total size of the messages counted by messagesReceived.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "bytesSent": {
+///      "description": "Total size of the messages counted by messagesSent.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "messagesReceived": {
+///      "description": "Messages the mediator accepted addressed to this account.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "messagesSent": {
+///      "description": "Messages the mediator accepted from this account.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "receivedByProtocol": {
+///      "description": "messagesReceived split by the wire protocol the message arrived in.",
+///      "$ref": "#/definitions/ProtocolCounts"
+///    },
+///    "sentByProtocol": {
+///      "description": "messagesSent split by the wire protocol the message was sent in.",
+///      "$ref": "#/definitions/ProtocolCounts"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AccountStats {
+    ///Total size of the messages counted by messagesReceived.
+    #[serde(
+        rename = "bytesReceived",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub bytes_received: ::std::option::Option<u64>,
+    ///Total size of the messages counted by messagesSent.
+    #[serde(
+        rename = "bytesSent",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub bytes_sent: ::std::option::Option<u64>,
+    ///Messages the mediator accepted addressed to this account.
+    #[serde(
+        rename = "messagesReceived",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub messages_received: ::std::option::Option<u64>,
+    ///Messages the mediator accepted from this account.
+    #[serde(
+        rename = "messagesSent",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub messages_sent: ::std::option::Option<u64>,
+    ///messagesReceived split by the wire protocol the message arrived in.
+    #[serde(
+        rename = "receivedByProtocol",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub received_by_protocol: ::std::option::Option<ProtocolCounts>,
+    ///messagesSent split by the wire protocol the message was sent in.
+    #[serde(
+        rename = "sentByProtocol",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub sent_by_protocol: ::std::option::Option<ProtocolCounts>,
+}
+impl ::std::default::Default for AccountStats {
+    fn default() -> Self {
+        Self {
+            bytes_received: Default::default(),
+            bytes_sent: Default::default(),
+            messages_received: Default::default(),
+            messages_sent: Default::default(),
+            received_by_protocol: Default::default(),
+            sent_by_protocol: Default::default(),
+        }
+    }
+}
+impl AccountStats {
+    pub fn builder() -> builder::AccountStats {
         Default::default()
     }
 }
@@ -696,6 +810,77 @@ impl Payload {
         Default::default()
     }
 }
+///Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "ProtocolCounts",
+///  "description": "Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.",
+///  "type": "object",
+///  "properties": {
+///    "didcomm": {
+///      "description": "DIDComm v2 (JWE/JWS).",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "didcommV1": {
+///      "description": "A DIDComm v1 envelope.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "other": {
+///      "description": "Anything the mediator could not classify.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "tsp": {
+///      "description": "A Trust Spanning Protocol message.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ProtocolCounts {
+    ///DIDComm v2 (JWE/JWS).
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub didcomm: ::std::option::Option<u64>,
+    ///A DIDComm v1 envelope.
+    #[serde(
+        rename = "didcommV1",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub didcomm_v1: ::std::option::Option<u64>,
+    ///Anything the mediator could not classify.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub other: ::std::option::Option<u64>,
+    ///A Trust Spanning Protocol message.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub tsp: ::std::option::Option<u64>,
+}
+impl ::std::default::Default for ProtocolCounts {
+    fn default() -> Self {
+        Self {
+            didcomm: Default::default(),
+            didcomm_v1: Default::default(),
+            other: Default::default(),
+            tsp: Default::default(),
+        }
+    }
+}
+impl ProtocolCounts {
+    pub fn builder() -> builder::ProtocolCounts {
+        Default::default()
+    }
+}
 ///Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.
 ///
 /// <details><summary>JSON schema</summary>
@@ -884,6 +1069,10 @@ pub mod builder {
             ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         send_queue_bytes: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
         send_queue_count: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        stats: ::std::result::Result<
+            ::std::option::Option<super::AccountStats>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Account {
         fn default() -> Self {
@@ -899,6 +1088,7 @@ pub mod builder {
                 receive_queue_count: Ok(Default::default()),
                 send_queue_bytes: Ok(Default::default()),
                 send_queue_count: Ok(Default::default()),
+                stats: Ok(Default::default()),
             }
         }
     }
@@ -1013,6 +1203,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for send_queue_count: {e}"));
             self
         }
+        pub fn stats<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AccountStats>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.stats = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for stats: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Account> for super::Account {
         type Error = super::error::ConversionError;
@@ -1029,6 +1229,7 @@ pub mod builder {
                 receive_queue_count: value.receive_queue_count?,
                 send_queue_bytes: value.send_queue_bytes?,
                 send_queue_count: value.send_queue_count?,
+                stats: value.stats?,
             })
         }
     }
@@ -1046,6 +1247,123 @@ pub mod builder {
                 receive_queue_count: Ok(value.receive_queue_count),
                 send_queue_bytes: Ok(value.send_queue_bytes),
                 send_queue_count: Ok(value.send_queue_count),
+                stats: Ok(value.stats),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AccountStats {
+        bytes_received: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        bytes_sent: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        messages_received: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        messages_sent: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        received_by_protocol: ::std::result::Result<
+            ::std::option::Option<super::ProtocolCounts>,
+            ::std::string::String,
+        >,
+        sent_by_protocol: ::std::result::Result<
+            ::std::option::Option<super::ProtocolCounts>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for AccountStats {
+        fn default() -> Self {
+            Self {
+                bytes_received: Ok(Default::default()),
+                bytes_sent: Ok(Default::default()),
+                messages_received: Ok(Default::default()),
+                messages_sent: Ok(Default::default()),
+                received_by_protocol: Ok(Default::default()),
+                sent_by_protocol: Ok(Default::default()),
+            }
+        }
+    }
+    impl AccountStats {
+        pub fn bytes_received<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.bytes_received = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for bytes_received: {e}"));
+            self
+        }
+        pub fn bytes_sent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.bytes_sent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for bytes_sent: {e}"));
+            self
+        }
+        pub fn messages_received<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.messages_received = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for messages_received: {e}"));
+            self
+        }
+        pub fn messages_sent<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.messages_sent = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for messages_sent: {e}"));
+            self
+        }
+        pub fn received_by_protocol<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProtocolCounts>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.received_by_protocol = value.try_into().map_err(|e| {
+                format!("error converting supplied value for received_by_protocol: {e}")
+            });
+            self
+        }
+        pub fn sent_by_protocol<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::ProtocolCounts>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sent_by_protocol = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sent_by_protocol: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AccountStats> for super::AccountStats {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AccountStats,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                bytes_received: value.bytes_received?,
+                bytes_sent: value.bytes_sent?,
+                messages_received: value.messages_received?,
+                messages_sent: value.messages_sent?,
+                received_by_protocol: value.received_by_protocol?,
+                sent_by_protocol: value.sent_by_protocol?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AccountStats> for AccountStats {
+        fn from(value: super::AccountStats) -> Self {
+            Self {
+                bytes_received: Ok(value.bytes_received),
+                bytes_sent: Ok(value.bytes_sent),
+                messages_received: Ok(value.messages_received),
+                messages_sent: Ok(value.messages_sent),
+                received_by_protocol: Ok(value.received_by_protocol),
+                sent_by_protocol: Ok(value.sent_by_protocol),
             }
         }
     }
@@ -1374,6 +1692,88 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct ProtocolCounts {
+        didcomm: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        didcomm_v1: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        other: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        tsp: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+    }
+    impl ::std::default::Default for ProtocolCounts {
+        fn default() -> Self {
+            Self {
+                didcomm: Ok(Default::default()),
+                didcomm_v1: Ok(Default::default()),
+                other: Ok(Default::default()),
+                tsp: Ok(Default::default()),
+            }
+        }
+    }
+    impl ProtocolCounts {
+        pub fn didcomm<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.didcomm = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for didcomm: {e}"));
+            self
+        }
+        pub fn didcomm_v1<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.didcomm_v1 = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for didcomm_v1: {e}"));
+            self
+        }
+        pub fn other<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.other = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for other: {e}"));
+            self
+        }
+        pub fn tsp<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tsp = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tsp: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ProtocolCounts> for super::ProtocolCounts {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ProtocolCounts,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                didcomm: value.didcomm?,
+                didcomm_v1: value.didcomm_v1?,
+                other: value.other?,
+                tsp: value.tsp?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ProtocolCounts> for ProtocolCounts {
+        fn from(value: super::ProtocolCounts) -> Self {
+            Self {
+                didcomm: Ok(value.didcomm),
+                didcomm_v1: Ok(value.didcomm_v1),
+                other: Ok(value.other),
+                tsp: Ok(value.tsp),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct QueueLimits {
         receive_queue_limit:
             ::std::result::Result<::std::option::Option<i64>, ::std::string::String>,
@@ -1493,7 +1893,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Account\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's view of one served account.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"Number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.\"\n        },\n        \"lastAuthenticatedAt\": {\n          \"description\": \"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastReceivedAt\": {\n          \"description\": \"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"queueLimits\": {\n          \"$ref\": \"#/$defs/QueueLimits\"\n        },\n        \"receiveQueueBytes\": {\n          \"description\": \"Current byte size of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receiveQueueCount\": {\n          \"description\": \"Current count of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueBytes\": {\n          \"description\": \"Current byte size of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueCount\": {\n          \"description\": \"Current count of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\",\n        \"acl\"\n      ],\n      \"title\": \"Account\",\n      \"type\": \"object\"\n    },\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"QueueLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.\",\n      \"properties\": {\n        \"receiveQueueLimit\": {\n          \"description\": \"Maximum queued receive messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"sendQueueLimit\": {\n          \"description\": \"Maximum queued send messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"QueueLimits\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/account/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/add/0.1#response.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/Account\",\n          \"description\": \"The full realized mediator view of the newly created account.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"Messaging Add Account — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/account/add/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"accountType\": {\n      \"$ref\": \"#/$defs/AccountType\",\n      \"default\": \"standard\",\n      \"description\": \"The role to assign the new account. Defaults to `standard`; assigning a non-standard role requires administrative standing (only a rootAdmin may assign rootAdmin).\"\n    },\n    \"acl\": {\n      \"$ref\": \"#/$defs/MediatorAcl\",\n      \"description\": \"Initial access-control capabilities. Members omitted take the mediator's configured defaults.\"\n    },\n    \"did\": {\n      \"$ref\": \"#/$defs/Vid\",\n      \"description\": \"The DID of the account to register.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"queueLimits\": {\n      \"$ref\": \"#/$defs/QueueLimits\",\n      \"description\": \"Initial queued-message limits. Members omitted take the mediator's configured defaults.\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"Messaging Add Account — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Account\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's view of one served account.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"Number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.\"\n        },\n        \"lastAuthenticatedAt\": {\n          \"description\": \"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastReceivedAt\": {\n          \"description\": \"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"queueLimits\": {\n          \"$ref\": \"#/$defs/QueueLimits\"\n        },\n        \"receiveQueueBytes\": {\n          \"description\": \"Current byte size of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receiveQueueCount\": {\n          \"description\": \"Current count of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueBytes\": {\n          \"description\": \"Current byte size of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueCount\": {\n          \"description\": \"Current count of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"stats\": {\n          \"$ref\": \"#/$defs/AccountStats\",\n          \"description\": \"Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\",\n        \"acl\"\n      ],\n      \"title\": \"Account\",\n      \"type\": \"object\"\n    },\n    \"AccountStats\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.\",\n      \"properties\": {\n        \"bytesReceived\": {\n          \"description\": \"Total size of the messages counted by messagesReceived.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"bytesSent\": {\n          \"description\": \"Total size of the messages counted by messagesSent.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"messagesReceived\": {\n          \"description\": \"Messages the mediator accepted addressed to this account.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"messagesSent\": {\n          \"description\": \"Messages the mediator accepted from this account.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receivedByProtocol\": {\n          \"$ref\": \"#/$defs/ProtocolCounts\",\n          \"description\": \"messagesReceived split by the wire protocol the message arrived in.\"\n        },\n        \"sentByProtocol\": {\n          \"$ref\": \"#/$defs/ProtocolCounts\",\n          \"description\": \"messagesSent split by the wire protocol the message was sent in.\"\n        }\n      },\n      \"title\": \"AccountStats\",\n      \"type\": \"object\"\n    },\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"ProtocolCounts\": {\n      \"additionalProperties\": false,\n      \"description\": \"Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.\",\n      \"properties\": {\n        \"didcomm\": {\n          \"description\": \"DIDComm v2 (JWE/JWS).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"didcommV1\": {\n          \"description\": \"A DIDComm v1 envelope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"other\": {\n          \"description\": \"Anything the mediator could not classify.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"tsp\": {\n          \"description\": \"A Trust Spanning Protocol message.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"ProtocolCounts\",\n      \"type\": \"object\"\n    },\n    \"QueueLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.\",\n      \"properties\": {\n        \"receiveQueueLimit\": {\n          \"description\": \"Maximum queued receive messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"sendQueueLimit\": {\n          \"description\": \"Maximum queued send messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"QueueLimits\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/account/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/add/0.1#response.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/Account\",\n          \"description\": \"The full realized mediator view of the newly created account.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"Messaging Add Account — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/account/add/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"accountType\": {\n      \"$ref\": \"#/$defs/AccountType\",\n      \"default\": \"standard\",\n      \"description\": \"The role to assign the new account. Defaults to `standard`; assigning a non-standard role requires administrative standing (only a rootAdmin may assign rootAdmin).\"\n    },\n    \"acl\": {\n      \"$ref\": \"#/$defs/MediatorAcl\",\n      \"description\": \"Initial access-control capabilities. Members omitted take the mediator's configured defaults.\"\n    },\n    \"did\": {\n      \"$ref\": \"#/$defs/Vid\",\n      \"description\": \"The DID of the account to register.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"queueLimits\": {\n      \"$ref\": \"#/$defs/QueueLimits\",\n      \"description\": \"Initial queued-message limits. Members omitted take the mediator's configured defaults.\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"Messaging Add Account — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1502,7 +1902,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Account\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's view of one served account.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"Number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.\"\n        },\n        \"lastAuthenticatedAt\": {\n          \"description\": \"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastReceivedAt\": {\n          \"description\": \"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"queueLimits\": {\n          \"$ref\": \"#/$defs/QueueLimits\"\n        },\n        \"receiveQueueBytes\": {\n          \"description\": \"Current byte size of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receiveQueueCount\": {\n          \"description\": \"Current count of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueBytes\": {\n          \"description\": \"Current byte size of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueCount\": {\n          \"description\": \"Current count of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\",\n        \"acl\"\n      ],\n      \"title\": \"Account\",\n      \"type\": \"object\"\n    },\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"QueueLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.\",\n      \"properties\": {\n        \"receiveQueueLimit\": {\n          \"description\": \"Maximum queued receive messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"sendQueueLimit\": {\n          \"description\": \"Maximum queued send messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"QueueLimits\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/account/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/add/0.1#response.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/Account\",\n          \"description\": \"The full realized mediator view of the newly created account.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"Messaging Add Account — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Account\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's view of one served account.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"Number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account's controlling DID, or — for privacy, and for mediators that key accounts by a one-way hash and never hold the full DID — a stable hash of that DID (see `Vid`). Whichever form is used, it is the opaque account identifier the other `account/*`, `acl/*`, and `access-list/*` tasks accept.\"\n        },\n        \"lastAuthenticatedAt\": {\n          \"description\": \"Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastReceivedAt\": {\n          \"description\": \"Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"queueLimits\": {\n          \"$ref\": \"#/$defs/QueueLimits\"\n        },\n        \"receiveQueueBytes\": {\n          \"description\": \"Current byte size of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receiveQueueCount\": {\n          \"description\": \"Current count of queued receive messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueBytes\": {\n          \"description\": \"Current byte size of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"sendQueueCount\": {\n          \"description\": \"Current count of queued send messages.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"stats\": {\n          \"$ref\": \"#/$defs/AccountStats\",\n          \"description\": \"Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\",\n        \"acl\"\n      ],\n      \"title\": \"Account\",\n      \"type\": \"object\"\n    },\n    \"AccountStats\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.\",\n      \"properties\": {\n        \"bytesReceived\": {\n          \"description\": \"Total size of the messages counted by messagesReceived.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"bytesSent\": {\n          \"description\": \"Total size of the messages counted by messagesSent.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"messagesReceived\": {\n          \"description\": \"Messages the mediator accepted addressed to this account.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"messagesSent\": {\n          \"description\": \"Messages the mediator accepted from this account.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"receivedByProtocol\": {\n          \"$ref\": \"#/$defs/ProtocolCounts\",\n          \"description\": \"messagesReceived split by the wire protocol the message arrived in.\"\n        },\n        \"sentByProtocol\": {\n          \"$ref\": \"#/$defs/ProtocolCounts\",\n          \"description\": \"messagesSent split by the wire protocol the message was sent in.\"\n        }\n      },\n      \"title\": \"AccountStats\",\n      \"type\": \"object\"\n    },\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"ProtocolCounts\": {\n      \"additionalProperties\": false,\n      \"description\": \"Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.\",\n      \"properties\": {\n        \"didcomm\": {\n          \"description\": \"DIDComm v2 (JWE/JWS).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"didcommV1\": {\n          \"description\": \"A DIDComm v1 envelope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"other\": {\n          \"description\": \"Anything the mediator could not classify.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"tsp\": {\n          \"description\": \"A Trust Spanning Protocol message.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"ProtocolCounts\",\n      \"type\": \"object\"\n    },\n    \"QueueLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-account queued-message limits. A value of -1 means unlimited; a member omitted on a change request leaves that limit unchanged.\",\n      \"properties\": {\n        \"receiveQueueLimit\": {\n          \"description\": \"Maximum queued receive messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"sendQueueLimit\": {\n          \"description\": \"Maximum queued send messages; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"QueueLimits\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/account/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/account/add/0.1#response.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/Account\",\n          \"description\": \"The full realized mediator view of the newly created account.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"Messaging Add Account — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

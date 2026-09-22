@@ -185,6 +185,106 @@ class QueueLimits {
       };
 }
 
+/// Message counts split by wire protocol. An absent member is a protocol the mediator
+/// counted nothing for. The member names match the WireProtocol values the traffic
+/// monitor reports.
+class ProtocolCounts {
+  const ProtocolCounts({
+    this.didcomm,
+    this.didcommV1,
+    this.tsp,
+    this.other,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ProtocolCounts.fromJson(Map<String, dynamic> json) => ProtocolCounts(
+        didcomm: json['didcomm'] as int?,
+        didcommV1: json['didcommV1'] as int?,
+        tsp: json['tsp'] as int?,
+        other: json['other'] as int?,
+      );
+
+  /// DIDComm v2 (JWE/JWS).
+  final int? didcomm;
+
+  /// A DIDComm v1 envelope.
+  final int? didcommV1;
+
+  /// A Trust Spanning Protocol message.
+  final int? tsp;
+
+  /// Anything the mediator could not classify.
+  final int? other;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (didcomm != null) 'didcomm': didcomm!,
+        if (didcommV1 != null) 'didcommV1': didcommV1!,
+        if (tsp != null) 'tsp': tsp!,
+        if (other != null) 'other': other!,
+      };
+}
+
+/// What an account has sent and received over its lifetime, as the mediator counted
+/// it. Every member is optional: a mediator reports what it keeps, and a counter
+/// absent from a response was not kept rather than zero. Counters survive restarts and
+/// are not reset by reading them; removing an account discards them.
+class AccountStats {
+  const AccountStats({
+    this.messagesReceived,
+    this.messagesSent,
+    this.bytesReceived,
+    this.bytesSent,
+    this.receivedByProtocol,
+    this.sentByProtocol,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AccountStats.fromJson(Map<String, dynamic> json) => AccountStats(
+        messagesReceived: json['messagesReceived'] as int?,
+        messagesSent: json['messagesSent'] as int?,
+        bytesReceived: json['bytesReceived'] as int?,
+        bytesSent: json['bytesSent'] as int?,
+        receivedByProtocol: json['receivedByProtocol'] == null
+            ? null
+            : ProtocolCounts.fromJson(
+                json['receivedByProtocol'] as Map<String, dynamic>),
+        sentByProtocol: json['sentByProtocol'] == null
+            ? null
+            : ProtocolCounts.fromJson(
+                json['sentByProtocol'] as Map<String, dynamic>),
+      );
+
+  /// Messages the mediator accepted addressed to this account.
+  final int? messagesReceived;
+
+  /// Messages the mediator accepted from this account.
+  final int? messagesSent;
+
+  /// Total size of the messages counted by messagesReceived.
+  final int? bytesReceived;
+
+  /// Total size of the messages counted by messagesSent.
+  final int? bytesSent;
+
+  /// messagesReceived split by the wire protocol the message arrived in.
+  final ProtocolCounts? receivedByProtocol;
+
+  /// messagesSent split by the wire protocol the message was sent in.
+  final ProtocolCounts? sentByProtocol;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (messagesReceived != null) 'messagesReceived': messagesReceived!,
+        if (messagesSent != null) 'messagesSent': messagesSent!,
+        if (bytesReceived != null) 'bytesReceived': bytesReceived!,
+        if (bytesSent != null) 'bytesSent': bytesSent!,
+        if (receivedByProtocol != null)
+          'receivedByProtocol': receivedByProtocol!.toJson(),
+        if (sentByProtocol != null) 'sentByProtocol': sentByProtocol!.toJson(),
+      };
+}
+
 /// The mediator's view of one served account.
 class Account {
   const Account({
@@ -199,6 +299,7 @@ class Account {
     this.accessListCount,
     this.lastReceivedAt,
     this.lastAuthenticatedAt,
+    this.stats,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -216,6 +317,9 @@ class Account {
         accessListCount: json['accessListCount'] as int?,
         lastReceivedAt: json['lastReceivedAt'] as int?,
         lastAuthenticatedAt: json['lastAuthenticatedAt'] as int?,
+        stats: json['stats'] == null
+            ? null
+            : AccountStats.fromJson(json['stats'] as Map<String, dynamic>),
       );
 
   /// The account's controlling DID, or — for privacy, and for mediators that key
@@ -252,6 +356,10 @@ class Account {
   /// and the mediator has recorded an authentication.
   final int? lastAuthenticatedAt;
 
+  /// Lifetime counters the mediator keeps for this account. Present only when the
+  /// request set `includeStats`.
+  final AccountStats? stats;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'did': did,
@@ -266,6 +374,7 @@ class Account {
         if (lastReceivedAt != null) 'lastReceivedAt': lastReceivedAt!,
         if (lastAuthenticatedAt != null)
           'lastAuthenticatedAt': lastAuthenticatedAt!,
+        if (stats != null) 'stats': stats!.toJson(),
       };
 }
 

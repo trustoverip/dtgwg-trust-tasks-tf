@@ -61,6 +61,7 @@ A conforming **producer** (the requester) **MUST**:
 2. Populate `payload.did` with the target account's DID — or, for privacy (and for mediators that key accounts by a one-way hash and never hold the full DID), a stable hash of that DID. Either form is a valid [`Vid`](../../../_shared/0.1/messaging.schema.json#/$defs/Vid); the same form is used across `account/*`, `acl/*`, and `access-list/*` and compared by exact string equality.
 3. **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
 4. Set `payload.includeActivity` to `true` only to receive the activity timestamps (`lastReceivedAt`, `lastAuthenticatedAt`). A mediator that predates this member rejects the request as a schema violation, so a requester **SHOULD** set it only where it knows the mediator supports it.
+5. Set `payload.includeStats` to `true` only to receive the account's lifetime counters (`stats`). A mediator that predates this member rejects the request as a schema violation, so a requester **SHOULD** set it only where it knows the mediator supports it.
 
 A conforming **consumer** (the mediator) **MUST**:
 
@@ -69,6 +70,7 @@ A conforming **consumer** (the mediator) **MUST**:
 3. Where the target DID has no account, respond with `messaging/account/get:unknownAccount`.
 4. Return the full [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) view in the response.
 5. Include `lastReceivedAt` and `lastAuthenticatedAt` in the returned account when, and only when, `payload.includeActivity` is `true`, and then only the timestamps it has recorded. It **MUST NOT** include them otherwise: a requester that did not ask may validate the response against a schema without them.
+6. Include `stats` in the returned account when, and only when, `payload.includeStats` is `true`, and then only the counters it keeps. It **MUST NOT** include them otherwise: a requester that did not ask may validate the response against a schema without them.
 
 ## Request
 
@@ -152,5 +154,7 @@ An account view discloses the account's role, capabilities, limits, and current 
 A `proof`, when present, binds the request to its requester for authorization and audit; the queue-state counts it returns are point-in-time and **MAY** be stale by the time the response is read.
 
 The activity timestamps (`lastReceivedAt`, `lastAuthenticatedAt`) disclose when a party last received traffic and last connected — a behavioural signal beyond the account's configuration. A mediator **SHOULD** apply the same authorization to them as to the rest of the account view, and **MAY** record `lastReceivedAt` coarsely (it may lag by up to 60 seconds) so recording it does not add a write to every message.
+
+The lifetime counters (`stats`) are operational metadata about the served party: how much it has sent and received, and over which protocols. They disclose volume rather than content, and a mediator **SHOULD** apply the same authorization to them as to the rest of the account view.
 
 The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.

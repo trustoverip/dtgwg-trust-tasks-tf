@@ -14,6 +14,10 @@
       "type": "boolean",
       "description": "When true, the mediator includes each returned account's `lastReceivedAt` and `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned."
     },
+    "includeStats": {
+      "type": "boolean",
+      "description": "When true, the mediator includes each returned account's `stats` — its lifetime counters — where it keeps them. Omitted or false = no stats are returned."
+    },
     "ext": {
       "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
       "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
