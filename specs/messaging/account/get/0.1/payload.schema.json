@@ -10,6 +10,10 @@
       "$ref": "../../../_shared/0.1/messaging.schema.json#/$defs/Vid",
       "description": "The DID of the account to fetch."
     },
+    "includeActivity": {
+      "type": "boolean",
+      "description": "When true, the mediator includes each returned account's `lastReceivedAt` and `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned."
+    },
     "ext": {
       "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
       "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."

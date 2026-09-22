@@ -12,6 +12,10 @@ export interface MessagingGetAccountPayload {
    */
   did: Vid;
   /**
+   * When true, the mediator includes each returned account's `lastReceivedAt` and `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned.
+   */
+  includeActivity?: boolean;
+  /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
   ext?: Ext;
@@ -67,6 +71,10 @@ export const PAYLOAD_SCHEMA = {
     "did": {
       "$ref": "#/$defs/Vid",
       "description": "The DID of the account to fetch."
+    },
+    "includeActivity": {
+      "type": "boolean",
+      "description": "When true, the mediator includes each returned account's `lastReceivedAt` and `lastAuthenticatedAt`, where recorded. Omitted or false = neither is returned."
     },
     "ext": {
       "$ref": "#/$defs/Ext",
@@ -152,6 +160,16 @@ export const PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 0,
           "description": "Number of entries in the account's access list."
+        },
+        "lastReceivedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."
+        },
+        "lastAuthenticatedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."
         }
       }
     },
@@ -344,6 +362,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 0,
           "description": "Number of entries in the account's access list."
+        },
+        "lastReceivedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which the mediator last accepted a message addressed to this account. Present only when the request set `includeActivity` and the mediator has recorded such a message; MAY lag the true time by up to 60 seconds."
+        },
+        "lastAuthenticatedAt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication."
         }
       }
     },

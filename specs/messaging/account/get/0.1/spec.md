@@ -60,6 +60,7 @@ A conforming **producer** (the requester) **MUST**:
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/messaging/account/get/0.1`, with itself as `issuer` and the mediator as `recipient`.
 2. Populate `payload.did` with the target account's DID — or, for privacy (and for mediators that key accounts by a one-way hash and never hold the full DID), a stable hash of that DID. Either form is a valid [`Vid`](../../../_shared/0.1/messaging.schema.json#/$defs/Vid); the same form is used across `account/*`, `acl/*`, and `access-list/*` and compared by exact string equality.
 3. **SHOULD** include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
+4. Set `payload.includeActivity` to `true` only to receive the activity timestamps (`lastReceivedAt`, `lastAuthenticatedAt`). A mediator that predates this member rejects the request as a schema violation, so a requester **SHOULD** set it only where it knows the mediator supports it.
 
 A conforming **consumer** (the mediator) **MUST**:
 
@@ -67,6 +68,7 @@ A conforming **consumer** (the mediator) **MUST**:
 2. Enforce its own authorization policy and respond with the framework's `permissionDenied` where the requester may not read the target account.
 3. Where the target DID has no account, respond with `messaging/account/get:unknownAccount`.
 4. Return the full [`Account`](../../../_shared/0.1/messaging.schema.json#/$defs/Account) view in the response.
+5. Include `lastReceivedAt` and `lastAuthenticatedAt` in the returned account when, and only when, `payload.includeActivity` is `true`, and then only the timestamps it has recorded. It **MUST NOT** include them otherwise: a requester that did not ask may validate the response against a schema without them.
 
 ## Request
 
@@ -148,5 +150,7 @@ Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not
 An account view discloses the account's role, capabilities, limits, and current queue depth — operational metadata about the served party. A mediator **MUST** enforce its own authorization independent of the document, returning the framework's `permissionDenied` where the requester may not read the target account, even though `proof` is only **RECOMMENDED** for this read-only task.
 
 A `proof`, when present, binds the request to its requester for authorization and audit; the queue-state counts it returns are point-in-time and **MAY** be stale by the time the response is read.
+
+The activity timestamps (`lastReceivedAt`, `lastAuthenticatedAt`) disclose when a party last received traffic and last connected — a behavioural signal beyond the account's configuration. A mediator **SHOULD** apply the same authorization to them as to the rest of the account view, and **MAY** record `lastReceivedAt` coarsely (it may lag by up to 60 seconds) so recording it does not add a write to every message.
 
 The optional `ext` extension (see [SPEC.md §4.5.1](/SPEC.md#451-the-ext-extension-member)) is signed alongside the rest of the payload.
