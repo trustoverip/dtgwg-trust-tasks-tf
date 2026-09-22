@@ -58,6 +58,9 @@ errorCodes:
       properties:
         slot:
           type: string
+  - code: persona/profile/compose:untilNotFuture
+    meaning: "`until` is not in the future, or was given without `personaDid`. Nothing is written."
+    retryable: false
   - code: persona/profile/compose:labelWithoutPersona
     meaning: A `label` was given without a `personaDid`. A label names the face to the context it is worn in, and a face composed without being worn has no context to name it to. Nothing is written.
     retryable: false
@@ -112,12 +115,12 @@ holder that the value becomes reusable across their faces.
 A conforming **maintainer** **MUST**:
 
 1. Reject the document unless the caller is **holder-authorized and unscoped**.
-2. Refuse the whole compose, writing nothing, when any held claim does not resolve (`unresolvedReference`), two claims carry one `slot` (`duplicateSlot`), or `label` is given without `personaDid` (`labelWithoutPersona`).
+2. Refuse the whole compose, writing nothing, when any held claim does not resolve (`unresolvedReference`), two claims carry one `slot` (`duplicateSlot`), `label` is given without `personaDid` (`labelWithoutPersona`), or `until` is in the past or given without `personaDid` (`untilNotFuture`).
 3. Record every new claim as self-asserted.
 4. For a `local` claim, carry the value in the face itself and create no pool attribute.
 5. For a `pool` claim, reference a **self-asserted** pool attribute whose type and value equal the claim's, creating one only when none exists, and report which in `pooled`. It **MUST NOT** edit an attribute it reuses, and **MUST NOT** reuse one of any other provenance: a credential-backed attribute presents an issuer's attestation and goes stale when the credential does, and a value typed now is neither.
 6. Store the face in `contextId`'s local address space when every claim is `local`, and above contexts otherwise, and say which in `scope`.
-7. When `personaDid` is given, bind the face to that persona in `contextId` as persona/binding/set (or persona/local/binding/set, for a local face) would, replacing any face the persona wore there.
+7. When `personaDid` is given, bind the face to that persona in `contextId` as persona/binding/set (or persona/local/binding/set, for a local face) would, replacing any face the persona wore there, and with its `until` when one is given.
 8. Leave no pool attribute it created referenced by nothing when a later step of the same compose fails.
 
 ## Authorization

@@ -214,6 +214,25 @@ export type ExpectedVersion_VtaV0_1 = number;
  */
 export type ExpiresAt = string;
 /**
+ * Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).
+ *
+ * A tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.
+ *
+ * A context-local face has no reach: it lives in its context and is worn there by construction.
+ */
+export type FaceReach =
+  | {
+      kind: "anywhere";
+    }
+  | {
+      kind: "only";
+      /**
+       * @minItems 1
+       * @maxItems 256
+       */
+      contextIds: [string, ...string[]];
+    };
+/**
  * A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.
  */
 export type FacetColour = "slate" | "indigo" | "teal" | "moss" | "sand" | "clay" | "rose" | "plum";
@@ -3348,6 +3367,7 @@ export interface Profile {
    * @maxItems 256
    */
   entries: ProfileEntry[];
+  reach?: FaceReach;
   /**
    * `retired`: the face is worn nowhere, is left out of pickers and default listings, and cannot be worn until reinstated (persona/profile/retire, persona/profile/reinstate). Its disclosure history and every value it carries are kept — retiring is 'stop being this', not 'forget this'. Absent reads as `active`.
    */

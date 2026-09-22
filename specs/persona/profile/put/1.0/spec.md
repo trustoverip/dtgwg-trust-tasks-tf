@@ -61,6 +61,19 @@ errorCodes:
       properties:
         slot:
           type: string
+  - code: persona/profile/put:boundOutsideReach
+    meaning: The new `reach` excludes contexts the face is worn in now. The details name them. Nothing is written — narrowing where a face may go must not silently take it off where it is.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["contextIds"]
+      properties:
+        contextIds:
+          type: array
+          maxItems: 256
+          items:
+            type: string
   - code: persona/profile/put:versionConflict
     meaning: The `expectedVersion` precondition failed. Details carry the maintainer's current version.
     retryable: false
@@ -120,6 +133,16 @@ A conforming maintainer **MUST** refuse, with `persona/profile/put:duplicateSlot
 a profile in which two entries carry the same `slot`. A slot answers one question
 — "what does this face call itself" — with one entry, and two answers is no
 answer.
+
+A conforming maintainer **MUST** store `reach` as given; **MUST** keep the face's
+current reach when `reach` is absent, and treat it as `anywhere` for a new face;
+and **MUST** refuse with `persona/profile/put:boundOutsideReach` a reach that
+excludes a context the face is worn in, naming those contexts.
+
+`reach` is the one member a put does not reset by omission. Every other member
+is the composition, and a put replaces the composition; `reach` is a restriction
+on where the composition may go, and a producer written before it existed would
+otherwise lift the restriction every time it saved an edit.
 
 A conforming maintainer **MUST** refuse, with
 `persona/profile/put:pinnedVersionUnavailable`, an entry pinning a version it

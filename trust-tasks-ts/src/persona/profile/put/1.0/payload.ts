@@ -3,7 +3,7 @@
  * Source: specs/persona/profile/put/1.0/payload.schema.json
  */
 
-import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
+import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, FaceReach, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version_PersonaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**
@@ -24,6 +24,10 @@ export interface PersonaProfilePutPayload {
    * @maxItems 256
    */
   entries: ProfileEntry[];
+  /**
+   * Where this face may be worn. Omit to keep the face's current reach — anywhere, for a new face. Unlike the rest of a put, omission does not reset it: a reach is a restriction the holder set, and a producer that predates this member must not widen a face to anywhere by saving an unrelated edit. To widen, send `{"kind": "anywhere"}`. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately.
+   */
+  reach?: FaceReach;
   /**
    * Vault identifiers of credentials associated with this profile as inventory — what this persona can prove — as distinct from the evidence relationship a credentialBacked attribute expresses. The two answer different questions and a consumer MUST NOT read one as the other.
    *
@@ -56,7 +60,7 @@ export interface PersonaProfilePutResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, ExpectedVersion, Ext, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version };
+export type { ClaimType, ExpectedVersion, Ext, FaceReach, ProfileEntry, ProofRung, Provenance, Slot, Ulid, ValueType, Version };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/profile/put/1.0" as const;
@@ -108,6 +112,10 @@ export const PAYLOAD_SCHEMA = {
         "$ref": "#/$defs/ProfileEntry"
       },
       "description": "Ordered; the order is display order. An empty array is legal and means a profile that discloses nothing — useful as a starting point, and not the same as no profile at all."
+    },
+    "reach": {
+      "$ref": "#/$defs/FaceReach",
+      "description": "Where this face may be worn. Omit to keep the face's current reach — anywhere, for a new face. Unlike the rest of a put, omission does not reset it: a reach is a restriction the holder set, and a producer that predates this member must not widen a face to anywhere by saving an unrelated edit. To widen, send `{\"kind\": \"anywhere\"}`. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately."
     },
     "credentialRefs": {
       "type": "array",
@@ -211,6 +219,47 @@ export const PAYLOAD_SCHEMA = {
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "FaceReach": {
+      "title": "FaceReach",
+      "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "anywhere"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "contextIds"
+          ],
+          "properties": {
+            "kind": {
+              "const": "only"
+            },
+            "contextIds": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "ProfileEntry": {
       "title": "ProfileEntry",
@@ -524,6 +573,47 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
       "type": "integer",
       "minimum": 0
+    },
+    "FaceReach": {
+      "title": "FaceReach",
+      "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "anywhere"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "contextIds"
+          ],
+          "properties": {
+            "kind": {
+              "const": "only"
+            },
+            "contextIds": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "ProfileEntry": {
       "title": "ProfileEntry",

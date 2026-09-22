@@ -45,6 +45,9 @@ errorCodes:
   - code: persona/binding/set:untilNotFuture
     meaning: "`until` is not in the future, or accompanies a null `profileId`. Nothing is written."
     retryable: false
+  - code: persona/binding/set:outsideReach
+    meaning: The face's `reach` does not include this context. Nothing is written. The holder widens the reach with persona/profile/put, or wears another face here.
+    retryable: false
 ---
 
 ## Abstract
@@ -108,7 +111,8 @@ the holder calls it. An absent `label` gives the context no name at all, which
 is a legitimate choice rather than a gap.
 
 A conforming maintainer **MUST** refuse to bind a retired face, with
-`persona/binding/set:profileRetired`.
+`persona/binding/set:profileRetired`, and a face whose `reach` does not include
+`contextId`, with `persona/binding/set:outsideReach`.
 
 A conforming maintainer **MUST** refuse, with `persona/binding/set:untilNotFuture`, an
 `until` that is not in the future or that accompanies a null `profileId`. At
