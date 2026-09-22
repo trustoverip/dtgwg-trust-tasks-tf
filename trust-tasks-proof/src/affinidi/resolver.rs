@@ -20,20 +20,18 @@
 //! The adapter handles every DID method the resolver cache supports in
 //! its local mode (`did:key`, `did:peer`, `did:jwk`, `did:web`, …; see
 //! [`affinidi_did_resolver_cache_sdk::DIDMethod`] for the canonical
-//! list). For each resolved DID document it scans
-//! [`verification_method`](affinidi_did_common::Document) for an entry
-//! whose `id` matches the inbound verificationMethod URI exactly, then
-//! decodes the `publicKeyMultibase` to determine both the key type and
-//! raw key bytes.
+//! list). For each resolved DID document it:
+//!
+//! 1. requires the verification method to be one the DID controller
+//!    authorised for signing: referenced (by absolute DID URL or relative
+//!    `#fragment`) or embedded under `authentication` or `assertionMethod`.
+//!    A key listed only under `keyAgreement`, or listed nowhere, is
+//!    refused — otherwise a key never meant for signing could sign;
+//! 2. decodes its public key from `publicKeyMultibase` **or**
+//!    `publicKeyJwk`, to determine both the key type and raw key bytes.
 //!
 //! ## What isn't (yet)
 //!
-//! * Verification methods that publish their key via `publicKeyJwk`
-//!   rather than `publicKeyMultibase` — `affinidi-did-common`'s
-//!   `VerificationMethod::get_public_key_bytes` currently supports only
-//!   the `Multikey` `type_`. The adapter surfaces a clean
-//!   [`DataIntegrityError::Resolver`] error for those cases so the
-//!   caller can fall back to a custom resolver.
 //! * Anything beyond Ed25519 / X25519 / P-256 / P-384 / secp256k1 —
 //!   post-quantum multicodecs (ML-DSA, SLH-DSA) would slot in here
 //!   under the same feature flags `affinidi-crypto` exposes.
@@ -42,10 +40,9 @@ use std::sync::Arc;
 
 use affinidi_crypto::KeyType;
 use affinidi_data_integrity::{DataIntegrityError, ResolvedKey, VerificationMethodResolver};
+use affinidi_did_common::verification_method::VerificationRelationship;
 use affinidi_did_resolver_cache_sdk::DIDCacheClient;
-use affinidi_encoding::{
-    decode_multikey_with_codec, ED25519_PUB, P256_PUB, P384_PUB, SECP256K1_PUB, X25519_PUB,
-};
+use affinidi_encoding::{ED25519_PUB, P256_PUB, P384_PUB, SECP256K1_PUB, X25519_PUB};
 use async_trait::async_trait;
 
 /// A [`VerificationMethodResolver`] that delegates DID resolution to
@@ -81,33 +78,46 @@ impl VerificationMethodResolver for CachedDidResolver {
             .map_err(|e| DataIntegrityError::Resolver(format!("resolve {did}: {e}")))?;
 
         let doc = resolve.doc;
-        let matching = doc
-            .verification_method
-            .iter()
-            .find(|m| m.id.as_str() == vm)
+
+        // The method may be named by absolute DID URL or relative fragment,
+        // and may be embedded in a relationship rather than listed under
+        // `verificationMethod`.
+        let fragment = vm.find('#').map(|i| &vm[i..]);
+        let refers = |id: &str| id == vm || fragment.is_some_and(|f| id == f);
+        let authorised = |rels: &[VerificationRelationship]| {
+            rels.iter().find_map(|r| match r {
+                VerificationRelationship::Reference(id) if refers(id) => Some(None),
+                VerificationRelationship::VerificationMethod(m) if refers(m.id.as_str()) => {
+                    Some(Some((**m).clone()))
+                }
+                _ => None,
+            })
+        };
+        let embedded = authorised(&doc.authentication)
+            .or_else(|| authorised(&doc.assertion_method))
             .ok_or_else(|| {
                 DataIntegrityError::Resolver(format!(
-                    "verificationMethod {vm} not present in DID document for {did}"
+                    "verificationMethod {vm} is not an authentication or assertionMethod key of {did}"
                 ))
             })?;
+        let method = match embedded {
+            Some(method) => method,
+            None => doc
+                .verification_method
+                .iter()
+                .find(|m| refers(m.id.as_str()))
+                .cloned()
+                .ok_or_else(|| {
+                    DataIntegrityError::Resolver(format!(
+                        "verificationMethod {vm} not present in DID document for {did}"
+                    ))
+                })?,
+        };
 
-        // Today we only handle Multikey verificationMethods. JWK-bearing
-        // ones surface a typed error; callers wanting JWK support stack
-        // a custom resolver in front of this one.
-        let multibase = matching
-            .property_set
-            .get("publicKeyMultibase")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| {
-                DataIntegrityError::Resolver(format!(
-                    "verificationMethod {vm} has no publicKeyMultibase (type {:?}); \
-                     JWK-bearing methods need a custom resolver",
-                    matching.type_
-                ))
-            })?;
-
-        let (codec, public_key_bytes) = decode_multikey_with_codec(multibase)
-            .map_err(|e| DataIntegrityError::Resolver(format!("decode multikey: {e}")))?;
+        // Multikey `publicKeyMultibase` or `publicKeyJwk`.
+        let (codec, public_key_bytes) = method
+            .decode_public_key()
+            .map_err(|e| DataIntegrityError::Resolver(format!("{vm}: {e}")))?;
 
         let key_type = codec_to_key_type(codec).ok_or_else(|| {
             DataIntegrityError::Resolver(format!("unsupported multicodec 0x{codec:x} on {vm}"))

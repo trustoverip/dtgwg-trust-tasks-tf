@@ -101,45 +101,53 @@ impl ProofVerifier for Verifier {
     where
         P: Serialize + Send + Sync,
     {
-        // ─── 1. Extract the proof.
-        let Some(proof) = &doc.proof else {
-            return Err(VerificationError::MalformedProof(
-                "document carries no proof member".to_string(),
-            ));
-        };
+        // The typed document, re-serialised. Exact only when `P` round-trips
+        // byte for byte; a verifier holding the document as it arrived should
+        // call [`Verifier::verify_raw`] with that instead.
+        let doc_value = serde_json::to_value(doc).map_err(|e| {
+            VerificationError::Other(format!("serialise TrustTask for verification: {e}"))
+        })?;
+        self.verify_raw(&doc_value).await
+    }
+}
 
-        // ─── 2. Round-trip our typed Proof into the Affinidi
-        //        DataIntegrityProof. The two structs are members-equivalent
-        //        but use slightly different field names (proof_type vs type_,
-        //        camelCase vs snake_case via serde).
-        let proof_value = serde_json::to_value(proof)
-            .map_err(|e| VerificationError::MalformedProof(format!("serialise proof: {e}")))?;
+impl Verifier {
+    /// Verify the `proof` of a Trust Task document **as it was received**.
+    ///
+    /// The signature covers the JCS canonicalisation of the document the
+    /// signer serialised. [`ProofVerifier::verify`] rebuilds that document
+    /// from a parsed `TrustTask<P>`, which is exact only when every member
+    /// survives a serde round-trip unchanged: a timestamp written as
+    /// `+00:00` that re-serialises as `Z`, a number re-rendered, an unknown
+    /// member dropped by the payload type — any of those makes a genuine
+    /// proof fail. A receiver holding the raw JSON should verify that.
+    ///
+    /// Checks, in order: a `proof` member is present and well-formed; the
+    /// document names an `issuer` controlling the proof's verificationMethod
+    /// (SPEC §4.8, exact string equality); the signature verifies over the
+    /// document minus its `proof`.
+    pub async fn verify_raw(&self, doc: &Value) -> Result<(), VerificationError> {
+        // ─── 1. Extract the proof.
+        let proof_value = doc.get("proof").cloned().ok_or_else(|| {
+            VerificationError::MalformedProof("document carries no proof member".to_string())
+        })?;
         let parsed_proof: DataIntegrityProof = serde_json::from_value(proof_value)
             .map_err(|e| VerificationError::MalformedProof(format!("parse proof: {e}")))?;
 
-        // ─── 3. Serialise the document minus the proof member. We can't
-        //        avoid the JSON round-trip because TrustTask is generic
-        //        over P; a manual "skip this field" path would force
-        //        re-deriving the serializer.
-        let mut doc_value = serde_json::to_value(doc).map_err(|e| {
-            VerificationError::Other(format!("serialise TrustTask for verification: {e}"))
-        })?;
+        // ─── 2. The document minus its proof, exactly as given.
+        let mut doc_value = doc.clone();
         if let Some(obj) = doc_value.as_object_mut() {
             obj.remove("proof");
         }
 
-        // ─── 3b. Bind the proof to the in-band issuer (SPEC §4.7 / §4.8 /
+        // ─── 3. Bind the proof to the in-band issuer (SPEC §4.7 / §4.8 /
         //        §7.2 item 7). A valid signature proves only that *some* key
         //        signed the document; authenticity additionally requires that
         //        key to be controlled by the document's declared `issuer`.
-        //        Without this check an attacker signs with their own key under
-        //        their own DID while claiming any `issuer`, and every
-        //        downstream authorization keyed on the issuer runs for a
-        //        spoofed identity. Compare the verificationMethod's DID (the
-        //        portion before `#`) to `issuer` by exact string equality — no
-        //        normalization, per §4.8. For the rare DID method whose
-        //        controller differs from the VM's own DID this is conservative
-        //        (it rejects rather than trusting an unverified delegation).
+        //        Compare the verificationMethod's DID (the portion before `#`)
+        //        to `issuer` by exact string equality — no normalization, per
+        //        §4.8.
+        let vm = &parsed_proof.verification_method;
         match doc_value.get("issuer").and_then(|v| v.as_str()) {
             None => {
                 return Err(VerificationError::IssuerMismatch(
@@ -147,11 +155,7 @@ impl ProofVerifier for Verifier {
                 ));
             }
             Some(issuer) => {
-                let vm_did = proof
-                    .verification_method
-                    .split('#')
-                    .next()
-                    .unwrap_or(&proof.verification_method);
+                let vm_did = vm.split('#').next().unwrap_or(vm);
                 if vm_did != issuer {
                     return Err(VerificationError::IssuerMismatch(format!(
                         "verificationMethod is controlled by {vm_did}, not the document issuer {issuer}"
