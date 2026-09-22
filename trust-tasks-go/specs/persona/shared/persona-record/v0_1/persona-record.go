@@ -67,7 +67,16 @@ const (
 // receives a different one that routes back to the holder. This is the shape of the most
 // widely adopted consumer privacy feature in this space; a maintainer need not operate a
 // relay to conform, but the shape must exist, because retrofitting per-verifier values
-// into a pool-of-values model is a migration rather than an addition.
+// into a pool-of-values model is a migration rather than an addition. `derived` — the
+// value was taken from a source the holder connected or supplied — a code-hosting
+// profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody
+// signed it: it is the holder's claim that the source said so, and a consumer MUST NOT
+// present it as attested. It exists as its own kind because a derived value is neither of
+// the others — the holder did not author it, and no one vouches for it — and a holder
+// deciding whether to disclose deserves to know which of their values they typed. For how
+// strongly a disclosed value identifies the holder, the kinds rank `credentialBacked`
+// above `derived` above `selfAsserted`; `generated` values are per-verifier and do not
+// correlate.
 type Provenance = map[string]json.RawMessage
 
 // ProofRung How strongly a credential-backed claim is hidden when presented, ordered most
@@ -153,7 +162,16 @@ type Attribute struct {
 	// Set only where the holder decided it explicitly. Absent resolves from the claim-type
 	// registry.
 	Release *ReleaseRequirement `json:"release,omitempty"`
-	Version Version             `json:"version"`
+
+	// Vault identifiers of credentials in which a third party endorses this value — a
+	// colleague vouching for a skill, an employer confirming a title. INVENTORY, not
+	// evidence: the value remains whatever its `provenance` says, and a vouched
+	// self-assertion is still self-asserted. Folding a vouch into `provenance` would make it
+	// render as attested, which is the one thing provenance exists to prevent. Not disclosed
+	// with the value; a holder who wants a counterparty to see an endorsement presents the
+	// credential itself. Absent when there are none.
+	Endorsements *[]string `json:"endorsements,omitempty"`
+	Version      Version   `json:"version"`
 
 	// Earlier versions of this attribute the maintainer still holds, and why. A maintainer
 	// that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who

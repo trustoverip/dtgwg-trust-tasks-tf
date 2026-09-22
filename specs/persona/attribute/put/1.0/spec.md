@@ -54,6 +54,19 @@ errorCodes:
   - code: persona/attribute/put:valueTypeMismatch
     meaning: The supplied `value` does not agree with the declared `valueType`.
     retryable: false
+  - code: persona/attribute/put:endorsementNotFound
+    meaning: An `endorsements` entry names a credential the vault does not hold. The details name the identifiers. The attribute is not written — an endorsement the holder cannot produce is not one.
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["credentialIds"]
+      properties:
+        credentialIds:
+          type: array
+          maxItems: 64
+          items:
+            type: string
   - code: persona/attribute/put:credentialNotFound
     meaning: A `credentialBacked` provenance names a credential the vault does not hold, or holds in a state it cannot be derived from. The attribute is not written — an attribute whose backing cannot be resolved at write time would read back stale forever.
     retryable: false
@@ -109,10 +122,11 @@ A conforming **maintainer** (the agent) **MUST**:
 1. Reject the document unless the caller is **holder-authorized and unscoped** — see [Authorization](#authorization).
 2. Verify that `value` agrees with `valueType`, and emit `persona/attribute/put:valueTypeMismatch` when it does not.
 3. For a `credentialBacked` provenance, resolve the named credential and the `claimPath` within it at write time, and emit `persona/attribute/put:credentialNotFound` when it cannot.
-4. Assign an `attributeId` when the producer omitted one, and return it.
-5. Encrypt `value` at rest.
-6. Persist `sensitivity` and `release` **only when the producer supplied them**, and never store a value resolved from the claim-type registry in their place. An attribute that recorded its resolved default would keep that answer after the registry tightened, so a later reclassification would protect new attributes and leave the existing ones exposed — the opposite of what a reclassification is for.
-7. Apply `expectedVersion` as a precondition when supplied, and on failure emit `persona/attribute/put:versionConflict` carrying the current version and value.
+4. Resolve every `endorsements` entry against the vault, and emit `persona/attribute/put:endorsementNotFound`, naming them, for any it does not hold. An endorsement never changes the attribute's `provenance`.
+5. Assign an `attributeId` when the producer omitted one, and return it.
+6. Encrypt `value` at rest.
+7. Persist `sensitivity` and `release` **only when the producer supplied them**, and never store a value resolved from the claim-type registry in their place. An attribute that recorded its resolved default would keep that answer after the registry tightened, so a later reclassification would protect new attributes and leave the existing ones exposed — the opposite of what a reclassification is for.
+8. Apply `expectedVersion` as a precondition when supplied, and on failure emit `persona/attribute/put:versionConflict` carrying the current version and value.
 
 A conforming maintainer **MUST NOT** refuse a write because of its correlation
 result. The check is advisory and the holder decides; a store that refused would

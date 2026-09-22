@@ -66,7 +66,7 @@ export interface PersonaDisclosurePreviewResponsePayload {
       arg: unknown;
       over?: ClaimType;
     };
-    provenance: "selfAsserted" | "credentialBacked" | "generated";
+    provenance: "selfAsserted" | "credentialBacked" | "generated" | "derived";
     rung: ProofRung;
     /**
      * True when this verifier has not previously received this claim type from this persona. What makes a preview rankable rather than a flat list — a holder needs the unusual ask to stand out from the routine one.
@@ -254,7 +254,8 @@ export const PAYLOAD_SCHEMA = {
                 "enum": [
                   "selfAsserted",
                   "credentialBacked",
-                  "generated"
+                  "generated",
+                  "derived"
                 ]
               },
               "rung": {
@@ -449,7 +450,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "enum": [
                   "selfAsserted",
                   "credentialBacked",
-                  "generated"
+                  "generated",
+                  "derived"
                 ]
               },
               "rung": {

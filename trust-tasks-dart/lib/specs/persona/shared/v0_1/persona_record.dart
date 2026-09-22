@@ -107,7 +107,15 @@ extension type const ProofRung(String value) {
 /// is the shape of the most widely adopted consumer privacy feature in this space; a
 /// maintainer need not operate a relay to conform, but the shape must exist, because
 /// retrofitting per-verifier values into a pool-of-values model is a migration rather
-/// than an addition.
+/// than an addition. `derived` — the value was taken from a source the holder
+/// connected or supplied — a code-hosting profile, an uploaded CV — rather than typed
+/// by them or attested by an issuer. Nobody signed it: it is the holder's claim that
+/// the source said so, and a consumer MUST NOT present it as attested. It exists as
+/// its own kind because a derived value is neither of the others — the holder did not
+/// author it, and no one vouches for it — and a holder deciding whether to disclose
+/// deserves to know which of their values they typed. For how strongly a disclosed
+/// value identifies the holder, the kinds rank `credentialBacked` above `derived`
+/// above `selfAsserted`; `generated` values are per-verifier and do not correlate.
 typedef Provenance = Map<String, dynamic>;
 
 /// How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it
@@ -235,6 +243,7 @@ class Attribute {
     this.staleReason,
     this.sensitivity,
     this.release,
+    this.endorsements,
     required this.version,
     this.retainedVersions,
     this.createdAt,
@@ -259,6 +268,11 @@ class Attribute {
         release: json['release'] == null
             ? null
             : ReleaseRequirement(json['release'] as String),
+        endorsements: json['endorsements'] == null
+            ? null
+            : (json['endorsements'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
         version: json['version'] as int,
         retainedVersions: json['retainedVersions'] == null
             ? null
@@ -303,6 +317,15 @@ class Attribute {
   /// Set only where the holder decided it explicitly. Absent resolves from the
   /// claim-type registry.
   final ReleaseRequirement? release;
+
+  /// Vault identifiers of credentials in which a third party endorses this value — a
+  /// colleague vouching for a skill, an employer confirming a title. INVENTORY, not
+  /// evidence: the value remains whatever its `provenance` says, and a vouched
+  /// self-assertion is still self-asserted. Folding a vouch into `provenance` would make
+  /// it render as attested, which is the one thing provenance exists to prevent. Not
+  /// disclosed with the value; a holder who wants a counterparty to see an endorsement
+  /// presents the credential itself. Absent when there are none.
+  final List<String>? endorsements;
   final Version version;
 
   /// Earlier versions of this attribute the maintainer still holds, and why. A
@@ -327,6 +350,7 @@ class Attribute {
         if (staleReason != null) 'staleReason': staleReason!.value,
         if (sensitivity != null) 'sensitivity': sensitivity!.value,
         if (release != null) 'release': release!.value,
+        if (endorsements != null) 'endorsements': endorsements!,
         'version': version,
         if (retainedVersions != null)
           'retainedVersions': retainedVersions!.map((e) => e.toJson()).toList(),
