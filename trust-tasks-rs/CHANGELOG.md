@@ -31,6 +31,54 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.12...trust-tasks-rs-v0.21.13) — 2026-09-22
+
+
+### Added
+
+- **rs**: Emit each specification's declared error codes ([#575](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/575))
+
+A specification's `errorCodes` front matter (SPEC §7.3 item 9) never reached
+  the Rust bindings, so an implementation could only spell a declared extended
+  code as a string literal, and nothing checked the literal was a code the
+  specification declares — or that the service emitted the codes it declares at
+  all. Downstream, that let `vtc/join-requests/withdraw/0.1` ship answering both
+  of its declared codes as a bare `taskFailed` with every gate green
+  (OpenVTC/verifiable-trust-infrastructure#1600).
+
+  `trust-tasks-codegen` now emits, for every generated module:
+
+  - `pub const ERROR_CODES: &[DeclaredErrorCode]` — the declarations in order,
+    empty when the specification declares none;
+  - `pub mod error_codes` (when it declares any) — one `DeclaredErrorCode`
+    constant per code, named for its local part in SCREAMING_SNAKE_CASE
+    (`vtc/join-requests/withdraw:notFound` -> `error_codes::NOT_FOUND`), with the
+    declared `meaning` as its rustdoc;
+
+  and `schema_index::error_codes_for(type_uri)` serves the same slice by bare
+  request Type URI, so a consumer can derive a declared-vs-emitted census rather
+  than hand-maintain one. `Some(&[])` (declares nothing) and `None` (unknown URI)
+  are distinct answers.
+
+  `DeclaredErrorCode` is a new `#[non_exhaustive]` type carrying `code` (the
+  fully qualified wire string, usable in a `const`) and `retryable` (as
+  declared), with `namespace()`, `local()` and `matches(&TrustTaskCode)`. It
+  converts infallibly into `TrustTaskCode`, and into `ErrorPayload` with the
+  declared `retryable` rather than the §8.5 default. There is deliberately no
+  `PartialEq<DeclaredErrorCode> for TrustTaskCode`: a second `PartialEq` impl
+  makes every existing `assert_eq!(code, StandardCode::X.into())` ambiguous.
+
+  The generator refuses a declaration whose code does not parse, whose namespace
+  is neither the slug nor a path prefix of it (§8.5 rule 2), or whose local part
+  collides with another declaration's constant. `check-bindings` now compares
+  every Rust `ERROR_CODES` against the front matter, re-derived independently
+  (891 codes across 464 modules). TypeScript, Go and Dart do not emit error codes
+  yet; CLAUDE.md records that as the follow-up.
+
+  Additive only: new items, a new type and new `From` impls.
+
+
+
 ## [0.21.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.11...trust-tasks-rs-v0.21.12) — 2026-09-21
 
 
