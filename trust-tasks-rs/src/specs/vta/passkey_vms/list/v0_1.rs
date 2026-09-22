@@ -1044,7 +1044,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"4d0f5g7e-1c65-4e34-d063-7f3h5c1e99g5\",\n  \"type\": \"https://trusttasks.org/spec/vta/passkey-vms/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-05-16T11:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmcExampleScid:example.com\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-05-16T11:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"4d0f5g7e-1c65-4e34-d063-7f3h5c1e99g5\",\n  \"type\": \"https://trusttasks.org/spec/vta/passkey-vms/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-05-16T11:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmcExampleScid:example.com\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-05-16T11:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

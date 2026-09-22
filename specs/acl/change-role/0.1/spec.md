@@ -129,7 +129,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/change-role/
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:org.example#key-1",
     "created": "2026-06-10T14:00:00Z",
     "proofPurpose": "assertionMethod",

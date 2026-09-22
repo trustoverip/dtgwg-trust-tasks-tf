@@ -125,7 +125,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/revoke/0.1` 
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:org.example#key-1",
     "created": "2026-05-20T11:00:00Z",
     "proofPurpose": "assertionMethod",

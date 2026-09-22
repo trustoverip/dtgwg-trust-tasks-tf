@@ -113,7 +113,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/grant/0.1` w
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:org.example#key-1",
     "created": "2026-05-16T10:00:00Z",
     "proofPurpose": "assertionMethod",
@@ -178,7 +178,7 @@ Response to the first request example:
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:maintainer.example#key-1",
     "created": "2026-05-16T10:00:01Z",
     "proofPurpose": "assertionMethod",

@@ -102,7 +102,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/did-template
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-07-29T09:00:00Z",
     "proofPurpose": "assertionMethod",

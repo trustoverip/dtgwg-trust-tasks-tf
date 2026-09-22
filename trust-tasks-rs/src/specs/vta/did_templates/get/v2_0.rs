@@ -1192,7 +1192,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9\",\n  \"type\": \"https://trusttasks.org/spec/vta/did-templates/get/2.0\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-07-29T09:00:00Z\",\n  \"payload\": {\n    \"contextId\": \"primary\",\n    \"name\": \"messaging-bridge\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-07-29T09:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9\",\n  \"type\": \"https://trusttasks.org/spec/vta/did-templates/get/2.0\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-07-29T09:00:00Z\",\n  \"payload\": {\n    \"contextId\": \"primary\",\n    \"name\": \"messaging-bridge\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-07-29T09:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

@@ -93,7 +93,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/passkey-vms/
   },
   "proof": {
     "type": "DataIntegrityProof",
-    "cryptosuite": "eddsa-rdfc-2022",
+    "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-05-16T11:00:00Z",
     "proofPurpose": "assertionMethod",
