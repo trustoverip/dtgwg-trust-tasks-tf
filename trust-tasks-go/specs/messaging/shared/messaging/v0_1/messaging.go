@@ -131,6 +131,51 @@ type Account struct {
 	// mediator, over any transport. Present only when the request set `includeActivity` and
 	// the mediator has recorded an authentication.
 	LastAuthenticatedAt *int64 `json:"lastAuthenticatedAt,omitempty"`
+
+	// Lifetime counters the mediator keeps for this account. Present only when the request
+	// set `includeStats`.
+	Stats *AccountStats `json:"stats,omitempty"`
+}
+
+// AccountStats What an account has sent and received over its lifetime, as the mediator
+// counted it. Every member is optional: a mediator reports what it keeps, and a counter
+// absent from a response was not kept rather than zero. Counters survive restarts and are
+// not reset by reading them; removing an account discards them.
+type AccountStats struct {
+	// Messages the mediator accepted addressed to this account.
+	MessagesReceived *int64 `json:"messagesReceived,omitempty"`
+
+	// Messages the mediator accepted from this account.
+	MessagesSent *int64 `json:"messagesSent,omitempty"`
+
+	// Total size of the messages counted by messagesReceived.
+	BytesReceived *int64 `json:"bytesReceived,omitempty"`
+
+	// Total size of the messages counted by messagesSent.
+	BytesSent *int64 `json:"bytesSent,omitempty"`
+
+	// messagesReceived split by the wire protocol the message arrived in.
+	ReceivedByProtocol *ProtocolCounts `json:"receivedByProtocol,omitempty"`
+
+	// messagesSent split by the wire protocol the message was sent in.
+	SentByProtocol *ProtocolCounts `json:"sentByProtocol,omitempty"`
+}
+
+// ProtocolCounts Message counts split by wire protocol. An absent member is a protocol
+// the mediator counted nothing for. The member names match the WireProtocol values the
+// traffic monitor reports.
+type ProtocolCounts struct {
+	// DIDComm v2 (JWE/JWS).
+	Didcomm *int64 `json:"didcomm,omitempty"`
+
+	// A DIDComm v1 envelope.
+	DidcommV1 *int64 `json:"didcommV1,omitempty"`
+
+	// A Trust Spanning Protocol message.
+	Tsp *int64 `json:"tsp,omitempty"`
+
+	// Anything the mediator could not classify.
+	Other *int64 `json:"other,omitempty"`
 }
 
 // AdminAccount A privileged account at the mediator (an `admin` or `rootAdmin`).

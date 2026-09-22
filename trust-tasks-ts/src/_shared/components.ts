@@ -871,6 +871,39 @@ export interface Account {
    * Unix epoch seconds at which this account last completed authentication with the mediator, over any transport. Present only when the request set `includeActivity` and the mediator has recorded an authentication.
    */
   lastAuthenticatedAt?: number;
+  /**
+   * Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.
+   */
+  stats?: AccountStats;
+}
+/**
+ * What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.
+ */
+export interface AccountStats {
+  /**
+   * Messages the mediator accepted addressed to this account.
+   */
+  messagesReceived?: number;
+  /**
+   * Messages the mediator accepted from this account.
+   */
+  messagesSent?: number;
+  /**
+   * Total size of the messages counted by messagesReceived.
+   */
+  bytesReceived?: number;
+  /**
+   * Total size of the messages counted by messagesSent.
+   */
+  bytesSent?: number;
+  /**
+   * messagesReceived split by the wire protocol the message arrived in.
+   */
+  receivedByProtocol?: ProtocolCounts;
+  /**
+   * messagesSent split by the wire protocol the message was sent in.
+   */
+  sentByProtocol?: ProtocolCounts;
 }
 export interface AclChangedEvent_SyncV0_1 {
   kind: "acl.changed";
@@ -3424,6 +3457,27 @@ export interface Profile {
   version: Version_PersonaV0_1;
   createdAt?: string;
   updatedAt: string;
+}
+/**
+ * Message counts split by wire protocol. An absent member is a protocol the mediator counted nothing for. The member names match the WireProtocol values the traffic monitor reports.
+ */
+export interface ProtocolCounts {
+  /**
+   * DIDComm v2 (JWE/JWS).
+   */
+  didcomm?: number;
+  /**
+   * A DIDComm v1 envelope.
+   */
+  didcommV1?: number;
+  /**
+   * A Trust Spanning Protocol message.
+   */
+  tsp?: number;
+  /**
+   * Anything the mediator could not classify.
+   */
+  other?: number;
 }
 /**
  * Server-issued options for `navigator.credentials.create({ publicKey: ... })`. Mirrors the WebAuthn Level 2 `PublicKeyCredentialCreationOptions` dictionary; binary fields are base64url-encoded strings (rather than ArrayBuffers) so the value is JSON-safe over the wire.
