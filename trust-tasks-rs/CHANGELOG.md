@@ -31,6 +31,24 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.20](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.19...trust-tasks-rs-v0.21.20) — 2026-09-22
+
+
+### Specifications
+
+- **messaging/account**: Opt-in lifetime counters on account/get and account/list ([#602](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/602))
+
+Account gains an optional stats object: messages and bytes sent and
+  received over the account's lifetime, each split by wire protocol. A
+  mediator returns it only when the request sets includeStats, for the same
+  reason includeActivity exists — generated clients reject unknown members,
+  so a requester that did not ask must never see them.
+
+  Every counter is optional: a mediator reports what it keeps, and an absent
+  counter was not kept rather than zero.
+
+
+
 ## [0.21.19](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.18...trust-tasks-rs-v0.21.19) — 2026-09-22
 
 
