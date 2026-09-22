@@ -544,6 +544,7 @@ export * as VtcVettingVettersGrant_v0_1 from "./vtc/vetting/vetters/grant/0.1/pa
 export * as VtcVettingVettersList_v0_1 from "./vtc/vetting/vetters/list/0.1/payload.js";
 export * as VtcVettingVettersProfile_v0_1 from "./vtc/vetting/vetters/profile/0.1/payload.js";
 export * as VtcVettingVettersResend_v0_1 from "./vtc/vetting/vetters/resend/0.1/payload.js";
+export * as VtcVettingVettersShow_v0_1 from "./vtc/vetting/vetters/show/0.1/payload.js";
 export * as VtcWebsiteFilesDelete_v0_1 from "./vtc/website/files/delete/0.1/payload.js";
 export * as VtcWebsiteFilesList_v0_1 from "./vtc/website/files/list/0.1/payload.js";
 export * as VtcWebsiteGenerationsList_v0_1 from "./vtc/website/generations/list/0.1/payload.js";

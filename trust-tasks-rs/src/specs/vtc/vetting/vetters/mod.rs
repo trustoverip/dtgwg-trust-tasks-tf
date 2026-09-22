@@ -4,3 +4,4 @@ pub mod grant;
 pub mod list;
 pub mod profile;
 pub mod resend;
+pub mod show;
