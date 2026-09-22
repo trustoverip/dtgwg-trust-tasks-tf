@@ -31,6 +31,9 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.21.16](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.15...trust-tasks-rs-v0.21.16) — 2026-09-22
+
+
 ## [0.21.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.14...trust-tasks-rs-v0.21.15) — 2026-09-22
 
 
