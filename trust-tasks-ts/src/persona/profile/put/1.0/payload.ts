@@ -25,7 +25,7 @@ export interface PersonaProfilePutPayload {
    */
   entries: ProfileEntry[];
   /**
-   * Where this face may be worn. Omit for anywhere. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately.
+   * Where this face may be worn. Omit to keep the face's current reach — anywhere, for a new face. Unlike the rest of a put, omission does not reset it: a reach is a restriction the holder set, and a producer that predates this member must not widen a face to anywhere by saving an unrelated edit. To widen, send `{"kind": "anywhere"}`. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately.
    */
   reach?: FaceReach;
   /**
@@ -115,7 +115,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "reach": {
       "$ref": "#/$defs/FaceReach",
-      "description": "Where this face may be worn. Omit for anywhere. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately."
+      "description": "Where this face may be worn. Omit to keep the face's current reach — anywhere, for a new face. Unlike the rest of a put, omission does not reset it: a reach is a restriction the holder set, and a producer that predates this member must not widen a face to anywhere by saving an unrelated edit. To widen, send `{\"kind\": \"anywhere\"}`. Narrowing it while the face is worn outside the new reach is refused (`boundOutsideReach`), naming the contexts: the holder takes it off there first, deliberately."
     },
     "credentialRefs": {
       "type": "array",
