@@ -105,7 +105,7 @@ This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes 
 
 **Criterion** — one way of satisfying the join policy: an `id`, an optional human `description`, a `presentationDefinition`, and optionally `vetting` and `requirementsDigest`.
 
-**Vetting requirements object (`vetting`)** — what identity-vetting evidence the criterion needs beyond what the presentation-definition can express. Every number in it is community policy. The object is open: members defined by a later version of its shape are ignored by readers that do not know them.
+**Vetting requirements object (`vetting`)** — what identity-vetting evidence the criterion needs beyond what the presentation-definition can express. Every number in it is community policy. The object is open: members defined by a later version of its shape are ignored by readers that do not know them. A community with parameters this version does not name puts them under `ext` rather than waiting for a version that does — see [Extending the vetting requirements](#extending-the-vetting-requirements).
 
 | Member | Meaning |
 |---|---|
@@ -124,8 +124,20 @@ This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes 
 | `decisionSla` | How long after submission the community undertakes to decide |
 | `requirementsGrace` | How long an application started under an earlier digest is evaluated under that version |
 | `governanceFrameworkUrl` | Where the vetting governance, including the attestation text vetters sign, is published |
+| `ext` | Vendor-namespaced parameters this version does not enumerate ([SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) |
+| `extCritical` | Namespaces of `ext` an applicant must understand or refuse ([SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) |
 
 Durations are ISO 8601 in weeks, days, hours, minutes and seconds (`P120D`, `P2W`, `PT15M`). Years and months are not accepted: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
+
+### Extending the vetting requirements
+
+`vetting.ext` carries parameters this version does not enumerate, under a reverse-DNS namespace its controller defines ([SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)). It is how a community publishes an admission mode the members above cannot express — the parameters of a zero-knowledge vetting scheme, say — without a version of this specification that names them.
+
+The object has always been open, so an undeclared member validated before `ext` existed. Validating is not the same as arriving: a generated type carries the members this schema declares and discards the rest, so an undeclared member is dropped on the way in and dropped again on the re-serialization `requirementsDigest` is computed over — a reader that recomputes the digest from what it parsed gets a value that does not match the one it was sent. `ext` is declared, so it survives both.
+
+`vetting.extCritical` names namespaces an applicant **MUST** understand or refuse — the criticality marking the framework defines alongside `ext`. A community marks one when applying under the criterion without understanding it would mean something other than what the community requires: an applicant that ignored a hidden-vetting namespace would gather named statements and submit them to a criterion whose purpose was that it does not receive them. Marked, that applicant stops with `unsupportedExtension` instead of silently applying the wrong way.
+
+Mark nothing whose absence leaves the criterion correct. A namespace carrying a hint, a display label or an audit annotation is not critical, and marking it turns every applicant that has not implemented it into a failure where it would otherwise have applied successfully. Both members are covered by `requirementsDigest` like every other part of the criterion, so adding a namespace changes the digest and starts the `requirementsGrace` window for applications already under way.
 
 **`requirementsDigest`** — the digest defined under Conformance. It names a version of a criterion, not a community policy as a whole.
 
@@ -220,6 +232,88 @@ The first criterion needs two vetting statements, at least one in person, none f
             }
           ]
         }
+      }
+    ]
+  }
+}
+```
+
+### A criterion whose vetting parameters this version does not name
+
+This community admits on two vetting statements like the one above, but counts them from a zero-knowledge proof rather than from credentials that name their issuers. The parameters an applicant proves against are not members this version defines, so they travel under a namespace the community controls, and the community marks that namespace critical: an applicant that ignored it would gather named statements and present them to a criterion whose purpose is that it never receives them. An applicant that does not implement the namespace stops with `unsupportedExtension` instead.
+
+The keys are truncated examples, not usable values. The `requirementsDigest` shown is the real value for the criterion as printed, `extCritical` and `ext` included — adding a namespace changes the digest, which is what starts `requirementsGrace` for applications already under way.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c04",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c03",
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:00:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example",
+    "criteria": [
+      {
+        "id": "kernel-developer-private",
+        "description": "Two kernel vetters must confirm who you are, and the community is told how many vouched for you without being told who.",
+        "presentationDefinition": {
+          "credentials": [
+            {
+              "id": "vetting",
+              "format": "ldp_vc",
+              "multiple": true,
+              "meta": {
+                "type_values": [
+                  [
+                    "EndorsementCredential"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        "vetting": {
+          "version": "0.1",
+          "statementType": "https://firstperson.network/endorsements/identity-vetting/0.1",
+          "minStatements": 2,
+          "minByMethod": {
+            "inPerson": 1
+          },
+          "acceptedMethods": [
+            "inPerson",
+            "video"
+          ],
+          "requiredClaims": [
+            "name.legal"
+          ],
+          "maxStatementAge": "P120D",
+          "eligibleVetters": {
+            "role": "vetter"
+          },
+          "invitation": "none",
+          "decisionSla": "P14D",
+          "ext": {
+            "org.openvtc.hidden-vetting": {
+              "suite": "ps-ddh-bls12381",
+              "helperKey": "zUC7K4ndUaGZgV7Cp2yJy6JtMoUHY6u7tkcSYUvPrEidqn97FrCvKsrXJ8uPGZvRZzKVQvKKQBYJnGm4VnGWTGqCgKPsNjCNhbXJgHLPJwCJHKxqLvDfPqFcMhJQFYrJKxCgKPs",
+              "tokenKey": "zUC7YNfqQjHvbYWVYKxPvqJJ8ycDPZ4pGQHNqEwUbNLPjYhLcKGVKqWMxQfVzYjWQEyPQpLZnVvBqzKhQxNWbGYJRcPvMKnDLbYqWQJPKZGvYHcMXrLPqDvbNKcYzWMqJHLPvKx",
+              "vetterLabels": [
+                "vetter/2026-10",
+                "vetter/2026-09"
+              ],
+              "tokenLabels": [
+                "token/2026-10",
+                "token/2026-09"
+              ]
+            }
+          },
+          "extCritical": [
+            "org.openvtc.hidden-vetting"
+          ],
+          "governanceFrameworkUrl": "https://kernel-vtc.example/governance#vetting"
+        },
+        "requirementsDigest": "zQmQUdMbmzC6HZtWwSkrqt88djK9oC9b7sabrNuxnDZ63Vd"
       }
     ]
   }

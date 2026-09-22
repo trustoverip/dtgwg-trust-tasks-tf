@@ -3,7 +3,7 @@
  * Source: specs/vtc/join-requests/manifest/0.2/payload.schema.json
  */
 
-import type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMethod } from "../../../../_shared/components.js";
+import type { ClaimType, DigestMultibase, Ext, ExtCritical, VettingDocumentation, VettingMethod } from "../../../../_shared/components.js";
 
 
 /**
@@ -135,6 +135,20 @@ export interface VettingRequirements {
    * Where the community's vetting governance — including the attestation text vetters sign — is published.
    */
   governanceFrameworkUrl?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.
+   *
+   * This object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.
+   */
+  ext?: Ext;
+  /**
+   * Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.
+   *
+   * A community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.
+   *
+   * Absent, which is the common case, every namespace under `ext` is advisory and ignorable.
+   */
+  extCritical?: ExtCritical;
   [k: string]: unknown | undefined;
 }
 /**
@@ -157,7 +171,7 @@ export interface CommunityBranding {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ClaimType, DigestMultibase, Ext, VettingDocumentation, VettingMethod };
+export type { ClaimType, DigestMultibase, Ext, ExtCritical, VettingDocumentation, VettingMethod };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.2" as const;
@@ -375,6 +389,14 @@ export const PAYLOAD_SCHEMA = {
           "pattern": "^https://",
           "maxLength": 2048,
           "description": "Where the community's vetting governance — including the attestation text vetters sign — is published."
+        },
+        "ext": {
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\n\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.",
+          "$ref": "#/$defs/Ext"
+        },
+        "extCritical": {
+          "description": "Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\n\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\n\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.",
+          "$ref": "#/$defs/ExtCritical"
         }
       }
     },
@@ -475,6 +497,22 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "ExtCritical": {
+      "title": "ExtCritical",
+      "description": "Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\n\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\n\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      },
+      "examples": [
+        [
+          "org.openvtc.hidden-vetting"
+        ]
+      ]
     },
     "VettingRelationship": {
       "title": "VettingRelationship",
@@ -714,6 +752,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "pattern": "^https://",
           "maxLength": 2048,
           "description": "Where the community's vetting governance — including the attestation text vetters sign — is published."
+        },
+        "ext": {
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\n\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.",
+          "$ref": "#/$defs/Ext"
+        },
+        "extCritical": {
+          "description": "Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\n\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\n\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.",
+          "$ref": "#/$defs/ExtCritical"
         }
       }
     },
@@ -814,6 +860,22 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "ExtCritical": {
+      "title": "ExtCritical",
+      "description": "Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\n\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\n\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      },
+      "examples": [
+        [
+          "org.openvtc.hidden-vetting"
+        ]
+      ]
     },
     "VettingRelationship": {
       "title": "VettingRelationship",

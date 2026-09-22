@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "ext": {
-      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
     }
   },
   "$defs": {
@@ -193,6 +193,14 @@
           "pattern": "^https://",
           "maxLength": 2048,
           "description": "Where the community's vetting governance — including the attestation text vetters sign — is published."
+        },
+        "ext": {
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\n\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.",
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        },
+        "extCritical": {
+          "description": "Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\n\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\n\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.",
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/ExtCritical"
         }
       }
     },
@@ -221,7 +229,7 @@
           "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points."
         },
         "ext": {
-          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
         }
       }
     },
@@ -280,7 +288,7 @@
           "$ref": "#/$defs/CommunityBranding"
         },
         "ext": {
-          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
         }
       }
     }
