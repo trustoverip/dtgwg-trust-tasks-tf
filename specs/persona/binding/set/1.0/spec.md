@@ -45,6 +45,22 @@ errorCodes:
   - code: persona/binding/set:untilNotFuture
     meaning: "`until` is not in the future, or accompanies a null `profileId`. Nothing is written."
     retryable: false
+  - code: persona/binding/set:noPersonaHere
+    meaning: "`personaDid` was omitted and the holder has no persona in `contextId` — no DID has a binding there. Nothing is written. A persona is minted first, through the DID-template path; wearing a face never mints one."
+    retryable: false
+  - code: persona/binding/set:personaAmbiguous
+    meaning: "`personaDid` was omitted and the holder has several personas in `contextId`. The details name them. Nothing is written — choosing one would decide which of the holder's identities this context sees."
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: ["personaDids"]
+      properties:
+        personaDids:
+          type: array
+          maxItems: 256
+          items:
+            type: string
   - code: persona/binding/set:outsideReach
     meaning: The face's `reach` does not include this context. Nothing is written. The holder widens the reach with persona/profile/put, or wears another face here.
     retryable: false
@@ -109,6 +125,14 @@ holder-authorized. A face's name is the holder's filing — "Job hunting", "the
 divorce" — and binding a face to a persona is not consent to tell a context what
 the holder calls it. An absent `label` gives the context no name at all, which
 is a legitimate choice rather than a gap.
+
+When `personaDid` is omitted, a conforming maintainer **MUST** use the persona
+the holder already uses in `contextId` — the one DID with a binding record
+there, current or cleared — and name it in the response; **MUST** refuse with
+`noPersonaHere` when there is none, and with `personaAmbiguous`, naming them,
+when there are several. It **MUST NOT** mint a persona here: a DID has a
+lifecycle of its own — keys, hosting, services — and a write that could half
+create one would leave a published identity nobody holds.
 
 A conforming maintainer **MUST** refuse to bind a retired face, with
 `persona/binding/set:profileRetired`, and a face whose `reach` does not include

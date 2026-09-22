@@ -15,9 +15,9 @@ export interface PersonaBindingSetPayload {
    */
   contextId: string;
   /**
-   * The persona being bound.
+   * The persona being bound. Omit to use the persona the holder already uses in `contextId` — the one DID with a binding there, current or cleared. None is refused (`noPersonaHere`): a persona is minted on its own, through the DID-template path, never as a side effect of wearing a face. Several are refused (`personaAmbiguous`, naming them): picking one for the holder would decide which of their identities a context sees. The response names the persona used.
    */
-  personaDid: string;
+  personaDid?: string;
   /**
    * The profile to bind, or null to clear. Null is a first-class value and not an omission: a persona with no profile is a legitimate, common state — a throwaway identity that presents nothing — and the schema says so rather than leaving a consumer to infer it from an absent member.
    */
@@ -101,8 +101,7 @@ export const PAYLOAD_SCHEMA = {
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "contextId",
-    "personaDid"
+    "contextId"
   ],
   "properties": {
     "contextId": {
@@ -114,7 +113,7 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "The persona being bound."
+      "description": "The persona being bound. Omit to use the persona the holder already uses in `contextId` — the one DID with a binding there, current or cleared. None is refused (`noPersonaHere`): a persona is minted on its own, through the DID-template path, never as a side effect of wearing a face. Several are refused (`personaAmbiguous`, naming them): picking one for the holder would decide which of their identities a context sees. The response names the persona used."
     },
     "profileId": {
       "oneOf": [
