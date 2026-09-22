@@ -528,7 +528,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"6f2h7i9g-3e87-4g56-f285-9h5j7e3g11i7\",\n  \"type\": \"https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-05-16T12:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmcExampleScid:example.com\",\n    \"fragment\": \"passkey-3q2r1s0tUvWxYz\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-05-16T12:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"6f2h7i9g-3e87-4g56-f285-9h5j7e3g11i7\",\n  \"type\": \"https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-05-16T12:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmcExampleScid:example.com\",\n    \"fragment\": \"passkey-3q2r1s0tUvWxYz\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-05-16T12:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
