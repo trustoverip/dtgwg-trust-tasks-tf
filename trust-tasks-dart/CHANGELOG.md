@@ -11,6 +11,53 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.16 — 2026-09-22
+
+
+### Added
+
+- **persona**: Derived provenance, and endorsements as inventory (#582)
+
+Design note (VTI docs/05-design-notes/persona-context-first.md) §5.7.
+
+  Provenance gains `derived` {source, derivedAt}: a value taken from a
+  source the holder connected or supplied — a code-hosting profile, an
+  uploaded CV — that the holder did not type and no issuer signed. It is
+  the holder's claim that the source said so, and a consumer must not
+  present it as attested. `source` names the KIND of source (`github`,
+  `cvUpload`), never a handle or URL: provenance reaches the verifier, and
+  a handle there would disclose an identifier the holder never chose to
+  share. For how strongly a disclosed value identifies the holder the
+  kinds rank credentialBacked > derived > selfAsserted. The preview's
+  provenance enum gains `derived`.
+
+  Attribute gains `endorsements`: vault ids of credentials in which a
+  third party endorses the value. Inventory, not evidence — a vouched
+  self-assertion is still self-asserted, and folding a vouch into
+  provenance would render it as attested. Not disclosed with the value.
+  attribute/put takes it and refuses an id the vault does not hold
+  (`endorsementNotFound`).
+
+- **spec**: Vtc/invitations/deliver/0.1 — get an invitation to the DID it admits (#581)
+
+Keyring VTI-21 and VTI-32. `vtc/invitations/issue` returns the signed
+  invitation to the inviter once, and nothing carried it further: an
+  invitee was reached only by whatever the inviter improvised, and the
+  credential is too large for a QR code.
+
+  This task delivers an issued invitation over the credential-exchange
+  family the framework already has. On `message` the community sends a
+  `credential-exchange/offer` to the invited DID over a transport it
+  advertises (`noRoute` if none); on `offer` it returns the OID4VCI offer
+  for the inviter to hand over — small, because it names the credential
+  rather than containing it. Either way the invitee redeems with
+  `credential-exchange/request`, and the credential is released only for a
+  key-binding proof by the invited DID's key, so a photographed QR code
+  admits no one else. At most one offer per invitation is live; the
+  invitation credential never appears in this task's response.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
 ## 0.1.15 — 2026-09-22
 
 
