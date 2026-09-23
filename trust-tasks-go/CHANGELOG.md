@@ -11,6 +11,57 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.2.3 — 2026-09-23
+
+
+### Added
+
+- **git-ns**: Add the git namespaces specification family (#621)
+
+* feat(git-ns): add the git namespaces specification family
+
+  A VTC can say today that a DID may sign commits for an org or a repo, and
+  nothing else about git: who owns a repository, who may create one, who may
+  merge and who may grant commit rights all live on the forge, and drift from
+  the VTC as soon as someone clicks a button. git-ns makes the VTC the source of
+  truth for all of it. Rights are per resource, not per role; the Trust Registry
+  is the published projection verifiers read, and the forge is the enforced one.
+
+  Five rights, spelled as the TRQP actions the VTC publishes them under:
+  git.ns.admin, git.repo.create, git.repo.own, git.repo.maintain and
+  git.commit.sign. Resources are forge-qualified and lowercase
+  (github.com/acme/widgets, codeberg.org/acme), so a right never crosses forges
+  and a community can host where it likes.
+
+  Member- and admin-facing tasks, addressed to the VTC:
+
+  - git-ns/namespace/bind, git-ns/namespace/unbind
+  - git-ns/repo/create, git-ns/repo/adopt, git-ns/repo/transfer,
+    git-ns/repo/archive
+  - git-ns/right/grant, git-ns/right/revoke
+  - git-ns/view
+  - git-ns/account/link, git-ns/account/link-status
+
+  git-ns/right/grant carries the family's rights model: implied rights, the
+  grant-authority table, and six fixed rules a VTC enforces in its own code
+  before policy runs, which policy can narrow and never loosen: scope
+  containment, no escalation, the last-owner invariant, a last-admin invariant,
+  the members-only floor for namespace rights, and policy-may-only-narrow. Each
+  refusal has its own error code, declared once at the family level (git-ns:*).
+
+  VTC <-> bridge tasks, for the per-community service that holds the forge
+  credentials and the forge adapters:
+
+  - git-ns/bridge/job — seven convergent, forge-neutral job kinds
+  - git-ns/bridge/result — exactly one per job, per-step outcomes
+  - git-ns/bridge/event — nine forge-neutral event types plus drift
+
+  Shared shapes (resources, namespaces, RepoSummary, RightRecord, drift) live in
+  git-ns/_shared/0.1.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart; conformance checks
+  agree. trust-tasks-rs gains a git-ns feature, in all-specs.
+
 ## 0.2.2 — 2026-09-23
 
 
