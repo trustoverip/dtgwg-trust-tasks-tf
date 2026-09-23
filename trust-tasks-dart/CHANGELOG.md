@@ -11,6 +11,65 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.2 — 2026-09-23
+
+
+### Added
+
+- **vtc/vetting/vetters/event-mode**: The exception to the constant drip (#620)
+
+A vetter's ordinary rate is a few tokens a tick, whether or not they have
+  vetted anyone. That is the right rate for ordinary weeks and the wrong one for
+  a conference desk, and the answer is deliberately not a bigger drip under the
+  same key: it is a separate token label for a named event, with its own rate,
+  its own expiry, and a group of vetters large enough that a spend under it still
+  hides one.
+
+  This task carries the vetter's half of that, which is only ever a request. The
+  approval is an act by someone else, through the community's own administrative
+  surface, and the specification says why there is no Trust Task for it: a task
+  the vetter could send is a task a vetter could be made to send.
+
+  The response says where the request stands, and carries a group *count* rather
+  than a group. Who else is at the event is the anonymity set, so the number is
+  the most a member may be told — enough to tell "nobody has approved it" from
+  "not enough people have asked", which are the two reasons a request waits.
+
+- **vetting/attestation**: The four tasks hidden-vetter admission needs (#618)
+
+* feat(vetting/attestation): the four tasks hidden-vetter admission needs
+
+  A community can hide which of its vetters vetted an applicant: the vetter
+  attests under a blind class credential, the applicant proves that k distinct
+  holders of one attested it, and the community counts the proof with the rule
+  it already counts named statements with. What was missing was the wire.
+
+  Four specifications, and the split between them is the design:
+
+  - vtc/vetting/vetters/pcs-root — a vetter enrols for a class label. The
+    community checks its own records (a live vetter grant, no credential under
+    this label yet, the identifier it was bound to) and signs a commitment it
+    cannot open. Being named happens here, once per label, and nowhere else on
+    the path.
+  - vtc/vetting/vetters/pcs-tokens — the vetter draws its tick of attestation
+    tokens, unconditionally and at a published rate. A draw that tracked demand
+    would report activity, which is what the exchange exists to hide; the quota
+    is the community's to enforce, never the asker's restraint.
+  - vetting/attestation — vetter to applicant, carrying the facts of the session
+    and no issuer. The delivering identity is deliberately NOT what makes it
+    count, and a consumer is told not to record it beside the attestation: that
+    would recreate, in the applicant's own store, the link the exchange removes.
+  - vtc/vetting/pcs-challenge — the applicant asks the community for the
+    single-use nonce its proof must bind. Without it a proof verifies as often
+    as it is submitted, and the second submission counts as readily as the first.
+
+  vetting/attestation declares identifierScope: any. Nothing in it needs a
+  reusable identifier — the community never sees the document, and the applicant
+  only needs the identifier the session was held under — so a pair that runs the
+  whole vetting exchange pairwise loses nothing.
+
+  Bindings regenerated for all four languages; conformance checks agree.
+
 ## 0.2.1 — 2026-09-23
 
 
