@@ -2,6 +2,8 @@
 
 pub mod grant;
 pub mod list;
+pub mod pcs_root;
+pub mod pcs_tokens;
 pub mod profile;
 pub mod resend;
 pub mod show;
