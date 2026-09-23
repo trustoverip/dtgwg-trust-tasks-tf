@@ -119,7 +119,7 @@ Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, the `proof` establi
 
 The right strings are carried verbatim: each is also the TRQP `action` under which the VTC publishes the right, with `authority` set to the VTC's DID.
 
-**Implied rights.** `git.repo.own` implies `git.repo.maintain`, which implies `git.commit.sign`, on the same resource. `git.ns.admin` implies `git.repo.create` on its namespace and `git.repo.own` on every repository in it. Implication is evaluated by the VTC and is never a record. Because verifiers query only `git.commit.sign`, the VTC's registry projection **MUST** publish the implied `git.commit.sign` of every recorded `git.repo.own` and `git.repo.maintain` explicitly.
+**Implied rights.** `git.repo.own` implies `git.repo.maintain`, which implies `git.commit.sign`, on the same resource. `git.ns.admin` implies `git.repo.create` on its namespace and `git.repo.own` on every repository in it. Implication is evaluated by the VTC and is never a record. Because verifiers query only `git.commit.sign`, the VTC's registry projection **MUST** publish the implied `git.commit.sign` of every recorded `git.repo.own` and `git.repo.maintain` explicitly, on the same repository resource, and of every recorded `git.ns.admin` on its namespace resource. A namespace-level `git.commit.sign` counts for a repository only where the repository's check also queries its namespace as the fallback resource, so a bridge that sets up the check **MUST** configure that fallback.
 
 ### Grant authority
 
