@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/drift/resolve/0.1",
+  "title": "Git Namespaces — Resolve Drift — payload",
+  "description": "An owner of a repository, or a namespace admin over it, resolves one reported drift item: `adopt` records the forge-side role as a VTC right, under the same rules as git-ns/right/grant; `revert` has the bridge undo the forge-side change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resource",
+    "drift",
+    "action"
+  ],
+  "properties": {
+    "resource": {
+      "$ref": "../../../_shared/0.2/git-ns.schema.json#/$defs/RepoResource",
+      "description": "The repository whose drift is resolved."
+    },
+    "drift": {
+      "$ref": "#/$defs/DriftSelector"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "adopt",
+        "revert"
+      ],
+      "description": "`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "DriftSelector": {
+      "title": "DriftSelector",
+      "description": "Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "../../../_shared/0.2/git-ns.schema.json#/$defs/DriftType"
+        },
+        "account": {
+          "$ref": "../../../_shared/0.2/git-ns.schema.json#/$defs/ForgeAccount",
+          "description": "The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only."
+        },
+        "observed": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Resolve Drift — response payload",
+      "description": "What the resolution did, and where the repository's sync now stands.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "sync"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "adopt",
+            "revert"
+          ],
+          "description": "The action taken, as requested."
+        },
+        "right": {
+          "$ref": "../../../_shared/0.2/git-ns.schema.json#/$defs/RightRecord",
+          "description": "For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`."
+        },
+        "sync": {
+          "$ref": "../../../_shared/0.2/git-ns.schema.json#/$defs/Sync",
+          "description": "The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

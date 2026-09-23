@@ -1,0 +1,84 @@
+[
+  {
+    "note": "`kind` is one of the seven forge-neutral kinds.",
+    "payload": {
+      "jobId": "job_1",
+      "namespace": "ns_1",
+      "kind": "deleteRepo",
+      "repo": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "`jobId`, `namespace` and `kind` are always required.",
+    "payload": {
+      "kind": "archive",
+      "repo": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "Jobs never carry forge credentials.",
+    "payload": {
+      "jobId": "job_1",
+      "namespace": "ns_1",
+      "kind": "archive",
+      "repo": "github.com/acme/widgets",
+      "token": "ghs_example"
+    }
+  },
+  {
+    "note": "A desired role names a git right, not a forge role: mapping rights to roles is the adapter's job.",
+    "payload": {
+      "jobId": "job_1",
+      "namespace": "ns_1",
+      "kind": "projectRoles",
+      "repo": "github.com/acme/widgets",
+      "desiredRoles": [
+        {
+          "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+          "account": {
+            "forge": "github.com",
+            "id": "9120045",
+            "login": "bob-builds"
+          },
+          "right": "admin"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Step names are lowerCamelCase identifiers.",
+    "payload": {
+      "jobId": "job_1",
+      "namespace": "ns_1",
+      "kind": "bootstrap",
+      "repo": "github.com/acme/widgets",
+      "steps": [
+        "required-check"
+      ]
+    }
+  },
+  {
+    "note": "`removeAccounts`, when present, names at least one account: an empty list would be a job that asks for nothing to be removed while looking as though it did.",
+    "payload": {
+      "jobId": "job_1",
+      "namespace": "ns_1",
+      "kind": "projectRoles",
+      "repo": "github.com/acme/widgets",
+      "desiredRoles": [],
+      "removeAccounts": []
+    }
+  },
+  {
+    "note": "`removeAccounts` lists forge accounts, not DIDs: the account to take off the forge often belongs to someone with no DID the VTC knows.",
+    "payload": {
+      "jobId": "job_1",
+      "namespace": "ns_1",
+      "kind": "projectRoles",
+      "repo": "github.com/acme/widgets",
+      "desiredRoles": [],
+      "removeAccounts": [
+        "did:webvh:QmDanScid4:dan.example"
+      ]
+    }
+  }
+]
