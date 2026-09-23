@@ -1,8 +1,8 @@
 # git-cliff — turns conventional commits into changelog entries.
 #
-# Read by release-plz when it builds the crates Release PR (see
-# release-plz.toml), and by scripts/release-ts-pr.sh for the npm package, so
-# both halves of a release read identically.
+# Read by `release-plz update` for the crates (see release-plz.toml) and by
+# scripts/release-bump-{ts,go,dart}.sh for everything else, so every part of
+# the one Release PR (scripts/release-pr.sh) reads identically.
 #
 # The commit message IS the changelog entry. PRs here squash-merge, so the PR
 # TITLE becomes the commit subject and that subject is what a consumer of these
@@ -98,6 +98,6 @@ commit_parsers = [
 filter_commits = false
 # No `tag_pattern`: release-plz decides which commits belong to which crate
 # release and drives git-cliff per package. A pattern here would second-guess
-# it. scripts/release-ts-pr.sh passes an explicit commit range instead.
+# it. scripts/release-bump-*.sh pass an explicit commit range instead.
 topo_order = false
 sort_commits = "newest"

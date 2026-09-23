@@ -56,7 +56,7 @@ jobs:
   # merging: main and npm would otherwise hold the same version number with
   # different contents.
   #
-  # That is no longer how the package is released. `scripts/release-ts-pr.sh`
+  # That is no longer how the package is released. `scripts/release-pr.sh`
   # keeps a Release PR open with the bump the merged commits imply, and merging
   # it is what publishes — so main is legitimately ahead of npm between
   # releases, and a contributor bumping the version by hand would collide with

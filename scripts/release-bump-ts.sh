@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 #
-# Opens or updates the Release PR for `@openvtc/trust-tasks`.
+# Applies the next release of one npm package to the working tree.
 #
-# release-plz does this for the nine Rust crates. It cannot do it for the npm
-# package: release-plz is Rust-only, has no pre/post hooks, and will not touch a
-# non-Rust manifest, so there is no way to make it bump `package.json` inside
-# the crates Release PR. This script is the npm half, deliberately built to work
-# the same way so both halves of a release read identically:
+#   scripts/release-bump-ts.sh [@openvtc/trust-tasks|@openvtc/trust-tasks-proof|...]
+#
+# Called by scripts/release-pr.sh, once per package, while it assembles the ONE
+# Release PR. This script only edits files; the orchestrator commits and opens
+# the PR. release-plz cannot do this part — it is Rust-only and will not touch
+# a non-Rust manifest — so the npm bump is computed here, deliberately the same
+# way release-plz computes the crates' so every part of a release reads alike:
 #
 #   * the previous release is a tag  — `trust-tasks-ts-v<version>`, written by
 #     the `publish-npm` job, mirroring release-plz's `<crate>-v<version>`;
@@ -14,27 +16,27 @@
 #     that can change what the package publishes;
 #   * the changelog section comes from git-cliff with the same `cliff.toml`
 #     release-plz uses;
-#   * merging the PR is the release — `publish-npm` sees a version that is not
-#     on npm and publishes it.
+#   * merging the Release PR is the release — `publish-npm` sees a version that
+#     is not on npm and publishes it.
 #
 # It is idempotent: the target version is computed from the last TAG, never
-# from the branch, so re-running recomputes the same answer and force-pushes an
-# identical tree.
+# from the branch, so re-running on a fresh checkout recomputes the same answer.
+# It exits 0 without touching anything when there is nothing to release. When
+# it does bump, it appends one table row to $RELEASE_SUMMARY.
 #
 # Run from the repository root, on a full-history checkout of `main`, with
-# `gh` authenticated (GH_TOKEN) and `git-cliff` on PATH.
+# `git-cliff` on PATH.
 
 set -euo pipefail
 
 # Which npm package to release. The core defaults; the sibling packages
 # (@openvtc/trust-tasks-proof, @openvtc/trust-tasks-tsp) pass their own name.
-# Each has its own directory, release branch, tag prefix and watch set — the one
-# place they differ — mirroring scripts/release-dart-pr.sh.
+# Each has its own directory, tag prefix and watch set — the one place they
+# differ — mirroring scripts/release-bump-dart.sh.
 PKG="${1:-@openvtc/trust-tasks}"
 case "$PKG" in
   @openvtc/trust-tasks)
     PKG_DIR="trust-tasks-ts"
-    BRANCH="release-ts"
     TAG_PREFIX="trust-tasks-ts-v"
     # specs/** and the generator because the bindings under trust-tasks-ts/src
     # are generated from them.
@@ -42,19 +44,16 @@ case "$PKG" in
     ;;
   @openvtc/trust-tasks-proof)
     PKG_DIR="trust-tasks-ts-proof"
-    BRANCH="release-ts-proof"
     TAG_PREFIX="trust-tasks-ts-proof-v"
     WATCH=("$PKG_DIR")
     ;;
   @openvtc/trust-tasks-tsp)
     PKG_DIR="trust-tasks-ts-tsp"
-    BRANCH="release-ts-tsp"
     TAG_PREFIX="trust-tasks-ts-tsp-v"
     WATCH=("$PKG_DIR")
     ;;
   @openvtc/trust-tasks-capability-client)
     PKG_DIR="trust-tasks-ts-capability-client"
-    BRANCH="release-ts-capability-client"
     TAG_PREFIX="trust-tasks-ts-capability-client-v"
     WATCH=("$PKG_DIR")
     ;;
@@ -81,7 +80,7 @@ if [ "$current" != "$last" ]; then
   # main already carries a version newer than the last tag: a release is merged
   # but not yet on npm (publish-npm failed, or is still running). Proposing
   # another bump on top would release two versions for one set of changes.
-  echo "::warning::$MANIFEST is at $current but the newest tag is $tag. A release is staged and unpublished — re-run the publish-npm job rather than opening another Release PR."
+  echo "::warning::$MANIFEST is at $current but the newest tag is $tag. A release is staged and unpublished — re-run the publish-npm job rather than bumping it again."
   exit 0
 fi
 
@@ -98,8 +97,12 @@ fi
 # is no cargo-semver-checks equivalent here to catch an unannounced break, so
 # this is only as accurate as the commit subjects. See RELEASING.md.
 range="$tag..HEAD"
-if git log --format='%s%n%b' "$range" -- "${WATCH[@]}" \
-  | grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE'; then
+# The log is captured first, NOT piped into `grep -q`: grep exits on its first
+# match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
+# failure — so a breaking change was silently scored as a patch whenever the log
+# was long enough to still be writing. It happened to #610 (`feat(persona)!`).
+log=$(git log --format='%s%n%b' "$range" -- "${WATCH[@]}")
+if grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"; then
   level=breaking
 else
   level=patch
@@ -121,31 +124,9 @@ next=$(LEVEL="$level" CURRENT="$last" node -e '
 
 echo "::notice::$name $last -> $next ($level)"
 
-# ── Build the release commit ─────────────────────────────────────────────────
-# Author as the identity behind RELEASE_PLZ_TOKEN, not as the bot.
-#
-# EasyCLA authorises the commit *author*, and `github-actions[bot]` has signed
-# no CLA — so a bot-authored release commit fails EasyCLA however well it is
-# signed off. release-plz already authors its release commit this way (that is
-# what setting RELEASE_PLZ_TOKEN changed), and this is the same fix for the npm
-# side, so both Release PRs are authored by a signatory and signed off.
-#
-# Resolved from the token rather than hard-coded: whoever the token belongs to
-# is who the release is attributable to, and hard-coding a person here would
-# quietly misattribute it the moment the token changed hands.
-if ! author_json=$(gh api user 2>/dev/null); then
-  echo "::error::Could not resolve the token owner via \`gh api user\`. A GitHub App token has no user, so this needs an explicit identity — do NOT fall back to github-actions[bot], which fails EasyCLA silently."
-  exit 1
-fi
-author_login=$(jq -r '.login' <<<"$author_json")
-author_id=$(jq -r '.id' <<<"$author_json")
-author_name=$(jq -r '.name // .login' <<<"$author_json")
-git config user.name "$author_name"
-git config user.email "${author_id}+${author_login}@users.noreply.github.com"
-
-# Always rebuild the branch from the current main. The branch is a derived
-# artefact; nothing on it is worth preserving across runs.
-git switch -C "$BRANCH"
+# ── Apply the bump ───────────────────────────────────────────────────────────
+# In the working tree only. scripts/release-pr.sh commits every package's bump
+# together, as the one Release PR.
 
 node -e '
   const fs = require("fs");
@@ -194,55 +175,6 @@ else
   echo "::warning::git-cliff produced no changelog section for $range; the Release PR carries the version bump only."
 fi
 
-if git diff --quiet; then
-  echo "::notice::nothing changed — leaving the branch alone."
-  exit 0
-fi
 
-git add "$MANIFEST" "$CHANGELOG" "$PKG_DIR/package-lock.json" 2>/dev/null || git add "$MANIFEST" "$CHANGELOG"
-# -s: DCO sign-off is mandatory on every commit in this repo.
-git commit -s -m "chore: release $name $next" -m \
-  "Automated by scripts/release-ts-pr.sh. Merging this PR publishes $name $next to npm."
-git push --force origin "$BRANCH"
-
-# ── Open or refresh the PR ───────────────────────────────────────────────────
-title="chore: release $name $next"
-watched=$(printf '`%s`, ' "${WATCH[@]}"); watched=${watched%, }
-# Written to a file rather than captured in `$(cat <<EOF)`: bash scans a
-# command substitution for quote balance, and an apostrophe in the heredoc body
-# ("publish.yml\'s") makes it read to end-of-file looking for a closing quote.
-body_file="$(mktemp)"
-cat >"$body_file" <<EOF
-Release PR for the npm package, the counterpart to the release-plz PR for the
-crates. **Merging this is the release**: the \`publish-npm\` job in
-\`publish.yml\` sees a version that is not on npm, publishes it with OIDC
-provenance, and tags \`${TAG_PREFIX}$next\`.
-
-- \`$name\`: \`$last\` → \`$next\` (\`$level\`)
-- derived from the conventional commits in \`$range\` touching $watched
-
-This branch is regenerated from \`main\` on every push, so do not commit to it —
-edits are force-pushed away. See RELEASING.md.
-EOF
-
-existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
-if [ -n "$existing" ]; then
-  # REST, not `gh pr edit`. `gh pr edit` resolves editable metadata before it
-  # writes — assignees, reviewers, milestones and organization TEAMS — so it
-  # asks GraphQL for `login`, `name` and `slug`, and those fields require
-  # `read:org`. The release token has `repo` only, by design: it needs to push
-  # a branch and move a PR, not read the org. So `gh pr edit` failed the whole
-  # job *after* the branch had already been force-pushed, leaving the PR body
-  # and title describing the previous version while the branch described the
-  # new one — the one state a release PR must never be in.
-  #
-  # Patching the pull request over REST touches title and body only, needs no
-  # metadata resolution, and is satisfied by `repo`. `{owner}/{repo}` is
-  # resolved by gh from the checkout, so this needs no extra env var.
-  gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
-    -f title="$title" -f body="$(cat "$body_file")"
-  echo "::notice::updated PR #$existing"
-else
-  gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file" --label release \
-    || gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file"
-fi
+# One row of the Release PR's table; scripts/release-pr.sh owns the rest.
+printf '| `%s` | npm | `%s` → `%s` | %s |\n' "$name" "$last" "$next" "$level" >>"${RELEASE_SUMMARY:-/dev/stdout}"

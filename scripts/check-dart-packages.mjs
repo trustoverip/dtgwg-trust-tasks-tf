@@ -4,13 +4,14 @@
 // Five hand-maintained lists have to agree for a Dart package to release:
 //
 //   .github/workflows/publish.yml       tag-dart matrix (name, dir, prefix)
-//   .github/workflows/publish.yml       release-dart-pr matrix (name)
+//   scripts/release-pr.sh               DART_PACKAGES (name)
 //   .github/workflows/publish-dart.yml  tag patterns and the `case` arms
-//   scripts/release-dart-pr.sh          the `case` arms
+//   scripts/release-bump-dart.sh        the `case` arms
 //   .github/workflows/dart.yml          the `packages` job (all but the core)
 //
 // This exists because they did not. #483 added trust_tasks_didcomm with a text
-// replacement that matched the tag-dart matrix instead of release-dart-pr's,
+// replacement that matched the tag-dart matrix instead of the (then) release-
+// dart-pr matrix's,
 // leaving a tag-dart entry with no `dir` and no `prefix`. actionlint passed —
 // the YAML was valid — and the first sign was a failed release job.
 //
@@ -31,7 +32,6 @@ const fail = (msg) => errors.push(msg);
 // ── publish.yml ────────────────────────────────────────────────────────────
 const publish = YAML.parse(read(".github/workflows/publish.yml"));
 const tagMatrix = publish.jobs["tag-dart"]?.strategy?.matrix?.include ?? [];
-const prMatrix = publish.jobs["release-dart-pr"]?.strategy?.matrix?.include ?? [];
 
 const packages = new Map(); // name -> { dir, prefix }
 for (const [i, entry] of tagMatrix.entries()) {
@@ -69,7 +69,15 @@ const same = (label, actual) => {
   }
 };
 
-same("publish.yml release-dart-pr matrix", prMatrix.map((e) => e.name));
+// ── release-pr.sh ──────────────────────────────────────────────────────────
+// The orchestrator bumps exactly these, in this order; the core goes first for
+// the same reason it does in tag-dart.
+const releasePr = read("scripts/release-pr.sh");
+const dartArray = releasePr.match(/^DART_PACKAGES=\(\n([\s\S]*?)\n\)$/m);
+const prList = dartArray ? [...dartArray[1].matchAll(/"([a-z_]+)"/g)].map((m) => m[1]) : [];
+if (!dartArray) fail("scripts/release-pr.sh has no DART_PACKAGES=( … ) array");
+same("release-pr.sh DART_PACKAGES", prList);
+if (prList[0] !== "trust_tasks") fail("release-pr.sh DART_PACKAGES must list trust_tasks first");
 
 // ── publish-dart.yml ───────────────────────────────────────────────────────
 const publishDartText = read(".github/workflows/publish-dart.yml");
@@ -91,14 +99,14 @@ for (const [, prefix, dir, name] of arms) {
   }
 }
 
-// ── release-dart-pr.sh ─────────────────────────────────────────────────────
-const script = read("scripts/release-dart-pr.sh");
+// ── release-bump-dart.sh ───────────────────────────────────────────────────
+const script = read("scripts/release-bump-dart.sh");
 const scriptArms = [...script.matchAll(/^\s{2}([a-z_]+)\)\n\s+PKG_DIR="([a-z-]+)"/gm)];
-same("release-dart-pr.sh case arms", scriptArms.map((m) => m[1]));
+same("release-bump-dart.sh case arms", scriptArms.map((m) => m[1]));
 for (const [, name, dir] of scriptArms) {
   const pkg = packages.get(name);
   if (pkg && pkg.dir !== dir) {
-    fail(`release-dart-pr.sh case arm for ${name} uses ${dir}; tag-dart says ${pkg.dir}`);
+    fail(`release-bump-dart.sh case arm for ${name} uses ${dir}; tag-dart says ${pkg.dir}`);
   }
 }
 
