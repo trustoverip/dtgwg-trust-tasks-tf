@@ -11,6 +11,8 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.20.0 — 2026-09-23
+
 ## 0.19.22 — 2026-09-23
 
 ## 0.19.21 — 2026-09-22
