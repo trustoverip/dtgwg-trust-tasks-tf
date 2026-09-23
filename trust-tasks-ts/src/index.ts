@@ -198,6 +198,7 @@ export * as PersonaContactGet_v1_0 from "./persona/contact/get/1.0/payload.js";
 export * as PersonaContactList_v1_0 from "./persona/contact/list/1.0/payload.js";
 export * as PersonaContactPut_v1_0 from "./persona/contact/put/1.0/payload.js";
 export * as PersonaCorrelationAnalyze_v1_0 from "./persona/correlation/analyze/1.0/payload.js";
+export * as PersonaCorrelationAnalyze_v1_1 from "./persona/correlation/analyze/1.1/payload.js";
 export * as PersonaDisclosureHistory_v1_0 from "./persona/disclosure/history/1.0/payload.js";
 export * as PersonaDisclosurePresent_v1_0 from "./persona/disclosure/present/1.0/payload.js";
 export * as PersonaDisclosurePreview_v1_0 from "./persona/disclosure/preview/1.0/payload.js";
@@ -219,6 +220,9 @@ export * as PersonaProfileRetire_v1_0 from "./persona/profile/retire/1.0/payload
 export * as PersonaProfileTimeline_v1_0 from "./persona/profile/timeline/1.0/payload.js";
 export * as PersonaProfileUsage_v1_0 from "./persona/profile/usage/1.0/payload.js";
 export * as PersonaRenderersList_v1_0 from "./persona/renderers/list/1.0/payload.js";
+export * as PersonaWorldDelete_v1_0 from "./persona/world/delete/1.0/payload.js";
+export * as PersonaWorldList_v1_0 from "./persona/world/list/1.0/payload.js";
+export * as PersonaWorldPut_v1_0 from "./persona/world/put/1.0/payload.js";
 export * as PolicyShared_v0_1 from "./policy/_shared/0.1/policy.js";
 export * as PolicyShared_v0_2 from "./policy/_shared/0.2/policy.js";
 export * as PolicyShared_v0_3 from "./policy/_shared/0.3/policy.js";

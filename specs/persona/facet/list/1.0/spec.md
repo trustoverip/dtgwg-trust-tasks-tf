@@ -3,7 +3,8 @@ slug: persona/facet/list
 version: "1.0"
 title: "Persona — Facet List"
 summary: A holder reads back the parts of their life they have named, with the faces and attributes belonging to each, cursor-paginated so a client that follows the cursor sees all of them.
-status: draft
+status: retired
+supersededBy: persona/world/list/1.0
 targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
@@ -55,6 +56,12 @@ related:
 ---
 
 ## Abstract
+
+> **Retired in favour of [`persona/world/list/1.0`](../../../world/list/1.0).** Same
+> task, same members, one word changed: what this family calls an arrangement of faces is
+> a **world**, and `facet` shared a stem with `face` while naming something different.
+> `facetId` is `worldId` there; nothing else moved. This specification stays readable so
+> documents already issued against it remain verifiable.
 
 **Persona Facet List** reads back the parts of a holder's life they have named,
 with the profiles and attributes belonging to each.

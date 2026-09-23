@@ -3,7 +3,8 @@ slug: persona/correlation/analyze
 version: "1.0"
 title: Persona Correlation — Analyze
 summary: Report where the holder's identities link to one another, why, whether the link crosses a part of their life they keep separate, and what can be done about each — including the remedy a holder would not otherwise think of.
-status: draft
+status: retired
+supersededBy: persona/correlation/analyze/1.1
 targetFrameworkVersion: "0.5.0"
 category: identity
 keywords: [persona, privacy, correlation, facet]
@@ -34,6 +35,11 @@ errorCodes: []
 ---
 
 ## Abstract
+
+> **Retired in favour of [`persona/correlation/analyze/1.1`](../1.1).** Same analysis, three
+> response members renamed: `facetId`, `facetIds` and `crossesFacets` are `worldId`,
+> `worldIds` and `crossesWorlds`. This specification stays readable so documents already
+> issued against it remain verifiable.
 
 **Persona Correlation — Analyze** is the findings task behind the counts the
 write tasks return.

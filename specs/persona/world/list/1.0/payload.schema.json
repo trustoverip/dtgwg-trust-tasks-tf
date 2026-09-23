@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/world/list/1.0",
+  "title": "Persona — World List — payload",
+  "description": "List the holder's worlds, with their membership. Cursor-paginated like every other persona listing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 250,
+      "default": 100,
+      "description": "The page size to ask for — never a cap on the result. A consumer that wants every world follows `nextCursor` to the end; one that treats this as a limit will silently draw a partial picture."
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona World List — response payload",
+      "description": "Success response to persona/world/list. Type https://trusttasks.org/spec/persona/world/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worlds"],
+      "properties": {
+        "worlds": {
+          "type": "array",
+          "maxItems": 250,
+          "items": {
+            "$ref": "#/$defs/World"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "Present when more worlds remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "World": {
+      "title": "World",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worldId", "name", "colour", "faceIds", "attributeIds", "version", "updatedAt"],
+      "description": "One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a world names records that sit above every trust context, so it cannot itself live inside one.",
+      "properties": {
+        "worldId": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "colour": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/WorldColour"
+        },
+        "icon": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8
+        },
+        "faceIds": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+          },
+          "description": "Profiles belonging to this world. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see."
+        },
+        "attributeIds": {
+          "type": "array",
+          "maxItems": 1024,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+          },
+          "description": "Attributes belonging to this world, with the same rule about dangling ids as `faceIds`."
+        },
+        "version": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

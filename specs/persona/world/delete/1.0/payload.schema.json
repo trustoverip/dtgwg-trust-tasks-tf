@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/world/delete/1.0",
+  "title": "Persona — World Delete — payload",
+  "description": "Delete one world. The faces and attributes that belonged to it are untouched — a world is a way of arranging what the holder keeps, never a container for it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["worldId"],
+  "properties": {
+    "worldId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion",
+      "description": "Optional precondition. Supply the version a prior read returned to refuse a delete against a world that has changed since it was looked at."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona World Delete — response payload",
+      "description": "Success response to persona/world/delete. Type https://trusttasks.org/spec/persona/world/delete/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["existed"],
+      "properties": {
+        "existed": {
+          "type": "boolean",
+          "description": "False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first."
+        },
+        "releasedFaces": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many profiles no longer belong to any world as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -3,7 +3,8 @@ slug: persona/facet/put
 version: "1.0"
 title: "Persona — Facet Put"
 summary: A holder names a part of their life — Work, Home, Play — and says which faces and attributes belong to it, so a wallet can arrange a pool it has outgrown and can warn when one part of a life shares a value with another.
-status: draft
+status: retired
+supersededBy: persona/world/put/1.0
 targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
@@ -84,6 +85,12 @@ related:
 ---
 
 ## Abstract
+
+> **Retired in favour of [`persona/world/put/1.0`](../../../world/put/1.0).** Same
+> task, same members, one word changed: what this family calls an arrangement of faces is
+> a **world**, and `facet` shared a stem with `face` while naming something different.
+> `facetId` is `worldId` there; nothing else moved. This specification stays readable so
+> documents already issued against it remain verifiable.
 
 **Persona Facet Put** names a part of a holder's life and says what belongs to
 it.
