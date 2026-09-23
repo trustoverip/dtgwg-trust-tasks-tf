@@ -11,6 +11,39 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.19 — 2026-09-23
+
+
+### Added
+
+- **vtc/vetting/vetters/show**: A by-DID vetter status lookup (#603)
+
+* feat(vtc/vetting/vetters/show): a by-DID vetter status lookup
+
+  The vetter listing omits a vetter with no published profile and one whose
+  grant was revoked in exactly the same way: both are simply absent. So an
+  applicant whose vetter has gone quiet cannot tell which happened, and a
+  vetter cannot check their own standing at all. The only way to find out
+  today is to read the grant credential's status list, which needs the
+  credential in hand.
+
+  `vtc/vetting/vetters/show/0.1` answers by DID with one of `live`, `revoked`,
+  `expired` or `none`, plus the grant id, the timestamp that ended or will end
+  it, and — for a live grant — whether the vetter is listed, which is what
+  separates "unlisted by choice" from "not a vetter".
+
+  A new task rather than a `status` member on the listing response: adding a
+  member to an existing response breaks consumers that reject unknown members,
+  and the two answer different questions.
+
+  `revoked` outranks `expired` where both hold, because withdrawal and lapse
+  are different statements. `none` deliberately does not distinguish a
+  non-member from a member who is not a vetter — the caller asked about
+  vetting — and the revocation reason is not carried at all, including through
+  `ext`.
+
+  Rust, TypeScript and Go bindings regenerated.
+
 ## 0.1.18 — 2026-09-22
 
 
