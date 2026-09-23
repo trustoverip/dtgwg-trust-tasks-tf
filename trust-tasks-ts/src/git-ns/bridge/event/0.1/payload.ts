@@ -7,7 +7,7 @@ import type { DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, Rep
 
 
 /**
- * One forge-neutral event, discriminated by `type`.
+ * One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.
  */
 export type ForgeEvent =
   | RepoRenamed
@@ -35,43 +35,28 @@ export interface GitNamespacesBridgeEventPayload {
   drift?: DriftItem[];
   ext?: Ext;
 }
-/**
- * A managed repository was renamed on the forge.
- */
 export interface RepoRenamed {
   type: "repoRenamed";
   forgeId: ForgeId;
   from: RepoResource;
   to: RepoResource;
 }
-/**
- * A managed repository moved to another owner on the forge, which may be outside every bound namespace.
- */
 export interface RepoTransferred {
   type: "repoTransferred";
   forgeId: ForgeId;
   from: RepoResource;
   to: RepoResource;
 }
-/**
- * A repository exists in the namespace that the VTC did not create or adopt.
- */
 export interface RepoCreatedUnmanaged {
   type: "repoCreatedUnmanaged";
   forgeId: ForgeId;
   resource: RepoResource;
 }
-/**
- * A repository was deleted on the forge.
- */
 export interface RepoDeleted {
   type: "repoDeleted";
   forgeId: ForgeId;
   resource: RepoResource;
 }
-/**
- * Someone's forge role on a repository changed outside the bridge.
- */
 export interface RoleChanged {
   type: "roleChanged";
   forgeId: ForgeId;
@@ -82,9 +67,6 @@ export interface RoleChanged {
    */
   role?: string;
 }
-/**
- * Branch protection or a ruleset on a repository changed outside the bridge.
- */
 export interface ProtectionChanged {
   type: "protectionChanged";
   forgeId: ForgeId;
@@ -94,15 +76,9 @@ export interface ProtectionChanged {
    */
   requiredCheck: boolean;
 }
-/**
- * The bridge's access to the namespace was removed on the forge (the app uninstalled, the bot removed or its token revoked). The bridge can no longer act on or observe the namespace.
- */
 export interface InstallationRemoved {
   type: "installationRemoved";
 }
-/**
- * A member completed a beginAccountLink job.
- */
 export interface AccountLinked {
   type: "accountLinked";
   /**
@@ -111,9 +87,6 @@ export interface AccountLinked {
   jobId: string;
   account: ForgeAccount;
 }
-/**
- * The forge-side proof for a beginBind job arrived.
- */
 export interface BindCompleted {
   type: "bindCompleted";
   /**
@@ -202,12 +175,11 @@ export const PAYLOAD_SCHEMA = {
     },
     "ForgeEvent": {
       "title": "ForgeEvent",
-      "description": "One forge-neutral event, discriminated by `type`.",
+      "description": "One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.",
       "type": "object",
       "oneOf": [
         {
           "title": "RepoRenamed",
-          "description": "A managed repository was renamed on the forge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -233,7 +205,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "RepoTransferred",
-          "description": "A managed repository moved to another owner on the forge, which may be outside every bound namespace.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -259,7 +230,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "RepoCreatedUnmanaged",
-          "description": "A repository exists in the namespace that the VTC did not create or adopt.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -281,7 +251,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "RepoDeleted",
-          "description": "A repository was deleted on the forge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -303,7 +272,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "RoleChanged",
-          "description": "Someone's forge role on a repository changed outside the bridge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -333,7 +301,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "ProtectionChanged",
-          "description": "Branch protection or a ruleset on a repository changed outside the bridge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -360,7 +327,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "InstallationRemoved",
-          "description": "The bridge's access to the namespace was removed on the forge (the app uninstalled, the bot removed or its token revoked). The bridge can no longer act on or observe the namespace.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -374,7 +340,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "AccountLinked",
-          "description": "A member completed a beginAccountLink job.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -397,7 +362,6 @@ export const PAYLOAD_SCHEMA = {
         },
         {
           "title": "BindCompleted",
-          "description": "The forge-side proof for a beginBind job arrived.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -569,12 +533,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "ForgeEvent": {
       "title": "ForgeEvent",
-      "description": "One forge-neutral event, discriminated by `type`.",
+      "description": "One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.",
       "type": "object",
       "oneOf": [
         {
           "title": "RepoRenamed",
-          "description": "A managed repository was renamed on the forge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -600,7 +563,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "RepoTransferred",
-          "description": "A managed repository moved to another owner on the forge, which may be outside every bound namespace.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -626,7 +588,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "RepoCreatedUnmanaged",
-          "description": "A repository exists in the namespace that the VTC did not create or adopt.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -648,7 +609,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "RepoDeleted",
-          "description": "A repository was deleted on the forge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -670,7 +630,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "RoleChanged",
-          "description": "Someone's forge role on a repository changed outside the bridge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -700,7 +659,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "ProtectionChanged",
-          "description": "Branch protection or a ruleset on a repository changed outside the bridge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -727,7 +685,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "InstallationRemoved",
-          "description": "The bridge's access to the namespace was removed on the forge (the app uninstalled, the bot removed or its token revoked). The bridge can no longer act on or observe the namespace.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -741,7 +698,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "AccountLinked",
-          "description": "A member completed a beginAccountLink job.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -764,7 +720,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         {
           "title": "BindCompleted",
-          "description": "The forge-side proof for a beginBind job arrived.",
           "type": "object",
           "additionalProperties": false,
           "required": [

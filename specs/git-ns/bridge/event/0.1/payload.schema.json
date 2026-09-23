@@ -43,12 +43,11 @@
     },
     "ForgeEvent": {
       "title": "ForgeEvent",
-      "description": "One forge-neutral event, discriminated by `type`.",
+      "description": "One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.",
       "type": "object",
       "oneOf": [
         {
           "title": "RepoRenamed",
-          "description": "A managed repository was renamed on the forge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -74,7 +73,6 @@
         },
         {
           "title": "RepoTransferred",
-          "description": "A managed repository moved to another owner on the forge, which may be outside every bound namespace.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -100,7 +98,6 @@
         },
         {
           "title": "RepoCreatedUnmanaged",
-          "description": "A repository exists in the namespace that the VTC did not create or adopt.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -122,7 +119,6 @@
         },
         {
           "title": "RepoDeleted",
-          "description": "A repository was deleted on the forge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -144,7 +140,6 @@
         },
         {
           "title": "RoleChanged",
-          "description": "Someone's forge role on a repository changed outside the bridge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -174,7 +169,6 @@
         },
         {
           "title": "ProtectionChanged",
-          "description": "Branch protection or a ruleset on a repository changed outside the bridge.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -201,7 +195,6 @@
         },
         {
           "title": "InstallationRemoved",
-          "description": "The bridge's access to the namespace was removed on the forge (the app uninstalled, the bot removed or its token revoked). The bridge can no longer act on or observe the namespace.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -215,7 +208,6 @@
         },
         {
           "title": "AccountLinked",
-          "description": "A member completed a beginAccountLink job.",
           "type": "object",
           "additionalProperties": false,
           "required": [
@@ -238,7 +230,6 @@
         },
         {
           "title": "BindCompleted",
-          "description": "The forge-side proof for a beginBind job arrived.",
           "type": "object",
           "additionalProperties": false,
           "required": [
