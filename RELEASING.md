@@ -1,9 +1,10 @@
 # Releasing
 
 **Merging is not releasing.** Anything merged to `main` sits unpublished until a
-release is cut. Releases are cut by merging a **Release PR** — one kept up to
-date by [release-plz](https://release-plz.dev) for the nine Rust crates, and one
-kept up to date by `scripts/release-ts-pr.sh` for the npm package.
+release is cut. A release is cut by merging **the Release PR** — one PR, kept up
+to date by `scripts/release-pr.sh`, carrying the next version of every package
+in every language: [release-plz](https://release-plz.dev) computes the crates',
+and `scripts/release-bump-{ts,go,dart}.sh` the npm, Go and Dart ones.
 
 Contributing rather than releasing? You only need
 [What this means for contributors](#what-this-means-for-contributors).
@@ -15,7 +16,7 @@ Contributing rather than releasing? You only need
 **Two rules.**
 
 1. **Never edit a `version = ` field in a `Cargo.toml`, or `"version"` in
-   `trust-tasks-ts/package.json`.** Versions are assigned by the Release PRs,
+   `trust-tasks-ts/package.json`.** Versions are assigned by the Release PR,
    not by you. A version in a feature PR collides with every other PR touching
    that package.
 2. **Write a conventional-commit PR title.** PRs squash-merge, so the title
@@ -84,14 +85,16 @@ no hand-written entries.
 >    repo `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
 > 3. Seed the release anchor tag once, at the published version:
 >    `git tag -a <prefix>-v<version> -m "<name> <version>" && git push origin <prefix>-v<version>`
->    (e.g. `trust-tasks-ts-proof-v0.1.0`). `release-ts-pr.sh` measures the next
+>    (e.g. `trust-tasks-ts-proof-v0.1.0`). `release-bump-ts.sh` measures the next
 >    bump from it.
+> 4. Add the package to `TS_PACKAGES` in `scripts/release-pr.sh` and to the
+>    `publish-npm` matrix.
 >
-> After that the package rides the matrix: `publish-npm` and `release-ts-pr` run
-> once per package (keyed on its directory and `<prefix>-v` tag), and the first
+> After that the package rides along: `release-pr` bumps it and `publish-npm`
+> publishes it, once per package (keyed on its directory and `<prefix>-v` tag), and the first
 > *automated* release is the version after the manual one.
 | `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
-| `trust-tasks-go/proof` | none — a **separate** nested Go module (Data Integrity proofs), released on its own `trust-tasks-go/proof/vX.Y.Z` tag, independently of the core. It has a `version.go`, a `publish-go` matrix leg and a `release-go-pr` leg like the core. No manual first publish — a Go tag is self-bootstrapping. |
+| `trust-tasks-go/proof` | none — a **separate** nested Go module (Data Integrity proofs), released on its own `trust-tasks-go/proof/vX.Y.Z` tag, independently of the core. It has a `version.go`, a `publish-go` matrix leg and a `GO_MODULES` entry in `scripts/release-pr.sh` like the core. No manual first publish — a Go tag is self-bootstrapping. |
 | `trust-tasks-go/didcomm` | none — a **separate** nested Go module (DIDComm v2 binding), released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag, the same way as `proof`. |
 | `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
 | `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
@@ -107,15 +110,25 @@ published crate's whole dependency closure to be published too.
 
 ## Cutting a release
 
-### 1. Review the Release PR(s)
+### 1. Review the Release PR
 
-Four can be open at once. They are independent — merge any, all, or none.
+There is **one**: `chore: release …` on the `release` branch, labelled
+`release`. It updates on every merge to `main`, and its body is a table of every
+package it would release — crate, npm package, Go module or Dart package — with
+the version move and the bump level. Packages keep their own versions, tags and
+changelogs; only the PR is shared. A package with nothing new is simply absent
+from the table.
 
-**`chore: release` (release-plz, label `release`)** — the crates. It updates on
-every merge to `main` and contains the version bump for each changed crate and
-the changelog entries those commits produced.
+> **Changed.** This used to be up to thirteen PRs — release-plz's for the
+> crates plus one per npm package, Go module and Dart package. Merging any of
+> them was a push to `main`, which regenerated every other one and restarted its
+> CI, so a release meant merge, wait, merge, wait. Now a release is one merge.
 
-The bump levels are **derived, not guessed**:
+How each part of it is computed:
+
+**The crates** — `release-plz update`, reading `release-plz.toml` exactly as
+the old release-plz PR did (the `core` version group, `cliff.toml`). The bump
+levels are **derived, not guessed**:
 [`cargo-semver-checks`](https://github.com/obi1kenobi/cargo-semver-checks)
 compares each crate's public API against the version on crates.io, so a genuine
 API break moves the compatibility field whether or not anyone remembered to say
@@ -123,42 +136,27 @@ so. Every crate here is `0.x`, where cargo treats the **minor** field as the
 compatibility boundary: `0.14.0` → `0.14.1` is compatible, `0.14.0` → `0.15.0`
 is not.
 
-**`chore: release @openvtc/trust-tasks <version>`** — the npm package, on the
-`release-ts` branch. Same shape, computed by `scripts/release-ts-pr.sh` from the
-conventional commits since the `trust-tasks-ts-v*` tag that touched `specs/`,
-`trust-tasks-ts/` or `scripts/build-ts-bindings.mjs`.
+**The npm packages** — `scripts/release-bump-ts.sh <package>`, from the
+conventional commits since the package's `<prefix>-v*` tag. The core
+(`@openvtc/trust-tasks`) watches `specs/`, `trust-tasks-ts/` and
+`scripts/build-ts-bindings.mjs`; each sibling watches only its own directory.
 
-**`chore: release trust-tasks-go <version>`** — the Go module, on the
-`release-go` branch. Same shape again, computed by `scripts/release-go-pr.sh`
-from the conventional commits since the `trust-tasks-go/v*` tag that touched
-`specs/`, `trust-tasks-go/` or `scripts/build-go-bindings.mjs`.
-
-Go has no manifest to bump, so the PR moves `const Version` in
-`trust-tasks-go/trusttasks/version.go`, which stands in for one. The tag is what
-actually publishes.
-
-The two nested modules (`trust-tasks-go/proof`, `trust-tasks-go/didcomm`) each get
-their **own** `chore: release trust-tasks-go/<name>` PR on a `release-go-<name>`
-branch, from the same `release-go-pr.sh` (it takes the module as an argument, like
-the TS/Dart scripts) and the same `publish-go` matrix. They version on their own
+**The Go modules** — `scripts/release-bump-go.sh <module>`, the same way, from
+the `trust-tasks-go/v*` tag (watching `specs/`, `trust-tasks-go/` and
+`scripts/build-go-bindings.mjs`). Go has no manifest to bump, so it moves
+`const Version` in `trust-tasks-go/trusttasks/version.go`, which stands in for
+one; the tag is what actually publishes. The nested modules
+(`trust-tasks-go/proof`, `trust-tasks-go/didcomm`) version on their own
 `trust-tasks-go/<name>/vX.Y.Z` tags, and the **core's** watch set excludes them,
-so a change under a nested module releases that module, not the core. `tsp` is the
-exception — still unreleased, see the table above.
+so a change under a nested module releases that module, not the core. `tsp` is
+the exception — still unreleased, see the table above.
 
-**`chore: release trust_tasks <version>`** — the Dart package, on the
-`release-dart` branch, computed by `scripts/release-dart-pr.sh` from the
-conventional commits since the `trust-tasks-dart-v*` tag that touched `specs/`,
-`trust-tasks-dart/` or `scripts/build-dart-bindings.mjs`. It moves two
+**The Dart packages** — `scripts/release-bump-dart.sh <package>`, from the
+`trust-tasks-dart[-<name>]-v*` tag. For `trust_tasks` (watching `specs/`,
+`trust-tasks-dart/` and `scripts/build-dart-bindings.mjs`) it moves two
 declarations that must stay equal: `version:` in `pubspec.yaml` and
-`packageVersion` in `lib/src/runtime/version.dart`.
-
-**`chore: release trust_tasks_proof <version>`** — the same script run as
-`scripts/release-dart-pr.sh trust_tasks_proof`, on the `release-dart-proof`
-branch, measured from the `trust-tasks-dart-proof-v*` tag and watching only
-`trust-tasks-dart-proof/`. It moves `version:` alone; the package has no version
-constant. **`chore: release trust_tasks_https <version>`** and
-**`chore: release trust_tasks_didcomm <version>`** are the same again, on
-`release-dart-https` and `release-dart-didcomm`, from their own tags.
+`packageVersion` in `lib/src/runtime/version.dart`. The others watch only their
+own directory and move `version:` alone.
 
 > ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
 > Dart bumps are only as accurate as the commit subjects: if a change breaks one
@@ -173,9 +171,10 @@ constant. **`chore: release trust_tasks_https <version>`** and
 > exactly this reason. npm and crates.io both allow a short retraction window;
 > Go does not.
 
-The `release-ts`, `release-go`, `release-dart` and `release-dart-proof` branches are **regenerated
-from `main` on every push**. Do not commit to them — a force-push will take your
-work.
+The `release` branch is **regenerated from `main` on every push**. Do not commit
+to it — a force-push will take your work. To hold one package back, merge
+nothing and fix its cause on `main` (a revert, or a follow-up), and the PR
+recomputes.
 
 ### 2. Merge it
 
@@ -187,7 +186,7 @@ a GitHub Release per crate carrying its changelog section.
 
 Merging the npm PR triggers `publish-npm`, which builds the package, publishes
 it with OIDC provenance, and pushes the `trust-tasks-ts-v<version>` tag that the
-*next* npm Release PR measures from.
+*next* Release PR measures the npm package from.
 
 Merging the Dart PR triggers `tag-dart`, which verifies the package analyses,
 tests and dry-run-publishes, then pushes `trust-tasks-dart-v<version>`. That tag
@@ -214,7 +213,7 @@ into a failed run.
 Merging the Go PR triggers `publish-go`, which verifies the module builds and
 its tests pass, pushes the `trust-tasks-go/v<version>` tag, and asks
 `proxy.golang.org` to index it. That tag is both the publication and the anchor
-the *next* Go Release PR measures from — unlike the other two, there is no
+the *next* Release PR measures the Go module from — unlike the other two, there is no
 separate release tag, because the go tooling requires this exact spelling for a
 module in a subdirectory.
 
@@ -257,7 +256,7 @@ usually fixes it, because the missing crate is on crates.io by then.
   was stale.)
 
   Why it matters: GitHub suppresses workflow runs for events authored by the
-  default `GITHUB_TOKEN`. Without this token a Release PR opens with no CI on it
+  default `GITHUB_TOKEN`. Without this token the Release PR opens with no CI on it
   — meaning the one commit that publishes would be the one commit CI never built
   — and, on the Dart side, the release tag would not trigger the publish workflow
   at all. If it is ever unset, **close and reopen the Release PR** to trigger CI
@@ -298,9 +297,9 @@ usually fixes it, because the missing crate is on crates.io by then.
   `publish-dart.yml` finds the version already on pub.dev and does nothing, and
   if it runs before, it fails with the message above and your upload follows.
 
-  Adding another Dart package means: an entry in `tag-dart` and in
-  `release-dart-pr` in `publish.yml`, a tag pattern and a `case` arm in
-  `publish-dart.yml`, a `case` arm in `scripts/release-dart-pr.sh`, a matrix
+  Adding another Dart package means: an entry in `tag-dart` in `publish.yml`
+  and in `DART_PACKAGES` in `scripts/release-pr.sh`, a tag pattern and a `case`
+  arm in `publish-dart.yml`, a `case` arm in `scripts/release-bump-dart.sh`, a matrix
   entry in the `packages` job in `dart.yml`, and the manual first publish above.
   `npm run check-dart-packages` (a required-able job in `dart.yml`) fails until
   the five agree.
@@ -331,7 +330,7 @@ usually fixes it, because the missing crate is on crates.io by then.
 release-plz decides *whether* a crate changed by comparing its packaged files
 against the tarball on crates.io, so it will find the right bump with no tags at
 all. It decides *what the changelog says* from the commits since that crate's
-`<crate>-v<version>` tag — and `scripts/release-ts-pr.sh` uses its tag for both.
+`<crate>-v<version>` tag — and `scripts/release-bump-ts.sh` uses its tag for both.
 No such tags exist in this repo. Seed them once at the current `main` — every
 version there is already published — **before trusting the first Release PR**:
 
@@ -353,23 +352,23 @@ the next section.
 
 Without these:
 
-- the first crates Release PR bumps versions correctly but produces **empty
+- the first Release PR bumps crate versions correctly but produces **empty
   changelog sections** — there is no range for it to read commits from;
-- the `release-ts-pr` job **fails loudly** with "No trust-tasks-ts-v\* tag
+- the `release-pr` job **fails loudly** with "No trust-tasks-ts-v\* tag
   exists", by design, rather than proposing a bump from nothing.
 
 ### The Go module seeds itself — do not tag it by hand
 
 `trust-tasks-go` needs no seeding step, and adding one is actively dangerous.
 
-`publish-go` does not measure from a prior tag the way `release-go-pr` does. It
+`publish-go` does not measure from a prior tag the way `release-bump-go.sh` does. It
 reads `const Version` from `trust-tasks-go/trusttasks/version.go`, asks whether
 `trust-tasks-go/v<Version>` exists, and tags when it does not — so the very
 first push to `main` that carries the module publishes it and writes the anchor
-in one step. `release-go-pr` runs `needs: publish-go`, so by the time it looks
+in one step. `release-pr` runs `needs: publish-go`, so by the time it looks
 there is always a tag to measure from. This is exactly what happened on #468:
 `publish-go` verified the tree, pushed `trust-tasks-go/v0.1.0`, and
-`release-go-pr` then correctly reported nothing to release.
+the Go Release PR job then correctly reported nothing to release.
 
 ⚠️ **A Go tag is itself a publication, and it cannot be retracted.** Pushing
 `trust-tasks-go/v0.1.0` is what makes `go get …/trust-tasks-go@v0.1.0` resolve,
@@ -401,40 +400,40 @@ makes this migration clean:
 
 ---
 
-## Why the npm package, the Go module and the Dart package are released separately
+## Why release-plz does not open the PR any more
 
 release-plz manages Rust and only Rust. It has **no pre- or post-release hook**
-and will not write a non-Rust manifest, so there is no supported way to make it
-bump `trust-tasks-ts/package.json` inside the crates Release PR.
+and will not write a non-Rust manifest, so there is no supported way to make its
+`release-pr` command put `trust-tasks-ts/package.json` in the same PR.
 
-The options were to bolt an extra commit onto release-plz's own release branch —
-which release-plz force-pushes on every run, so the commit would be repeatedly
-dropped and re-applied — or to give the package its own Release PR built the
-same way. This repo does the second. `scripts/release-ts-pr.sh` mirrors
-release-plz deliberately: previous release is a tag, bump comes from
-conventional commits since it, changelog comes from the same `cliff.toml`,
-merging the PR is the release. The cost is one more PR to merge; the benefit is
-that a TypeScript-only change (a fix in the hand-written `src/_runtime`
-pipeline, which touches no crate) still gets a release, which it could not if it
-depended on release-plz having found something to do.
+For a while that meant giving each non-Rust package its own Release PR, built
+the same way — up to thirteen PRs, each regenerated (and its CI restarted) by
+every merge of another. What made that unnecessary is that release-plz's
+version-and-changelog step is available on its own: `release-plz update` does
+everything `release-pr` did *except* the git and GitHub part. So
+`scripts/release-pr.sh` runs it for the crates, runs the per-language bump
+scripts for everything else, and commits the lot as one PR. Nothing about how a
+bump is *computed* changed; only how many PRs it lands in.
 
-The Go module is separate for a stronger reason still: it has no manifest at
-all. A Go module's version *is* its git tag, so there is nothing for release-plz
-or for a manifest-bumping script to write, and `scripts/release-go-pr.sh` moves
-a `const Version` that exists precisely to give the Release PR something to
-carry. See the comment on that constant.
+The bump scripts mirror release-plz deliberately: previous release is a tag,
+bump comes from conventional commits since it, changelog comes from the same
+`cliff.toml`. A TypeScript-only change (a fix in the hand-written
+`src/_runtime` pipeline, which touches no crate) still gets a release, because
+each package is judged on its own watch set.
 
-The Dart package is separate for a third reason on top of both: pub.dev will
-not publish from a push-to-`main` workflow at all, so the release is necessarily
-two steps — tag, then publish on the tag.
+Go has no manifest at all — a Go module's version *is* its git tag — so
+`scripts/release-bump-go.sh` moves a `const Version` that exists precisely to
+give the Release PR something to carry. See the comment on that constant. Dart
+publishes in two steps — tag, then publish on the tag — because pub.dev will not
+publish from a push-to-`main` workflow at all.
 
-`release-ts-pr` runs `needs: publish-npm`, `release-go-pr` runs
-`needs: publish-go`, and `release-dart-pr` runs `needs: tag-dart` — **not**
-beside them. Both fire on the same push, and the
-tag each Release-PR job measures from is written by the publish job before it.
-In parallel, the run that merges a release would compute its next bump against
-the *previous* tag and immediately reopen a Release PR for the release that had
-just gone out.
+`release-pr` runs `needs: [release-plz-release, publish-npm, publish-go,
+tag-dart]` — **not** beside them. They fire on the same push, and the tag (or
+registry version) each bump measures from is written by those jobs. In
+parallel, the run that merges a release would compute its next bump against the
+*previous* release and immediately reopen a Release PR for what had just gone
+out. It also does not run after a failed publish job: re-run that job, and the
+Release PR catches up.
 
 ---
 
@@ -443,8 +442,9 @@ just gone out.
 | | |
 |---|---|
 | `release-plz.toml` | what release-plz does; the published set lives in the manifests |
-| `cliff.toml` | how commits become changelog entries, for both halves |
-| `scripts/release-ts-pr.sh` | the npm Release PR |
-| `.github/workflows/publish.yml` | all four release jobs. **Do not rename this file** |
+| `cliff.toml` | how commits become changelog entries, for every package |
+| `scripts/release-pr.sh` | builds the one Release PR, and lists the non-Rust packages |
+| `scripts/release-bump-{ts,go,dart}.sh` | one package's bump + changelog, in the working tree |
+| `.github/workflows/publish.yml` | the publish jobs and `release-pr`. **Do not rename this file** |
 | `.github/workflows/commit-lint.yml` | PR title must be a conventional commit |
 | `rust.yml` → `publication order is satisfiable` | tripwire for a dev-dependency edge that makes publication order impossible |

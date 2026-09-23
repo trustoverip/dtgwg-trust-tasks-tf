@@ -24,12 +24,12 @@ name: Release
 # and therefore made every feature PR a release decision, taken before it
 # merged. Seven releases went out in a single day as a direct consequence.
 #
-# Now: merge PRs to `main` freely. `release-plz-pr` keeps ONE Release PR up to
-# date with the version bumps and changelog entries those merges imply, and
-# `release-ts-pr` does the same for the npm package. Merging a Release PR is
-# the release — `release-plz-release` tags and publishes the crates, and
-# `publish-npm` publishes the package. An ordinary feature merge runs every job
-# here and all of them are no-ops. See RELEASING.md.
+# Now: merge PRs to `main` freely. `release-pr` (the last job here) keeps ONE
+# Release PR up to date with the version bumps and changelog entries those
+# merges imply, for every package in every language. Merging it is the release
+# — `release-plz-release`, `publish-npm`, `publish-go` and `tag-dart` each
+# publish whatever version is not out yet. An ordinary feature merge runs every
+# publish job here and all of them are no-ops. See RELEASING.md.
 #
 # WHICH crates publish is decided in the manifests (`publish = false` on
 # `trust-tasks-codegen`), not here.
@@ -104,140 +104,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
 
-  release-plz-pr:
-    name: Release-plz PR (crates.io)
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    permissions:
-      contents: write
-      pull-requests: write
-    concurrency:
-      # Deliberately only on this job. Serialising the release job could skip a
-      # release; serialising PR updates just coalesces them.
-      group: release-plz-${{ github.ref }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      # release-plz compares each crate's public API against its published
-      # version and forces a compatibility-breaking bump when it actually
-      # broke. Without this binary present release-plz logs "cargo-semver-checks
-      # not installed, skipping semver check" and silently falls back to
-      # guessing from commit messages — which is the failure this exists to
-      # prevent, and it is only a warning, so nothing goes red.
-      - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@cargo-semver-checks
-
-      # DCO requires a `Signed-off-by` trailer on every commit, and the
-      # release commit is no exception — the Release PR is the one commit that
-      # publishes, so it is the last place to be sloppy about provenance.
-      # `format.signOff` covers release-plz if it shells out to `git commit`;
-      # the verification step below covers it if it does not. Belt and braces
-      # because the failure is silent — a Release PR that simply sits red.
-      - name: Sign off release commits by default
-        run: git config --global format.signOff true
-
-      - name: Run release-plz
-        id: release_pr
-        uses: release-plz/action@v0.5.131
-        with:
-          command: release-pr
-        env:
-          # A PAT or GitHub App token, falling back to the default token.
-          #
-          # THE FALLBACK SHIPS A RELEASE NOBODY TESTED. GitHub suppresses
-          # workflow runs for events authored by GITHUB_TOKEN, so with the
-          # default token the Release PR opens with no CI on it — meaning the
-          # one commit that publishes to crates.io would be the one commit CI
-          # never built.
-          #
-          # Set RELEASE_PLZ_TOKEN to a PAT (contents + pull-requests write) or
-          # a GitHub App token. Until then, close-and-reopen the Release PR to
-          # trigger CI before merging it. See RELEASING.md.
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-
-      # `format.signOff` only reaches release-plz if it commits through the git
-      # CLI. It may not, so verify rather than assume: if the branch tip has no
-      # trailer, add one and force-push. Amending is safe here — the branch is
-      # release-plz's own, it force-pushes over it on every run, and nobody
-      # branches from it.
-      - name: Ensure the release commit is signed off
-        if: steps.release_pr.outputs.prs_created == 'true'
-        env:
-          # The action exposes `pr` (JSON of the opened PR), not a bare branch
-          # name — verified against action.yml, whose outputs are exactly
-          # pr / prs / prs_created / releases / releases_created.
-          PR_JSON: ${{ steps.release_pr.outputs.pr }}
-          GH_PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH=$(jq -r '.head_branch // empty' <<<"$PR_JSON")
-          if [ -z "$BRANCH" ]; then
-            echo "::error::release-plz reported a PR but no head_branch: $PR_JSON"
-            exit 1
-          fi
-          # NOT --depth=1. A shallow fetch leaves the release commit with no
-          # parent, and `git commit --amend` on a parentless commit does not
-          # amend — it writes a new ROOT commit containing the entire tree as
-          # newly-added files. The checkout above already uses fetch-depth: 0,
-          # so the history is here; just fetch the ref.
-          git fetch origin "$BRANCH"
-          if git log -1 --format='%(trailers:key=Signed-off-by)' "origin/$BRANCH" | grep -q .; then
-            echo "::notice::$BRANCH is already signed off"
-            exit 0
-          fi
-          author_name=$(git log -1 --format='%an' "origin/$BRANCH")
-          author_email=$(git log -1 --format='%ae' "origin/$BRANCH")
-          echo "::warning::$BRANCH was not signed off; amending as $author_name <$author_email>"
-          git checkout -q -B "$BRANCH" "origin/$BRANCH"
-          # Preserve the original author; the trailer names them, because they
-          # are who the DCO is a statement by.
-          git -c user.name="$author_name" -c user.email="$author_email" \
-              commit --amend --no-edit -s
-
-          # Verify before pushing: an amend that changed the parent, or added
-          # no trailer, must not reach the branch.
-          if [ "$(git rev-parse HEAD^)" != "$(git rev-parse "origin/$BRANCH^")" ]; then
-            echo "::error::amend changed the commit's parent — refusing to push"
-            exit 1
-          fi
-          if ! git log -1 --format='%(trailers:key=Signed-off-by)' | grep -q .; then
-            echo "::error::amend produced no Signed-off-by trailer — refusing to push"
-            exit 1
-          fi
-
-          # The checkout sets persist-credentials: false, so the local remote
-          # carries no auth. Authenticate `origin` itself rather than pushing
-          # to a bare URL: --force-with-lease resolves its expected value from
-          # the remote-TRACKING ref, and an anonymous URL has none, so the
-          # push is rejected with "stale info" and the protection silently
-          # becomes an outage. Keeping the named remote keeps the lease real.
-          git remote set-url origin \
-            "https://x-access-token:${GH_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push --force-with-lease="$BRANCH:$(git rev-parse "origin/$BRANCH")" \
-            origin "HEAD:$BRANCH"
-
   # ── npm ──────────────────────────────────────────────────────────────────
   #
-  # release-plz is Rust-only: it has no hooks and cannot touch a non-Rust
-  # manifest, so `@openvtc/trust-tasks` cannot ride in the crates Release PR.
-  # It gets its own Release PR instead, computed the same way (conventional
-  # commits since the package's last release tag) and merged the same way.
-  # See scripts/release-ts-pr.sh and RELEASING.md.
+  # release-plz is Rust-only: it cannot touch a non-Rust manifest, so each
+  # package's bump is computed by scripts/release-bump-ts.sh (conventional
+  # commits since the package's last release tag) and rides in the same
+  # Release PR as the crates. See RELEASING.md.
   # One matrix entry per npm package. The core is @openvtc/trust-tasks; the
   # sibling packages (-proof, -tsp) publish from their own directories under
   # their own tag prefix. Each is skipped when its version is already on npm, so
@@ -319,7 +191,7 @@ jobs:
         working-directory: ${{ matrix.dir }}
         run: npm publish --access public
 
-      # The tag is the anchor for the NEXT Release PR: release-ts-pr reads
+      # The tag is the anchor for the NEXT Release PR: release-bump-ts.sh reads
       # commits since `trust-tasks-ts-v<version>` to decide the bump and to
       # generate the changelog section. Without it the package would be
       # measured from nothing and every run would propose the whole history.
@@ -469,51 +341,6 @@ jobs:
           # proxy will index it on its own schedule.
           echo "::warning::proxy.golang.org has not indexed $MODULE@v$VERSION yet. The tag is pushed; the proxy will pick it up. Verify with: go list -m $MODULE@v$VERSION"
 
-  # One Release PR per Go module (core, proof, didcomm), keyed on its own tag —
-  # the same matrix as publish-go, and release-go-pr.sh takes the module as its
-  # argument the way release-ts-pr.sh / release-dart-pr.sh take a package.
-  release-go-pr:
-    name: Release PR (${{ matrix.name }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # MUST run after publish-go, for the same reason release-ts-pr runs after
-    # publish-npm: the tag this job measures from is written by publish-go, so
-    # running them in parallel means the run that merges a Go release computes
-    # its next bump against the PREVIOUS tag and immediately reopens a Release
-    # PR for a release that just went out.
-    needs: publish-go
-    permissions:
-      contents: write
-      pull-requests: write
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - trust-tasks-go
-          - trust-tasks-go/proof
-          - trust-tasks-go/didcomm
-    concurrency:
-      group: release-go-pr-${{ matrix.name }}-${{ github.ref }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-
-      # Same cliff.toml release-plz uses for the crates, so all three sides of a
-      # release read identically.
-      - name: Install git-cliff
-        uses: taiki-e/install-action@git-cliff
-
-      - name: Open or update the ${{ matrix.name }} Release PR
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-go-pr.sh "${{ matrix.name }}"
-
   # ── Dart ─────────────────────────────────────────────────────────────────
   #
   # The odd one out: pub.dev only accepts an automated publish when the workflow
@@ -524,8 +351,14 @@ jobs:
   # One matrix entry per Dart package. `max-parallel: 1` and the core first:
   # a package built on `trust_tasks` is verified against the *published* core
   # (below), so the core's tag has to have gone out before its consumers are
-  # judged. Adding a package: an entry here, one in `release-dart-pr`, and the
+  # judged. Adding a package: an entry here, one in DART_PACKAGES and a case
+  # arm in scripts/release-bump-dart.sh (both read by release-pr.sh), and the
   # tag pattern and `case` arm in publish-dart.yml.
+  #
+  # One Release PR can bump the core and a dependent together. If the dependent
+  # needs core API that was unreleased until this merge, its leg below can run
+  # before pub.dev has finished publishing the core and fail; re-run the job
+  # once the core is live. Its failure also holds back `release-pr` until then.
   tag-dart:
     name: Tag ${{ matrix.name }} for pub.dev
     runs-on: ubuntu-latest
@@ -631,92 +464,77 @@ jobs:
             echo "::warning::$tag was pushed with the default GITHUB_TOKEN, so publish-dart.yml will NOT have been triggered and $VERSION is NOT on pub.dev. Delete and re-push the tag from a workstation to publish it: git push --delete origin $tag && git push origin $tag"
           fi
 
-  release-dart-pr:
-    name: Release PR (${{ matrix.name }})
+  # ── The Release PR ───────────────────────────────────────────────────────
+  #
+  # ONE PR for every package, opened and refreshed by scripts/release-pr.sh:
+  # `release-plz update` for the crates, then scripts/release-bump-*.sh for
+  # each npm package, Go module and Dart package, committed together. This
+  # replaced thirteen per-package Release PRs, each of which was regenerated —
+  # and its CI restarted — every time another one merged.
+  release-pr:
+    name: Release PR
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # MUST run after tag-dart, for the same reason release-ts-pr runs after
-    # publish-npm: the tag this job measures from is written by tag-dart.
-    needs: tag-dart
+    timeout-minutes: 60
+    # MUST run after every publish job. Each bump is measured from the tag (or,
+    # for the crates, the registry version) that those jobs write, so running
+    # beside them means the push that merges a release computes the next one
+    # against the PREVIOUS release and immediately reopens a PR for what just
+    # went out. (A matrix `needs` waits for every leg.)
+    needs: [release-plz-release, publish-npm, publish-go, tag-dart]
+    # Not after a failed publish: the half-published state is for a human to
+    # finish (re-run the failed job), and proposing the next release on top of
+    # it would only muddy which versions are actually out. Skipped legs are
+    # fine — that is an ordinary feature merge.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') }}
     permissions:
       contents: write
       pull-requests: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: trust_tasks
-          - name: trust_tasks_proof
-          - name: trust_tasks_https
-          - name: trust_tasks_didcomm
-          - name: trust_tasks_capability_client
     concurrency:
-      group: release-dart-pr-${{ matrix.name }}-${{ github.ref }}
+      # Serialising PR updates just coalesces them; the branch is derived, so
+      # the last run to finish writes the right tree.
+      group: release-pr-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
-          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-
-      # Same cliff.toml release-plz uses for the crates, so all four sides of a
-      # release read identically.
-      - name: Install git-cliff
-        uses: taiki-e/install-action@git-cliff
-
-      - name: Open or update the ${{ matrix.name }} Release PR
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-dart-pr.sh ${{ matrix.name }}
-
-  release-ts-pr:
-    name: Release PR (${{ matrix.name }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # MUST run after publish-npm, not beside it. Both jobs fire on the same
-    # push, and the tag that this job measures from is written by publish-npm.
-    # Running them in parallel means the run that merges a TS release computes
-    # its next bump against the PREVIOUS tag and immediately reopens a Release
-    # PR for a release that just went out. (matrix needs matrix: every
-    # publish-npm leg finishes before any release-ts-pr leg.)
-    needs: publish-npm
-    permissions:
-      contents: write
-      pull-requests: write
-    strategy:
-      fail-fast: false
-      matrix:
-        name:
-          - "@openvtc/trust-tasks"
-          - "@openvtc/trust-tasks-proof"
-          - "@openvtc/trust-tasks-tsp"
-          - "@openvtc/trust-tasks-capability-client"
-    concurrency:
-      group: release-ts-pr-${{ matrix.name }}-${{ github.ref }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v6
-        with:
+          # Full history + tags: every bump is measured from a tag, and a
+          # shallow clone produces a correct bump with an empty changelog.
           fetch-depth: 0
           # Same token `gh` uses below, so the branch push and the PR come from
           # one identity. With a PAT in RELEASE_PLZ_TOKEN that also means CI
           # actually runs on the Release PR — GitHub suppresses workflow runs
-          # for events authored by the default GITHUB_TOKEN.
+          # for events authored by the default GITHUB_TOKEN, and the one commit
+          # that publishes must not be the one commit CI never built.
           token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+
+      # cargo-semver-checks builds rustdoc for the binding crates, whose TDK
+      # dependencies probe for libdbus-1 via pkg-config.
+      - name: Install libdbus-1-dev
+        run: |
+          # `apt-get update` exits non-zero when ANY configured source fails, and
+          # the runner image ships Google's Chrome repo, which periodically serves
+          # a Packages.gz whose hash does not match its Release file. The
+          # *install* is the check, and it still fails loudly.
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
+
+      - uses: dtolnay/rust-toolchain@stable
+
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
 
-      # Generates the changelog section for the package from the same
-      # cliff.toml release-plz uses for the crates, so both sides of the
-      # release read identically.
-      - name: Install git-cliff
-        uses: taiki-e/install-action@git-cliff
+      # cargo-semver-checks MUST be present: without it release-plz logs
+      # "cargo-semver-checks not installed, skipping semver check" and silently
+      # falls back to guessing from commit messages — only a warning, so nothing
+      # goes red. git-cliff is for the non-Rust changelogs, from the same
+      # cliff.toml release-plz reads, so every part of a release reads alike.
+      - name: Install release-plz, cargo-semver-checks and git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: release-plz,cargo-semver-checks,git-cliff
 
-      - name: Open or update the ${{ matrix.name }} Release PR
+      - name: Open or update the Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-ts-pr.sh "${{ matrix.name }}"
+        run: ./scripts/release-pr.sh

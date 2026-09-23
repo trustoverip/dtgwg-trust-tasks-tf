@@ -33,8 +33,8 @@ name: Publish Dart
 # The patterns cannot collide: `trust-tasks-dart-v` never prefixes
 # `trust-tasks-dart-proof-v`, `trust-tasks-dart-https-v` or
 # `trust-tasks-dart-didcomm-v`. Adding a package means a row here, a tag pattern
-# below, a `case` arm in `resolve`, and an entry in the `tag-dart` and
-# `release-dart-pr` matrices in publish.yml.
+# below, a `case` arm in `resolve`, an entry in the `tag-dart` matrix in
+# publish.yml, and one in DART_PACKAGES in scripts/release-pr.sh.
 #
 # ⚠ A tag pushed by the default GITHUB_TOKEN does NOT trigger this workflow —
 # GitHub suppresses workflow runs for events authored by it. The `tag-dart` job

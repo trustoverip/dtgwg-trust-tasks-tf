@@ -938,7 +938,7 @@ for (const [uri, mod] of dartByUri) {
 // in lib/src/runtime/version.dart is what a consumer can log. Nothing at
 // runtime reads both, so a release that moved one and not the other would ship
 // a package whose own constant misreports its version — and the first attempt at
-// the rewrite in scripts/release-dart-pr.sh did exactly that, because its regex
+// the rewrite in scripts/release-bump-dart.sh did exactly that, because its regex
 // could not match a version containing dots.
 {
   const PUBSPEC = path.join(ROOT, "trust-tasks-dart", "pubspec.yaml");
