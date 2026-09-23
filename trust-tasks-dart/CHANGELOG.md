@@ -11,6 +11,8 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.0 — 2026-09-23
+
 ## 0.1.19 — 2026-09-23
 
 
