@@ -102,6 +102,9 @@ required.
 A conforming maintainer **MUST** refuse, with
 `persona/local/profile/put:duplicateSlot`, a profile in which two entries carry
 the same `slot`.
+A conforming maintainer **MUST** include `correlation` in the response only for a
+caller authorized to read across the holder's contexts, and **MUST** omit the
+member entirely for a caller scoped to one context.
 
 ## Authorization
 
@@ -109,6 +112,12 @@ the same `slot`.
 every object it touches lives below the boundary: a local profile holds only
 values supplied to it, and a local binding names only local objects. Nothing here
 can reach the holder's pool.
+
+**Except the response's `correlation`, which is why it is conditional.** That
+member is computed from the holder's agent-wide index, so a context-scoped
+caller receiving it can learn something about every other context. It is
+addressed to the holder's own client, and a maintainer omits it for anyone else
+— see [Correlation](#correlation).
 
 ## Request
 
@@ -138,6 +147,21 @@ one thing" defeats the entire purpose of the throwaway.
 
 Indexing them is not itself a leak: the index sits above the boundary, is keyed
 by a hash rather than plaintext, and only the holder can query it.
+
+**Answering from it is where the leak would be, and that is what `correlation`
+is conditional for.** `matchesPoolValue` is a yes/no on "does the holder hold
+this exact value anywhere", and a caller that can write is a caller that can
+guess: a value per write, unbounded, each answer confirming or eliminating one.
+No value crosses the boundary in either direction, and it does not need to —
+for a name, an address or a date of birth, confirmation *is* disclosure, and the
+guesser is inside a single context learning about all of them. So a maintainer
+**MUST** omit the member for a context-scoped caller rather than computing a
+softer answer: a coarser signal is still an oracle, only a slower one.
+
+A maintainer **SHOULD** still record the assessment where the holder can read it
+— an audit entry, or the holder-reach correlation task — because the holder is
+owed the warning that a throwaway is reusing a real value. What changes is who
+is told, not whether it is noticed.
 
 A local persona **SHOULD** default to a freshly minted pairwise identifier with
 no persona credential asserted — maximally uncorrelated by construction, which is

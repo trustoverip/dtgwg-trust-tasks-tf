@@ -98,7 +98,7 @@
           "required": [
             "severity"
           ],
-          "description": "Local profiles ARE correlation-indexed, and the naive implementation that skips them loses the guard exactly where a human most needs it: a throwaway identity is precisely where somebody reuses a real value. Indexing them is not a leak — the index is above the boundary, is keyed by a hash, and only the holder can query it.",
+          "description": "A correlation assessment of what was just written, and it is **conditional**: a maintainer MUST include it only for a caller authorized to read across the holder's contexts, and MUST omit it entirely otherwise. Local profiles ARE correlation-indexed, and the naive implementation that skips them loses the guard exactly where a human most needs it: a throwaway identity is precisely where somebody reuses a real value. But the index is answerable only to the holder, and returning its answer to a context-scoped caller hands that caller a yes/no oracle on any value it cares to guess — one guess per write, against the whole pool. No value leaves either way; a confirmed guess at a low-entropy value (a name, an address, a date of birth) is disclosure all the same.",
           "properties": {
             "severity": {
               "type": "string",
@@ -110,7 +110,7 @@
             },
             "matchesPoolValue": {
               "type": "boolean",
-              "description": "True when a value here also appears in the holder's pool. The signal that a throwaway is not throwaway."
+              "description": "True when a value here also appears in the holder's pool — the signal that a throwaway is not throwaway. Present only under the condition on `correlation` itself: this member is the oracle, and a maintainer that omits `correlation` for a context-scoped caller has omitted this."
             }
           }
         },
