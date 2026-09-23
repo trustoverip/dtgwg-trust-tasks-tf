@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 #
-# Opens or updates the Release PR for the `trust-tasks-go` module.
+# Applies the next release of one Go module to the working tree.
 #
-# The third of three. release-plz keeps the Release PR for the Rust crates;
-# scripts/release-ts-pr.sh does it for `@openvtc/trust-tasks`; this does it for
-# the Go module. All three work the same way so every half of a release reads
+#   scripts/release-bump-go.sh [trust-tasks-go|trust-tasks-go/proof|trust-tasks-go/didcomm]
+#
+# Called by scripts/release-pr.sh, once per module, while it assembles the ONE
+# Release PR; this script only edits files. The bump is computed the same way
+# as scripts/release-bump-ts.sh and -dart.sh, so every part of a release reads
 # identically — see RELEASING.md.
 #
 # ── What is different about Go ───────────────────────────────────────────────
@@ -30,18 +32,19 @@
 # a tag to a public repository, after which proxy.golang.org serves it.
 #
 # It is idempotent: the target version is computed from the last TAG, never from
-# the branch, so re-running recomputes the same answer and force-pushes an
-# identical tree.
+# the branch, so re-running on a fresh checkout recomputes the same answer. It
+# exits 0 without touching anything when there is nothing to release; when it
+# does bump, it appends one table row to $RELEASE_SUMMARY.
 #
-# Run from the repository root, on a full-history checkout of `main`, with `gh`
-# authenticated (GH_TOKEN) and `git-cliff` on PATH.
+# Run from the repository root, on a full-history checkout of `main`, with
+# `git-cliff` on PATH.
 
 set -euo pipefail
 
 # Which Go module to release. The core defaults; the nested modules
 # (trust-tasks-go/proof, trust-tasks-go/didcomm) pass their own path. Each has
-# its own directory, version file, release branch, tag prefix and watch set —
-# mirroring release-ts-pr.sh and release-dart-pr.sh.
+# its own directory, version file, tag prefix and watch set — mirroring
+# release-bump-ts.sh and release-bump-dart.sh.
 #
 # The nested modules are SEPARATE Go modules with their own tags
 # (`trust-tasks-go/<name>/v<version>`), so they version independently of the
@@ -54,7 +57,6 @@ case "$PKG" in
     MODULE="$GO_ROOT"
     PKG_DIR="trust-tasks-go"
     VERSION_FILE="$PKG_DIR/trusttasks/version.go"
-    BRANCH="release-go"
     TAG_PREFIX="trust-tasks-go/v"
     # `specs/**` because the packages under `trust-tasks-go/specs` are generated
     # from it, and `scripts/build-go-bindings.mjs` because it is the generator.
@@ -67,7 +69,6 @@ case "$PKG" in
     MODULE="$GO_ROOT/proof"
     PKG_DIR="trust-tasks-go/proof"
     VERSION_FILE="$PKG_DIR/version.go"
-    BRANCH="release-go-proof"
     TAG_PREFIX="trust-tasks-go/proof/v"
     WATCH=("$PKG_DIR")
     CLIFF_PATHS=("$PKG_DIR/**")
@@ -76,7 +77,6 @@ case "$PKG" in
     MODULE="$GO_ROOT/didcomm"
     PKG_DIR="trust-tasks-go/didcomm"
     VERSION_FILE="$PKG_DIR/version.go"
-    BRANCH="release-go-didcomm"
     TAG_PREFIX="trust-tasks-go/didcomm/v"
     WATCH=("$PKG_DIR")
     CLIFF_PATHS=("$PKG_DIR/**")
@@ -122,7 +122,7 @@ if [ "$current" != "$last" ]; then
   # main already carries a version newer than the last tag: a release is merged
   # but not yet tagged (publish-go failed, or is still running). Proposing
   # another bump on top would release two versions for one set of changes.
-  echo "::warning::$VERSION_FILE is at $current but the newest tag is $tag. A release is staged and unpublished — re-run the publish-go job rather than opening another Release PR."
+  echo "::warning::$VERSION_FILE is at $current but the newest tag is $tag. A release is staged and unpublished — re-run the publish-go job rather than bumping it again."
   exit 0
 fi
 
@@ -139,8 +139,12 @@ fi
 # cargo-semver-checks equivalent to catch an unannounced break, so this is only
 # as accurate as the commit subjects. See RELEASING.md.
 range="$tag..HEAD"
-if git log --format='%s%n%b' "$range" -- "${WATCH[@]}" \
-  | grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE'; then
+# The log is captured first, NOT piped into `grep -q`: grep exits on its first
+# match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
+# failure — so a breaking change was silently scored as a patch whenever the log
+# was long enough to still be writing. It happened to #610 (`feat(persona)!`).
+log=$(git log --format='%s%n%b' "$range" -- "${WATCH[@]}")
+if grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"; then
   level=breaking
 else
   level=patch
@@ -151,7 +155,7 @@ next=$(LEVEL="$level" CURRENT="$last" node -e '
   const breaking = process.env.LEVEL === "breaking";
   // Below 1.0 the leading non-zero component is the compatibility boundary, so
   // a break moves the MINOR field and everything else moves the patch — the
-  // same rule release-plz applies to the crates and release-ts-pr.sh to the
+  // same rule release-plz applies to the crates and release-bump-ts.sh to the
   // package. 0.0.x is a special case: every 0.0.x is incompatible with every
   // other, so the patch field already IS the boundary and moving the minor
   // would over-bump.
@@ -173,23 +177,9 @@ fi
 
 echo "::notice::$MODULE $last -> $next ($level)"
 
-# ── Build the release commit ─────────────────────────────────────────────────
-# Author as the identity behind the release token, not as the bot: EasyCLA
-# authorises the commit *author*, and `github-actions[bot]` has signed no CLA.
-# Same reasoning as release-ts-pr.sh, at more length there.
-if ! author_json=$(gh api user 2>/dev/null); then
-  echo "::error::Could not resolve the token owner via \`gh api user\`. A GitHub App token has no user, so this needs an explicit identity — do NOT fall back to github-actions[bot], which fails EasyCLA silently."
-  exit 1
-fi
-author_login=$(jq -r '.login' <<<"$author_json")
-author_id=$(jq -r '.id' <<<"$author_json")
-author_name=$(jq -r '.name // .login' <<<"$author_json")
-git config user.name "$author_name"
-git config user.email "${author_id}+${author_login}@users.noreply.github.com"
-
-# Always rebuild the branch from the current main. The branch is a derived
-# artefact; nothing on it is worth preserving across runs.
-git switch -C "$BRANCH"
+# ── Apply the bump ───────────────────────────────────────────────────────────
+# In the working tree only. scripts/release-pr.sh commits every package's bump
+# together, as the one Release PR.
 
 NEXT="$next" node -e '
   const fs = require("fs");
@@ -230,47 +220,6 @@ else
   echo "::warning::git-cliff produced no changelog section for $range; the Release PR carries the version bump only."
 fi
 
-if git diff --quiet; then
-  echo "::notice::nothing changed — leaving the branch alone."
-  exit 0
-fi
 
-git add "$VERSION_FILE" "$CHANGELOG"
-# -s: DCO sign-off is mandatory on every commit in this repo.
-git commit -s -m "chore: release $MODULE $next" -m \
-  "Automated by scripts/release-go-pr.sh. Merging this PR tags ${TAG_PREFIX}$next, which is what publishes the module."
-git push --force origin "$BRANCH"
-
-# ── Open or refresh the PR ───────────────────────────────────────────────────
-title="chore: release $PKG $next"
-watched=$(printf '`%s`, ' "${WATCH[@]}"); watched="${watched%, }"
-body_file="$(mktemp)"
-cat >"$body_file" <<EOF
-Release PR for the \`$PKG\` Go module, the counterpart to the release-plz PR for
-the crates and the \`release-ts\` PR for the npm package. **Merging this is the
-release**: the \`publish-go\` job in \`publish.yml\` sees a \`Version\` that has
-no matching tag and pushes \`${TAG_PREFIX}$next\`, after which
-\`proxy.golang.org\` serves it and \`go get $MODULE@v$next\` resolves.
-
-- \`$MODULE\`: \`$last\` → \`$next\` (\`$level\`)
-- derived from the conventional commits in \`$range\` touching $watched
-
-There is no registry account and no token involved — a Go module is published
-by tagging a public repository.
-
-This branch is regenerated from \`main\` on every push, so do not commit to it —
-edits are force-pushed away. See RELEASING.md.
-EOF
-
-existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
-if [ -n "$existing" ]; then
-  # REST, not `gh pr edit` — the latter resolves editable metadata (assignees,
-  # reviewers, org teams) and so needs `read:org`, which the release token does
-  # not have. See the long note in release-ts-pr.sh.
-  gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
-    -f title="$title" -f body="$(cat "$body_file")"
-  echo "::notice::updated PR #$existing"
-else
-  gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file" --label release \
-    || gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file"
-fi
+# One row of the Release PR's table; scripts/release-pr.sh owns the rest.
+printf '| `%s` | Go (tag `%s`) | `%s` → `%s` | %s |\n' "$MODULE" "${TAG_PREFIX}$next" "$last" "$next" "$level" >>"${RELEASE_SUMMARY:-/dev/stdout}"

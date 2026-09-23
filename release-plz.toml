@@ -1,9 +1,10 @@
 # release-plz — versioning, changelogs and publishing for the Rust workspace.
 #
-# The model: merge PRs to main freely. release-plz watches main and keeps a
-# single "Release PR" up to date with the version bumps and changelog entries
-# those merges imply. Merging THAT PR is the release — it tags each crate and
-# publishes to crates.io. Nothing else publishes.
+# The model: merge PRs to main freely. scripts/release-pr.sh runs
+# `release-plz update` on every push to main and keeps a single "Release PR" up
+# to date with the version bumps and changelog entries those merges imply.
+# Merging THAT PR is the release — `release-plz release` tags each crate and
+# publishes to crates.io. release-plz no longer opens the PR itself (see below).
 #
 # So merging a feature PR never releases anything, and a release is a reviewable
 # diff rather than a side effect of a merge. See RELEASING.md.
@@ -15,9 +16,10 @@
 # coherent, it just never uploads it. Keeping the decision in the manifests
 # means cargo and release-plz cannot disagree about it.
 #
-# The npm package is NOT here: release-plz is Rust-only and has no hook that
-# could bump `trust-tasks-ts/package.json`. It gets its own Release PR from
-# `scripts/release-ts-pr.sh`, built to work the same way.
+# The npm, Go and Dart packages are NOT here: release-plz is Rust-only and has
+# no hook that could bump `trust-tasks-ts/package.json`. scripts/release-pr.sh
+# bumps them with scripts/release-bump-{ts,go,dart}.sh, built to work the same
+# way, and commits them into the same Release PR as the crates.
 
 [workspace]
 # Changelog entries come from conventional commits via git-cliff. The commit
@@ -40,7 +42,7 @@ changelog_config = "cliff.toml"
 #
 # The cost is real — cargo-semver-checks builds rustdoc JSON twice per crate,
 # current and baseline — but it is paid once per merge to main in the
-# `release-plz-pr` job, not on every pull request, which is the tax VTI was
+# `release-pr` job, not on every pull request, which is the tax VTI was
 # avoiding. If the job outgrows its timeout, `trust-tasks` (the facade) is the
 # first candidate to switch off: it only re-exports the other eight, so most of
 # its surface is already checked on the crate that owns it. Turn it off there

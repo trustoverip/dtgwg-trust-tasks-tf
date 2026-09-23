@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
 #
-# Opens or updates the Release PR for one Dart package.
+# Applies the next release of one Dart package to the working tree.
 #
-#   scripts/release-dart-pr.sh [trust_tasks|trust_tasks_proof|trust_tasks_https|trust_tasks_didcomm]
+#   scripts/release-bump-dart.sh [trust_tasks|trust_tasks_proof|trust_tasks_https|...]
 #
-# Defaults to `trust_tasks`. Each package has its own tag prefix, its own
-# release branch and its own PR, because each is published to pub.dev on its
-# own schedule; the package table below is the single place they differ.
-#
-# The fourth of four. release-plz keeps the Release PR for the Rust crates;
-# scripts/release-ts-pr.sh does it for `@openvtc/trust-tasks`;
-# scripts/release-go-pr.sh for the Go module; this for the Dart package. All
-# four work the same way so every part of a release reads identically — see
-# RELEASING.md.
+# Called by scripts/release-pr.sh, once per package, while it assembles the ONE
+# Release PR; this script only edits files. Defaults to `trust_tasks`. Each
+# package has its own tag prefix and watch set and is published to pub.dev on
+# its own tag; the package table below is the single place they differ. The
+# bump is computed the same way as scripts/release-bump-ts.sh and -go.sh, so
+# every part of a release reads identically — see RELEASING.md.
 #
 # ── What is different about Dart ─────────────────────────────────────────────
 #
 # pub.dev only accepts an automated publish when the workflow run was triggered
 # by pushing a git TAG, which it verifies in the GitHub OIDC token's claims. So
-# unlike the npm side — where merging the Release PR publishes directly — merging
-# this PR makes `tag-dart` write `trust-tasks-dart-v<version>`, and that tag
+# unlike the npm side — which publishes as soon as the Release PR merges — the
+# merge makes `tag-dart` write `trust-tasks-dart-v<version>`, and that tag
 # triggers `publish-dart.yml`, which publishes.
 #
 # The consequence worth knowing: a tag pushed by the default GITHUB_TOKEN does
@@ -33,11 +30,12 @@
 # The other packages carry no version constant.
 #
 # It is idempotent: the target version is computed from the last TAG, never from
-# the branch, so re-running recomputes the same answer and force-pushes an
-# identical tree.
+# the branch, so re-running on a fresh checkout recomputes the same answer. It
+# exits 0 without touching anything when there is nothing to release; when it
+# does bump, it appends one table row to $RELEASE_SUMMARY.
 #
-# Run from the repository root, on a full-history checkout of `main`, with `gh`
-# authenticated (GH_TOKEN) and `git-cliff` on PATH.
+# Run from the repository root, on a full-history checkout of `main`, with
+# `git-cliff` on PATH.
 
 set -euo pipefail
 
@@ -47,7 +45,6 @@ PKG="${1:-trust_tasks}"
 case "$PKG" in
   trust_tasks)
     PKG_DIR="trust-tasks-dart"
-    BRANCH="release-dart"
     VERSION_FILE="$PKG_DIR/lib/src/runtime/version.dart"
     # `specs/**` because the libraries under `trust-tasks-dart/lib/specs` are
     # generated from it, and `scripts/build-dart-bindings.mjs` because it is the
@@ -56,7 +53,6 @@ case "$PKG" in
     ;;
   trust_tasks_proof)
     PKG_DIR="trust-tasks-dart-proof"
-    BRANCH="release-dart-proof"
     VERSION_FILE=""
     # Only its own tree. A core change that alters this package's behaviour
     # reaches consumers through the core's release, not this one — the same
@@ -65,20 +61,17 @@ case "$PKG" in
     ;;
   trust_tasks_https)
     PKG_DIR="trust-tasks-dart-https"
-    BRANCH="release-dart-https"
     VERSION_FILE=""
     # Only its own tree, for the same reason as trust_tasks_proof.
     WATCH=("$PKG_DIR")
     ;;
   trust_tasks_didcomm)
     PKG_DIR="trust-tasks-dart-didcomm"
-    BRANCH="release-dart-didcomm"
     VERSION_FILE=""
     WATCH=("$PKG_DIR")
     ;;
   trust_tasks_capability_client)
     PKG_DIR="trust-tasks-dart-capability-client"
-    BRANCH="release-dart-capability-client"
     VERSION_FILE=""
     WATCH=("$PKG_DIR")
     ;;
@@ -110,7 +103,7 @@ if [ "$current" != "$last" ]; then
   # main already carries a version newer than the last tag: a release is merged
   # but not yet tagged. Proposing another bump on top would release two versions
   # for one set of changes.
-  echo "::warning::$PUBSPEC is at $current but the newest tag is $tag. A release is staged and unpublished — re-run the tag-dart job rather than opening another Release PR."
+  echo "::warning::$PUBSPEC is at $current but the newest tag is $tag. A release is staged and unpublished — re-run the tag-dart job rather than bumping it again."
   exit 0
 fi
 
@@ -125,8 +118,12 @@ fi
 # the npm and Go sides there is no cargo-semver-checks equivalent to catch an
 # unannounced break, so this is only as accurate as the commit subjects.
 range="$tag..HEAD"
-if git log --format='%s%n%b' "$range" -- "${WATCH[@]}" \
-  | grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE'; then
+# The log is captured first, NOT piped into `grep -q`: grep exits on its first
+# match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
+# failure — so a breaking change was silently scored as a patch whenever the log
+# was long enough to still be writing. It happened to #610 (`feat(persona)!`).
+log=$(git log --format='%s%n%b' "$range" -- "${WATCH[@]}")
+if grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"; then
   level=breaking
 else
   level=patch
@@ -146,23 +143,9 @@ next=$(LEVEL="$level" CURRENT="$last" node -e '
 
 echo "::notice::$PKG $last -> $next ($level)"
 
-# ── Build the release commit ─────────────────────────────────────────────────
-# Author as the identity behind the release token, not as the bot: EasyCLA
-# authorises the commit *author*, and `github-actions[bot]` has signed no CLA.
-# Same reasoning as release-ts-pr.sh, at more length there.
-if ! author_json=$(gh api user 2>/dev/null); then
-  echo "::error::Could not resolve the token owner via \`gh api user\`. A GitHub App token has no user, so this needs an explicit identity — do NOT fall back to github-actions[bot], which fails EasyCLA silently."
-  exit 1
-fi
-author_login=$(jq -r '.login' <<<"$author_json")
-author_id=$(jq -r '.id' <<<"$author_json")
-author_name=$(jq -r '.name // .login' <<<"$author_json")
-git config user.name "$author_name"
-git config user.email "${author_id}+${author_login}@users.noreply.github.com"
-
-# Always rebuild the branch from the current main. The branch is a derived
-# artefact; nothing on it is worth preserving across runs.
-git switch -C "$BRANCH"
+# ── Apply the bump ───────────────────────────────────────────────────────────
+# In the working tree only. scripts/release-pr.sh commits every package's bump
+# together, as the one Release PR.
 
 NEXT="$next" node -e '
   const fs = require("fs");
@@ -223,50 +206,6 @@ else
   echo "::warning::git-cliff produced no changelog section for $range; the Release PR carries the version bump only."
 fi
 
-if git diff --quiet; then
-  echo "::notice::nothing changed — leaving the branch alone."
-  exit 0
-fi
 
-git add "$PUBSPEC" "$CHANGELOG" ${VERSION_FILE:+"$VERSION_FILE"}
-# -s: DCO sign-off is mandatory on every commit in this repo.
-git commit -s -m "chore: release $PKG $next" -m \
-  "Automated by scripts/release-dart-pr.sh. Merging this PR tags $TAG_PREFIX$next, and that tag is what publishes the package to pub.dev."
-git push --force origin "$BRANCH"
-
-# ── Open or refresh the PR ───────────────────────────────────────────────────
-title="chore: release $PKG $next"
-watched=$(printf '`%s`, ' "${WATCH[@]}"); watched=${watched%, }
-body_file="$(mktemp)"
-cat >"$body_file" <<EOF
-Release PR for the Dart package \`$PKG\`, the counterpart to the release-plz PR for the
-crates and the \`release-ts\` / \`release-go\` PRs. **Merging this starts the
-release**: the \`tag-dart\` job in \`publish.yml\` verifies the package and pushes
-\`$TAG_PREFIX$next\`, and that tag triggers \`publish-dart.yml\`, which
-publishes to pub.dev over OIDC.
-
-- \`$PKG\`: \`$last\` → \`$next\` (\`$level\`)
-- derived from the conventional commits in \`$range\` touching $watched
-
-Unlike the other three, pub.dev refuses a publish that was not triggered by a tag
-push — so the tag is a step in the chain rather than a record of one. If
-\`RELEASE_PLZ_TOKEN\` is unset the tag is pushed by the default token, which does
-not trigger workflows; \`tag-dart\` warns when that happens and the fix is to
-re-push the tag from a workstation.
-
-This branch is regenerated from \`main\` on every push, so do not commit to it —
-edits are force-pushed away. See RELEASING.md.
-EOF
-
-existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
-if [ -n "$existing" ]; then
-  # REST, not `gh pr edit` — the latter resolves editable metadata (assignees,
-  # reviewers, org teams) and so needs `read:org`, which the release token does
-  # not have. See the long note in release-ts-pr.sh.
-  gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
-    -f title="$title" -f body="$(cat "$body_file")"
-  echo "::notice::updated PR #$existing"
-else
-  gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file" --label release \
-    || gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$body_file"
-fi
+# One row of the Release PR's table; scripts/release-pr.sh owns the rest.
+printf '| `%s` | pub.dev | `%s` → `%s` | %s |\n' "$PKG" "$last" "$next" "$level" >>"${RELEASE_SUMMARY:-/dev/stdout}"
