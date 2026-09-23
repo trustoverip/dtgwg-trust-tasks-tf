@@ -1,0 +1,37 @@
+[
+  {
+    "note": "A repository always has an owner; `owners` cannot be empty.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "owners": []
+    }
+  },
+  {
+    "note": "Adoption is per repository; a namespace resource is not adoptable.",
+    "payload": {
+      "resource": "github.com/acme",
+      "owners": [
+        "did:webvh:QmAliceScid1:acme-vtc.example:alice"
+      ]
+    }
+  },
+  {
+    "note": "The same owner twice is refused (uniqueItems).",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "owners": [
+        "did:webvh:QmAliceScid1:acme-vtc.example:alice",
+        "did:webvh:QmAliceScid1:acme-vtc.example:alice"
+      ]
+    }
+  },
+  {
+    "note": "Owners are DIDs, not forge logins.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "owners": [
+        "alice"
+      ]
+    }
+  }
+]

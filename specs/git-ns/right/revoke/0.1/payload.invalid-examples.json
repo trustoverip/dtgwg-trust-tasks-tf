@@ -1,0 +1,34 @@
+[
+  {
+    "note": "All three of `subject`, `right` and `resource` identify the record.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "A resource always names its forge.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "right": "git.commit.sign",
+      "resource": "acme/gadgets"
+    }
+  },
+  {
+    "note": "There is no wildcard right: revocation names the record exactly.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "right": "*",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "Unknown members are refused (additionalProperties: false).",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/gadgets",
+      "cascade": true
+    }
+  }
+]

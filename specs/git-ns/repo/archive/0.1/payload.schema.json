@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/repo/archive/0.1",
+  "title": "Git Namespaces — Archive Repository — payload",
+  "description": "An owner archives a repository. The forge makes it read-only, and every `git.commit.sign` right recorded on it is revoked and withdrawn from the Trust Registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resource"
+  ],
+  "properties": {
+    "resource": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoResource",
+      "description": "The repository to archive."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Archive Repository — response payload",
+      "description": "The archived repository.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "rightsRevoked"
+      ],
+      "properties": {
+        "repo": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoSummary",
+          "description": "The repository, now `archived`."
+        },
+        "rightsRevoked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many `git.commit.sign` records were revoked. 0 when the repository was already archived."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

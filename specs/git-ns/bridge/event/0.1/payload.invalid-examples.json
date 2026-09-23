@@ -1,0 +1,45 @@
+[
+  {
+    "note": "`event.type` is one of the nine forge-neutral types; forge webhook names are translated, never forwarded.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "repository.renamed",
+        "forgeId": "1"
+      }
+    }
+  },
+  {
+    "note": "A rename names both resources.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "repoRenamed",
+        "forgeId": "1",
+        "to": "github.com/acme/new"
+      }
+    }
+  },
+  {
+    "note": "`event` is required.",
+    "payload": {
+      "namespace": "ns_1",
+      "drift": []
+    }
+  },
+  {
+    "note": "A drift item's type is one of the drift types.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "installationRemoved"
+      },
+      "drift": [
+        {
+          "type": "somethingOdd",
+          "resource": "github.com/acme/widgets"
+        }
+      ]
+    }
+  }
+]

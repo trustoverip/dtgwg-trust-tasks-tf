@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/repo/adopt/0.1",
+  "title": "Git Namespaces — Adopt Repository — payload",
+  "description": "Brings a repository that already exists on the forge under the VTC's governance and names its owners. Used for repositories created outside the VTC, and to complete a repository reserved by git-ns/repo/create in a namespace where a person had to create it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resource",
+    "owners"
+  ],
+  "properties": {
+    "resource": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoResource",
+      "description": "The repository to adopt."
+    },
+    "owners": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Did"
+      },
+      "description": "The DIDs to record as owners (`git.repo.own`). At least one: a repository always has an owner."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Adopt Repository — response payload",
+      "description": "The adopted repository.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo"
+      ],
+      "properties": {
+        "repo": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoSummary",
+          "description": "The repository as recorded after adoption."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

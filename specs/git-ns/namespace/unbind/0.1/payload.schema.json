@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1",
+  "title": "Git Namespaces — Unbind Namespace — payload",
+  "description": "A namespace admin ends the VTC's governance of a namespace. Every right recorded on a resource inside it is revoked and withdrawn from the Trust Registry, and every repository in it becomes `detached`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "namespace"
+  ],
+  "properties": {
+    "namespace": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/NamespaceId",
+      "description": "The namespace to unbind."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Unbind Namespace — response payload",
+      "description": "What unbinding removed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "rightsRevoked",
+        "reposDetached"
+      ],
+      "properties": {
+        "namespace": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/NamespaceId"
+        },
+        "rightsRevoked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many recorded rights were revoked."
+        },
+        "reposDetached": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many repositories became `detached`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

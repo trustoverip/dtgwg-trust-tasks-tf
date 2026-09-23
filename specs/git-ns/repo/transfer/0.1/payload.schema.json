@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/repo/transfer/0.1",
+  "title": "Git Namespaces — Transfer Repository Ownership — payload",
+  "description": "An owner hands their ownership of a repository to someone else: `to` is recorded as an owner and the caller's own `git.repo.own` record is revoked. Ownership moves between people; the repository stays where it is on the forge.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resource",
+    "to"
+  ],
+  "properties": {
+    "resource": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoResource",
+      "description": "The repository."
+    },
+    "to": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Did",
+      "description": "Who receives ownership."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Transfer Repository Ownership — response payload",
+      "description": "The repository after the transfer.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo"
+      ],
+      "properties": {
+        "repo": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoSummary",
+          "description": "The repository after the transfer."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

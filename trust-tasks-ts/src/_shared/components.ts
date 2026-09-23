@@ -180,6 +180,10 @@ export type DeviceAttestation_DeviceV0_2 =
   | NitroEnclave_DeviceV0_2
   | NoAttestation_DeviceV0_2;
 /**
+ * A DID, compared by exact string equality.
+ */
+export type Did = string;
+/**
  * A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
  *
  * Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
@@ -247,6 +251,14 @@ export type FaceReach =
  */
 export type FacetColour = "slate" | "indigo" | "teal" | "moss" | "sand" | "clay" | "rose" | "plum";
 /**
+ * The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
+ */
+export type ForgeHost = string;
+/**
+ * An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
+ */
+export type ForgeId = string;
+/**
  * The highest version among the records `DataCommitment` covers. `0` for a room that holds none.
  *
  * **Derived from the same set as the root, and not read from the room's own counter.** The two agree for any host that has never erased a record — versions are assigned strictly increasing and a retraction keeps its tombstone — but they are not interchangeable, because a root and a counter are *two reads*, and two reads are not a snapshot. A write landing between them yields a pair that is individually correct and jointly false: two members holding roots taken over different trees, labelled with one version. That reads as equivocation and is not, and a **false accusation discredits the mechanism rather than the host** — the worst outcome available here. Taken from the committed set, the version cannot disagree with the root it labels, whatever else is happening to the room.
@@ -294,6 +306,10 @@ export type LanguageTag = string;
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
+/**
+ * The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
+ */
+export type NamespaceId = string;
 /**
  * A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.
  */
@@ -471,9 +487,25 @@ export type RecordType = "authorization" | "recognition";
  */
 export type ReleaseRequirement = "consent" | "stepUp";
 /**
+ * A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
+ */
+export type RepoResource = string;
+/**
+ * Repository visibility on the forge.
+ */
+export type RepoVisibility = "public" | "private";
+/**
+ * A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
+ */
+export type Resource = string;
+/**
  * Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.
  */
 export type RetentionPolicy = "chained" | "fromJoin";
+/**
+ * One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
+ */
+export type Right = "git.ns.admin" | "git.repo.create" | "git.repo.own" | "git.repo.maintain" | "git.commit.sign";
 /**
  * How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
  */
@@ -540,6 +572,10 @@ export type SecretKind_VaultV0_2 =
   | "bearerToken"
   | "sshKey"
   | "custom";
+/**
+ * One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
+ */
+export type Segment = string;
 /**
  * How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.
  *
@@ -1372,6 +1408,27 @@ export interface BackupEnvelope {
    * base64url(AEAD(JSON(payload))).
    */
   ciphertext: string;
+}
+/**
+ * Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.
+ */
+export interface Bootstrap {
+  /**
+   * The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit.
+   */
+  workflow: boolean;
+  /**
+   * The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one.
+   */
+  keyring: boolean;
+  /**
+   * The repository names the Trust Registry and this VTC as its trust anchors.
+   */
+  variables: boolean;
+  /**
+   * The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.
+   */
+  requiredCheck: boolean;
 }
 /**
  * The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.
@@ -2370,6 +2427,34 @@ export interface DrainEntry {
   ext?: Ext;
 }
 /**
+ * One difference between the forge's observed state and the VTC's projection of a repository.
+ */
+export interface DriftItem {
+  /**
+   * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
+   */
+  type:
+    | "roleAdded"
+    | "roleRemoved"
+    | "roleChanged"
+    | "requiredCheckMissing"
+    | "protectionWeakened"
+    | "bootstrapMissing";
+  resource: RepoResource;
+  /**
+   * Whose role differs, for the three role types.
+   */
+  account?: ForgeAccount;
+  /**
+   * What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
+   */
+  observed?: string;
+  /**
+   * What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
+   */
+  expected?: string;
+}
+/**
  * One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.
  */
 export interface Effect_TaskConsentV0_1 {
@@ -2526,6 +2611,40 @@ export interface Exposure {
  */
 export interface Ext {
   [k: string]: unknown | undefined;
+}
+/**
+ * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
+ */
+export interface ForgeAccount {
+  forge: ForgeHost;
+  id: ForgeId;
+  /**
+   * The account's current login, as the forge reported it when last seen. Display only.
+   */
+  login: string;
+}
+/**
+ * The VTC's binding to one owner on one forge.
+ */
+export interface GitNamespace {
+  id: NamespaceId;
+  forge: ForgeHost;
+  /**
+   * The organisation or user on the forge, lowercased.
+   */
+  owner: Segment;
+  /**
+   * Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
+   */
+  kind?: "organization" | "user";
+  /**
+   * `bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.
+   */
+  mode: "bridge" | "manual";
+  /**
+   * `pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
+   */
+  state: "pending" | "bound";
 }
 /**
  * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
@@ -3805,6 +3924,27 @@ export interface RejectedKey {
   reason: string;
 }
 /**
+ * One repository as the VTC records it.
+ */
+export interface RepoSummary {
+  resource: RepoResource;
+  /**
+   * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
+   */
+  forgeId?: ForgeId;
+  visibility: RepoVisibility;
+  /**
+   * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
+   */
+  state: "pendingCreate" | "active" | "archived" | "detached" | "orphaned" | "unmanaged";
+  /**
+   * The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.
+   */
+  owners: Did[];
+  bootstrap: Bootstrap;
+  sync: Sync;
+}
+/**
  * One held credential a deferred query asked for, and the claims of it that would be disclosed.
  */
 export interface RequestedCredential {
@@ -3878,6 +4018,30 @@ export interface RevocationReceipt {
    * When the revocation was recorded.
    */
   revokedAt: string;
+}
+/**
+ * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.
+ */
+export interface RightRecord {
+  /**
+   * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
+   */
+  subject: Did;
+  right: Right;
+  resource: Resource;
+  /**
+   * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
+   */
+  grantedBy: Did;
+  grantedAt: string;
+  /**
+   * When the right lapses. Absent: no expiry.
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
+   */
+  reason?: string;
 }
 /**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
@@ -4177,6 +4341,23 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * How the forge compares with the VTC's projection for one repository.
+ */
+export interface Sync {
+  /**
+   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
+   */
+  state: "inSync" | "drift" | "pending" | "unchecked";
+  /**
+   * When the forge was last compared. Absent if never.
+   */
+  checkedAt?: string;
+  /**
+   * Outstanding drift. Empty unless `state` is `drift`.
+   */
+  drift: DriftItem[];
 }
 /**
  * An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.

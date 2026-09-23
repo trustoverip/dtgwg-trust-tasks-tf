@@ -1,0 +1,41 @@
+[
+  {
+    "note": "`forge` is a bare lowercase host: no scheme, no path.",
+    "payload": {
+      "forge": "https://github.com",
+      "owner": "acme",
+      "mode": "bridge"
+    }
+  },
+  {
+    "note": "`owner` is lowercase.",
+    "payload": {
+      "forge": "github.com",
+      "owner": "Acme",
+      "mode": "bridge"
+    }
+  },
+  {
+    "note": "`owner` is one segment; a repository is not a namespace.",
+    "payload": {
+      "forge": "github.com",
+      "owner": "acme/widgets",
+      "mode": "bridge"
+    }
+  },
+  {
+    "note": "`mode` is `bridge` or `manual`.",
+    "payload": {
+      "forge": "github.com",
+      "owner": "acme",
+      "mode": "app"
+    }
+  },
+  {
+    "note": "`mode` is required: the two modes differ in whether any forge-side proof exists.",
+    "payload": {
+      "forge": "github.com",
+      "owner": "acme"
+    }
+  }
+]

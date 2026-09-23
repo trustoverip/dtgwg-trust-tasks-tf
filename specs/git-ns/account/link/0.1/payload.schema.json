@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/account/link/0.1",
+  "title": "Git Namespaces — Link Forge Account — payload",
+  "description": "A member begins linking their account on a forge to their DID. The response carries where the member goes to authorise it; the member then polls git-ns/account/link-status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forge"
+  ],
+  "properties": {
+    "forge": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/ForgeHost",
+      "description": "The forge whose account to link."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Link Forge Account — response payload",
+      "description": "Where to authorise the link.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "linkId",
+        "url",
+        "expiresAt"
+      ],
+      "properties": {
+        "linkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Identifies this attempt for git-ns/account/link-status. Opaque; meaningful only to the member who began it."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "pattern": "^https://",
+          "description": "Where the member authorises the link: the device-code entry page (GitHub), or the forge's authorisation page (Forgejo, authorisation code with PKCE)."
+        },
+        "userCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The code the member types at `url`, for a forge that uses a device flow. Absent otherwise."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this attempt lapses if not completed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

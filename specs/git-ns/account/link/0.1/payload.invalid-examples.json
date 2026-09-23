@@ -1,0 +1,19 @@
+[
+  {
+    "note": "`forge` is a bare host, not a URL.",
+    "payload": {
+      "forge": "https://github.com/"
+    }
+  },
+  {
+    "note": "`forge` is required.",
+    "payload": {}
+  },
+  {
+    "note": "There is no subject member: a member links only their own account.",
+    "payload": {
+      "forge": "github.com",
+      "subject": "did:webvh:QmDanScid4:dan.example"
+    }
+  }
+]

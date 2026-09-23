@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`to` is required.",
+    "payload": {
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "Ownership is of a repository, not a namespace.",
+    "payload": {
+      "resource": "github.com/acme",
+      "to": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+    }
+  },
+  {
+    "note": "`to` is a DID.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "to": "bob@example.com"
+    }
+  }
+]

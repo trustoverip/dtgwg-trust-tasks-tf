@@ -76,6 +76,8 @@ pub mod credential_exchange;
 pub mod device;
 #[cfg(feature = "did-management")]
 pub mod did_management;
+#[cfg(feature = "git-ns")]
+pub mod git_ns;
 #[cfg(feature = "git-trust")]
 pub mod git_trust;
 #[cfg(feature = "governance")]

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/right/revoke/0.1",
+  "title": "Git Namespaces — Revoke Right — payload",
+  "description": "Revokes one recorded git right and withdraws it from the Trust Registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "right",
+    "resource"
+  ],
+  "properties": {
+    "subject": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Did",
+      "description": "Who holds the right."
+    },
+    "right": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Right"
+    },
+    "resource": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Resource",
+      "description": "The resource exactly as recorded. Revocation matches the record; it does not revoke a narrower right the subject holds inside this resource."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, in the revoker's words. Kept in the VTC's audit record."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Revoke Right — response payload",
+      "description": "The revoked record.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revoked"
+      ],
+      "properties": {
+        "revoked": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RightRecord",
+          "description": "The record as it stood when it was revoked."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
