@@ -719,11 +719,15 @@ class ContactRevision {
       };
 }
 
-/// A colour **name**, resolved by each consumer against its own palette — never a hex
-/// value or any other literal. Two reasons, and both are about the consumer rather
-/// than the holder. A literal cannot be legible in a terminal, in a light theme and in
-/// a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and
-/// the holder has no way to know where. And a consumer that reserves colours to mean
+/// **Superseded by `WorldColour`** — the same set, under the name the rest of the
+/// family now uses. Retained because `persona/facet/*` is retired in favour of
+/// `persona/world/*`, and a retired specification's schema is frozen, so the
+/// definition it references has to stay. New work references `WorldColour`. A colour
+/// **name**, resolved by each consumer against its own palette — never a hex value or
+/// any other literal. Two reasons, and both are about the consumer rather than the
+/// holder. A literal cannot be legible in a terminal, in a light theme and in a dark
+/// one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the
+/// holder has no way to know where. And a consumer that reserves colours to mean
 /// something — an error, a warning, an irreversible act — must be able to keep a
 /// holder's decorative choice out of that channel; it cannot do that with an arbitrary
 /// value, and it can do it trivially with a closed set it maps itself. The eight
@@ -745,6 +749,43 @@ extension type const FacetColour(String value) {
 
   /// Every value this specification's schema permits.
   static const List<FacetColour> values = <FacetColour>[
+    slate,
+    indigo,
+    teal,
+    moss,
+    sand,
+    clay,
+    rose,
+    plum
+  ];
+}
+
+/// A colour **name**, resolved by each consumer against its own palette — never a hex
+/// value or any other literal. Two reasons, and both are about the consumer rather
+/// than the holder. A literal cannot be legible in a terminal, in a light theme and in
+/// a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and
+/// the holder has no way to know where. And a consumer that reserves colours to mean
+/// something — an error, a warning, an irreversible act — must be able to keep a
+/// holder's decorative choice out of that channel; it cannot do that with an arbitrary
+/// value, and it can do it trivially with a closed set it maps itself. The eight
+/// members are chosen to be distinguishable from one another and deliberately carry no
+/// status connotation: none is named for success, warning or danger.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const WorldColour(String value) {
+  static const WorldColour slate = WorldColour('slate');
+  static const WorldColour indigo = WorldColour('indigo');
+  static const WorldColour teal = WorldColour('teal');
+  static const WorldColour moss = WorldColour('moss');
+  static const WorldColour sand = WorldColour('sand');
+  static const WorldColour clay = WorldColour('clay');
+  static const WorldColour rose = WorldColour('rose');
+  static const WorldColour plum = WorldColour('plum');
+
+  /// Every value this specification's schema permits.
+  static const List<WorldColour> values = <WorldColour>[
     slate,
     indigo,
     teal,

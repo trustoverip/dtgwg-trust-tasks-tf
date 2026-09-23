@@ -655,6 +655,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/correlation/analyze/1.0#response" => <crate::specs::persona::correlation::analyze::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.1" => <crate::specs::persona::correlation::analyze::v1_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.1#response" => <crate::specs::persona::correlation::analyze::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/disclosure/history/1.0" => <crate::specs::persona::disclosure::history::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/disclosure/history/1.0#response" => <crate::specs::persona::disclosure::history::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -738,6 +742,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/persona/renderers/list/1.0" => <crate::specs::persona::renderers::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/renderers/list/1.0#response" => <crate::specs::persona::renderers::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/delete/1.0" => <crate::specs::persona::world::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/delete/1.0#response" => <crate::specs::persona::world::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/list/1.0" => <crate::specs::persona::world::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/list/1.0#response" => <crate::specs::persona::world::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/put/1.0" => <crate::specs::persona::world::put::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/put/1.0#response" => <crate::specs::persona::world::put::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/activate/0.1" => <crate::specs::policy::activate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "policy")]
@@ -2683,6 +2699,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::persona::correlation::analyze::v1_1::Payload,
+            >())
+        }
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/disclosure/history/1.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::persona::disclosure::history::v1_0::Payload,
@@ -2785,6 +2807,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/renderers/list/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::renderers::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/delete/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::world::delete::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::world::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/put/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::world::put::v1_0::Payload,
         >()),
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/activate/0.1" => Some(crate::SpecPolicy::of::<
@@ -4786,6 +4820,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::persona::correlation::analyze::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/correlation/analyze/1.1" => {
+            Some(crate::specs::persona::correlation::analyze::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/disclosure/history/1.0" => {
             Some(crate::specs::persona::disclosure::history::v1_0::ERROR_CODES)
         }
@@ -4868,6 +4906,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/renderers/list/1.0" => {
             Some(crate::specs::persona::renderers::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/delete/1.0" => {
+            Some(crate::specs::persona::world::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/list/1.0" => {
+            Some(crate::specs::persona::world::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/world/put/1.0" => {
+            Some(crate::specs::persona::world::put::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "policy")]
         "https://trusttasks.org/spec/policy/activate/0.1" => {

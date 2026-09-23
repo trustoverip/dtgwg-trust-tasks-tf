@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/world/put/1.0",
+  "title": "Persona — World Put — payload",
+  "description": "Create or replace one world: a named part of the holder's life, and the faces and attributes that belong to it. Omit `worldId` to create; supply it to replace. `expectedVersion` makes the write conditional.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "colour"
+  ],
+  "properties": {
+    "worldId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+      "description": "Omit to create — the maintainer assigns one and returns it. Supply to replace an existing world, or to make a create idempotent under retry; a supplied id that already exists is a replacement, and a producer that meant to create MUST pair it with `expectedVersion: 0`."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "The holder's name for this part of their life — \"Work\", \"Home\", \"Play\". Never disclosed to a verifier; it is how the holder finds it again. A maintainer MUST NOT interpret it: it is not a scope, a policy input, or a name a counterparty ever sees."
+    },
+    "colour": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/WorldColour"
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8,
+      "description": "One or two emoji, as a decorative mark beside the name. Bounded at 8 bytes because it is a mark and not a field: anything longer is text, and text belongs in `name` where a consumer will lay it out. A maintainer stores it opaquely and MUST NOT parse it; a consumer that cannot render emoji omits it and shows the name, which is why it is OPTIONAL and carries no meaning of its own."
+    },
+    "faceIds": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "default": [],
+      "items": {
+        "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+      },
+      "description": "Profiles belonging to this world. A profile belongs to at most one world — see `persona/world/put:faceAlreadyPlaced` — because the world is where a consumer reads a profile's colour from, and two answers is no answer. Omission on a replace means an empty list, not 'leave as they were': this is a replace, and a member whose absence meant 'keep' would make it impossible to empty one."
+    },
+    "attributeIds": {
+      "type": "array",
+      "maxItems": 1024,
+      "uniqueItems": true,
+      "default": [],
+      "items": {
+        "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+      },
+      "description": "Attributes belonging to this world. Unlike a profile, an attribute MAY belong to several — a mobile number is genuinely both work and home — so no exclusivity is enforced and none should be inferred. Same replace semantics as `faceIds`."
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion",
+      "description": "Optional precondition. Omit for last-writer-wins. Supply the version a prior read returned to make the write conditional; supply 0 to create only."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona World Put — response payload",
+      "description": "Success response to persona/world/put. Type https://trusttasks.org/spec/persona/world/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/world/put:versionConflict.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "worldId",
+        "version",
+        "created",
+        "updatedAt"
+      ],
+      "properties": {
+        "worldId": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+        },
+        "version": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version"
+        },
+        "created": {
+          "type": "boolean",
+          "description": "True when this write created the world, false when it replaced one. A producer that omitted `worldId` can still be told which happened, because a retried create with a supplied id is a replacement."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

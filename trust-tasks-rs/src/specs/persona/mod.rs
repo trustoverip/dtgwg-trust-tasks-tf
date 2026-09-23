@@ -10,3 +10,4 @@ pub mod facet;
 pub mod local;
 pub mod profile;
 pub mod renderers;
+pub mod world;

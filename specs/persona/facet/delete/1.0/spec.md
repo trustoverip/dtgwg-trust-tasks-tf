@@ -3,7 +3,8 @@ slug: persona/facet/delete
 version: "1.0"
 title: "Persona — Facet Delete"
 summary: A holder removes one of the parts of their life they had named, leaving every face and attribute that belonged to it exactly where it was.
-status: draft
+status: retired
+supersededBy: persona/world/delete/1.0
 targetFrameworkVersion: "0.5.0"
 category: identity
 keywords:
@@ -55,6 +56,12 @@ related:
 ---
 
 ## Abstract
+
+> **Retired in favour of [`persona/world/delete/1.0`](../../../world/delete/1.0).** Same
+> task, same members, one word changed: what this family calls an arrangement of faces is
+> a **world**, and `facet` shared a stem with `face` while naming something different.
+> `facetId` is `worldId` there; nothing else moved. This specification stays readable so
+> documents already issued against it remain verifiable.
 
 **Persona Facet Delete** removes one of the parts of a holder's life they had
 named.
