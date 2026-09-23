@@ -1,0 +1,26 @@
+[
+  {
+    "note": "No attributeId — the one required member. A get without a subject is a listing, and this task deliberately cannot be one.",
+    "payload": { "includeValue": true }
+  },
+  {
+    "note": "Several identifiers. Refused by the schema rather than by a maintainer's discipline: accepting a list here would recreate the enumeration the task exists to avoid.",
+    "payload": { "attributeId": ["01JB0X7K9ZQW2M4N6P8R1T3V5Y", "01JB0X7K9ZQW2M4N6P8R1T3V5Z"] }
+  },
+  {
+    "note": "attributeId is not a ULID.",
+    "payload": { "attributeId": "not-an-id" }
+  },
+  {
+    "note": "version 0 — versions count from 1, and 0 is the expectedVersion convention from the write tasks leaking into a read.",
+    "payload": { "attributeId": "01JB0X7K9ZQW2M4N6P8R1T3V5Y", "version": 0 }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `includeValues`, the plural from persona/attribute/list, which is the typo a builder moving between the two will actually make.",
+    "payload": { "attributeId": "01JB0X7K9ZQW2M4N6P8R1T3V5Y", "includeValues": true }
+  },
+  {
+    "note": "Bare, unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "attributeId": "01JB0X7K9ZQW2M4N6P8R1T3V5Y", "ext": { "bare-key": { "anything": "here" } } }
+  }
+]

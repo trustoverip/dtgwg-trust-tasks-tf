@@ -603,6 +603,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/delete/1.0#response" => <crate::specs::persona::attribute::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/get/1.0" => <crate::specs::persona::attribute::get::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/get/1.0#response" => <crate::specs::persona::attribute::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/list/1.0" => <crate::specs::persona::attribute::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/list/1.0#response" => <crate::specs::persona::attribute::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2638,6 +2642,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::persona::attribute::delete::v1_0::Payload,
             >())
         }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/get/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::persona::attribute::get::v1_0::Payload,
+        >()),
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/list/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::persona::attribute::list::v1_0::Payload,
@@ -4766,6 +4774,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/delete/1.0" => {
             Some(crate::specs::persona::attribute::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "persona")]
+        "https://trusttasks.org/spec/persona/attribute/get/1.0" => {
+            Some(crate::specs::persona::attribute::get::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "persona")]
         "https://trusttasks.org/spec/persona/attribute/list/1.0" => {

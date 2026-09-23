@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/attribute/get/1.0",
+  "title": "Persona Attribute — Get — payload",
+  "description": "Read one attribute the holder holds, by identifier. Values are withheld unless asked for, on the same two-step as persona/attribute/list: the expensive, disclosing path is the one a producer has to name.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attributeId"
+  ],
+  "properties": {
+    "attributeId": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid",
+      "description": "The attribute to read. One identifier, never a list: a maintainer that accepted several would recreate the enumeration this task exists to avoid."
+    },
+    "includeValue": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default), the attribute's metadata is returned and its `value` is not. The default is false even though a caller naming one attribute usually wants its value, because the alternative makes the disclosing path the one nobody has to ask for — and the audit row can then say whether plaintext left, which is the question worth being able to answer later.",
+      "$comment": "Mirrors includeValues on persona/attribute/list. The plural is a listing of many; this is one."
+    },
+    "includeSensitive": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (the default), a request that asked for the value still does not receive it for an attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for that too.\n\nThe second flag is not ceremony. A consumer that masks a value it has already received defends a screen; it does not keep a passport number out of a log, a crash dump, or a process's memory. The value never being sent is what does."
+    },
+    "version": {
+      "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version",
+      "description": "Read a retained earlier version instead of the current one. Absent means current.\n\nThis is what makes \"what did I show them in March\" answerable: a disclosure record and a pinned profile entry both name a version, and without this a caller holding one has no way to read what it said. A version the holder has purged is `persona/attribute/get:versionPurged` — never a silent fall back to the current value, which would answer a question about the past with a fact about the present."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Attribute — Get — response payload",
+      "description": "Success response to persona/attribute/get. Type https://trusttasks.org/spec/persona/attribute/get/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attribute"
+      ],
+      "properties": {
+        "attribute": {
+          "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Attribute",
+          "description": "The attribute as at `version`, or as it stands when none was asked for. Its `value` is present only if the request asked for it and the attribute's sensitivity permitted it."
+        },
+        "valueWithheld": {
+          "type": "boolean",
+          "description": "True when the value was withheld although `includeValue` asked for it — the attribute resolves to `sensitivity: high` and `includeSensitive` was not set. Stated rather than left to inference: a consumer that reads an absent `value` as \"this attribute has none\" will show the holder an empty field where a passport number is, and conclude the record is broken."
+        },
+        "retainedVersions": {
+          "type": "array",
+          "maxItems": 64,
+          "description": "The versions of this attribute the maintainer still holds, newest first, including the current one. Names versions and never their values.\n\nIt is here because a holder deciding whether to purge cannot see what purging would take away: which earlier versions exist, and therefore which pinned profile entries would stop presenting. A consumer that cannot enumerate them asks the holder to make an irreversible decision blind.",
+          "items": {
+            "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Version"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
