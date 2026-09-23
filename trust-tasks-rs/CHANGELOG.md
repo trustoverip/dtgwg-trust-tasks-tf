@@ -31,6 +31,63 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.22.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.21...trust-tasks-rs-v0.22.0) — 2026-09-23
+
+
+### Added
+
+- **persona**: An arrangement of faces is a world, not a facet ([#610](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/610))
+
+`face` and `facet` share a stem and name different things — a projection
+  of the pool, and an arrangement of those projections. Every consumer's UI
+  had already resolved it by saying "world" on screen while the wire said
+  facet, which leaves the collision in place for anyone reading both.
+
+  - `persona/world/{put,list,delete}/1.0` — the same tasks, with `facetId`
+    as `worldId`. `persona/facet/*` is retired, `supersededBy` the new
+    slug, so documents already issued stay verifiable.
+  - `persona/correlation/analyze/1.1` — `facetId`, `facetIds` and
+    `crossesFacets` become `worldId`, `worldIds` and `crossesWorlds`. A
+    breaking rename carried as a MINOR increment, which SPEC §5.2 permits
+    for a `draft`. 1.0 is retired in its favour.
+  - `_shared/0.1` gains `WorldColour`, the same eight colours.
+    `FacetColour` stays because a retired specification's schema is frozen
+    and still references it.
+
+  Nothing else moves: same members, same semantics, same error codes.
+  `facet` survives elsewhere in the registry in its ordinary English sense
+  (a facet of a trust record, of an account) and is left alone.
+
+
+
+### Fixed
+
+- **persona**: Local/profile/put answers the correlation index only to the holder ([#609](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/609))
+
+`correlation.matchesPoolValue` is a yes/no on "does the holder hold this
+  exact value anywhere", computed from the agent-wide index — and the task
+  is context-scoped, so the response handed that answer to any caller
+  authorized in one context.
+
+  A caller that can write is a caller that can guess: one value per write,
+  unbounded, each answer confirming or eliminating one. No value crosses
+  the boundary and none needs to — for a name, an address or a date of
+  birth, confirmation is disclosure, and the guesser is inside a single
+  context learning about all of them.
+
+  So `correlation` becomes conditional: a maintainer MUST include it only
+  for a caller authorized to read across the holder's contexts, and MUST
+  omit the member entirely otherwise. Omit rather than soften — a coarser
+  signal is still an oracle, only a slower one. The holder is still owed
+  the warning that a throwaway is reusing a real value, through an audit
+  entry or the holder-reach correlation task.
+
+  The schema's own description said the index is answerable "only to the
+  holder" while this response answered it to anyone in the context. The
+  prose and the conformance rules now say what that means for this member.
+
+
+
 ## [0.21.21](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.21.20...trust-tasks-rs-v0.21.21) — 2026-09-22
 
 
