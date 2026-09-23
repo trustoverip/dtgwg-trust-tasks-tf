@@ -185,6 +185,7 @@ export * as MessagingQueueStatus_v0_1 from "./messaging/queue/status/0.1/payload
 export * as MessagingStatsShow_v0_1 from "./messaging/stats/show/0.1/payload.js";
 export * as PersonaRecordShared_v0_1 from "./persona/_shared/0.1/persona-record.js";
 export * as PersonaAttributeDelete_v1_0 from "./persona/attribute/delete/1.0/payload.js";
+export * as PersonaAttributeGet_v1_0 from "./persona/attribute/get/1.0/payload.js";
 export * as PersonaAttributeList_v1_0 from "./persona/attribute/list/1.0/payload.js";
 export * as PersonaAttributePromote_v1_0 from "./persona/attribute/promote/1.0/payload.js";
 export * as PersonaAttributePurgeVersion_v1_0 from "./persona/attribute/purge-version/1.0/payload.js";
