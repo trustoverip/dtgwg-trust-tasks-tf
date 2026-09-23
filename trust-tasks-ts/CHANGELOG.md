@@ -11,6 +11,20 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.20.4 — 2026-09-23
+
+
+### Fixed
+
+- **git-ns/right/grant**: Publish the implied commit right of a namespace admin (#623)
+
+A namespace admin implies ownership of every repository in the namespace,
+  and so git.commit.sign on each, but the projection rule named only own and
+  maintain records: an admin's commits would have failed every check. The
+  VTC now publishes the admin's git.commit.sign on the namespace resource,
+  and a bridge that sets up a check configures the namespace as its
+  fallback resource so that record counts.
+
 ## 0.20.3 — 2026-09-23
 
 
