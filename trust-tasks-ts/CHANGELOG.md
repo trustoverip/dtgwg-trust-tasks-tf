@@ -11,6 +11,37 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.20.1 — 2026-09-23
+
+
+### Added
+
+- **persona**: Attribute/get — read one attribute, by identifier (#616)
+
+The family had no narrow read, and the shape of the workaround is the
+  argument for the task. A client revealing one value called
+  `persona/attribute/list` with a `typePrefix` and `includeValues`, then
+  filtered to the id it already held — so showing one email address
+  decrypted and returned every email address the holder has, and the audit
+  trail recorded a listing of the pool rather than a decision about one
+  fact.
+
+  - Values are withheld unless asked for, and a `sensitivity: high` value
+    needs a second flag, on the same two-step as `attribute/list`. A
+    withheld value is stated (`valueWithheld`), never left to inference: a
+    consumer reading an absent value as "there is none" shows the holder an
+    empty field where their passport number is.
+  - `version` reads a retained earlier version, which is what makes "what
+    did I show them in March" answerable — a disclosure record and a pinned
+    entry both name one. A purged version is `versionPurged`, never a
+    silent fall back to the current value.
+  - `retainedVersions` names the versions still held, so a holder deciding
+    whether to purge can see what purging would take away rather than being
+    asked to make an irreversible decision blind.
+
+  One identifier, never a list: a maintainer that accepted several would
+  recreate the enumeration the task exists to avoid, one call later.
+
 ## 0.20.0 — 2026-09-23
 
 ## 0.19.22 — 2026-09-23
