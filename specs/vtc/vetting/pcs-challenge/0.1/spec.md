@@ -112,7 +112,7 @@ is identified by `issuer`, and that is the whole input the community needs.
   "issuedAt": "2026-09-23T10:00:00Z",
   "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
   "payload": {
-    "criterionId": "kernel-developer-private"
+    "criterionId": "kernel-maintainers"
   }
 }
 ```

@@ -557,7 +557,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/pcs-challenge/0.1#request\",\n  \"issuer\": \"did:example:applicant\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-09-23T10:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"criterionId\": \"kernel-developer-private\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/pcs-challenge/0.1#request\",\n  \"issuer\": \"did:example:applicant\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-09-23T10:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"criterionId\": \"kernel-maintainers\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
