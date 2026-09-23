@@ -547,6 +547,7 @@ export * as VtcRelationshipsRequest_v0_2 from "./vtc/relationships/request/0.2/p
 export * as VtcRelationshipsRevoke_v0_1 from "./vtc/relationships/revoke/0.1/payload.js";
 export * as VtcVettingPcsChallenge_v0_1 from "./vtc/vetting/pcs-challenge/0.1/payload.js";
 export * as VtcVettingRevokeStatement_v0_1 from "./vtc/vetting/revoke-statement/0.1/payload.js";
+export * as VtcVettingVettersEventMode_v0_1 from "./vtc/vetting/vetters/event-mode/0.1/payload.js";
 export * as VtcVettingVettersGrant_v0_1 from "./vtc/vetting/vetters/grant/0.1/payload.js";
 export * as VtcVettingVettersList_v0_1 from "./vtc/vetting/vetters/list/0.1/payload.js";
 export * as VtcVettingVettersPcsRoot_v0_1 from "./vtc/vetting/vetters/pcs-root/0.1/payload.js";
