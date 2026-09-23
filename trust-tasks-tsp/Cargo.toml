@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-tsp"
-version = "0.22.2"
+version = "0.22.3"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
