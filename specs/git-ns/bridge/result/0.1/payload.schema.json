@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/bridge/result/0.1",
+  "title": "Git Namespaces — Bridge Job Result — payload",
+  "description": "The bridge reports how a job ended. Exactly one result is sent per job; the VTC updates the repository's state, bootstrap status and forge id from it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "jobId",
+    "outcome"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The job, as git-ns/bridge/job named it."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "succeeded",
+        "failed",
+        "partial"
+      ],
+      "description": "`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again."
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource",
+        "forgeId"
+      ],
+      "description": "The repository the job touched, as the forge now reports it. Present whenever the job reached a repository.",
+      "properties": {
+        "resource": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RepoResource"
+        },
+        "forgeId": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/ForgeId"
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "outcome"
+        ],
+        "properties": {
+          "step": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][A-Za-z0-9]*$",
+            "description": "The step name, from the adapter's plan."
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "unchanged",
+              "failed",
+              "skipped"
+            ],
+            "description": "`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed."
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 1024,
+            "description": "Human-readable detail, typically for a failure."
+          }
+        }
+      },
+      "description": "Per-step outcomes, in the order they ran."
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code"
+      ],
+      "description": "Why the job failed or stopped partway. Present when `outcome` is not `succeeded`.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][A-Za-z0-9]*$",
+          "description": "Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others."
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 1024
+        }
+      }
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Bridge Job Result — response payload",
+      "description": "The VTC has recorded the result.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jobId"
+      ],
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

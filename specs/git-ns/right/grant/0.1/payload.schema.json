@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/right/grant/0.1",
+  "title": "Git Namespaces — Grant Right — payload",
+  "description": "Grants one git right on one forge-qualified resource to a DID. The VTC checks the grant against the actor's own rights — scope containment, no escalation, members-only namespace rights — and against community policy, records it, and publishes it to the Trust Registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "right",
+    "resource"
+  ],
+  "properties": {
+    "subject": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Did",
+      "description": "Who receives the right."
+    },
+    "right": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Right"
+    },
+    "resource": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Resource",
+      "description": "Where the right applies: a namespace resource for `git.ns.admin` and `git.repo.create`, a repository resource for `git.repo.own` and `git.repo.maintain`, either for `git.commit.sign`."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the right lapses. Absent: it lasts until revoked."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, in the granter's words. Recorded with the right and disclosed only to the resource's owners and namespace admins."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Grant Right — response payload",
+      "description": "The recorded right.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "right"
+      ],
+      "properties": {
+        "right": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/RightRecord",
+          "description": "The recorded right — newly recorded, or the live record that already existed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

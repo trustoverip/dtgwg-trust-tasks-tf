@@ -1,0 +1,12 @@
+[
+  {
+    "note": "`linkId` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`linkId` is not empty.",
+    "payload": {
+      "linkId": ""
+    }
+  }
+]

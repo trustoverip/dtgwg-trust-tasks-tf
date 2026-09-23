@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/account/link-status/0.1",
+  "title": "Git Namespaces — Forge Account Link Status — payload",
+  "description": "A member asks where a forge account link they began stands.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "linkId"
+  ],
+  "properties": {
+    "linkId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "From git-ns/account/link."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Forge Account Link Status — response payload",
+      "description": "Where the link stands.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "linked",
+            "expired",
+            "failed"
+          ],
+          "description": "`pending` — waiting for the member to authorise. `linked` — the account is bound to the member's DID. `expired` — not authorised in time. `failed` — the forge refused, or the account is already linked to another member."
+        },
+        "account": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/ForgeAccount",
+          "description": "The linked account. Present only when `state` is `linked`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

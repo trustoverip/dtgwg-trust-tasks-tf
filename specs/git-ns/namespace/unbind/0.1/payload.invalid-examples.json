@@ -1,0 +1,19 @@
+[
+  {
+    "note": "`namespace` is required: there is no unbind-everything form.",
+    "payload": {}
+  },
+  {
+    "note": "`namespace` is an identifier, not an empty string.",
+    "payload": {
+      "namespace": ""
+    }
+  },
+  {
+    "note": "Unknown members are refused (additionalProperties: false).",
+    "payload": {
+      "namespace": "ns_01J8Z7C1TX",
+      "keepRights": true
+    }
+  }
+]

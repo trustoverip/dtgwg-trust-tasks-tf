@@ -1,0 +1,20 @@
+[
+  {
+    "note": "`resource` names its forge.",
+    "payload": {
+      "resource": "acme"
+    }
+  },
+  {
+    "note": "`resource` is lowercase.",
+    "payload": {
+      "resource": "github.com/ACME"
+    }
+  },
+  {
+    "note": "Unknown members are refused: there is no subject filter, a member sees what they may see.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example"
+    }
+  }
+]

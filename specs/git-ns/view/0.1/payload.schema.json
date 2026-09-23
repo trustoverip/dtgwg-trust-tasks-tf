@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/view/0.1",
+  "title": "Git Namespaces — View — payload",
+  "description": "A member reads the namespaces, repositories and rights they are entitled to see, optionally narrowed to one resource.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "resource": {
+      "$ref": "../../_shared/0.1/git-ns.schema.json#/$defs/Resource",
+      "description": "Narrow the answer to this resource and everything inside it. Absent: everything the caller may see."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — View — response payload",
+      "description": "What the caller may see.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespaces",
+        "repos",
+        "rights"
+      ],
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/git-ns.schema.json#/$defs/GitNamespace"
+          },
+          "description": "Namespaces bound to this VTC that contain, or are contained by, `resource`."
+        },
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/git-ns.schema.json#/$defs/RepoSummary"
+          },
+          "description": "Repositories within `resource`. `unmanaged` repositories are included only for callers holding `git.ns.admin` over them."
+        },
+        "rights": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/git-ns.schema.json#/$defs/RightRecord"
+          },
+          "description": "Rights within `resource` the caller may see: always the caller's own; every right on a resource the caller owns or administers. `reason` is omitted except on resources the caller owns or administers."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

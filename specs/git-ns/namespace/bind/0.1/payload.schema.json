@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/namespace/bind/0.1",
+  "title": "Git Namespaces — Bind Namespace — payload",
+  "description": "A VTC administrator binds the VTC to one owner on one forge, so that the VTC governs who may create, own, maintain and commit to repositories under it. In bridge mode the response says where to send the forge owner to prove control; the namespace stays `pending` until that proof arrives.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forge",
+    "owner",
+    "mode"
+  ],
+  "properties": {
+    "forge": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/ForgeHost",
+      "description": "The forge's host, lowercased."
+    },
+    "owner": {
+      "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/Segment",
+      "description": "The organisation or user on that forge, lowercased."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "bridge",
+        "manual"
+      ],
+      "description": "`bridge` — a bridge service serving this forge proves control and then acts on the forge. `manual` — no automation; the binding admin declares the namespace and people with forge access carry out the forge-side steps."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Bind Namespace — response payload",
+      "description": "The namespace as recorded, and where to go next if it is still pending.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace"
+      ],
+      "properties": {
+        "namespace": {
+          "$ref": "../../../_shared/0.1/git-ns.schema.json#/$defs/GitNamespace"
+        },
+        "next": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "url"
+          ],
+          "description": "Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 2048,
+              "pattern": "^https://",
+              "description": "An https URL, single-use, carrying the bridge's binding nonce."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
