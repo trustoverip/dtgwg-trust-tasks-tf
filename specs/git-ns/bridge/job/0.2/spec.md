@@ -62,7 +62,7 @@ related:
 
 A VTC that governs forge namespaces does not talk to the forges itself. Each community runs a **bridge** next to its VTC: a separate service with its own DID, the only holder of the community's forge credentials — its own GitHub App key, or its Forgejo bot's token — and the home of the forge adapters that know how each forge does things. The VTC decides; the bridge carries it out and reports back.
 
-This task is the VTC's half: one job, one piece of forge work in one namespace. Jobs carry desired state, never credentials, and every job is **convergent**: the bridge checks the forge and changes only what differs, so sending a job again is always safe. How it ended comes back as [`git-ns/bridge/result`](../../../../git-ns/bridge/result/0.1/spec.md); what the bridge sees happening on the forge comes back as [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.1/spec.md).
+This task is the VTC's half: one job, one piece of forge work in one namespace. Jobs carry desired state, never credentials, and every job is **convergent**: the bridge checks the forge and changes only what differs, so sending a job again is always safe. How it ended comes back as [`git-ns/bridge/result`](../../../../git-ns/bridge/result/0.1/spec.md); what the bridge sees happening on the forge comes back as [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.2/spec.md).
 
 The job vocabulary is forge-neutral. A forge that lacks a capability — a personal GitHub account, where no bot can create repositories — is handled by the VTC not sending that job, and by the bridge refusing it if sent.
 
