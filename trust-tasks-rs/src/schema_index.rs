@@ -137,6 +137,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-request/0.2#response" => <crate::specs::auth::step_up::approve_request::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.3" => <crate::specs::auth::step_up::approve_request::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response" => <crate::specs::auth::step_up::approve_request::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" => <crate::specs::auth::step_up::approve_response::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response" => <crate::specs::auth::step_up::approve_response::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -148,6 +152,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.3" => <crate::specs::auth::step_up::approve_response::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.3#response" => <crate::specs::auth::step_up::approve_response::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.4" => <crate::specs::auth::step_up::approve_response::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.4#response" => <crate::specs::auth::step_up::approve_response::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.1" => <crate::specs::auth::step_up::policy::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
@@ -2171,6 +2179,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.3" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::step_up::approve_request::v0_3::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::step_up::approve_response::v0_1::Payload,
@@ -2186,6 +2200,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.3" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::step_up::approve_response::v0_3::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.4" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::step_up::approve_response::v0_4::Payload,
             >())
         }
         #[cfg(feature = "auth")]
@@ -4574,6 +4594,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::auth::step_up::approve_request::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-request/0.3" => {
+            Some(crate::specs::auth::step_up::approve_request::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.1" => {
             Some(crate::specs::auth::step_up::approve_response::v0_1::ERROR_CODES)
         }
@@ -4584,6 +4608,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/approve-response/0.3" => {
             Some(crate::specs::auth::step_up::approve_response::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/approve-response/0.4" => {
+            Some(crate::specs::auth::step_up::approve_response::v0_4::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.1" => {
