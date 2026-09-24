@@ -136,6 +136,7 @@ export * as GitNsShared_v0_2 from "./git-ns/_shared/0.2/git-ns.js";
 export * as GitNsAccountLinkStatus_v0_1 from "./git-ns/account/link-status/0.1/payload.js";
 export * as GitNsAccountLink_v0_1 from "./git-ns/account/link/0.1/payload.js";
 export * as GitNsBridgeEvent_v0_1 from "./git-ns/bridge/event/0.1/payload.js";
+export * as GitNsBridgeEvent_v0_2 from "./git-ns/bridge/event/0.2/payload.js";
 export * as GitNsBridgeJob_v0_1 from "./git-ns/bridge/job/0.1/payload.js";
 export * as GitNsBridgeJob_v0_2 from "./git-ns/bridge/job/0.2/payload.js";
 export * as GitNsBridgeResult_v0_1 from "./git-ns/bridge/result/0.1/payload.js";

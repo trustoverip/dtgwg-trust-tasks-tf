@@ -84,7 +84,7 @@ related:
 
 ## Abstract
 
-In a bridge-mode namespace the bridge compares each repository on the forge with the VTC's projection of it and reports every difference as a **drift item** ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.1/spec.md)); members read them in each repository's `sync.drift` through [`git-ns/view`](../../../../git-ns/view/0.2/spec.md). Some drift the VTC answers by itself — by policy it re-applies a weakened ruleset — and some it only reports: most often a collaborator somebody added, or a role somebody raised, in the forge's own interface.
+In a bridge-mode namespace the bridge compares each repository on the forge with the VTC's projection of it and reports every difference as a **drift item** ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.2/spec.md)); members read them in each repository's `sync.drift` through [`git-ns/view`](../../../../git-ns/view/0.2/spec.md). Some drift the VTC answers by itself — by policy it re-applies a weakened ruleset — and some it only reports: most often a collaborator somebody added, or a role somebody raised, in the forge's own interface.
 
 This task is how an owner of the repository answers a reported item. **`adopt`** accepts the forge-side change by recording it as a VTC right, under exactly the rules a [`git-ns/right/grant`](../../../../git-ns/right/grant/0.1/spec.md) would meet, so the projection comes to match the forge. **`revert`** keeps the projection as it is and has the bridge undo the forge-side change with a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.2/spec.md). The VTC stays the source of truth either way: adopting changes the truth deliberately, reverting restores the forge to it.
 
