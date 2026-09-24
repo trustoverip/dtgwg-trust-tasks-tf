@@ -11,6 +11,35 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.2.6 — 2026-09-24
+
+
+### Added
+
+- **git-ns/bridge/event**: Detach on transfer and name reuse, confine events to their namespace (#627)
+
+git-ns/bridge/event 0.2. The wire format is unchanged. What the VTC does
+  with three kinds of event changes:
+
+  - repoTransferred always detaches the repository and withdraws its
+    rights, wherever `to` is -- another owner, another forge, or another
+    namespace, even one the same VTC governs. Rights never move. 0.1
+    handled a transfer into a bound namespace as a rename, which let a
+    forge-side act hand the receiving namespace's admins owners and
+    committers they never chose. The receiving namespace sees the
+    repository as repoCreatedUnmanaged, and its admins adopt it and grant
+    afresh. Renames within the namespace are unchanged.
+  - repoCreatedUnmanaged at a governed name whose forge id differs from
+    the recorded one detaches the old repository first (name reuse), so
+    the newcomer inherits nothing.
+  - Every resource an event names (resource, from, a rename's to, drift
+    items) must lie inside the event's namespace, else permissionDenied.
+    The one exception is a transfer's `to`: it says where the repository
+    went, and nothing is done there.
+
+  drift/resolve 0.1 and bridge/job 0.2 now link to event 0.2. Bindings
+  regenerated for Rust, TypeScript, Go and Dart.
+
 ## 0.2.5 — 2026-09-24
 
 
