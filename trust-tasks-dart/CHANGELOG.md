@@ -11,6 +11,60 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.5 — 2026-09-24
+
+
+### Added
+
+- **git-ns**: Drift resolution, namespace reseat, linked accounts in view (#625)
+
+Three follow-ups to the git-ns family. Released versions are untouched;
+  every change is a new version folder or a new task.
+
+  - git-ns/view 0.2: the response also carries `accounts`, the forge
+    accounts linked to the caller's own DID (ForgeAccount + linkedAt),
+    never another member's; narrowed to the resource's forge when
+    `resource` is given. Required, empty when none. Everything else is
+    restated unchanged from 0.1.
+
+  - git-ns/drift/resolve 0.1 (new): an owner of a repository, explicit or
+    implied (so namespace admins too), resolves one reported drift item.
+    Drift items have no stable id -- they are recomputed and replaced
+    wholesale by every bridge event -- so the item is selected by type,
+    plus the account for the three role types (at most one role item per
+    account per repository), plus an `observed` guard, required for adopt.
+    `adopt` records the right the observed role projects to, evaluated
+    exactly as git-ns/right/grant (fixed rules, policy, idempotence);
+    refused with accountNotLinked when the account has no member, and
+    notAdoptable / noMatchingRight where no right fits. `revert` sends the
+    bridge the job that restores the projection.
+
+  - git-ns/bridge/job 0.2: projectRoles gains `removeAccounts`. 0.1 only
+    converges roles the bridge manages and reports other roles as drift
+    without removing them, so it cannot revert a collaborator added on
+    the forge. The rest of the revert table reuses 0.1 jobs.
+
+  - git-ns/namespace/reseat 0.1 (new): a community administrator grants
+    git.ns.admin on a headless namespace (no live, unexpired, member-held
+    git.ns.admin record) to a current member, with a required audit
+    statement. Destructive class; refused with notHeadless otherwise. It
+    also states that expiring git.ns.admin records do not count toward
+    the last-admin invariant. That rule lives here and is not a new
+    right/grant version: 0.1 says nothing about expiring records, so no
+    valid document changes meaning.
+
+  - git-ns/_shared 0.2: adds DriftType, the value set a drift selector
+    shares with DriftItem.type. DriftItem keeps its inline list so it is
+    textually identical to 0.1. That keeps the TypeScript component
+    hoisting additive: renaming SharedComponents.DriftItem would have
+    been a break.
+
+  The spec forbids declaring consent classes (SPEC 7.3 item 13), so the
+  "elevated" impact of reverting an owner-level role is written as a
+  consequence and as descriptive impact prose in drift/resolve.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
 ## 0.2.4 — 2026-09-23
 
 
