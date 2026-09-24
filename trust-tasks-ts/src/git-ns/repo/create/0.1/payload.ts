@@ -3,7 +3,7 @@
  * Source: specs/git-ns/repo/create/0.1/payload.schema.json
  */
 
-import type { Bootstrap, Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, RepoResource, RepoSummary, RepoVisibility, Segment, Sync } from "../../../../_shared/components.js";
+import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, RepoResource, RepoSummary_GitNsV0_1 as RepoSummary, RepoVisibility, Segment, Sync } from "../../../../_shared/components.js";
 
 
 /**

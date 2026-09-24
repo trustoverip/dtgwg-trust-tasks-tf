@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/bridge/job/0.3",
+  "title": "Git Namespaces — Bridge Job — payload",
+  "description": "The VTC asks its bridge to do one piece of forge work in a namespace. The job names what to do (`kind`) and carries the desired state, never forge credentials — the bridge holds those. Which optional members a job carries is fixed by its `kind` (see the specification's kind table); a bridge refuses a job that carries a member its kind does not use, or lacks one its kind requires.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "jobId",
+    "namespace",
+    "kind"
+  ],
+  "properties": {
+    "jobId": {
+      "$ref": "#/$defs/JobId",
+      "description": "The VTC's identifier for this job. The bridge reports on it with git-ns/bridge/result."
+    },
+    "namespace": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/NamespaceId",
+      "description": "The namespace the job acts in. It also selects the bridge's forge credentials for it."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "projectRoles",
+        "createRepo",
+        "bootstrap",
+        "archive",
+        "inspect",
+        "beginBind",
+        "beginAccountLink"
+      ],
+      "description": "What to do. `projectRoles` — converge forge roles to `desiredRoles`, and remove whatever role each of `removeAccounts` holds on `repo`. `createRepo` — create `repo`, run the bootstrap plan, and project `desiredRoles`. `bootstrap` — run the bootstrap plan, or the listed `steps` of it, on an existing `repo`. `archive` — archive `repo`. `inspect` — compare the forge with the projection for `repo`, or for the whole namespace. `beginBind` — start the proof that the binding admin controls `target`. `beginAccountLink` — start linking `subject`'s account on this namespace's forge."
+    },
+    "repo": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoResource",
+      "description": "The repository. Required for `createRepo`, `bootstrap` and `archive`. For `projectRoles`, absent means the namespace-level roles (organisation owners), where only `git.ns.admin` is projected. For `inspect`, absent means a sweep of every repository in the namespace."
+    },
+    "spec": {
+      "$ref": "#/$defs/RepoSpec",
+      "description": "How to create the repository. `createRepo` only."
+    },
+    "desiredRoles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/DesiredRole"
+      },
+      "description": "The complete set of people who should hold a forge role on the target. The bridge converges to exactly this set among the roles it manages: it adds or changes roles to match and removes managed roles not listed. `projectRoles` and `createRepo` only."
+    },
+    "removeAccounts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/ForgeAccount"
+      },
+      "description": "Accounts whose direct role on `repo` the bridge removes, whatever that role is — including a role the bridge does not manage and would otherwise only report as drift. Matched by `forge` and `id`; `login` is display only. No account listed here may also appear in `desiredRoles`. `projectRoles` with `repo` only."
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/StepName"
+      },
+      "description": "Run only these steps of the adapter's bootstrap plan, in the plan's order. Absent: the whole plan. `bootstrap` only."
+    },
+    "target": {
+      "$ref": "#/$defs/BindTarget",
+      "description": "`beginBind` only."
+    },
+    "subject": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Did",
+      "description": "The member whose forge account is being linked. `beginAccountLink` only."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "JobId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The VTC's identifier for a job, unique across the VTC's jobs."
+    },
+    "StepName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][A-Za-z0-9]*$",
+      "description": "One step of a forge adapter's plan. Forge-neutral names: `create`, `workflow`, `keyring`, `variables`, `requiredCheck`, `roles`, `archive`. An adapter MAY add its own (`mergeStyle`, `runner`), which a VTC displays but need not understand."
+    },
+    "DesiredRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "account",
+        "right"
+      ],
+      "properties": {
+        "subject": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Did"
+        },
+        "account": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/ForgeAccount",
+          "description": "The subject's linked account on this namespace's forge."
+        },
+        "right": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Right",
+          "description": "The subject's highest effective right on the target, which the forge adapter maps to one of its roles."
+        }
+      }
+    },
+    "RepoSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "visibility"
+      ],
+      "properties": {
+        "visibility": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoVisibility"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 350
+        }
+      }
+    },
+    "BindTarget": {
+      "title": "BindTarget",
+      "description": "The forge owner whose control the binding admin is to prove.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forge",
+        "owner"
+      ],
+      "properties": {
+        "forge": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/ForgeHost"
+        },
+        "owner": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Segment"
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Bridge Job — response payload",
+      "description": "Whether the bridge took the job.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jobId",
+        "accepted"
+      ],
+      "properties": {
+        "jobId": {
+          "$ref": "#/$defs/JobId"
+        },
+        "accepted": {
+          "type": "boolean",
+          "description": "`true` — the job is durably queued, or was already queued or running under this `jobId`; a git-ns/bridge/result follows. `false` — the bridge already finished this `jobId`; it does not run it again, and sends its git-ns/bridge/result again."
+        },
+        "next": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "url",
+            "expiresAt"
+          ],
+          "description": "For `beginBind` and `beginAccountLink` when `accepted` is `true`: where the VTC sends the person.",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 2048,
+              "pattern": "^https://"
+            },
+            "userCode": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "The device-flow code, for a forge that uses one."
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

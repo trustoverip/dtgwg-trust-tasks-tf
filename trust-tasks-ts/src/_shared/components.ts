@@ -182,7 +182,11 @@ export type DeviceAttestation_DeviceV0_2 =
 /**
  * A DID, compared by exact string equality.
  */
-export type Did = string;
+export type Did_GitNsV0_1 = string;
+/**
+ * A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
+ */
+export type Did_GitNsV0_3 = string;
 /**
  * A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
  *
@@ -3936,7 +3940,7 @@ export interface RejectedKey {
 /**
  * One repository as the VTC records it.
  */
-export interface RepoSummary {
+export interface RepoSummary_GitNsV0_1 {
   resource: RepoResource;
   /**
    * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
@@ -3950,7 +3954,28 @@ export interface RepoSummary {
   /**
    * The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.
    */
-  owners: Did[];
+  owners: Did_GitNsV0_1[];
+  bootstrap: Bootstrap;
+  sync: Sync;
+}
+/**
+ * One repository as the VTC records it.
+ */
+export interface RepoSummary_GitNsV0_3 {
+  resource: RepoResource;
+  /**
+   * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
+   */
+  forgeId?: ForgeId;
+  visibility: RepoVisibility;
+  /**
+   * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
+   */
+  state: "pendingCreate" | "active" | "archived" | "detached" | "orphaned" | "unmanaged";
+  /**
+   * The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.
+   */
+  owners: Did_GitNsV0_3[];
   bootstrap: Bootstrap;
   sync: Sync;
 }
@@ -4032,17 +4057,41 @@ export interface RevocationReceipt {
 /**
  * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.
  */
-export interface RightRecord {
+export interface RightRecord_GitNsV0_1 {
   /**
    * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
    */
-  subject: Did;
+  subject: Did_GitNsV0_1;
   right: Right;
   resource: Resource;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
-  grantedBy: Did;
+  grantedBy: Did_GitNsV0_1;
+  grantedAt: string;
+  /**
+   * When the right lapses. Absent: no expiry.
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
+   */
+  reason?: string;
+}
+/**
+ * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.
+ */
+export interface RightRecord_GitNsV0_3 {
+  /**
+   * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource;
+  /**
+   * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
+   */
+  grantedBy: Did_GitNsV0_3;
   grantedAt: string;
   /**
    * When the right lapses. Absent: no expiry.
