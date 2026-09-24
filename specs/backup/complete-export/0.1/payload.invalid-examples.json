@@ -1,0 +1,30 @@
+[
+  {
+    "note": "Missing `bundleId`. There is no current bundle and no most-recent default — an absent handle must never resolve to one.",
+    "payload": {}
+  },
+  {
+    "note": "`bundleId` that is not a UUID. The pattern is what keeps a guessed or crafted handle from reaching the recipient's store as a lookup key.",
+    "payload": {
+      "bundleId": "latest"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "bundleId": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `downloaded`. Whether the bytes were fetched is the recipient's observation; a producer asserting it would be asserting a fact only the recipient holds.",
+    "payload": {
+      "bundleId": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+      "downloaded": true
+    }
+  }
+]

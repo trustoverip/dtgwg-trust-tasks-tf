@@ -168,6 +168,34 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/whoami/0.1" => <crate::specs::auth::whoami::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/whoami/0.1#response" => <crate::specs::auth::whoami::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/abort/0.1" => <crate::specs::backup::abort::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/abort/0.1#response" => <crate::specs::backup::abort::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/complete-export/0.1" => <crate::specs::backup::complete_export::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/complete-export/0.1#response" => <crate::specs::backup::complete_export::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/finalize-import/0.1" => <crate::specs::backup::finalize_import::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/finalize-import/0.1#response" => <crate::specs::backup::finalize_import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/get-chunk/0.1" => <crate::specs::backup::get_chunk::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/get-chunk/0.1#response" => <crate::specs::backup::get_chunk::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-export/0.1" => <crate::specs::backup::initiate_export::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-export/0.1#response" => <crate::specs::backup::initiate_export::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-import/0.1" => <crate::specs::backup::initiate_import::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-import/0.1#response" => <crate::specs::backup::initiate_import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/put-chunk/0.1" => <crate::specs::backup::put_chunk::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/put-chunk/0.1#response" => <crate::specs::backup::put_chunk::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "chat")]
         "https://trusttasks.org/spec/chat/message/0.1" => <crate::specs::chat::message::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "config")]
@@ -2219,6 +2247,34 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/whoami/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::auth::whoami::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/abort/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::abort::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/complete-export/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::complete_export::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/finalize-import/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::finalize_import::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/get-chunk/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::get_chunk::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-export/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::initiate_export::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-import/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::initiate_import::v0_1::Payload,
+        >()),
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/put-chunk/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::backup::put_chunk::v0_1::Payload,
         >()),
         #[cfg(feature = "chat")]
         "https://trusttasks.org/spec/chat/message/0.1" => Some(crate::SpecPolicy::of::<
@@ -4624,6 +4680,34 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/whoami/0.1" => {
             Some(crate::specs::auth::whoami::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/abort/0.1" => {
+            Some(crate::specs::backup::abort::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/complete-export/0.1" => {
+            Some(crate::specs::backup::complete_export::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/finalize-import/0.1" => {
+            Some(crate::specs::backup::finalize_import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/get-chunk/0.1" => {
+            Some(crate::specs::backup::get_chunk::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-export/0.1" => {
+            Some(crate::specs::backup::initiate_export::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/initiate-import/0.1" => {
+            Some(crate::specs::backup::initiate_import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "backup")]
+        "https://trusttasks.org/spec/backup/put-chunk/0.1" => {
+            Some(crate::specs::backup::put_chunk::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "chat")]
         "https://trusttasks.org/spec/chat/message/0.1" => {

@@ -1,0 +1,37 @@
+[
+  {
+    "note": "Missing `index`. There is no 'next chunk' — the producer names what it wants, which is what makes a retry or a resume a plain repeat rather than a cursor the recipient must track.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b"
+    }
+  },
+  {
+    "note": "Negative `index`. Caught by the schema rather than left to be read as 'from the end' by a lenient consumer.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": -1
+    }
+  },
+  {
+    "note": "`index` beyond the 4096-chunk bound. No manifest can describe it, so it never reaches a lookup.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": 4096
+    }
+  },
+  {
+    "note": "`bundleId` that is not a UUID. The pattern keeps a crafted handle from reaching the recipient's store as a lookup key.",
+    "payload": {
+      "bundleId": "latest",
+      "index": 0
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `transportToken`. A chunked retrieval is authorized by the authenticated sender, never by a bearer token; accepting one here would invite implementations to treat it as sufficient.",
+    "payload": {
+      "bundleId": "5b1f4a2e-7c3d-4e8f-9a6b-2d0c1e3f4a5b",
+      "index": 0,
+      "transportToken": "dGhpcy1pcy1hLW9uZS1zaG90LWJlYXJlci10b2tlbg"
+    }
+  }
+]

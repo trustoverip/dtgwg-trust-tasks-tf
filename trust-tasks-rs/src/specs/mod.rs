@@ -62,6 +62,8 @@ pub mod acl;
 pub mod audit;
 #[cfg(feature = "auth")]
 pub mod auth;
+#[cfg(feature = "backup")]
+pub mod backup;
 #[cfg(feature = "chat")]
 pub mod chat;
 #[cfg(feature = "config")]

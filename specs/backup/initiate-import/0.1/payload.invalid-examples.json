@@ -1,0 +1,93 @@
+[
+  {
+    "note": "Missing both pre-commitments. A slot opened without a digest accepts whatever arrives, which is exactly the property that makes a leaked write token harmless when they are present.",
+    "payload": {}
+  },
+  {
+    "note": "Uppercase hex digest. The pattern fixes one spelling so that a recipient's comparison is a string equality rather than a normalisation it might get wrong.",
+    "payload": {
+      "expectedSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "expectedSizeBytes": 1048576
+    }
+  },
+  {
+    "note": "Digest of the wrong length — a SHA-1 in a SHA-256 member. Caught by the pattern before a slot is opened.",
+    "payload": {
+      "expectedSha256": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "expectedSizeBytes": 1048576
+    }
+  },
+  {
+    "note": "Zero `expectedSizeBytes`. There is nothing to import, and a slot sized for no bytes would accept an empty upload as a successful transfer.",
+    "payload": {
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedSizeBytes": 0
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedSizeBytes": 1048576,
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `password`. The password belongs to finalize-import; accepting it here would put the decryption secret alongside the slot that holds the ciphertext, which is the one place this family keeps them apart.",
+    "payload": {
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedSizeBytes": 1048576,
+      "password": "a sufficiently long secret"
+    }
+  },
+  {
+    "note": "Chunk manifest with `chunkSize` above the 262144-byte ceiling. Every put-chunk that followed would exceed a 1 MiB mediator message and be dropped in transit, so the slot is refused before it opens.",
+    "payload": {
+      "expectedSha256": "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0",
+      "expectedSizeBytes": 524300,
+      "algorithm": "chunkedTrustTask",
+      "chunks": {
+        "chunkSize": 524288,
+        "chunkCount": 2,
+        "chunkDigests": [
+          "zQmehatQCtXyeV6kFkRVXjhDifqT3qARJ24248K2GJp7iWx",
+          "zQmaFd25Uf6hJJ8xHX349DLzp4sryKmTGuyaSZWVtwsK5rM"
+        ]
+      }
+    }
+  },
+  {
+    "note": "Per-chunk digests as bare hex. Chunk digests are DigestMultibase, so the hash algorithm travels with the value; a bare hex string hard-codes one algorithm into the wire contract.",
+    "payload": {
+      "expectedSha256": "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0",
+      "expectedSizeBytes": 524300,
+      "algorithm": "chunkedTrustTask",
+      "chunks": {
+        "chunkSize": 262144,
+        "chunkCount": 3,
+        "chunkDigests": [
+          "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0",
+          "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0",
+          "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0"
+        ]
+      }
+    }
+  },
+  {
+    "note": "Chunk manifest with no digests. A manifest that commits to nothing lets any bytes be written at any index, which is the substitution the pre-commitment exists to prevent.",
+    "payload": {
+      "expectedSha256": "20111c1d10631a5d6b2e9e06f558cd5c84e841d2bc5758bfda0d3b76bb4927f0",
+      "expectedSizeBytes": 524300,
+      "algorithm": "chunkedTrustTask",
+      "chunks": {
+        "chunkSize": 262144,
+        "chunkCount": 3,
+        "chunkDigests": []
+      }
+    }
+  }
+]
