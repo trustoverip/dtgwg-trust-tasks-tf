@@ -1,0 +1,43 @@
+[
+  {
+    "note": "`statement` is required: a reseat hands over the namespace root without any namespace admin choosing, and the audit record must say why.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol"
+    }
+  },
+  {
+    "note": "`statement` is not empty.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "statement": ""
+    }
+  },
+  {
+    "note": "`subject` is a DID, not a forge login.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "carol-c",
+      "statement": "Last admin left the community"
+    }
+  },
+  {
+    "note": "A reseat grants git.ns.admin and nothing else; there is no right to choose.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "statement": "Last admin left the community",
+      "right": "git.repo.create"
+    }
+  },
+  {
+    "note": "A reseated admin never expires: an expiring record would leave the namespace headless again when it lapsed.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "statement": "Last admin left the community",
+      "expiresAt": "2027-01-01T00:00:00Z"
+    }
+  }
+]

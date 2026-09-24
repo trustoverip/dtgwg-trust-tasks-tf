@@ -194,6 +194,16 @@ export type Did = string;
  */
 export type DigestMultibase = string;
 /**
+ * The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
+ */
+export type DriftType =
+  | "roleAdded"
+  | "roleRemoved"
+  | "roleChanged"
+  | "requiredCheckMissing"
+  | "protectionWeakened"
+  | "bootstrapMissing";
+/**
  * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";

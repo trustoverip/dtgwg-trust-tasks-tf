@@ -2,6 +2,7 @@
 
 pub mod account;
 pub mod bridge;
+pub mod drift;
 pub mod namespace;
 pub mod repo;
 pub mod right;
