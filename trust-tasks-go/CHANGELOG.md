@@ -11,6 +11,93 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.2.8 — 2026-09-24
+
+
+### Added
+
+- **backup**: A node-neutral backup and restore family (#633)
+
+`vta/backup/*` is the agent's descriptor-based backup and restore: a slot,
+  digests pre-committed before any byte moves, the bundle carried either as an
+  HTTPS stream or chunk by chunk over the agent's own Trust Task transport, and a
+  finalize step that previews before it replaces. Nothing in that transfer is
+  specific to an agent, and a community node needs exactly the same thing for the
+  same reason: a backup of any real node is too large for one document, and a
+  node that bounds a document's size before checking its proof — as it must on a
+  binding that authenticates no sender — cannot accept one that way.
+  `vtc/backup/import/0.1`, which carries the whole envelope inline, is the case
+  in point.
+
+  This adds `backup/{initiate-export, get-chunk, complete-export,
+  initiate-import, put-chunk, finalize-import, abort}/0.1`, derived from the
+  latest `vta/backup/*` versions and made node-neutral:
+
+  - The parties, prose and error-code slugs name a node rather than an agent.
+  - What a backup contains is the node's to define. `finalize-import`'s
+    response replaces the agent-specific `keyCount` / `aclCount` /
+    `contextCount` / `auditCount` / `importedSecretCount` with one `counts` map
+    keyed by the node's own record kinds — an agent's `keys`, `acl`, `contexts`,
+    `audit`, `importedSecrets`; a community's backed-up keyspaces — still
+    counts, never contents.
+  - The transfer shapes (descriptor, chunk manifest, chunk data, bundle id) are
+    referenced from `vta/_shared/0.1/backup-transfer` rather than copied. A copy
+    with the node-neutral wording would have been a second definition that the
+    TypeScript generator disambiguates by renaming the published `ChunkData`,
+    `ChunkSize`, `ChunkManifest`, `ChunkedDescriptor` and `BundleDescriptor`
+    exports — a break for every TS consumer, for no difference on the wire.
+  - The "Changes from 1.0" history sections are dropped; a new 0.1 has no
+    predecessor, and the abstract says where the family came from.
+
+  `vta/backup/*` stays served while agents adopt this family, and
+  `vtc/backup/{export,import}` remain for a node small enough to fit one
+  document. Retiring the agent-specific versions is a later change.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart; the only change to
+  existing generated code is the new `backup` feature and index entries.
+
+
+
+### Specifications
+
+- **auth/step-up**: A step-up bound to one operation needs no session (#631)
+
+`approve-response/0.3` introduced the bound approval — one that authorizes a
+  single operation and elevates nothing, answered `recorded` — but
+  `approve-request` still required a `sessionId`, and `approve-response` echoed
+  one. So the only operations a step-up could be bound to were ones that arrived
+  over a session.
+
+  An operation that arrives as a signed Trust Task document has none: its
+  authority is its proof. Binding the human's gesture to one of their sessions
+  after the fact cannot say which, and a window opened on any of them is one a
+  process holding the signer's key can spend on acts the human never saw — the
+  same defect as a session elevation standing in for consent.
+
+  - `approve-request/0.3`: `sessionId` is omitted for a step-up bound to an
+    operation that arrived without a session, and a relying party MUST NOT fill
+    it with a session it chose after the fact. A new `boundTo` names the bound
+    operation — for a signed document, a digest of its type and payload salted
+    with the challenge, since an unsalted digest over a short, predictable
+    payload is a confirmation oracle. A new "Inline delivery" section lets a
+    relying party with no push channel carry the request in the refusal of the
+    operation it is for (`details.stepUpRequest`); it is authenticated by being
+    the relying party's own reply, so a producer must not surface one received
+    any other way, and it is for bound step-ups only. The four Security &
+    Privacy sub-headings are added.
+  - `approve-response/0.4`: `sessionId` is echoed exactly when the request
+    carried one, and a response carrying one for a session-less step-up is
+    refused (`subjectMismatch`), so a bound approval cannot be read as naming a
+    session to elevate. The subject is compared with the subject bound to the
+    pending step-up rather than with a session's.
+
+  Both are backward-compatible minors: a required member became optional and an
+  optional one was added. Motivated by the community node's signed-document
+  step-up (OpenVTC/verifiable-trust-infrastructure#1713) and by
+  trustoverip/dtgwg-vti-spec#40, which amends VTI-APV-003 to admit it.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
 ## 0.2.7 — 2026-09-24
 
 

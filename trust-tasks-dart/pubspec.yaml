@@ -5,7 +5,7 @@ name: trust_tasks
 description: >-
   Trust Tasks for Dart: a typed payload for every specification in the registry,
   plus the SPEC section 7.2 consumer pipeline that acts on them safely.
-version: 0.2.7
+version: 0.2.8
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org
