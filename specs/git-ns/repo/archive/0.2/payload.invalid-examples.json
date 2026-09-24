@@ -1,0 +1,19 @@
+[
+  {
+    "note": "`resource` is required.",
+    "payload": {}
+  },
+  {
+    "note": "Archiving is per repository; a namespace cannot be archived.",
+    "payload": {
+      "resource": "github.com/acme"
+    }
+  },
+  {
+    "note": "Unknown members are refused (additionalProperties: false).",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "keepCommitters": true
+    }
+  }
+]

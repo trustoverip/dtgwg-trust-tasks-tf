@@ -14,4 +14,4 @@ export interface GitNamespacesSharedDefinitionsForTheGitNsSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Bootstrap, Did, DriftItem, ForgeAccount, ForgeHost, ForgeId, GitNamespace, NamespaceId, RepoResource, RepoSummary, RepoVisibility, Resource, Right, RightRecord, Segment, Sync } from "../../../_shared/components.js";
+export type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem, ForgeAccount, ForgeHost, ForgeId, GitNamespace, NamespaceId, RepoResource, RepoSummary_GitNsV0_1 as RepoSummary, RepoVisibility, Resource, Right, RightRecord_GitNsV0_1 as RightRecord, Segment, Sync } from "../../../_shared/components.js";

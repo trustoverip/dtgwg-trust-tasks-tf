@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/repo/create/0.2",
+  "title": "Git Namespaces — Create Repository — payload",
+  "description": "A holder of `git.repo.create` on a namespace creates a repository in it and becomes its owner. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "namespace",
+    "name",
+    "visibility"
+  ],
+  "properties": {
+    "namespace": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/NamespaceId",
+      "description": "The namespace to create the repository in."
+    },
+    "name": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Segment",
+      "description": "The repository name, lowercased. The repository's resource is `<forge>/<owner>/<name>`."
+    },
+    "visibility": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoVisibility"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 350,
+      "description": "A one-line description for the forge's repository page."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Create Repository — response payload",
+      "description": "The reserved repository, and the manual steps when a person must create it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo"
+      ],
+      "properties": {
+        "repo": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoSummary",
+          "description": "The repository as recorded — normally `pendingCreate` at this point."
+        },
+        "manualSteps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "description": "Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

