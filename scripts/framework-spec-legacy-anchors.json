@@ -24,6 +24,7 @@
   "12-task-control": "task-control",
   "121-authorization": "control-authorization",
   "122-identifying-the-target": "identifying-the-target",
+  "122-parser-hardening": "parser-hardening",
   "123-when-a-control-operation-takes-effect": "when-a-control-operation-takes-effect",
   "124-control-does-not-roll-back": "control-does-not-roll-back",
   "125-suspension-and-resumption": "suspension-and-resumption",
