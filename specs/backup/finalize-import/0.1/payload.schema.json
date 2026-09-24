@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/backup/finalize-import/0.1",
+  "title": "Backup — Finalize Import — payload",
+  "description": "Supplies the password for an uploaded bundle and asks the recipient to decrypt it and adopt what is inside, or to rehearse that without committing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundleId",
+    "password"
+  ],
+  "properties": {
+    "bundleId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one."
+    },
+    "password": {
+      "type": "string",
+      "minLength": 15,
+      "maxLength": 1024,
+      "writeOnly": true,
+      "description": "Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.",
+      "$comment": "No example value anywhere in this directory: a specimen password is the one thing implementers copy. minLength mirrors the export floor so a bundle that could be created can be read back."
+    },
+    "confirm": {
+      "type": "boolean",
+      "description": "True commits and replaces the node's state; false rehearses and mutates nothing. Absent means true — stated in prose rather than as a schema `default` on purpose, because a materialised default makes an omitted member indistinguishable from a deliberate one, and this is the member separating a rehearsal from an irreversible replacement. See Defaulting."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Backup — Finalize Import — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Counts and a status, never contents. This document is the operator-held record of a replacement the node's own trail no longer describes.",
+      "required": [
+        "bundleId",
+        "status",
+        "counts"
+      ],
+      "properties": {
+        "bundleId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Echoed so the response stands alone as a record."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "committed"
+          ],
+          "description": "Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the node was replaced, `preview` says it was not."
+        },
+        "sourceDid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Identifier of the node the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong node and this is what shows it. Absent where the bundle does not record one."
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "How many of each kind of record the bundle holds, keyed by the node's own names for them — for an agent, `keys`, `acl`, `contexts`, `audit`, `importedSecrets`; for a community, one entry per backed-up keyspace. Counts, not an inventory: enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it. An audit count of zero is a bundle exported without its trail, not a truncated one."
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

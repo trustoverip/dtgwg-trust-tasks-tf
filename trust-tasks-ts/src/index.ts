@@ -55,6 +55,13 @@ export * as AuthStepUpApproveResponse_v0_4 from "./auth/step-up/approve-response
 export * as AuthStepUpPolicy_v0_1 from "./auth/step-up/policy/0.1/payload.js";
 export * as AuthStepUpPolicy_v0_2 from "./auth/step-up/policy/0.2/payload.js";
 export * as AuthWhoami_v0_1 from "./auth/whoami/0.1/payload.js";
+export * as BackupAbort_v0_1 from "./backup/abort/0.1/payload.js";
+export * as BackupCompleteExport_v0_1 from "./backup/complete-export/0.1/payload.js";
+export * as BackupFinalizeImport_v0_1 from "./backup/finalize-import/0.1/payload.js";
+export * as BackupGetChunk_v0_1 from "./backup/get-chunk/0.1/payload.js";
+export * as BackupInitiateExport_v0_1 from "./backup/initiate-export/0.1/payload.js";
+export * as BackupInitiateImport_v0_1 from "./backup/initiate-import/0.1/payload.js";
+export * as BackupPutChunk_v0_1 from "./backup/put-chunk/0.1/payload.js";
 export * as ChatMessage_v0_1 from "./chat/message/0.1/payload.js";
 export * as ConfigShared_v0_1 from "./config/_shared/0.1/config.js";
 export * as ConfigPatch_v0_1 from "./config/patch/0.1/payload.js";
