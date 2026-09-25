@@ -922,7 +922,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:8f14e45f-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-09-14T11:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmScidAbCdEfGh:example.com:rooms:northwind\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-09-14T11:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8f14e45f-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/realign-keys/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-09-14T11:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmScidAbCdEfGh:example.com:rooms:northwind\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-09-14T11:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

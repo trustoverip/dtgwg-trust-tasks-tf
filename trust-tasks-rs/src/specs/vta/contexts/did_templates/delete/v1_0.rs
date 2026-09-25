@@ -559,7 +559,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"4e5f6071-8293-74a5-b6c7-d8e9f0a1b2c3\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-16T09:10:00Z\",\n  \"payload\": {\n    \"contextId\": \"primary\",\n    \"name\": \"messaging-bridge\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-06-16T09:10:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"4e5f6071-8293-74a5-b6c7-d8e9f0a1b2c3\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/did-templates/delete/1.0\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-16T09:10:00Z\",\n  \"payload\": {\n    \"contextId\": \"primary\",\n    \"name\": \"messaging-bridge\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-06-16T09:10:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
