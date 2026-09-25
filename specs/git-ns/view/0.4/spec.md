@@ -54,7 +54,7 @@ A member reads what the VTC governs on the forges: the namespaces bound to it, t
 
 - The schema pins [`git-ns/_shared/0.4`](../../_shared/0.4/git-ns.schema.json), so a right record carries `breakGlass` when its subject gave it to themselves with [`git-ns/right/break-glass`](../../right/break-glass/0.1/spec.md) — who, when, the justification, and who ratified it.
 - **Break-glass records are shown to every administrator they concern.** Every *unratified* break-glass record is returned, with its `breakGlass` in full, to every community administrator and every `git.ns.admin` of its namespace, and to every owner of its resource, whether or not the caller could otherwise see rights there. A community administrator who holds no git right sees nothing else of a namespace's rights through this task, and sees these.
-- `breakGlass.justification` is disclosed to the same callers `reason` is, and additionally to every community administrator.
+- `breakGlass` is returned in full, justification included, wherever its record is returned.
 
 A `0.3` response is a valid `0.4` response, and a `0.3` request a valid `0.4` request; a `0.3` client that rejects unknown members fails on `breakGlass`. Released as a `MINOR` increment under the `draft` allowance of [SPEC §5.2](/SPEC.md#52-compatibility-rules). Everything else is unchanged from `0.3` and restated below, so that this version stands on its own.
 
@@ -92,7 +92,7 @@ The member sends the request to the VTC. See the top-level schema in [`payload.s
 
    - every **unratified break-glass record** — one carrying `breakGlass` with no `ratifiedBy` — in a namespace where the caller holds the community-administrator capability or `git.ns.admin`, or on a resource where the caller holds `git.repo.own`, explicitly or by implication. A VTC **MUST NOT** withhold these from those callers for any reason, community policy included.
 
-   **`reason` is omitted** from every record except those on a resource where the caller holds `git.repo.own` or `git.ns.admin`. A member reading their own grant on someone else's repository does not see why it was made. **`breakGlass`** is returned in full on every record that carries it — ratified ones included, since it is the record's history — except that `breakGlass.justification` is omitted under the same rule as `reason`, widened to every community administrator.
+   **`reason` is omitted** from every record except those on a resource where the caller holds `git.repo.own` or `git.ns.admin`. A member reading their own grant on someone else's repository does not see why it was made. **`breakGlass`** is returned in full, justification included, on every record that carries it — ratified ones included, since it is the record's history. Everyone this task shows such a record to is an administrator of its namespace, an owner of its resource, or the member who broke the glass, all of whom the justification was written for.
 4. **`accounts`** — every forge account linked to the caller's own DID; with `resource`, only the one on `resource`'s forge. A VTC **MUST NOT** return an account linked to any other DID in this member, and **MUST** return an empty array when the caller has none.
 
 A resource that matches nothing yields empty lists, not an error. This family deliberately has no separate read-one task: a repository's existence on a forge is not the VTC's to assert, and an empty answer and a missing repository mean the same thing to a caller of this task — the VTC governs nothing there.
