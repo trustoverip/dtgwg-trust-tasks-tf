@@ -21,17 +21,9 @@ export type ForgeEvent =
   | BindCompleted
   | RoleMapReported;
 /**
- * The role `git.repo.own` projects to.
+ * A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.
  */
 export type MappedRole = "none" | "read" | "triage" | "write" | "maintain" | "admin";
-/**
- * The role `git.repo.maintain` projects to.
- */
-export type MappedRole1 = "none" | "read" | "triage" | "write" | "maintain" | "admin";
-/**
- * The role `git.commit.sign` projects to. `none` is fork-based contribution.
- */
-export type MappedRole2 = "none" | "read" | "triage" | "write" | "maintain" | "admin";
 
 /**
  * The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees; or reports the role map it projects with.
@@ -112,6 +104,9 @@ export interface BindCompleted {
   ownerId: ForgeId;
   kind: "organization" | "user";
 }
+/**
+ * `roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`.
+ */
 export interface RoleMapReported {
   type: "roleMapReported";
   roleMap: RoleMap;
@@ -122,7 +117,7 @@ export interface RoleMapReported {
    */
   repos?: {
     resource: RepoResource;
-    roleMap: RoleMap1;
+    roleMap: RoleMap;
   }[];
   /**
    * Repositories whose forge roles the bridge last projected under a different map from the one it now applies to them. Absent or empty: none.
@@ -132,20 +127,12 @@ export interface RoleMapReported {
   stale?: RepoResource[];
 }
 /**
- * The map the bridge projects every repository in the namespace with, except those listed in `repos`.
+ * The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.
  */
 export interface RoleMap {
   own: MappedRole;
-  maintain: MappedRole1;
-  commit: MappedRole2;
-}
-/**
- * The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.
- */
-export interface RoleMap1 {
-  own: MappedRole;
-  maintain: MappedRole1;
-  commit: MappedRole2;
+  maintain: MappedRole;
+  commit: MappedRole;
 }
 /**
  * The VTC has recorded the event. Nothing else is returned.
@@ -452,8 +439,7 @@ export const PAYLOAD_SCHEMA = {
               "const": "roleMapReported"
             },
             "roleMap": {
-              "$ref": "#/$defs/RoleMap",
-              "description": "The map the bridge projects every repository in the namespace with, except those listed in `repos`."
+              "$ref": "#/$defs/RoleMap"
             },
             "repos": {
               "type": "array",
@@ -485,7 +471,8 @@ export const PAYLOAD_SCHEMA = {
                 "$ref": "#/$defs/RepoResource"
               }
             }
-          }
+          },
+          "description": "`roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`."
         }
       ]
     },
@@ -517,7 +504,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "RoleMap": {
       "title": "RoleMap",
-      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
+      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -527,16 +514,13 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "own": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.repo.own` projects to."
+          "$ref": "#/$defs/MappedRole"
         },
         "maintain": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.repo.maintain` projects to."
+          "$ref": "#/$defs/MappedRole"
         },
         "commit": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.commit.sign` projects to. `none` is fork-based contribution."
+          "$ref": "#/$defs/MappedRole"
         }
       }
     },
@@ -896,8 +880,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "const": "roleMapReported"
             },
             "roleMap": {
-              "$ref": "#/$defs/RoleMap",
-              "description": "The map the bridge projects every repository in the namespace with, except those listed in `repos`."
+              "$ref": "#/$defs/RoleMap"
             },
             "repos": {
               "type": "array",
@@ -929,7 +912,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "$ref": "#/$defs/RepoResource"
               }
             }
-          }
+          },
+          "description": "`roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`."
         }
       ]
     },
@@ -961,7 +945,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "RoleMap": {
       "title": "RoleMap",
-      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
+      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -971,16 +955,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "own": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.repo.own` projects to."
+          "$ref": "#/$defs/MappedRole"
         },
         "maintain": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.repo.maintain` projects to."
+          "$ref": "#/$defs/MappedRole"
         },
         "commit": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.commit.sign` projects to. `none` is fork-based contribution."
+          "$ref": "#/$defs/MappedRole"
         }
       }
     },

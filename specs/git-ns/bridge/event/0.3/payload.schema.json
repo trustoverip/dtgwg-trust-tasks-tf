@@ -272,8 +272,7 @@
               "const": "roleMapReported"
             },
             "roleMap": {
-              "$ref": "#/$defs/RoleMap",
-              "description": "The map the bridge projects every repository in the namespace with, except those listed in `repos`."
+              "$ref": "#/$defs/RoleMap"
             },
             "repos": {
               "type": "array",
@@ -305,7 +304,8 @@
                 "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoResource"
               }
             }
-          }
+          },
+          "description": "`roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`."
         }
       ]
     },
@@ -337,7 +337,7 @@
     },
     "RoleMap": {
       "title": "RoleMap",
-      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
+      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -347,16 +347,13 @@
       ],
       "properties": {
         "own": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.repo.own` projects to."
+          "$ref": "#/$defs/MappedRole"
         },
         "maintain": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.repo.maintain` projects to."
+          "$ref": "#/$defs/MappedRole"
         },
         "commit": {
-          "$ref": "#/$defs/MappedRole",
-          "description": "The role `git.commit.sign` projects to. `none` is fork-based contribution."
+          "$ref": "#/$defs/MappedRole"
         }
       }
     }
