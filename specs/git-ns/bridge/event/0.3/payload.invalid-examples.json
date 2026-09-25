@@ -1,0 +1,138 @@
+[
+  {
+    "note": "`event.type` is one of the nine forge-neutral types; forge webhook names are translated, never forwarded.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "repository.renamed",
+        "forgeId": "1"
+      }
+    }
+  },
+  {
+    "note": "A rename names both resources.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "repoRenamed",
+        "forgeId": "1",
+        "to": "github.com/acme/new"
+      }
+    }
+  },
+  {
+    "note": "`event` is required.",
+    "payload": {
+      "namespace": "ns_1",
+      "drift": []
+    }
+  },
+  {
+    "note": "A drift item's type is one of the drift types.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "installationRemoved"
+      },
+      "drift": [
+        {
+          "type": "somethingOdd",
+          "resource": "github.com/acme/widgets"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A role-map report carries the map.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported"
+      }
+    }
+  },
+  {
+    "note": "A role map has no member for `git.ns.admin`: a namespace admin projects to no forge role, whatever a bridge is configured with.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none",
+          "nsAdmin": "admin"
+        }
+      }
+    }
+  },
+  {
+    "note": "A role map names all three rights.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain"
+        }
+      }
+    }
+  },
+  {
+    "note": "Roles are levels of the bridge's forge-neutral ladder, not a forge's own names.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "owner",
+          "maintain": "maintain",
+          "commit": "none"
+        }
+      }
+    }
+  },
+  {
+    "note": "A per-repository map names one repository, not a namespace.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "repos": [
+          {
+            "resource": "github.com/acme",
+            "roleMap": {
+              "own": "admin",
+              "maintain": "maintain",
+              "commit": "none"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "note": "`stale` lists each repository once.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "stale": [
+          "github.com/acme/widgets",
+          "github.com/acme/widgets"
+        ]
+      }
+    }
+  }
+]

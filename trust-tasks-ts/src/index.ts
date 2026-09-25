@@ -147,6 +147,7 @@ export * as GitNsAccountLinkStatus_v0_1 from "./git-ns/account/link-status/0.1/p
 export * as GitNsAccountLink_v0_1 from "./git-ns/account/link/0.1/payload.js";
 export * as GitNsBridgeEvent_v0_1 from "./git-ns/bridge/event/0.1/payload.js";
 export * as GitNsBridgeEvent_v0_2 from "./git-ns/bridge/event/0.2/payload.js";
+export * as GitNsBridgeEvent_v0_3 from "./git-ns/bridge/event/0.3/payload.js";
 export * as GitNsBridgeJob_v0_1 from "./git-ns/bridge/job/0.1/payload.js";
 export * as GitNsBridgeJob_v0_2 from "./git-ns/bridge/job/0.2/payload.js";
 export * as GitNsBridgeJob_v0_3 from "./git-ns/bridge/job/0.3/payload.js";
@@ -169,6 +170,7 @@ export * as GitNsRightGrant_v0_1 from "./git-ns/right/grant/0.1/payload.js";
 export * as GitNsRightGrant_v0_2 from "./git-ns/right/grant/0.2/payload.js";
 export * as GitNsRightRevoke_v0_1 from "./git-ns/right/revoke/0.1/payload.js";
 export * as GitNsRightRevoke_v0_2 from "./git-ns/right/revoke/0.2/payload.js";
+export * as GitNsRolesReproject_v0_1 from "./git-ns/roles/reproject/0.1/payload.js";
 export * as GitNsView_v0_1 from "./git-ns/view/0.1/payload.js";
 export * as GitNsView_v0_2 from "./git-ns/view/0.2/payload.js";
 export * as GitNsView_v0_3 from "./git-ns/view/0.3/payload.js";

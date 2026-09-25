@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/roles/reproject/0.1",
+  "title": "Git Namespaces — Re-project Roles — payload",
+  "description": "A community administrator, or a namespace admin, has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resource"
+  ],
+  "properties": {
+    "resource": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Resource",
+      "description": "A namespace (`<forge>/<owner>`): every active or orphaned repository in it. A repository (`<forge>/<owner>/<repo>`): that repository only."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, in the caller's words. Kept with the audit record."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Re-project Roles — response payload",
+      "description": "The repositories the VTC queued a projectRoles job for.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repos"
+      ],
+      "properties": {
+        "repos": {
+          "type": "array",
+          "maxItems": 10000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoResource"
+          },
+          "description": "Each repository a projectRoles job was queued for, with its complete desiredRoles. Empty: the namespace has no active or orphaned repository."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
