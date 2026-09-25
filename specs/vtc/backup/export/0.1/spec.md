@@ -51,7 +51,13 @@ It is the counterpart of [`vtc/backup/import`](../../import/0.1/).
 
 Producer: supply `password` (≥ 12 characters). Set `includeAudit` only when the audit log is wanted — it is large and carries plaintext DIDs.
 
-Consumer: verify the super-admin capability. Return the envelope under a named `envelope` member rather than as the bare response body — the registry response convention requires `additionalProperties: false` and an `ext` extension point, and neither can be attached to a bare `$ref`. Reject a password under 12 characters with `passwordTooShort` **before** doing any work. Derive the key with Argon2id, encrypt the payload with AES-256-GCM, and return the envelope with `kdf` and `encryption` populated so it is decryptable without reference to this specification's defaults. Record an audit event naming the keyspace count and the community DID.
+Consumer: verify the super-admin capability. Return the envelope under a named `envelope` member rather than as the bare response body — the registry response convention requires `additionalProperties: false` and an `ext` extension point, and neither can be attached to a bare `$ref`. Reject a password under 12 characters with `passwordTooShort` **before** doing any work. Derive the key with Argon2id, encrypt the payload with AES-256-GCM, and return the envelope with `kdf` and `encryption` populated so it is decryptable without reference to this specification's defaults. Record an audit event naming the keyspace count and the community DID, durably and **before** the envelope is returned; a consumer that cannot record it **MUST** refuse the export, since a copy released unrecorded cannot be recalled.
+
+## Channel requirement
+
+This task **MUST** be carried over a channel confidential end-to-end between the producer and the recipient: one on which the producer encrypts to the recipient itself, such as the DIDComm binding with authenticated encryption, or the TSP binding. The request carries `password` and the response is the envelope it opens, which contains the community's signing key bundle. A party that can read both holds the community's keys. A channel confidential only hop by hop does not qualify, the HTTPS binding included: TLS terminates wherever the recipient's operator terminates it (a load balancer, an ingress, a sidecar), and the plaintext document exists there.
+
+A recipient **MUST** refuse this task with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) when it arrives over any other channel. It refuses after establishing entitlement and before serializing any state. The refusal **SHOULD** name the bindings the recipient accepts, since the producer's remedy is to send the same request again over one of them.
 
 ## Security & Privacy
 

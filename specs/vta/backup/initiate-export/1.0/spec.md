@@ -205,7 +205,7 @@ The producer's identifier must be **stable across the bundle's lifecycle**, beca
 
 The staged bytes and the token are `exchange`-scoped: they exist for one bundle's slot and are collected at `expiresAt` if nothing else ends them first. Recipients **SHOULD** keep that slot short — long enough for a download, not for a forgotten bundle to linger as a fetchable copy of the agent — and **SHOULD** cap the number a single operator may hold open, since each is another live address.
 
-The recipient **SHOULD** record that an export was initiated, by whom and when, and **SHOULD** retain that record beyond the bundle. "A copy of this agent was made, on this date, at this operator's request" is the one fact about an export that stays relevant after the bundle is gone, and it is what a later investigation into a leaked copy has to start from.
+The recipient **MUST** record that an export was initiated, by whom and when, durably and **before** it returns the descriptor, and **MUST** refuse the export when it cannot; it **SHOULD** retain that record beyond the bundle. A copy released unrecorded cannot be recalled, so the record comes first. "A copy of this agent was made, on this date, at this operator's request" is the one fact about an export that stays relevant after the bundle is gone, and it is what a later investigation into a leaked copy has to start from.
 
 The `password` is not retained at all, at any class.
 
