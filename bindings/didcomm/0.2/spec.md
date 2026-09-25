@@ -128,6 +128,8 @@ Because the transport is one-way, this binding expresses **no** counterpart for 
 
 A *Trust Task document* delivered over an authcrypt'd DIDComm envelope between two end-to-end parties enjoys integrity and sender authentication from the DIDComm layer. Per [SPEC §4.7.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#471-when-to-include-a-proof), the in-band `proof` member **MAY** be omitted in that case.
 
+A *consumer* **MAY** decline this allowance and require an in-band `proof` on every *Trust Task document* it accepts over this binding, rejecting one without a `proof` with `proofRequired` and one whose verified `proof` does not identify the transport-authenticated sender with `identityMismatch` ([SPEC §4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)). A consumer that authorizes a request on the sender's identity **SHOULD** do so. A *producer* **SHOULD** therefore include `proof` on every document it sends over this binding, so that the document is accepted whichever choice the consumer made.
+
 A *Trust Task specification* that declares `proof` as **REQUIRED** ([SPEC §7.3 item 8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#73-specification-requirements)) overrides this binding-level allowance: the in-band `proof` is mandatory regardless of transport, because such specifications produce documents intended to be replayable past the original transport hop.
 
 ## 6. Transport security profile
