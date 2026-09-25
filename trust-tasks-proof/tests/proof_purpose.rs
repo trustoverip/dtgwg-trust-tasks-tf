@@ -295,6 +295,24 @@ async fn an_embedded_method_verifies_for_its_relationship_only() {
         .is_err());
 }
 
+/// A reference under the purpose's relationship resolves only against the
+/// document's `verificationMethod` set, never to a method embedded under a
+/// different relationship: that method was defined for that purpose alone.
+#[tokio::test]
+async fn a_reference_does_not_borrow_a_method_embedded_under_another_relationship() {
+    let vm = format!("{DID}#key-1");
+    let verifier = verifier_with(
+        DID,
+        json!({ "id": DID, "keyAgreement": [method(&vm, DID)], "assertionMethod": [vm] }),
+    )
+    .await;
+    let err = verifier
+        .verify_raw(&signed(DID, &vm, "assertionMethod").await)
+        .await
+        .unwrap_err();
+    refusal(err, "not defined under verificationMethod");
+}
+
 // ─── did:key and did:peer ───────────────────────────────────────────────
 
 fn did_key() -> (String, String) {

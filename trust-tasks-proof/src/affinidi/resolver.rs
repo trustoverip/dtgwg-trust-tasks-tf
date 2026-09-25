@@ -166,28 +166,20 @@ fn authorised_method(
             )));
         }
         Some(Some(method)) => method,
-        // A reference names a method defined elsewhere in the document:
-        // under `verificationMethod`, or embedded in another relationship.
+        // A reference names a method defined in the document's
+        // `verificationMethod` set. It is never resolved to a method embedded
+        // under another relationship: that method is authorised for that
+        // relationship only, and borrowing it here would let the purpose's
+        // list vouch for a key defined for a different purpose.
         Some(None) => doc
             .verification_method
             .iter()
             .find(|m| names_vm(m.id.as_str()))
             .cloned()
-            .or_else(|| {
-                [
-                    &doc.authentication,
-                    &doc.assertion_method,
-                    &doc.capability_invocation,
-                    &doc.capability_delegation,
-                    &doc.key_agreement,
-                ]
-                .into_iter()
-                .flatten()
-                .find_map(embedded)
-            })
             .ok_or_else(|| {
                 DataIntegrityError::Resolver(
-                    "verificationMethod is referenced but not defined in its DID document"
+                    "verificationMethod is referenced but not defined under verificationMethod \
+                     in its DID document"
                         .to_string(),
                 )
             })?,
