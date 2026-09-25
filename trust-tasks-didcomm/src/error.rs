@@ -148,6 +148,13 @@ impl DidcommError {
             | DidcommError::SenderKidMismatch { .. }
             | DidcommError::SenderNotAllowed { .. }
             | DidcommError::NotAuthcryptJwe(_) => RejectReason::ProofRequired,
+            // The library refused the envelope because its sender (authcrypt
+            // `skid`/`apu`) or signer is not bound to the key that verified
+            // it: an authentication failure, like the checks above.
+            DidcommError::Upstream(
+                affinidi_messaging_didcomm::DIDCommError::SenderKeyBinding(_)
+                | affinidi_messaging_didcomm::DIDCommError::SignerKeyBinding(_),
+            ) => RejectReason::ProofRequired,
             other => RejectReason::MalformedRequest {
                 reason: other.to_string(),
             },
