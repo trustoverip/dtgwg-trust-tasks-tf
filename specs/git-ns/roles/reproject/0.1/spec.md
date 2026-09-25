@@ -2,7 +2,7 @@
 slug: git-ns/roles/reproject
 version: "0.1"
 title: "Git Namespaces — Re-project Roles"
-summary: "A community administrator, or a namespace admin, has the VTC send its bridge the complete forge roles of one repository or of every repository in a namespace again, so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes."
+summary: "A community administrator, a namespace admin, or a repository's owner has the VTC send its bridge the complete forge roles of a repository or a whole namespace again, so the forge matches the VTC's rights under the bridge's current role map. No right changes."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: governance
@@ -13,7 +13,7 @@ keywords:
   - role-map
   - reconciliation
 parties:
-  - role: administrator
+  - role: requester
     requirement: REQUIRED
     member: issuer
     identifierScope: pairwise
@@ -23,7 +23,7 @@ parties:
     identifierScope: public
 proofRequirement:
   requirement: REQUIRED
-  rationale: "A re-projection has the bridge change people's roles on the forge with the community's credentials. It must be attributable to the administrator who asked on every transport, and it is part of the namespace's audit history."
+  rationale: "A re-projection has the bridge change people's roles on the forge with the community's credentials. It must be attributable to whoever asked on every transport, and it is part of the namespace's audit history."
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: "Placing the request in time lets the VTC refuse a replay. A replay would do no harm — re-projecting is convergent — but it would put a decision in the audit history that nobody made at that time."
@@ -74,7 +74,7 @@ related:
 
 In a bridge-mode namespace the VTC **projects** its rights onto the forge: for each repository it sends the bridge a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md) `projectRoles` job listing everyone who should hold a forge role there and their right, and the bridge maps each right to a forge role with its **role map** and converges the forge. The VTC sends a repository's roles when they change — a grant, a revocation, a linked account, a departure — and not otherwise.
 
-So a change that alters what the rights *mean* on the forge, without altering any right, reaches a repository only at its next unrelated projection. The usual one is a change to the bridge's role map: a community that decides maintainers get `admin` on its Forgejo instance, or that committers on one repository get `write`. The bridge reports such a change, and each repository it leaves projected under the old map, with [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.3/spec.md) `roleMapReported`, and a VTC re-projects those repositories itself. This task is the same re-projection, asked for: by an administrator who changed the map with a bridge too old to report it, who wants a forge they suspect has drifted brought back into line, or who is simply not willing to wait.
+So a change that alters what the rights *mean* on the forge, without altering any right, reaches a repository only at its next unrelated projection. The usual one is a change to the bridge's role map: a community that decides maintainers get `admin` on its Forgejo instance, or that committers on one repository get `write`. The bridge reports such a change, and each repository it leaves projected under the old map, with [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.3/spec.md) `roleMapReported`, and a VTC re-projects those repositories itself. This task is the same re-projection, asked for: by an administrator who changed the map with a bridge too old to report it, by an owner or administrator who wants a forge they suspect has drifted brought back into line, or by anyone entitled who is simply not willing to wait.
 
 It changes no right and publishes nothing. It sends the bridge exactly what the VTC's records already say.
 
@@ -92,14 +92,14 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-The entitlement is **either** of:
+The entitlement depends on what `resource` names:
 
-- the **community-administrator capability** in the VTC's own access control — the one [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.1/spec.md) requires; or
-- **`git.ns.admin` on the namespace** — the namespace `resource` names, or the one containing the repository it names — held by explicit record, live at the instant the VTC evaluates the request.
+- **A namespace** — the **community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.1/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record, live at the instant the VTC evaluates the request. Re-projecting a namespace acts on everyone with a role on every repository in it, which is a namespace-level act: owning some of its repositories does not suffice.
+- **A repository** — either of the above for its namespace, or **`git.repo.own` on that repository**, held explicitly or by implication ([the rights model](../../../../git-ns/right/grant/0.2/spec.md#the-rights-model)), live at that instant. An owner already decides who holds a right on the repository, and a re-projection decides nothing: it asks the bridge to apply what the repository's records already say.
 
-Nothing else suffices: not `git.repo.own` on the repository, nor any right implied rather than recorded. A re-projection acts on every person with a role on the repositories it covers, which is a namespace-level act, not an owner's.
+Nothing else suffices: not `git.repo.maintain`, not `git.commit.sign`, and not `git.repo.own` on another repository.
 
-The community-administrator capability grants nothing *in* a namespace ([`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md)), and it does not here either: a re-projection decides no right. It is allowed this task because keeping the forge in line with the VTC's records is operating the VTC, which is the capability's own business, and because a namespace whose forge has drifted is exactly where its admins may be absent or unsure. The `proof` establishes which administrator asked, not that they may; that is checked against the VTC's access control and records ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
+The community-administrator capability grants nothing *in* a namespace ([`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md)), and it does not here either: a re-projection decides no right. It is allowed this task because keeping the forge in line with the VTC's records is operating the VTC, which is the capability's own business, and because a namespace whose forge has drifted is exactly where its admins may be absent or unsure. The `proof` establishes who asked, not that they may; that is checked against the VTC's access control and records ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
 ## Definitions
 
@@ -111,10 +111,10 @@ The community-administrator capability grants nothing *in* a namespace ([`git-ns
 
 ## Request
 
-The administrator sends the request to the VTC. See the top-level schema in [`payload.schema.json`](payload.schema.json). A conforming VTC:
+The requester sends the request to the VTC. See the top-level schema in [`payload.schema.json`](payload.schema.json). A conforming VTC:
 
 1. Resolves `resource` to a namespace: the namespace it names, or the one containing the repository it names. Refuses one it does not have with `git-ns:unknownNamespace`, and a `pending` one with `git-ns:namespaceNotBound`.
-2. Checks the entitlement ([Authorization](#authorization)) and refuses a caller without it with `permissionDenied`.
+2. Checks the entitlement ([Authorization](#authorization)) for what `resource` names, and refuses a caller without it with `permissionDenied`. A caller entitled to nothing in the namespace is refused before step 4, so an unrecorded repository name tells them nothing.
 3. Refuses a manual-mode namespace with `git-ns/roles/reproject:manualMode`, and one whose bridge reported `installationRemoved` and has not since reported access again with `git-ns/roles/reproject:noForgeAccess`.
 4. For a repository `resource`, refuses one it does not record with `git-ns:unknownRepo`, and one not `active` or `orphaned` with `git-ns:repoNotActive`.
 5. Evaluates the community's git-namespace policy, which may refuse with `git-ns:policyDenied` and may not override the rules above.
@@ -154,7 +154,7 @@ Dana, a community administrator, changed the Forgejo bridge's configuration so t
 
 ### Re-projecting one repository
 
-Alice, a namespace admin, suspects someone's role on `widgets` was changed by hand and the change was missed.
+Alice, who owns `widgets`, suspects someone's role on `widgets` was changed by hand and the change was missed.
 
 ```json
 {

@@ -7,7 +7,7 @@ import type { Ext, RepoResource, Resource } from "../../../../_shared/components
 
 
 /**
- * A community administrator, or a namespace admin, has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.
+ * A community administrator, a namespace admin, or (for one repository) its owner has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.
  */
 export interface GitNamespacesReProjectRolesPayload {
   /**
@@ -61,7 +61,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/git-ns/roles/reproject/0.1",
   "title": "Git Namespaces — Re-project Roles — payload",
-  "description": "A community administrator, or a namespace admin, has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.",
+  "description": "A community administrator, a namespace admin, or (for one repository) its owner has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.",
   "type": "object",
   "additionalProperties": false,
   "required": [
