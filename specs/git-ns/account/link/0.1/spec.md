@@ -88,7 +88,7 @@ The member sends the request to the VTC. See the top-level schema in [`payload.s
 1. Refuses a non-member with `permissionDenied`.
 2. Refuses a forge on which it has no bridge-mode namespace with `git-ns/account/link:unsupportedForge`: there is no bridge to complete the flow, and nothing to project to.
 3. Sends that namespace's bridge a `beginAccountLink` job for the caller ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.1/spec.md)) and returns what the bridge answers, under a new `linkId`.
-4. When the bridge reports `accountLinked`, refuses the link if the forge account's id is already linked to another member (the attempt ends `failed`). Otherwise records the account against the caller's DID for that forge, replacing any account previously linked there, and **SHOULD** issue the member a credential attesting the binding of their DID to the account's forge id.
+4. When the bridge reports `accountLinked`, refuses the link if the forge account's id is already linked to another member — one who has not left, whether or not their access is current (the attempt ends `failed`). The check and the recording **MUST** be atomic with respect to every other link and unlink, so that two members completing links to the same account at once cannot both succeed. Otherwise records the account against the caller's DID for that forge, replacing any account previously linked there, and **SHOULD** issue the member a credential attesting the binding of their DID to the account's forge id.
 
 A member may link one account per forge, and accounts on several forges, and removes one with [`git-ns/account/unlink`](../../../../git-ns/account/unlink/0.1/spec.md). The forge id is authoritative; the login is display only, because logins are renamed and re-registered.
 

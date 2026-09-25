@@ -756,7 +756,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::NOT_LINKED];
 pub mod error_codes {
     /// `git-ns/account/unlink:notLinked`
     ///
-    /// No account is linked to the caller's DID on this forge, or `accountId` was given and the account linked there now is a different one.
+    /// No account is linked to the caller's DID on this forge — the answer for any caller with nothing linked, member or not — or `accountId` was given and the account linked there now is a different one.
     ///
     /// Declared `retryable: false`.
     pub const NOT_LINKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

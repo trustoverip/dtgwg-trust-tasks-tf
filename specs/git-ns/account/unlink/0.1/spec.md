@@ -38,13 +38,13 @@ exposure:
   discloses: metadata
   ingests: metadata
   actsAsSubject: false
-  rationale: "The request carries a forge host and, optionally, a forge account id. The response returns the account that was unlinked, which is the member's own."
+  rationale: "The request carries a forge host and, optionally, a forge account id. The response returns the account that was unlinked, which is the caller's own; a caller with nothing linked learns only that."
 retention:
   class: exchange
   rationale: "The request is needed only to perform it. What remains is an audit record that the member unlinked an account on that forge, without the account."
 errorCodes:
   - code: git-ns/account/unlink:notLinked
-    meaning: "No account is linked to the caller's DID on this forge, or `accountId` was given and the account linked there now is a different one."
+    meaning: "No account is linked to the caller's DID on this forge — the answer for any caller with nothing linked, member or not — or `accountId` was given and the account linked there now is a different one."
     retryable: false
 related:
   - git-ns/account/link
@@ -76,7 +76,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-The entitlement is **membership of the community**, and the binding acted on is the caller's own: there is no subject member. A member unlinks only the account linked to their own DID. The consent class is the same as linking's — `normal` in the delegation pillar's terms — because the task removes access from the caller alone and linking again restores it.
+The entitlement is **being the DID the account is linked to**: there is no subject member, and a caller unlinks only the account linked to their own DID. That includes a member whose access has lapsed but who has not left — their link still stands, projecting nothing, and removing it is theirs to do. A caller with no link, a non-member included, is answered as having nothing linked, so the answer reveals nothing about who is a member. The consent class is the same as linking's — `normal` in the delegation pillar's terms — because the task removes access from the caller alone and linking again restores it.
 
 A community administrator removing another member's link — say, for an account reported compromised — is **not defined by this version**. It is a different entitlement over a different subject, with its own consent class and notice to the member, and a later version may add it with a `subject` member. Until then a community administrator who needs a member's forge roles withdrawn revokes the rights, or resolves the drift, instead.
 
@@ -92,8 +92,8 @@ A community administrator removing another member's link — say, for an account
 
 The member sends the request to the VTC. See the top-level schema in [`payload.schema.json`](payload.schema.json). A conforming VTC:
 
-1. Refuses a non-member with `permissionDenied`.
-2. Refuses with `git-ns/account/unlink:notLinked` when no account is linked to the caller's DID on `forge`, or when `accountId` is present and is not the id of the account linked there. A client that means "make sure nothing is linked" may treat this refusal as done.
+1. Refuses with `git-ns/account/unlink:notLinked` when no account is linked to the caller's DID on `forge` — whoever the caller is, member or not — or when `accountId` is present and is not the id of the account linked there. A client that means "make sure nothing is linked" may treat this refusal as done. The VTC **MUST NOT** answer a non-member differently from a member with nothing linked.
+2. Performs items 3 to 6 atomically with respect to link completion ([`git-ns/account/link`](../../../../git-ns/account/link/0.1/spec.md), *Request* item 4), so that a link completing at the same moment is either unlinked, when it is the account named, or kept.
 3. Deletes the binding of the caller's DID to that account, and **MUST** delete with it anything else it holds joining the two — a credential it issued attesting the binding **MUST** be revoked.
 4. Re-projects every bridge-mode namespace on `forge`: it sends each namespace's bridge the complete `desiredRoles` of [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md) for the namespace itself and for each of its repositories, computed without the binding. The account is not listed in any of them, and under that task's rule — *people not listed lose any role the bridge manages* — the bridge withdraws exactly the roles it gave the account: its repository roles, and its organisation role where the namespace projects one. The VTC **SHOULD** send these projections promptly rather than wait for a periodic pass, since the member asked for the access to end. A namespace on the forge that is `manual`-mode, or has no bridge, has nothing to re-project.
 5. **MUST NOT** name the account in `removeAccounts` for this. A role the bridge did not give was not given through the link, and whether the account keeps it is for the repository's owners: the bridge reports it as `roleAdded` drift for an account linked to no member, and an owner reverts it with [`git-ns/drift/resolve`](../../../../git-ns/drift/resolve/0.2/spec.md) if they choose. The same happens to a role the bridge gave but no longer remembers giving.
