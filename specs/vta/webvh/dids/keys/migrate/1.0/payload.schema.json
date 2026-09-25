@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/keys/migrate/1.0",
+  "title": "VTA WebVH DIDs Keys Migrate — payload",
+  "description": "Move a legacy did:webvh — one key in both authentication and assertionMethod, holding the log's update authority — onto key roles in a single log entry (VTI-KEY-140).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "attestationKeyTypes",
+    "gracePeriodEnd"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID whose keys change."
+    },
+    "attestationKeyTypes": {
+      "type": "array",
+      "items": {
+        "$ref": "../../../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "One attestation key is generated per entry — for example `[\"ed25519\", \"mldsa44\"]` for a classical key and a post-quantum key signing as a proof set."
+    },
+    "operationalKeyType": {
+      "$ref": "../../../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm of the new operational key. Absent means `ed25519`."
+    },
+    "legacyOperationalUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "How long the legacy key may stay in `authentication`, bound to `operational`, before the VTA removes it (VTI-KEY-141). Absent means it is removed from every relationship in the migration entry itself."
+    },
+    "gracePeriodEnd": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The end of the grace period recorded in the entry (VTI-KEY-143): until then a verifier MAY accept an attestation artefact under the legacy key; after it, none. MUST NOT be later than the latest expiry of any artefact the legacy key signed, nor beyond the community's maximum membership period."
+    },
+    "expectedVersionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optimistic-concurrency precondition: the versionId the caller based this change on (for example `keys/list`'s `versionId`). The VTA MUST refuse the change with `vta/webvh/dids:versionConflict` if the DID's latest entry no longer matches."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and return the preview without writing anything but the plan (CONVENTIONS.md §3.1). Absent reads as false."
+    },
+    "previewId": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Apply exactly the plan a previous dry run of this same request returned. The VTA MUST apply that plan or nothing, and MUST refuse with `vta/webvh/dids:previewStale` if it has expired, the log has moved past its base, or this request differs from the one previewed. An approval (step-up or quorum) is bound to this identifier."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why the change is being made, for the audit trail and for other approvers. Never published."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Keys Migrate — response payload",
+      "description": "Success response. Type https://trusttasks.org/spec/vta/webvh/dids/keys/migrate/1.0#response. A refusal is a `trust-task-error` document, never this.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "outcome",
+        "keys"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleChangeOutcome"
+        },
+        "preview": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/DidDocumentPreview",
+          "description": "Present when `outcome` is `preview` or `pendingApproval`: the plan, and what an approval is bound to."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "Present when `outcome` is `applied`: the versionId of the appended entry. Pass it as the next change's `expectedVersionId`."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RoleKey"
+          },
+          "description": "Every key whose state this change sets or would set, after the change."
+        },
+        "rotation": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RotationRecord"
+        },
+        "approvals": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleApprovalState",
+          "description": "Present when `outcome` is `pendingApproval`."
+        },
+        "serverless": {
+          "type": "boolean",
+          "description": "True when no hosting server holds this DID. The caller must publish `newLogEntry` itself; until it does, resolvers still see the previous version."
+        },
+        "newLogEntry": {
+          "type": "string",
+          "description": "The appended entry as JSON text. Present when `serverless` is true."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

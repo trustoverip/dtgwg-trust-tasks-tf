@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0",
+  "title": "VTA WebVH DIDs Keys List — payload",
+  "description": "List a did:webvh's keys by role, with their state, and optionally the DID's rotation history and any changes awaiting approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID whose key roles are listed."
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRole"
+      },
+      "uniqueItems": true,
+      "minItems": 1,
+      "description": "Return only these roles. Absent returns every role. Present-but-empty is refused by the schema rather than read as 'every role' — emptiness is never a wildcard."
+    },
+    "includeEnded": {
+      "type": "boolean",
+      "description": "Include `retired` and `revoked` keys. Absent reads as false. `revoked` keys still published in `verificationMethod` are always included, because the document shows them to anyone who resolves it."
+    },
+    "includeHistory": {
+      "type": "boolean",
+      "description": "Include the DID's rotation history. Absent reads as false."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Keys List — response payload",
+      "description": "Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "versionId",
+        "projection",
+        "roles",
+        "unassigned"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "versionId": {
+          "type": "string",
+          "description": "The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer."
+        },
+        "projection": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleProjection"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RoleSummary"
+          },
+          "description": "One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'."
+        },
+        "unassigned": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UnassignedKey"
+          },
+          "description": "Published keys the VTA has no role for — a DID created before key roles (CONVENTIONS.md §10). Empty when the DID is fully migrated."
+        },
+        "rotations": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RotationRecord"
+          },
+          "description": "Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "UnassignedKey": {
+      "title": "UnassignedKey",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationMethod",
+        "keyType",
+        "publicKeyMultibase",
+        "relationships"
+      ],
+      "properties": {
+        "verificationMethod": {
+          "type": "string",
+          "minLength": 1
+        },
+        "keyType": {
+          "$ref": "../../../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType"
+        },
+        "publicKeyMultibase": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/DidVerificationRelationship"
+          },
+          "uniqueItems": true
+        },
+        "custody": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RoleKeyCustody"
+        }
+      }
+    }
+  }
+}

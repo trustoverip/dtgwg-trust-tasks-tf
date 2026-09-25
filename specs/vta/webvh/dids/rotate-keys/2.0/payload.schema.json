@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0",
+  "title": "VTA WebVH DIDs Rotate Keys — payload",
+  "description": "Rotate one key role of a did:webvh: stage a successor, activate it no sooner than every cached copy of the document can have seen it, and retire the predecessor at the end of an overlap. For the update role, move the log's update key to its committed successor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "role"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID whose keys change."
+    },
+    "role": {
+      "$ref": "../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRole",
+      "description": "The one role to rotate. Nothing outside it changes, except the update key every entry under pre-rotation moves (CONVENTIONS.md §8)."
+    },
+    "replace": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Verification methods of the role to rotate. Absent rotates every active key of the role; present-but-empty is refused by the schema, never read as 'all'. Not permitted for `update`."
+    },
+    "keyType": {
+      "$ref": "../../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm of the successor. Absent means each predecessor's own algorithm. Changing it is how a role moves to a new algorithm. Not permitted for `update`, whose successor is already committed."
+    },
+    "activatesAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the successor should begin to be used. The VTA MUST NOT activate it earlier than its publication plus the document's validity period (VTI-KEY-122), and uses that as the default. Not permitted for `update`."
+    },
+    "overlapUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End of the overlap: how long the predecessor stays published, and unused, after the successor activates. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap."
+    },
+    "autoRetire": {
+      "type": "boolean",
+      "description": "Whether the VTA retires the predecessor itself at `overlapUntil` (as a `keys/retire` it performs under this request's authorization, audited as `did.keys.autoRetire`). Absent reads as true. False leaves the predecessor `retiring` until someone retires it."
+    },
+    "preRotationCount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Successor update keys to commit. Absent keeps the current setting. `0` is not accepted: a durable node identity must keep a committed successor (CONVENTIONS.md §8)."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Operator-facing label for the successor keys. Never published."
+    },
+    "expectedVersionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optimistic-concurrency precondition: the versionId the caller based this change on (for example `keys/list`'s `versionId`). The VTA MUST refuse the change with `vta/webvh/dids:versionConflict` if the DID's latest entry no longer matches."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and return the preview without writing anything but the plan (CONVENTIONS.md §3.1). Absent reads as false."
+    },
+    "previewId": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Apply exactly the plan a previous dry run of this same request returned. The VTA MUST apply that plan or nothing, and MUST refuse with `vta/webvh/dids:previewStale` if it has expired, the log has moved past its base, or this request differs from the one previewed. An approval (step-up or quorum) is bound to this identifier."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why the change is being made, for the audit trail and for other approvers. Never published."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Rotate Keys — response payload",
+      "description": "Success response. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0#response. A refusal is a `trust-task-error` document, never this.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "outcome",
+        "keys"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleChangeOutcome"
+        },
+        "preview": {
+          "$ref": "../../../../_shared/0.3/did-key-roles.schema.json#/$defs/DidDocumentPreview",
+          "description": "Present when `outcome` is `preview` or `pendingApproval`: the plan, and what an approval is bound to."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "Present when `outcome` is `applied`: the versionId of the appended entry. Pass it as the next change's `expectedVersionId`."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RoleKey"
+          },
+          "description": "Every key whose state this change sets or would set, after the change."
+        },
+        "rotation": {
+          "$ref": "../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RotationRecord"
+        },
+        "approvals": {
+          "$ref": "../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleApprovalState",
+          "description": "Present when `outcome` is `pendingApproval`."
+        },
+        "serverless": {
+          "type": "boolean",
+          "description": "True when no hosting server holds this DID. The caller must publish `newLogEntry` itself; until it does, resolvers still see the previous version."
+        },
+        "newLogEntry": {
+          "type": "string",
+          "description": "The appended entry as JSON text. Present when `serverless` is true."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
