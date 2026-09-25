@@ -63,7 +63,7 @@ errorCodes:
     meaning: "No right the actor holds on this resource carries the authority to grant or revoke this right."
     retryable: false
   - code: git-ns:membersOnly
-    meaning: "`git.ns.admin` and `git.repo.create` go only to current members of the community, and the subject is not one."
+    meaning: "An elevated right goes only to a current member of the community holding standing in the VTC's access-control records, and the actor is not one."
     retryable: false
   - code: git-ns:policyDenied
     meaning: "The community's git-namespace policy refused the request after the fixed rules passed."
@@ -137,7 +137,7 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
 2. Refuses a resource inside no bound namespace with `git-ns:unknownNamespace`, and one inside a `pending` namespace with `git-ns:namespaceNotBound`. For a repository resource, refuses one it does not record with `git-ns:unknownRepo`, and one that is not `active`, `orphaned` or `pendingCreate` with `git-ns:repoNotActive`.
 3. Refuses a `resource` at the wrong level for `right` with `git-ns:scopeViolation` ([fixed rule 1](../../grant/0.3/spec.md#the-fixed-rules)).
 4. Checks the [authorization](#authorization) above. An actor who has neither entitlement is refused as `git-ns/right/grant` refuses them — `permissionDenied`, `git-ns:scopeViolation` or `git-ns:escalation` — except that an actor holding the community-administrator capability and asking for `git.ns.admin` on a namespace that is not headless is refused with `git-ns/right/break-glass:notHeadless`. As in `git-ns/namespace/reseat`, that refusal **MUST NOT** say who the namespace's admins are.
-5. Refuses an actor who is not a current member with `git-ns:membersOnly` ([fixed rule 5](../../grant/0.3/spec.md#the-fixed-rules)), for `git.ns.admin` and `git.repo.create`.
+5. Refuses an actor who is not a current member, holding standing in its access-control records, with `git-ns:membersOnly` ([fixed rule 5](../../grant/0.3/spec.md#the-fixed-rules)), for every elevated right.
 6. Where the actor already holds a live record of `right` on `resource` — ordinary or break-glass — **MUST** return it unchanged, and does nothing else: nothing is recorded, audited as a break-glass, or announced, because nothing changed. A break-glass for a right the actor holds only by implication is not a repeat; recording it explicitly is the point.
 7. Evaluates the community's git-namespace policy ([Policy](#policy)), which may refuse with `git-ns/right/break-glass:disabled` or `git-ns:policyDenied`, or defer the right's effect.
 8. Records the right: `subject` and `grantedBy` the actor, `grantedAt` now, **no `expiresAt`**, no `reason`, and `breakGlass` carrying `by` (the actor), `at` (now), `justification`, and `effectiveAt` where policy deferred it. Steps 4, 6 and 8 **MUST** be atomic with respect to every other change to the resource's rights and, for the second entitlement, to the namespace's `git.ns.admin` records, exactly as `git-ns/namespace/reseat` requires of its own check and write.

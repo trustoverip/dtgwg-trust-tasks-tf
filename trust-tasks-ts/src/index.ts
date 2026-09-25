@@ -164,6 +164,7 @@ export * as GitNsRepoArchive_v0_1 from "./git-ns/repo/archive/0.1/payload.js";
 export * as GitNsRepoArchive_v0_2 from "./git-ns/repo/archive/0.2/payload.js";
 export * as GitNsRepoCreate_v0_1 from "./git-ns/repo/create/0.1/payload.js";
 export * as GitNsRepoCreate_v0_2 from "./git-ns/repo/create/0.2/payload.js";
+export * as GitNsRepoCreate_v0_3 from "./git-ns/repo/create/0.3/payload.js";
 export * as GitNsRepoTransfer_v0_1 from "./git-ns/repo/transfer/0.1/payload.js";
 export * as GitNsRepoTransfer_v0_2 from "./git-ns/repo/transfer/0.2/payload.js";
 export * as GitNsRightBreakGlassNotice_v0_1 from "./git-ns/right/break-glass-notice/0.1/payload.js";

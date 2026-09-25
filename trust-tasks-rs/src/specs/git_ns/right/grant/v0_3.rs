@@ -1441,7 +1441,7 @@ pub mod error_codes {
     };
     /// `git-ns:membersOnly`
     ///
-    /// `git.ns.admin` and `git.repo.create` go only to current members of the community, and the subject is not one.
+    /// An elevated right (`git.ns.admin`, `git.repo.create`, `git.repo.own`) goes only to a current member of the community, and is granted only by one; the subject or the actor is not one.
     ///
     /// Declared `retryable: false`.
     pub const MEMBERS_ONLY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
