@@ -1,0 +1,35 @@
+[
+  {
+    "note": "Missing credentialId.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol"
+    }
+  },
+  {
+    "note": "Empty subject — absent means the producer; empty means nothing.",
+    "payload": {
+      "credentialId": "c3RlcHVwLWNyZWQtY2Fyb2w",
+      "subject": ""
+    }
+  },
+  {
+    "note": "Array of credential ids — one credential per ceremony, each removal separately verified.",
+    "payload": {
+      "credentialId": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "credentialId": "c3RlcHVwLWNyZWQtY2Fyb2w",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

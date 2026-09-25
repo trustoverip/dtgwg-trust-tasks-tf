@@ -1,0 +1,37 @@
+[
+  {
+    "note": "Missing claimCode — the token alone never redeems an invite.",
+    "payload": {
+      "token": "inv_8f2c1d4e9a7b30568f2c1d4e9a7b3056a1b2c3d4"
+    }
+  },
+  {
+    "note": "Missing token.",
+    "payload": {
+      "claimCode": "7KQ4-MX2P-9TDA"
+    }
+  },
+  {
+    "note": "Token shorter than 16 characters — too little entropy to be an invite token.",
+    "payload": {
+      "token": "short",
+      "claimCode": "7KQ4-MX2P-9TDA"
+    }
+  },
+  {
+    "note": "subject in the request — the subject comes from the invite, never from the invitee.",
+    "payload": {
+      "token": "inv_8f2c1d4e9a7b30568f2c1d4e9a7b3056a1b2c3d4",
+      "claimCode": "7KQ4-MX2P-9TDA",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol"
+    }
+  },
+  {
+    "note": "purpose in the request — the purpose comes from the invite, never from the invitee.",
+    "payload": {
+      "token": "inv_8f2c1d4e9a7b30568f2c1d4e9a7b3056a1b2c3d4",
+      "claimCode": "7KQ4-MX2P-9TDA",
+      "purpose": "session"
+    }
+  }
+]

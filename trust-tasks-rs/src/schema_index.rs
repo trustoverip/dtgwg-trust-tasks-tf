@@ -81,6 +81,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response" => <crate::specs::auth::passkey::enroll::invite::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2" => <crate::specs::auth::passkey::enroll::invite::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response" => <crate::specs::auth::passkey::enroll::invite::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1" => <crate::specs::auth::passkey::enroll::redeem::finish::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1#response" => <crate::specs::auth::passkey::enroll::redeem::finish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/start/0.1" => <crate::specs::auth::passkey::enroll::redeem::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/start/0.1#response" => <crate::specs::auth::passkey::enroll::redeem::start::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1" => <crate::specs::auth::passkey::enroll::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response" => <crate::specs::auth::passkey::enroll::start::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -113,9 +125,17 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response" => <crate::specs::auth::passkey::revoke::finish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.2" => <crate::specs::auth::passkey::revoke::finish::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.2#response" => <crate::specs::auth::passkey::revoke::finish::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" => <crate::specs::auth::passkey::revoke::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response" => <crate::specs::auth::passkey::revoke::start::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/start/0.2" => <crate::specs::auth::passkey::revoke::start::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/start/0.2#response" => <crate::specs::auth::passkey::revoke::start::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/refresh/0.1" => <crate::specs::auth::refresh::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
@@ -2131,6 +2151,24 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::enroll::invite::v0_2::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::enroll::redeem::finish::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/start/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::enroll::redeem::start::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::passkey::enroll::start::v0_1::Payload,
@@ -2177,9 +2215,21 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::revoke::finish::v0_2::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::passkey::revoke::start::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/start/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::revoke::start::v0_2::Payload,
             >())
         }
         #[cfg(feature = "auth")]
@@ -4594,6 +4644,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::auth::passkey::enroll::invite::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2" => {
+            Some(crate::specs::auth::passkey::enroll::invite::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::redeem::finish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/redeem/start/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::redeem::start::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1" => {
             Some(crate::specs::auth::passkey::enroll::start::v0_1::ERROR_CODES)
         }
@@ -4626,8 +4688,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::auth::passkey::revoke::finish::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.2" => {
+            Some(crate::specs::auth::passkey::revoke::finish::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" => {
             Some(crate::specs::auth::passkey::revoke::start::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/revoke/start/0.2" => {
+            Some(crate::specs::auth::passkey::revoke::start::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/refresh/0.1" => {
