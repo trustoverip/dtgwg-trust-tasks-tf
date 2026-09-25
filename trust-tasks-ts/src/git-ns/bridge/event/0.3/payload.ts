@@ -104,9 +104,6 @@ export interface BindCompleted {
   ownerId: ForgeId;
   kind: "organization" | "user";
 }
-/**
- * `roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`.
- */
 export interface RoleMapReported {
   type: "roleMapReported";
   roleMap: RoleMap;
@@ -471,8 +468,7 @@ export const PAYLOAD_SCHEMA = {
                 "$ref": "#/$defs/RepoResource"
               }
             }
-          },
-          "description": "`roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`."
+          }
         }
       ]
     },
@@ -912,8 +908,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "$ref": "#/$defs/RepoResource"
               }
             }
-          },
-          "description": "`roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`."
+          }
         }
       ]
     },

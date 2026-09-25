@@ -304,8 +304,7 @@
                 "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RepoResource"
               }
             }
-          },
-          "description": "`roleMap` is the map the bridge projects every repository in the namespace with, except those listed in `repos`."
+          }
         }
       ]
     },
