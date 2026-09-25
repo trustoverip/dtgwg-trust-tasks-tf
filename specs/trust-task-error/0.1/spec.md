@@ -187,7 +187,7 @@ Where the failure will be retained as evidence (for example, a compliance refusa
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:bank.example#key-1",
     "created": "2026-05-16T14:22:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z58D..."
   }
 }

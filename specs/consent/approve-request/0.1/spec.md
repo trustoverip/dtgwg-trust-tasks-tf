@@ -173,7 +173,7 @@ has no way to make it.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-01-01T00:00:00Z",
     "verificationMethod": "did:example:producer#key-0",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z58DAdFfa9SkqZMVPxAQpic7ndSayn1PzZs6ZjWp1CktyGesjuTSwRdoWhAfGFCF5bppETSTojQCrfFPP2oumHKtz"
   }
 }

@@ -157,7 +157,7 @@ check happens after the signature is settled
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T12:00:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
@@ -183,7 +183,7 @@ check happens after the signature is settled
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T12:01:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }

@@ -121,7 +121,7 @@ The owner sends the request to the VTC. See the top-level schema in [`payload.sc
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zTMFRSHsScYJV8oiMWKqHeXQ9eCjdAirGE9ANQGgue74WuCj6D6VMSoL6wGqy6x6PWtPy4WcTAcQLcSSefc8irf"
   }
 }
@@ -168,7 +168,7 @@ The VTC, now responding, returns the repository, per the sub-schema reachable vi
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zWE85YvMf1gmRJBufjs48toPbuer8ascUGzayhy5FssGWNKrkf5mqEnZ9WFiFnrNhRRh26mGzBKQTRZF4di7z73"
   }
 }

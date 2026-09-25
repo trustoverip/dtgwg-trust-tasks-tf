@@ -118,7 +118,7 @@ The vetter sends the decline to the applicant. See the top-level schema in [`pay
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1",
     "created": "2026-09-17T15:12:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N"
   }
 }

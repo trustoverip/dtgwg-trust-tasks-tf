@@ -169,7 +169,7 @@ persistence.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-13T09:43:18Z",
     "verificationMethod": "did:key:z6MkApproverPhoneExample#z6MkApproverPhoneExample",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2QpLmExampleProofValueForTaskConsentDecision"
   }
 }
@@ -194,7 +194,7 @@ persistence.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-13T09:43:19Z",
     "verificationMethod": "did:key:z6MkExecutorVtaExample#z6MkExecutorVtaExample",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6TvNsExampleProofValueForTaskConsentDecisionResponse"
   }
 }

@@ -240,7 +240,7 @@ The vetter sends the session to the applicant. See the top-level schema in [`pay
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1",
     "created": "2026-09-17T15:02:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR"
   }
 }
@@ -295,7 +295,7 @@ The `identityCommitment` shown is the real value for the salt and the `name.lega
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:alice.example#key-1",
     "created": "2026-09-17T15:04:06Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zuoTZbVpBUvRSPXq7An9rfxFFqnbWLSGZbLpkF3utZnGwyk6yNDqmuUQX2qQdre7PBBpHMWoatui2Y41nMCwuUqM"
   }
 }
