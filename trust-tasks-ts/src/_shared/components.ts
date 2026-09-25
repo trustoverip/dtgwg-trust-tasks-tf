@@ -212,6 +212,10 @@ export type DriftType =
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";
 /**
+ * The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.
+ */
+export type ElevatedRight = "git.ns.admin" | "git.repo.create" | "git.repo.own";
+/**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
 export type ExpectedSha256 = string;
@@ -1443,6 +1447,35 @@ export interface Bootstrap {
    * The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.
    */
   requiredCheck: boolean;
+}
+/**
+ * How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
+ */
+export interface BreakGlass {
+  /**
+   * Who broke the glass: always the record's `subject`, restated so the flag reads on its own.
+   */
+  by: Did_GitNsV0_3;
+  /**
+   * When the VTC recorded the break-glass.
+   */
+  at: string;
+  /**
+   * The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.
+   */
+  justification: string;
+  /**
+   * When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.
+   */
+  effectiveAt?: string;
+  /**
+   * The administrator who ratified the record — never its subject. Absent while unratified.
+   */
+  ratifiedBy?: Did_GitNsV0_3;
+  /**
+   * When it was ratified. Present exactly when `ratifiedBy` is.
+   */
+  ratifiedAt?: string;
 }
 /**
  * The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.
@@ -4101,6 +4134,34 @@ export interface RightRecord_GitNsV0_3 {
    * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
    */
   reason?: string;
+}
+/**
+ * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.
+ */
+export interface RightRecord_GitNsV0_4 {
+  /**
+   * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource;
+  /**
+   * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
+   */
+  grantedBy: Did_GitNsV0_3;
+  grantedAt: string;
+  /**
+   * When the right lapses. Absent: no expiry.
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
+   */
+  reason?: string;
+  /**
+   * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
+   */
+  breakGlass?: BreakGlass;
 }
 /**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
