@@ -134,6 +134,14 @@ A **`chunkedTrustTask`** descriptor instead carries **`chunks`**, the [chunk man
 
 **`completionHint`** — operator-facing text describing how to complete the download. Advisory, and safe to ignore; a producer **MUST NOT** parse it or derive behaviour from it.
 
+## Channel requirement
+
+This task **MUST** be carried over a channel confidential end-to-end between the producer and the recipient: one on which the producer encrypts to the recipient itself, such as the DIDComm binding with authenticated encryption, or the TSP binding. The request carries `password`, and the response carries the descriptor that retrieves the bundle it unlocks. A party that can read both holds every key the agent has. A channel confidential only hop by hop does not qualify, the HTTPS binding included: TLS terminates wherever the recipient's operator terminates it (a load balancer, an ingress, a sidecar), and the plaintext document exists there.
+
+A recipient **MUST** refuse this task with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) when it arrives over any other channel. It refuses after establishing entitlement (see [Authorization](#authorization)) and before serializing any state. The refusal **SHOULD** name the bindings the recipient accepts, since the producer's remedy is to send the same request again over one of them.
+
+The requirement covers the tasks of the exchange, not the bytes. The bundle fetched from `transportUrl` or moved chunk by chunk is ciphertext, and it may travel over HTTPS.
+
 ## Transport preconditions
 
 A recipient can only return a `transportUrl` if it knows an address at which it is reachable. That is a property of the recipient's deployment, not of the request, and it is commonly absent: an agent that speaks only DIDComm or TSP has a perfectly good identity and no HTTPS address to publish — the arrangement much of this ecosystem is built to support.
