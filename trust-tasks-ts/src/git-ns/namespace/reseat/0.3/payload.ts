@@ -15,7 +15,7 @@ export interface GitNamespacesReseatNamespacePayload {
    */
   namespace: NamespaceId;
   /**
-   * The current member who receives git.ns.admin on the namespace. May be the administrator themselves.
+   * The current member who receives git.ns.admin on the namespace. Never the administrator reseating: that is a self-grant of git.ns.admin, refused with git-ns:selfGrantNotAllowed (git-ns/right/break-glass is the way to do it).
    */
   subject: Did;
   /**
@@ -78,7 +78,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "subject": {
       "$ref": "#/$defs/Did",
-      "description": "The current member who receives git.ns.admin on the namespace. May be the administrator themselves."
+      "description": "The current member who receives git.ns.admin on the namespace. Never the administrator reseating: that is a self-grant of git.ns.admin, refused with git-ns:selfGrantNotAllowed (git-ns/right/break-glass is the way to do it)."
     },
     "statement": {
       "type": "string",

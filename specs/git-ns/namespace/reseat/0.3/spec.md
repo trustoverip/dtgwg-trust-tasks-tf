@@ -48,6 +48,9 @@ errorCodes:
   - code: git-ns:namespaceNotBound
     meaning: "The namespace is still `pending`. Nothing is created, adopted or granted in it until binding completes."
     retryable: false
+  - code: git-ns:selfGrantNotAllowed
+    meaning: "The subject is the administrator reseating. Reseating a headless namespace to yourself is a self-grant of git.ns.admin, an elevated right: another administrator must reseat it, or, when nobody else can, the administrator self-grants it explicitly with git-ns/right/break-glass."
+    retryable: false
   - code: git-ns:membersOnly
     meaning: "`git.ns.admin` and `git.repo.create` go only to current members of the community, and the subject is not one."
     retryable: false
@@ -75,7 +78,9 @@ This task is the recovery. A community administrator grants `git.ns.admin` on a 
 
 A namespace admin gets no role on the forge ([`git-ns/bridge/job` 0.4](../../../../git-ns/bridge/job/0.4/spec.md)): `git.ns.admin` is exercised through the VTC and its bridge, and the bridge makes its holder neither an owner of the organisation nor gives them a role on any repository for it. `0.2`'s step 8 had the VTC queue "the namespace-level forge projection as for any `git.ns.admin` grant" — a `projectRoles` job for the namespace itself, listing its admins as the organisation's owners. That job no longer exists. In `0.3` the VTC queues no namespace-level projection; the reseated admin reaches each repository's `desiredRoles` as any namespace admin does, at `git.ns.admin` where they hold no right of their own, which projects to no role.
 
-The request and response are unchanged, and the schema is wire-identical to `0.2`'s. The change is to what the VTC does, which is why it is a new version: a VTC that implements `0.2` queues a job this version forbids. Everything else is unchanged from `0.2` and restated below, so that this version stands on its own.
+**Separation of duties.** A community administrator **MUST NOT** reseat a namespace to themselves. That is a self-grant of `git.ns.admin`, an elevated right, and it is refused with `git-ns:selfGrantNotAllowed` (step 4), as every self-grant of an elevated right is under the separation-of-duties rule of `git-ns/right/grant` 0.3 (trust-tasks #641). The one way to do it is the explicit, audited `git-ns/right/break-glass`, which another administrator ratifies or revokes. `0.2` said the subject "may be the administrator themselves".
+
+The request and response are otherwise unchanged, and the schema is wire-identical to `0.2`'s. The change is to what the VTC does, which is why it is a new version: a VTC that implements `0.2` queues a job this version forbids. Everything else is unchanged from `0.2` and restated below, so that this version stands on its own.
 
 ## Status of this Document
 
@@ -123,7 +128,7 @@ The administrator sends the request to the VTC. See the top-level schema in [`pa
 1. Refuses a sender without the community-administrator capability with `permissionDenied`.
 2. Refuses an identifier it does not know with `git-ns:unknownNamespace`, and a `pending` namespace with `git-ns:namespaceNotBound`: a pending namespace has not yet had an admin to lose, and the binding in progress will record one.
 3. Refuses a namespace that is not headless with `git-ns/namespace/reseat:notHeadless`. The error **MUST NOT** say who the live admins are: every `git.ns.admin` is published to the Trust Registry, where an administrator who needs to know can read them like anyone else.
-4. Refuses a `subject` who is not a current member with `git-ns:membersOnly` — the members-only floor of [fixed rule 5](../../../../git-ns/right/grant/0.2/spec.md#the-fixed-rules), which applies to this grant as to any other `git.ns.admin`.
+4. Refuses a `subject` who is the administrator reseating — the DID the VTC resolved the sender to, after any delegation it honours — with `git-ns:selfGrantNotAllowed`, whose message names `git-ns/right/break-glass`. This is checked before the members-only floor, so a self-reseat hears why it is refused. Then refuses a `subject` who is not a current member with `git-ns:membersOnly` — the members-only floor of [fixed rule 5](../../../../git-ns/right/grant/0.2/spec.md#the-fixed-rules), which applies to this grant as to any other `git.ns.admin`.
 5. Evaluates the community's git-namespace policy, which may refuse with `git-ns:policyDenied` (for example, a policy that the subject must be the member with the most recent ownership in the namespace, or that a second administrator must confirm) and may not override the rules above.
 6. Records `git.ns.admin` on the namespace's resource for `subject`, with `grantedBy` set to the administrator, `reason` set to `statement`, and **no `expiresAt`**, so that the recovered namespace meets the last-admin invariant as stated above from the moment it has an admin again. Steps 3 and 6 **MUST** be atomic with respect to every other change to the namespace's `git.ns.admin` records: of two concurrent reseats, or a reseat racing a lapse sweep, exactly one outcome is recorded and the other request sees the result.
 7. Records an audit event carrying the administrator, the subject, the `statement`, and the evidence that the namespace was headless: each `git.ns.admin` record it last held and how that record ended — revoked, and by whom, or lapsed, and when. The response **MUST NOT** be sent before the right and the audit event are durable.
@@ -131,7 +136,7 @@ The administrator sends the request to the VTC. See the top-level schema in [`pa
 
 The reseat restores the VTC's own governance of the namespace. What the forge allows is a separate matter: where the bridge's credentials no longer reach the owner on the forge (`installationRemoved`), the new admin's forge-side role waits for a forge owner to restore them, and every repository's sync already shows `unchecked`.
 
-A repeated request after a reseat succeeded finds the namespace no longer headless and is refused with `git-ns/namespace/reseat:notHeadless`; an exact replay of the same document is also caught by [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11. An administrator who lost the response and sees `notHeadless` **SHOULD** confirm that the subject now holds `git.ns.admin` — from the Trust Registry, or with [`git-ns/view`](../../../../git-ns/view/0.3/spec.md) when they reseated to themselves — rather than send again.
+A repeated request after a reseat succeeded finds the namespace no longer headless and is refused with `git-ns/namespace/reseat:notHeadless`; an exact replay of the same document is also caught by [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11. An administrator who lost the response and sees `notHeadless` **SHOULD** confirm that the subject now holds `git.ns.admin` — from the Trust Registry — rather than send again.
 
 Once reseated, `orphaned` repositories stay `orphaned` until the new admin names an owner: the reseat restores someone who can, and does not decide for them.
 
@@ -214,4 +219,4 @@ Durable. The reseat and its audit event — who reseated the namespace, to whom,
 
 ### Consent/purpose
 
-The purpose is to restore governance to a namespace that has lost it, and only that. A VTC **MUST NOT** treat the community-administrator capability as authority in a namespace for any other purpose on the strength of this task. Whether a reseat warrants a step-up, a second administrator's confirmation, or the subject's agreement first is the VTC's policy; per [SPEC §7.3](/SPEC.md#73-specification-requirements) item 13, this specification does not decide it.
+The purpose is to restore governance to a namespace that has lost it, and only that. A VTC **MUST NOT** treat the community-administrator capability as authority in a namespace for any other purpose on the strength of this task. Whether a reseat warrants a step-up, a second administrator's confirmation, or the subject's agreement first is the VTC's policy; per [SPEC §7.3](/SPEC.md#73-specification-requirements) item 13, this specification does not decide it. What it does decide is that a reseat never takes a namespace for the administrator who asks: the subject is always someone else (step 4), so that a community administrator who wants a headless namespace's root for themselves must say so through `git-ns/right/break-glass`, where every other administrator sees it and one of them ratifies or revokes it.
