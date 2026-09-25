@@ -330,6 +330,7 @@ export * as RoomsRecordsCurate_v0_1 from "./rooms/records/curate/0.1/payload.js"
 export * as RoomsRecordsGet_v0_1 from "./rooms/records/get/0.1/payload.js";
 export * as RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
 export * as RoomsRecordsPut_v0_1 from "./rooms/records/put/0.1/payload.js";
+export * as SenderDelegation_v0_1 from "./sender-delegation/0.1/payload.js";
 export * as SyncEventShared_v0_1 from "./sync/_shared/0.1/sync-event.js";
 export * as SyncEventShared_v0_2 from "./sync/_shared/0.2/sync-event.js";
 export * as SyncEvent_v0_1 from "./sync/event/0.1/payload.js";

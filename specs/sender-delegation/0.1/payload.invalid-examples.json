@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Empty payload omits required members: delegate, documents.",
+    "payload": {}
+  },
+  {
+    "note": "`documents` must list at least one document. A delegation covering nothing delegates nothing, and an open-ended one is exactly what this specification exists to rule out.",
+    "payload": {
+      "delegate": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "documents": []
+    }
+  },
+  {
+    "note": "`delegate` is omitted. The delegation must name the one sender it permits.",
+    "payload": {
+      "documents": ["urn:uuid:3b1d7f0e-8a52-4c1e-9d3a-6f0b2c7e5a14"]
+    }
+  },
+  {
+    "note": "Unknown member. The payload is closed.",
+    "payload": {
+      "delegate": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "documents": ["urn:uuid:3b1d7f0e-8a52-4c1e-9d3a-6f0b2c7e5a14"],
+      "scope": "*"
+    }
+  }
+]

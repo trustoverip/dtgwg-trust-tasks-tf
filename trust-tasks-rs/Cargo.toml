@@ -57,6 +57,7 @@ all-specs = [
     "push",
     "registry",
     "rooms",
+    "sender-delegation",
     "sync",
     "task-consent",
     "vault",
@@ -90,6 +91,7 @@ provision = []
 push = []
 registry = []
 rooms = []
+sender-delegation = []
 sync = []
 task-consent = []
 vault = []

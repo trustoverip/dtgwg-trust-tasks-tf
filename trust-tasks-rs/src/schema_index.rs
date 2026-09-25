@@ -1150,6 +1150,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/records/put/0.1" => <crate::specs::rooms::records::put::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/put/0.1#response" => <crate::specs::rooms::records::put::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "sender-delegation")]
+        "https://trusttasks.org/spec/sender-delegation/0.1" => <crate::specs::sender_delegation::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => <crate::specs::sync::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
@@ -3403,6 +3405,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/put/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::put::v0_1::Payload,
+        >()),
+        #[cfg(feature = "sender-delegation")]
+        "https://trusttasks.org/spec/sender-delegation/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::sender_delegation::v0_1::Payload,
         >()),
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => Some(crate::SpecPolicy::of::<
@@ -5680,6 +5686,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/put/0.1" => {
             Some(crate::specs::rooms::records::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "sender-delegation")]
+        "https://trusttasks.org/spec/sender-delegation/0.1" => {
+            Some(crate::specs::sender_delegation::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => {

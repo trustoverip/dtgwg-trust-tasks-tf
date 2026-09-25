@@ -132,6 +132,24 @@ A *consumer* **MAY** decline this allowance and require an in-band `proof` on ev
 
 A *Trust Task specification* that declares `proof` as **REQUIRED** ([SPEC §7.3 item 8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#73-specification-requirements)) overrides this binding-level allowance: the in-band `proof` is mandatory regardless of transport, because such specifications produce documents intended to be replayable past the original transport hop.
 
+### 5.1 Sender delegation
+
+A *consumer* that requires the verified `proof` to identify the transport-authenticated sender refuses a document signed by one party and authcrypted by another. Where the signer cannot be the sender — its keys, key agreement included, are held by a maintainer that signs on its behalf and never releases them — the signer **MAY** instead name the sender in a [Sender Delegation](../../../specs/sender-delegation/0.1/spec.md), and the sender carries it with the documents it covers.
+
+**Carriage.** The delegation document is carried as a DIDComm attachment of the envelope message of [§2](#2-document-carriage) that carries a covered document:
+
+| Attachment field | Value |
+|---|---|
+| `id` | `sender-delegation` |
+| `media_type` | `application/json` |
+| `data.json` | The Sender Delegation document, as a JSON object. |
+
+An envelope message **MUST NOT** carry more than one attachment whose `id` is `sender-delegation`.
+
+**Consumer.** A *consumer* **MAY** accept such a document, and **MUST** then apply the Sender Delegation's [consumer requirements](../../../specs/sender-delegation/0.1/spec.md#consumer-requirements), taking as the transport-authenticated sender the bare DID of the verified `sender_kid` ([§3](#3-identity-mapping)). A document that fails them, or that arrives without a delegation, is rejected with `identityMismatch` exactly as above. A *consumer* that does not implement delegation ignores the attachment, as [§2](#2-document-carriage) already allows, and rejects the document on the ordinary rule.
+
+**Responses.** A response or `trust-task-error` to a delegated document is authcrypted to the verified `sender_kid`, per [§4](#4-error-mapping). The delegation does not change where a reply goes.
+
 ## 6. Transport security profile
 
 *Stated in anticipation of [SPEC §9.1.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#911-permitting-proof-to-be-omitted),
@@ -230,6 +248,7 @@ Additive, and a `MINOR` increment accordingly: the envelope type is unchanged, s
 * Thread correlation ([§3.1](#31-thread-correlation)) is now mapped rather than ignored. `0.1` stated that the framework consumed no DIDComm headers, which left `thid` and the framework's `threadId` free to disagree with nothing detecting it.
 * Targets framework `0.3`, which adds `parentThreadId` ([SPEC §4.9.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#492-the-parentthreadid-member)) — the member `pthid` maps to.
 * One stricter error mapping, for a thread disagreement.
+* A *consumer* **MAY** require an in-band `proof` identifying the transport-authenticated sender ([§5](#5-proof-interaction)), and **MAY** accept a document carried by a different sender under a [Sender Delegation](#51-sender-delegation).
 
 A `0.1` producer that never set `thid` remains conforming under `0.2`: the mapping is a `SHOULD` on the producer and the consumer comparison only engages when both values are present.
 
