@@ -10,7 +10,7 @@
 //! generator described in `trust-tasks-go/didcomm/README.md`.
 
 use affinidi_crypto::jose::key_agreement::{Curve, PrivateKeyAgreement, PublicKeyAgreement};
-use affinidi_messaging_didcomm::jwe::decrypt::decrypt;
+use affinidi_messaging_didcomm::jwe::decrypt::{decrypt_bound, SenderKey};
 
 fn unhex(s: &str) -> Vec<u8> {
     (0..s.len())
@@ -35,15 +35,21 @@ fn affinidi_unpacks_a_go_produced_jwe() {
     )
     .unwrap();
     let recipient_kid = f["recipientKid"].as_str().unwrap();
+    let sender_kid = f["senderKid"].as_str().unwrap();
     let jwe = f["jwe"].as_str().unwrap();
 
-    let out = decrypt(jwe, recipient_kid, &recipient_private, Some(&sender_public))
-        .expect("affinidi failed to decrypt the Go-produced JWE");
+    let out = decrypt_bound(
+        jwe,
+        recipient_kid,
+        &recipient_private,
+        Some(SenderKey::new(sender_kid, &sender_public)),
+    )
+    .expect("affinidi failed to decrypt the Go-produced JWE");
 
     assert!(out.authenticated, "authcrypt sender not authenticated");
     assert_eq!(
         out.sender_kid.as_deref(),
-        Some(f["senderKid"].as_str().unwrap()),
+        Some(sender_kid),
         "authenticated sender kid mismatch"
     );
 

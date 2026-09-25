@@ -114,12 +114,13 @@ where
             authenticated: true,
             sender_kid: Some(sender_kid),
             recipient_kid,
-            // didcomm 0.14 adds `legacy_kek_used` (pre-0.14 ECDH-1PU KEK
-            // migration signal), `non_repudiation`, and inner-JWS
-            // `signer_kid`. The §4.8.1 transport-authenticated sender is
-            // the authcrypt `sender_kid`; surfacing the inner signer or
-            // gating on the legacy KEK would be a behaviour change beyond
-            // this binding's current contract, so they're ignored here.
+            // `non_repudiation` and the inner-JWS `signer_kid` are
+            // ignored: the §4.8.1 transport-authenticated sender is the
+            // authcrypt `sender_kid`, and surfacing the inner signer would
+            // be a behaviour change beyond this binding's current
+            // contract. (`legacy_kek_used` is deprecated and always false
+            // since didcomm 0.15.9, which no longer accepts the pre-0.14
+            // ECDH-1PU KEK.)
             ..
         } => {
             // A fragment-less kid is an error, never a `None`. Returning
