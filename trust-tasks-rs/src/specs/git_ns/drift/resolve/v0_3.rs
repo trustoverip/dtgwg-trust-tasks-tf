@@ -2663,7 +2663,7 @@ pub mod error_codes {
     };
     /// `git-ns/drift/resolve:notAdoptable`
     ///
-    /// There is no right to record for this item: `adopt` was asked of a `roleRemoved`, `requiredCheckMissing`, `protectionWeakened` or `bootstrapMissing` item, or of a `roleChanged` item whose observed role is no higher than what the account's member already holds. Revert it, or revoke with git-ns/right/revoke.
+    /// There is no right to record for this item: `adopt` was asked of a `roleRemoved`, `requiredCheckMissing`, `protectionWeakened` or `bootstrapMissing` item, or of a `roleChanged` item whose observed role projects a right no higher than the member's projected right on the repository. Revert it, or revoke with git-ns/right/revoke.
     ///
     /// Declared `retryable: false`.
     pub const NOT_ADOPTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
