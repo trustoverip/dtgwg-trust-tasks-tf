@@ -487,7 +487,6 @@ export * as VtaWebvhDidsDelete_v1_0 from "./vta/webvh/dids/delete/1.0/payload.js
 export * as VtaWebvhDidsGet_v1_0 from "./vta/webvh/dids/get/1.0/payload.js";
 export * as VtaWebvhDidsKeysAdd_v1_0 from "./vta/webvh/dids/keys/add/1.0/payload.js";
 export * as VtaWebvhDidsKeysList_v1_0 from "./vta/webvh/dids/keys/list/1.0/payload.js";
-export * as VtaWebvhDidsKeysMigrate_v1_0 from "./vta/webvh/dids/keys/migrate/1.0/payload.js";
 export * as VtaWebvhDidsKeysRetire_v1_0 from "./vta/webvh/dids/keys/retire/1.0/payload.js";
 export * as VtaWebvhDidsKeysRevoke_v1_0 from "./vta/webvh/dids/keys/revoke/1.0/payload.js";
 export * as VtaWebvhDidsList_v1_0 from "./vta/webvh/dids/list/1.0/payload.js";
@@ -529,6 +528,7 @@ export * as VtcCommunityProfileShow_v0_1 from "./vtc/community/profile/show/0.1/
 export * as VtcCommunityProfileUpdate_v0_1 from "./vtc/community/profile/update/0.1/payload.js";
 export * as VtcConfigExport_v0_1 from "./vtc/config/export/0.1/payload.js";
 export * as VtcConfigImport_v0_1 from "./vtc/config/import/0.1/payload.js";
+export * as VtcCredentialsReissue_v0_1 from "./vtc/credentials/reissue/0.1/payload.js";
 export * as VtcDirectoryQuery_v0_1 from "./vtc/directory/query/0.1/payload.js";
 export * as VtcEndorsementTypesDelete_v0_1 from "./vtc/endorsement-types/delete/0.1/payload.js";
 export * as VtcEndorsementTypesList_v0_1 from "./vtc/endorsement-types/list/0.1/payload.js";

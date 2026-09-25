@@ -29,11 +29,11 @@ export interface VTAWebVHDIDsRotateKeysPayload {
    */
   keyType?: KeyType;
   /**
-   * When the successor should begin to be used. The VTA MUST NOT activate it earlier than its publication plus the document's validity period (VTI-KEY-122), and uses that as the default. Not permitted for `update`.
+   * When the successor should begin to be used. The VTA MUST NOT switch earlier than the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — and uses that as the default. Not permitted for `update`.
    */
   activatesAt?: string;
   /**
-   * End of the overlap: how long the predecessor stays published, and unused, after the successor activates. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap.
+   * End of the overlap: when the predecessor is retired. MUST be later than `activatesAt`, so a planned overlap never ends before the cache horizon. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap.
    */
   overlapUntil?: string;
   /**
@@ -162,12 +162,12 @@ export const PAYLOAD_SCHEMA = {
     "activatesAt": {
       "type": "string",
       "format": "date-time",
-      "description": "When the successor should begin to be used. The VTA MUST NOT activate it earlier than its publication plus the document's validity period (VTI-KEY-122), and uses that as the default. Not permitted for `update`."
+      "description": "When the successor should begin to be used. The VTA MUST NOT switch earlier than the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — and uses that as the default. Not permitted for `update`."
     },
     "overlapUntil": {
       "type": "string",
       "format": "date-time",
-      "description": "End of the overlap: how long the predecessor stays published, and unused, after the successor activates. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap."
+      "description": "End of the overlap: when the predecessor is retired. MUST be later than `activatesAt`, so a planned overlap never ends before the cache horizon. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap."
     },
     "autoRetire": {
       "type": "boolean",
@@ -387,12 +387,12 @@ export const PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the successor becomes `active` and the predecessor `retiring`."
+          "description": "When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`."
         },
-        "gracePeriodEnd": {
+        "cacheHorizonAt": {
           "type": "string",
           "format": "date-time",
-          "description": "`migration` only: the end of the grace period stated in the migration entry (VTI-KEY-143), after which no verifier accepts an attestation artefact under the legacy key."
+          "description": "Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap."
         }
       }
     },
@@ -407,7 +407,7 @@ export const PAYLOAD_SCHEMA = {
         "aborted",
         "expired"
       ],
-      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise`, `addition` and `migration`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
+      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
     },
     "RotationKind": {
       "title": "RotationKind",
@@ -415,10 +415,9 @@ export const PAYLOAD_SCHEMA = {
       "enum": [
         "planned",
         "compromise",
-        "addition",
-        "migration"
+        "addition"
       ],
-      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one). `migration` — the single entry that moved a pre-role DID onto key roles (VTI-KEY-140)."
+      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one)."
     },
     "KeyRole": {
       "title": "KeyRole",
@@ -506,7 +505,7 @@ export const PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "For a `staged` key: when the VTA will begin using it — no earlier than its publication plus the document's validity period."
+          "description": "For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1)."
         }
       }
     },
@@ -574,7 +573,7 @@ export const PAYLOAD_SCHEMA = {
         "retired",
         "revoked"
       ],
-      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor at least the document's validity period (its TTL) before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, and a retiring `messaging` key MUST NOT be used to encrypt. `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` key is destroyed (VTI-KEY-125). `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
+      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
     },
     "DidVerificationRelationship": {
       "title": "DidVerificationRelationship",
@@ -646,14 +645,13 @@ export const PAYLOAD_SCHEMA = {
               "preRotationDisabled",
               "singleKeyRole",
               "algorithmNotInAcceptedSet",
-              "overlapShorterThanValidityPeriod",
               "roleWillHaveNoClassicalKey",
               "attestationReissuanceRequired",
               "serverless"
             ]
           },
           "uniqueItems": true,
-          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `overlapShorterThanValidityPeriod` — the overlap ends before resolvers caching the current document must re-resolve, so some verifiers will see the predecessor vanish before they see the successor. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
+          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
         },
         "updateKeyRotates": {
           "type": "boolean",
@@ -677,11 +675,9 @@ export const PAYLOAD_SCHEMA = {
             "retireKey",
             "revokeKey",
             "rotateUpdateKey",
-            "setPreRotation",
-            "setKeyRoles",
-            "setGracePeriod"
+            "setPreRotation"
           ],
-          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or rewritten. `setGracePeriod` — the migration's grace-period end is recorded."
+          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes."
         },
         "role": {
           "$ref": "#/$defs/KeyRole"
@@ -906,12 +902,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the successor becomes `active` and the predecessor `retiring`."
+          "description": "When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`."
         },
-        "gracePeriodEnd": {
+        "cacheHorizonAt": {
           "type": "string",
           "format": "date-time",
-          "description": "`migration` only: the end of the grace period stated in the migration entry (VTI-KEY-143), after which no verifier accepts an attestation artefact under the legacy key."
+          "description": "Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap."
         }
       }
     },
@@ -926,7 +922,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "aborted",
         "expired"
       ],
-      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise`, `addition` and `migration`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
+      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
     },
     "RotationKind": {
       "title": "RotationKind",
@@ -934,10 +930,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "enum": [
         "planned",
         "compromise",
-        "addition",
-        "migration"
+        "addition"
       ],
-      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one). `migration` — the single entry that moved a pre-role DID onto key roles (VTI-KEY-140)."
+      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one)."
     },
     "KeyRole": {
       "title": "KeyRole",
@@ -1025,7 +1020,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "For a `staged` key: when the VTA will begin using it — no earlier than its publication plus the document's validity period."
+          "description": "For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1)."
         }
       }
     },
@@ -1093,7 +1088,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "retired",
         "revoked"
       ],
-      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor at least the document's validity period (its TTL) before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, and a retiring `messaging` key MUST NOT be used to encrypt. `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` key is destroyed (VTI-KEY-125). `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
+      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
     },
     "DidVerificationRelationship": {
       "title": "DidVerificationRelationship",
@@ -1165,14 +1160,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "preRotationDisabled",
               "singleKeyRole",
               "algorithmNotInAcceptedSet",
-              "overlapShorterThanValidityPeriod",
               "roleWillHaveNoClassicalKey",
               "attestationReissuanceRequired",
               "serverless"
             ]
           },
           "uniqueItems": true,
-          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `overlapShorterThanValidityPeriod` — the overlap ends before resolvers caching the current document must re-resolve, so some verifiers will see the predecessor vanish before they see the successor. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
+          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
         },
         "updateKeyRotates": {
           "type": "boolean",
@@ -1196,11 +1190,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "retireKey",
             "revokeKey",
             "rotateUpdateKey",
-            "setPreRotation",
-            "setKeyRoles",
-            "setGracePeriod"
+            "setPreRotation"
           ],
-          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or rewritten. `setGracePeriod` — the migration's grace-period end is recorded."
+          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes."
         },
         "role": {
           "$ref": "#/$defs/KeyRole"

@@ -46,8 +46,7 @@
         "did",
         "versionId",
         "projection",
-        "roles",
-        "unassigned"
+        "roles"
       ],
       "properties": {
         "did": {
@@ -67,13 +66,6 @@
           },
           "description": "One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'."
         },
-        "unassigned": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/UnassignedKey"
-          },
-          "description": "Published keys the VTA has no role for — a DID created before key roles (CONVENTIONS.md §10). Empty when the DID is fully migrated."
-        },
         "rotations": {
           "type": "array",
           "items": {
@@ -83,40 +75,6 @@
         },
         "ext": {
           "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
-        }
-      }
-    },
-    "UnassignedKey": {
-      "title": "UnassignedKey",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "verificationMethod",
-        "keyType",
-        "publicKeyMultibase",
-        "relationships"
-      ],
-      "properties": {
-        "verificationMethod": {
-          "type": "string",
-          "minLength": 1
-        },
-        "keyType": {
-          "$ref": "../../../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1
-        },
-        "relationships": {
-          "type": "array",
-          "items": {
-            "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/DidVerificationRelationship"
-          },
-          "uniqueItems": true
-        },
-        "custody": {
-          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RoleKeyCustody"
         }
       }
     }

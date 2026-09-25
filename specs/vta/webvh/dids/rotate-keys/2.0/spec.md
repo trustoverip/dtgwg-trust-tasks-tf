@@ -72,11 +72,11 @@ errorCodes:
   - code: "vta/webvh/dids:preRotationRequired"
     meaning: "The rotation would leave a durable node identity with no committed successor update key."
     retryable: false
-  - code: "vta/webvh/dids:legacyKeysPresent"
-    meaning: "The DID still publishes keys with no role; migrate it first."
+  - code: "vta/webvh/dids:notKeyRoleIdentity"
+    meaning: "The DID was not created with key roles. Create a new identity with key roles instead."
     retryable: false
   - code: "vta/webvh/dids/rotate-keys:overlapTooShort"
-    meaning: "`activatesAt` is earlier than publication plus the document's validity period, or `overlapUntil` is not after `activatesAt`."
+    meaning: "`activatesAt` is earlier than the publishing entry's cache horizon (publication + max(document TTL, verifier cache cap)), or `overlapUntil` is not after `activatesAt`."
     retryable: false
   - code: "vta/webvh/dids/rotate-keys:notApplicableToRole"
     meaning: "A member was given that the role does not take — `replace`, `keyType`, `activatesAt`, `overlapUntil` or `autoRetire` for `role: update`."
@@ -99,19 +99,32 @@ A key believed compromised is not rotated but revoked, with
 [`keys/revoke`](../../keys/revoke/1.0/spec.md), which is a different act with a different
 record.
 
-A rotation has three moments, and this task starts the first:
+A planned rotation has four phases ([conventions §11](../../../../_shared/0.3/CONVENTIONS.md#11-overlap-by-role)),
+and this task starts the first:
 
-| Moment | What happens | Successor | Predecessor |
-|---|---|---|---|
-| **Stage** (this task) | One entry publishes the successor in the role | `staged` | `active` |
-| **Activate** (`activatesAt`, the VTA) | The VTA begins signing with the successor, and never again with the predecessor | `active` | `retiring` |
-| **Retire** (`overlapUntil`, the VTA or [`keys/retire`](../../keys/retire/1.0/spec.md)) | A second entry removes the predecessor | `active` | `retired` |
+| Phase | What happens | Successor | Predecessor | Earliest |
+|---|---|---|---|---|
+| **1. Publish** (this task) | One entry publishes the successor in the role | `staged` | `active` | — |
+| **2. Wait** | Nothing is published; caches catch up | `staged` | `active` | until the **cache horizon**: publication + max(document TTL, verifier cache cap — 24 h proposed, VTI-KEY-134) |
+| **3. Switch** (`activatesAt`, the VTA) | The VTA begins signing with the successor and never again with the predecessor | `active` | `retiring` | ≥ cache horizon |
+| **4. Retire** (`overlapUntil`, the VTA or [`keys/retire`](../../keys/retire/1.0/spec.md)) | A second entry removes the predecessor | `active` | `retired` | > `activatesAt` |
 
-Staging before activation is what makes a rotation invisible to relying parties
-(VTI-KEY-122): a verifier holding a cached copy of the document learns of the successor
-only when it re-resolves, and a signature by a key it has never seen looks exactly like a
-forgery. The overlap after activation keeps what the predecessor signed verifiable against
-the current document while caches catch up and sessions keyed to a messaging key drain.
+Publishing before switching is what makes a rotation invisible to relying parties
+(VTI-KEY-122): a verifier holding a cached copy learns of the successor only when it
+re-resolves, and a signature by a key it has never seen looks exactly like a forgery. The
+overlap after the switch keeps what the predecessor signed verifiable against the current
+document while caches catch up.
+
+What each role does during the overlap:
+
+| Role | Overlap |
+|---|---|
+| `attestation` | Both keys in `assertionMethod`; new artefacts signed only by the active key. At retirement the predecessor is destroyed, and what it signed still verifies by the DID version at issuance. |
+| `operational` | Both keys in `authentication`; new traffic signed only by the active key. |
+| `messaging` | Both keys in `keyAgreement`; the VTA **holds both private halves for the whole overlap**, and senders may encrypt to either (preferring the newer). The predecessor is destroyed at retirement. |
+| `update` | **No overlap**: the pre-rotation handover moves the update key in one entry and commits a fresh next key. |
+
+A revocation for compromise has no overlap in any role; it is [`keys/revoke`](../../keys/revoke/1.0/spec.md).
 
 The `update` role is different in kind: a did:webvh's update key moves to the successor
 the previous entry committed to, in one entry, with no overlap, and every entry under
@@ -133,7 +146,7 @@ notion of role, and was defective in four ways this version closes:
    and attestation successors are generated, not derived.
 3. **It rewrote only three relationships.** Methods referenced from
    `capabilityInvocation` or `capabilityDelegation` kept pointing at the old key. Both are
-   now reserved and emptied (conventions §1 item 2), and a rotation rewrites the role
+   now reserved and must be empty (conventions §1 item 2), and a rotation rewrites the role
    everywhere it appears, including `keyRoles`.
 4. **It left the new keys without custodian records.** The successors consumed derivation
    paths nobody recorded, so the next rotation, `realign-keys` and every `keys/*` task could
@@ -169,15 +182,17 @@ A conforming **consumer** (the VTA) **MUST**:
 3. Publish each successor in the role's relationship and `keyRoles`, under a fragment
    derived from the key, with its custodian record created in the same atomic step, in
    state `staged`.
-4. Set `activatesAt` no earlier than the entry's publication plus the document's validity
-   period, or refuse with `vta/webvh/dids/rotate-keys:overlapTooShort` a requested value
-   earlier than that. At `activatesAt`, begin using the successor, stop using the
-   predecessor for anything new (a retiring `messaging` key **MUST NOT** be used to
-   encrypt), and audit `did.keys.activate`.
+4. Compute the publishing entry's cache horizon (conventions §11.1) and report it as
+   `rotation.cacheHorizonAt`. Set `activatesAt` no earlier than it (defaulting to it), and
+   `overlapUntil` later than `activatesAt`; refuse a requested value that breaks either with
+   `vta/webvh/dids/rotate-keys:overlapTooShort`. At `activatesAt`, begin signing with the
+   successor and stop signing with the predecessor, and audit `did.keys.activate`. For
+   `messaging`, keep both private halves and decrypt with either until retirement.
 5. When `autoRetire` is not false, retire the predecessor at `overlapUntil` by appending
    the entry [`keys/retire`](../../keys/retire/1.0/spec.md) would, under this request's
-   authorization, and audit `did.keys.autoRetire`. For `attestation`, destroy the
-   predecessor's private half (VTI-KEY-125).
+   authorization, and audit `did.keys.autoRetire`. Never retire the predecessor before
+   `activatesAt` has passed. Destroy the predecessor's private half when the retiring entry
+   is published (VTI-KEY-125 for `attestation`).
 6. For `role: update`, move the update key to a committed successor in one entry, commit
    fresh successors, and refuse any member the schema forbids for that role.
 7. Refuse to leave a durable node identity with no committed successor
@@ -185,7 +200,9 @@ A conforming **consumer** (the VTA) **MUST**:
 8. Treat a revocation for compromise of a key in this rotation as superseding it
    (conventions §3.3): the rotation is recorded `aborted` and the revocation proceeds.
 
-A conforming **consumer** **MUST NOT** change the DID's SCID.
+A conforming **consumer** **MUST NOT** change the DID's SCID, and **MUST** refuse a DID that is
+not a key-role identity with `vta/webvh/dids:notKeyRoleIdentity`
+([conventions §10](../../../../_shared/0.3/CONVENTIONS.md#10-only-key-role-identities)).
 
 ## Authorization
 
@@ -222,7 +239,7 @@ stated here rather than as a schema conditional because the generated bindings c
   "payload": {
     "did": "did:webvh:QmVtcScid:vtc.example",
     "role": "attestation",
-    "overlapUntil": "2026-10-02T09:00:00Z",
+    "overlapUntil": "2026-10-03T09:00:00Z",
     "expectedVersionId": "6-QmEntrySix",
     "previewId": "pv_1b2c3d4e5f60718293a4",
     "reason": "Annual attestation key rotation"
@@ -268,7 +285,7 @@ recorded, and the plan waits for the second.
     },
     "keys": [
       { "verificationMethod": "did:webvh:QmVtcScid:vtc.example#z6MkOldAttestation", "role": "attestation", "relationships": ["assertionMethod"], "keyType": "ed25519", "publicKeyMultibase": "z6MkOldAttestation", "state": "active" },
-      { "verificationMethod": "did:webvh:QmVtcScid:vtc.example#z6MkNewAttestation", "role": "attestation", "relationships": ["assertionMethod"], "keyType": "ed25519", "publicKeyMultibase": "z6MkNewAttestation", "state": "pending", "activatesAt": "2026-09-25T09:40:00Z" }
+      { "verificationMethod": "did:webvh:QmVtcScid:vtc.example#z6MkNewAttestation", "role": "attestation", "relationships": ["assertionMethod"], "keyType": "ed25519", "publicKeyMultibase": "z6MkNewAttestation", "state": "pending", "activatesAt": "2026-09-26T09:41:00Z" }
     ],
     "rotation": {
       "rotationId": "rot-0003",
@@ -277,8 +294,10 @@ recorded, and the plan waits for the second.
       "state": "pendingApproval",
       "predecessors": ["did:webvh:QmVtcScid:vtc.example#z6MkOldAttestation"],
       "successors": ["did:webvh:QmVtcScid:vtc.example#z6MkNewAttestation"],
-      "overlapUntil": "2026-10-02T09:00:00Z",
-      "autoRetire": true
+      "overlapUntil": "2026-10-03T09:00:00Z",
+      "autoRetire": true,
+      "cacheHorizonAt": "2026-09-26T09:41:00Z",
+      "activatesAt": "2026-09-26T09:41:00Z"
     }
   }
 }
@@ -315,5 +334,6 @@ rotation history.
 ### Consent/purpose
 
 The purpose is to replace sound keys on the operator's schedule. The consent surface renders the
-VTA's preview and the schedule in words ("the new key starts signing on 25 September at 09:40; the old
-key is removed on 2 October"), and an approval is bound to the preview.
+VTA's preview and the schedule in words ("the new key is published now, starts signing on 26 September at
+09:41 once every cached copy of the DID can have seen it, and the old key is removed on
+3 October"), and an approval is bound to the preview.

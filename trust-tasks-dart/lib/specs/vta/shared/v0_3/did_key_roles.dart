@@ -68,19 +68,22 @@ extension type const DidVerificationRelationship(String value) {
 /// Where a key is in its role's lifecycle. `pending` — planned by a preview or a
 /// change awaiting approval; not published; custody projection only. `staged` —
 /// published and bound to its role, but not yet used: a planned rotation publishes the
-/// successor at least the document's validity period (its TTL) before the VTA first
-/// uses it, so that no verifier holding a cached document sees a signature by a key it
-/// has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`.
-/// `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises
-/// for new sessions). `retiring` — still published so that what it signed and sessions
-/// keyed to it keep working, but never used again: from the successor's first use the
-/// VTA MUST NOT sign with it, and a retiring `messaging` key MUST NOT be used to
-/// encrypt. `retired` — removed by planned rotation; what it signed while published
-/// remains valid, judged against the DID version current at issuance (CONVENTIONS.md
-/// §7). A retired `attestation` key is destroyed (VTI-KEY-125). `revoked` — removed
-/// from every relationship and from `keyRoles` in one entry, without overlap, because
-/// it is or may be compromised; what it signed from `compromisedSince` onward
-/// establishes nothing. `retired` and `revoked` are terminal.
+/// successor and waits until the entry's cache horizon — publication plus the longer
+/// of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before
+/// the VTA first uses it, so that no verifier holding a cached document sees a
+/// signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the
+/// rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or,
+/// for `messaging`, advertises for new sessions). `retiring` — still published so that
+/// what it signed and sessions keyed to it keep working, but never used again: from
+/// the successor's first use the VTA MUST NOT sign with it, while a retiring
+/// `messaging` key stays usable for decryption, and senders may still encrypt to it,
+/// until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned
+/// rotation; what it signed while published remains valid, judged against the DID
+/// version current at issuance (CONVENTIONS.md §7). A retired `attestation` or
+/// `messaging` key is destroyed at retirement. `revoked` — removed from every
+/// relationship and from `keyRoles` in one entry, without overlap, because it is or
+/// may be compromised; what it signed from `compromisedSince` onward establishes
+/// nothing. `retired` and `revoked` are terminal.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -346,8 +349,8 @@ class RoleKey {
   final RoleKeyCustody? custody;
   final Ext? ext;
 
-  /// For a `staged` key: when the VTA will begin using it — no earlier than its
-  /// publication plus the document's validity period.
+  /// For a `staged` key: when the VTA will begin using it — no earlier than the
+  /// publishing entry's cache horizon (CONVENTIONS.md §11.1).
   final String? activatesAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -423,8 +426,7 @@ class RoleSummary {
 /// operator's schedule. `compromise` — a key was revoked and, where the role would
 /// otherwise be empty, replaced in the same log entry. `addition` — a key was added to
 /// a role without anything leaving it (for example a post-quantum key alongside a
-/// classical one). `migration` — the single entry that moved a pre-role DID onto key
-/// roles (VTI-KEY-140).
+/// classical one).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -433,24 +435,22 @@ extension type const RotationKind(String value) {
   static const RotationKind planned = RotationKind('planned');
   static const RotationKind compromise = RotationKind('compromise');
   static const RotationKind addition = RotationKind('addition');
-  static const RotationKind migration = RotationKind('migration');
 
   /// Every value this specification's schema permits.
   static const List<RotationKind> values = <RotationKind>[
     planned,
     compromise,
-    addition,
-    migration
+    addition
   ];
 }
 
 /// `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is
 /// published. `staged` — successor published, not yet used; predecessor still active.
 /// `overlapping` — successor active, predecessor `retiring`. `completed` — every
-/// predecessor retired (or, for `compromise`, `addition` and `migration`, the entry is
-/// published and any overlap it began has ended). `aborted` — the successor was
-/// retired instead of the predecessor, which stayed or returned to `active`. `expired`
-/// — approvals were not gathered before the preview expired; nothing was published.
+/// predecessor retired (or, for `compromise` and `addition`, the entry is published
+/// and any overlap it began has ended). `aborted` — the successor was retired instead
+/// of the predecessor, which stayed or returned to `active`. `expired` — approvals
+/// were not gathered before the preview expired; nothing was published.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -542,7 +542,7 @@ class RotationRecord {
     this.reason,
     this.ext,
     this.activatesAt,
-    this.gracePeriodEnd,
+    this.cacheHorizonAt,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -575,7 +575,7 @@ class RotationRecord {
         reason: json['reason'] as String?,
         ext: json['ext'] as Map<String, dynamic>?,
         activatesAt: json['activatesAt'] as String?,
-        gracePeriodEnd: json['gracePeriodEnd'] as String?,
+        cacheHorizonAt: json['cacheHorizonAt'] as String?,
       );
 
   final String rotationId;
@@ -611,13 +611,15 @@ class RotationRecord {
   final String? reason;
   final Ext? ext;
 
-  /// When the successor becomes `active` and the predecessor `retiring`.
+  /// When the successor becomes `active` and the predecessor `retiring`; never before
+  /// `cacheHorizonAt`.
   final String? activatesAt;
 
-  /// `migration` only: the end of the grace period stated in the migration entry
-  /// (VTI-KEY-143), after which no verifier accepts an attestation artefact under the
-  /// legacy key.
-  final String? gracePeriodEnd;
+  /// Planned rotations: the publishing entry's cache horizon — publication plus the
+  /// longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The
+  /// switch, and any retirement of the predecessor, happen no earlier. Public: it
+  /// follows from the log and the published cap.
+  final String? cacheHorizonAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -639,7 +641,7 @@ class RotationRecord {
         if (reason != null) 'reason': reason!,
         if (ext != null) 'ext': ext!,
         if (activatesAt != null) 'activatesAt': activatesAt!,
-        if (gracePeriodEnd != null) 'gracePeriodEnd': gracePeriodEnd!,
+        if (cacheHorizonAt != null) 'cacheHorizonAt': cacheHorizonAt!,
       };
 }
 
@@ -648,8 +650,7 @@ class RotationRecord {
 /// and the document. `revokeKey` — a verification method leaves its relationship and
 /// `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` —
 /// the log's update key moves to a committed successor. `setPreRotation` — the number
-/// of successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or
-/// rewritten. `setGracePeriod` — the migration's grace-period end is recorded.
+/// of successors committed changes.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -662,10 +663,6 @@ extension type const DidDocumentChangeOp(String value) {
       DidDocumentChangeOp('rotateUpdateKey');
   static const DidDocumentChangeOp setPreRotation =
       DidDocumentChangeOp('setPreRotation');
-  static const DidDocumentChangeOp setKeyRoles =
-      DidDocumentChangeOp('setKeyRoles');
-  static const DidDocumentChangeOp setGracePeriod =
-      DidDocumentChangeOp('setGracePeriod');
 
   /// Every value this specification's schema permits.
   static const List<DidDocumentChangeOp> values = <DidDocumentChangeOp>[
@@ -673,9 +670,7 @@ extension type const DidDocumentChangeOp(String value) {
     retireKey,
     revokeKey,
     rotateUpdateKey,
-    setPreRotation,
-    setKeyRoles,
-    setGracePeriod
+    setPreRotation
   ];
 }
 
@@ -713,8 +708,7 @@ class DidDocumentChange {
   /// and the document. `revokeKey` — a verification method leaves its relationship and
   /// `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` —
   /// the log's update key moves to a committed successor. `setPreRotation` — the number
-  /// of successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or
-  /// rewritten. `setGracePeriod` — the migration's grace-period end is recorded.
+  /// of successors committed changes.
   final DidDocumentChangeOp op;
   final KeyRole role;
   final String? verificationMethod;
@@ -751,8 +745,6 @@ extension type const DidDocumentPreviewWarningsItem(String value) {
       DidDocumentPreviewWarningsItem('singleKeyRole');
   static const DidDocumentPreviewWarningsItem algorithmNotInAcceptedSet =
       DidDocumentPreviewWarningsItem('algorithmNotInAcceptedSet');
-  static const DidDocumentPreviewWarningsItem overlapShorterThanValidityPeriod =
-      DidDocumentPreviewWarningsItem('overlapShorterThanValidityPeriod');
   static const DidDocumentPreviewWarningsItem roleWillHaveNoClassicalKey =
       DidDocumentPreviewWarningsItem('roleWillHaveNoClassicalKey');
   static const DidDocumentPreviewWarningsItem attestationReissuanceRequired =
@@ -766,7 +758,6 @@ extension type const DidDocumentPreviewWarningsItem(String value) {
     preRotationDisabled,
     singleKeyRole,
     algorithmNotInAcceptedSet,
-    overlapShorterThanValidityPeriod,
     roleWillHaveNoClassicalKey,
     attestationReissuanceRequired,
     serverless
@@ -828,14 +819,11 @@ class DidDocumentPreview {
   /// in deactivation. `singleKeyRole` — the role will hold one active key, so its next
   /// compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier
   /// population the VTA knows of does not accept the new key's algorithm.
-  /// `overlapShorterThanValidityPeriod` — the overlap ends before resolvers caching the
-  /// current document must re-resolve, so some verifiers will see the predecessor vanish
-  /// before they see the successor. `roleWillHaveNoClassicalKey` — every remaining key
-  /// is post-quantum, which verifiers without post-quantum support cannot check.
-  /// `attestationReissuanceRequired` — revoking this `attestation` key obliges the node
-  /// to re-issue every attestation artefact still in force and re-sign every status list
-  /// (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator
-  /// must.
+  /// `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers
+  /// without post-quantum support cannot check. `attestationReissuanceRequired` —
+  /// revoking this `attestation` key obliges the node to re-issue every attestation
+  /// artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` —
+  /// the VTA will not publish the entry; the operator must.
   final List<DidDocumentPreviewWarningsItem>? warnings;
 
   /// True when appending this entry also moves the DID's update key to a committed

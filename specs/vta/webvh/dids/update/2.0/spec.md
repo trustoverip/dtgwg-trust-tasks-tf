@@ -72,6 +72,9 @@ errorCodes:
   - code: "vta/webvh/dids:preRotationRequired"
     meaning: "The update would leave a durable node identity with no committed successor update key."
     retryable: false
+  - code: "vta/webvh/dids:notKeyRoleIdentity"
+    meaning: "The DID was not created with key roles. Create a new identity with key roles instead."
+    retryable: false
 related:
   - vta/webvh/dids/keys/list
   - vta/webvh/dids/keys/add
@@ -101,8 +104,7 @@ the staging, approval or audit the key-role tasks require. 2.0 closes that:
    relationships or `keyRoles` differ from the current entry's is refused with
    `vta/webvh/dids/update:keyMembersManaged`. Keys change through
    [`keys/add`](../../keys/add/1.0/spec.md), [`rotate-keys/2.0`](../../rotate-keys/2.0/spec.md),
-   [`keys/retire`](../../keys/retire/1.0/spec.md), [`keys/revoke`](../../keys/revoke/1.0/spec.md)
-   and [`keys/migrate`](../../keys/migrate/1.0/spec.md).
+   [`keys/retire`](../../keys/retire/1.0/spec.md) and [`keys/revoke`](../../keys/revoke/1.0/spec.md).
 2. **Preview and bound approval.** `dryRun` returns the executor-computed preview 1.0's prose
    demanded but its payload could not carry, and `previewId` binds an approval to it
    ([conventions §3](../../../../_shared/0.3/CONVENTIONS.md#3-approval)).
@@ -132,6 +134,10 @@ A conforming **consumer** (the agent) **MUST**:
 2. Reject a payload carrying members this schema does not define.
 3. Refuse the update when `expectedVersionId` is present and no longer matches →
    `versionConflict`.
+3a. Refuse a DID that is not a key-role identity with `vta/webvh/dids:notKeyRoleIdentity`
+   ([conventions §10](../../../../_shared/0.3/CONVENTIONS.md#10-only-key-role-identities)).
+   A pre-role DID has no key-role tasks to change its keys through, so accepting updates to it
+   would leave it permanently outside them; the remedy is a new identity.
 4. Refuse a document whose key members differ from the current entry's →
    `keyMembersManaged`, naming them in `details.members`. Member order within a relationship
    is not a difference.

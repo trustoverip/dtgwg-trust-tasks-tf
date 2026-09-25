@@ -62,11 +62,11 @@ errorCodes:
   - code: "vta/webvh/dids:wouldEmptyRole"
     meaning: "The key is the role's last active key. Add or rotate in a successor first."
     retryable: false
-  - code: "vta/webvh/dids:legacyKeysPresent"
-    meaning: "The DID still publishes keys with no role; migrate it first."
+  - code: "vta/webvh/dids:notKeyRoleIdentity"
+    meaning: "The DID was not created with key roles. Create a new identity with key roles instead."
     retryable: false
   - code: "vta/webvh/dids/keys/retire:notYetActive"
-    meaning: "Completing the rotation would retire the predecessor before its successor has activated — before every cached document can have seen the successor."
+    meaning: "Completing the rotation would retire the predecessor before the rotation's cache horizon has passed and its successor has switched — before every cached document can have seen the successor."
     retryable: true
 related:
   - vta/webvh/dids/rotate-keys
@@ -111,15 +111,15 @@ A conforming **consumer** (the VTA) **MUST**:
    key. There is no override: a DID whose attestation role is empty can sign no
    credential, and one whose operational role is empty cannot answer a message.
 3. Refuse with `vta/webvh/dids/keys/retire:notYetActive` a retirement of a rotation's
-   predecessor while its successor is still `staged`. Retiring it then would leave
-   verifiers with cached documents unable to check anything the node signs until they
-   re-resolve.
+   predecessor before the rotation's cache horizon has passed and its successor has
+   switched to `active` ([conventions §11.2](../../../../../_shared/0.3/CONVENTIONS.md#112-phases-of-a-planned-rotation)).
+   Completing a rotation early never skips the cache-horizon wait: retiring the predecessor
+   sooner would leave verifiers and senders holding cached documents with no key they know.
+   Retiring a rotation's *successor* (aborting) is never refused on these grounds.
 4. Remove the key from its relationship, from `keyRoles` and from `verificationMethod` in
    one entry, and mark its record `retired` with the entry's versionId.
-5. For an `attestation` key, destroy the private half (VTI-KEY-125) once the entry is
-   published, and audit `did.keys.destroy`. For a `messaging` key, keep the private half
-   for decryption only, for as long as messages encrypted to it can be in transit
-   (conventions §4 item 4).
+5. Destroy the key's private half once the entry is published — for `attestation`
+   (VTI-KEY-125) and `messaging` (conventions §11.3) alike — and audit `did.keys.destroy`.
 6. When the key is a rotation's successor, record the rotation `aborted`, and return the
    predecessor to `active`.
 

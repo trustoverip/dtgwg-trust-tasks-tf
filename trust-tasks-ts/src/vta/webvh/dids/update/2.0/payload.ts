@@ -319,14 +319,13 @@ export const PAYLOAD_SCHEMA = {
               "preRotationDisabled",
               "singleKeyRole",
               "algorithmNotInAcceptedSet",
-              "overlapShorterThanValidityPeriod",
               "roleWillHaveNoClassicalKey",
               "attestationReissuanceRequired",
               "serverless"
             ]
           },
           "uniqueItems": true,
-          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `overlapShorterThanValidityPeriod` — the overlap ends before resolvers caching the current document must re-resolve, so some verifiers will see the predecessor vanish before they see the successor. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
+          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
         },
         "updateKeyRotates": {
           "type": "boolean",
@@ -350,11 +349,9 @@ export const PAYLOAD_SCHEMA = {
             "retireKey",
             "revokeKey",
             "rotateUpdateKey",
-            "setPreRotation",
-            "setKeyRoles",
-            "setGracePeriod"
+            "setPreRotation"
           ],
-          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or rewritten. `setGracePeriod` — the migration's grace-period end is recorded."
+          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes."
         },
         "role": {
           "$ref": "#/$defs/KeyRole"
@@ -579,14 +576,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "preRotationDisabled",
               "singleKeyRole",
               "algorithmNotInAcceptedSet",
-              "overlapShorterThanValidityPeriod",
               "roleWillHaveNoClassicalKey",
               "attestationReissuanceRequired",
               "serverless"
             ]
           },
           "uniqueItems": true,
-          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `overlapShorterThanValidityPeriod` — the overlap ends before resolvers caching the current document must re-resolve, so some verifiers will see the predecessor vanish before they see the successor. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
+          "description": "Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must."
         },
         "updateKeyRotates": {
           "type": "boolean",
@@ -610,11 +606,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "retireKey",
             "revokeKey",
             "rotateUpdateKey",
-            "setPreRotation",
-            "setKeyRoles",
-            "setGracePeriod"
+            "setPreRotation"
           ],
-          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or rewritten. `setGracePeriod` — the migration's grace-period end is recorded."
+          "description": "`addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes."
         },
         "role": {
           "$ref": "#/$defs/KeyRole"

@@ -36,12 +36,12 @@
     "activatesAt": {
       "type": "string",
       "format": "date-time",
-      "description": "When the successor should begin to be used. The VTA MUST NOT activate it earlier than its publication plus the document's validity period (VTI-KEY-122), and uses that as the default. Not permitted for `update`."
+      "description": "When the successor should begin to be used. The VTA MUST NOT switch earlier than the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — and uses that as the default. Not permitted for `update`."
     },
     "overlapUntil": {
       "type": "string",
       "format": "date-time",
-      "description": "End of the overlap: how long the predecessor stays published, and unused, after the successor activates. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap."
+      "description": "End of the overlap: when the predecessor is retired. MUST be later than `activatesAt`, so a planned overlap never ends before the cache horizon. Absent means the VTA's policy for the role. Not permitted for `update`, which rotates without overlap."
     },
     "autoRetire": {
       "type": "boolean",

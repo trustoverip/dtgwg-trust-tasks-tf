@@ -9,7 +9,6 @@ VTNs provisioned on it:
 - [`vta/webvh/dids/rotate-keys/2.0`](../../webvh/dids/rotate-keys/2.0/spec.md) — a planned rotation of one role, staged and overlapped;
 - [`vta/webvh/dids/keys/retire/1.0`](../../webvh/dids/keys/retire/1.0/spec.md) — a planned retirement, which is also how a rotation completes or aborts;
 - [`vta/webvh/dids/keys/revoke/1.0`](../../webvh/dids/keys/revoke/1.0/spec.md) — revocation for compromise;
-- [`vta/webvh/dids/keys/migrate/1.0`](../../webvh/dids/keys/migrate/1.0/spec.md) — the one entry that moves a pre-role DID onto key roles;
 - [`vta/webvh/dids/update/2.0`](../../webvh/dids/update/2.0/spec.md) — document changes that are not key changes.
 
 Each of those specifications references this file rather than restating it; conformance
@@ -18,7 +17,7 @@ is anchored here. The wire shapes are in
 
 The requirements a VTA, a node and a verifier must meet regardless of protocol — the key
 role registry, custody, rotation and revocation, judging material signed before a
-rotation, and migration — are the Verifiable Trust Infrastructure specification's
+rotation — are the Verifiable Trust Infrastructure specification's
 *Key roles* section (VTI-KEY-070 onward, in draft). These tasks are how a client drives a
 VTA that meets them. Where this document and the VTI specification disagree, the VTI
 specification is the requirement and this document is the defect.
@@ -45,8 +44,8 @@ Consequences a conforming VTA **MUST** honour:
    A VTA **MUST NOT** publish one, and **MUST** refuse any request whose result would be
    one.
 2. **`capabilityInvocation` and `capabilityDelegation` are reserved.** No role permits
-   them (VTI-KEY-075). A VTA **MUST NOT** list a method in either, and a rotation that
-   finds one there from before key roles **MUST** remove it rather than carry it forward.
+   them (VTI-KEY-075). A VTA **MUST NOT** list a method in either; a document that lists one is not a key-role
+   identity (§10).
 3. **A key serves one role for its whole life.** Moving a key between roles is a
    retirement from one and an addition to the other, with fresh key material under a
    fresh identifier. The same public key **MUST NOT** appear in two roles, in two
@@ -72,6 +71,10 @@ Consequences a conforming VTA **MUST** honour:
    so that a fragment reveals nothing about the node's layout and cannot be reissued
    under different material.
 
+How long a predecessor and its successor are published together, and what each may do in
+that time, differs by role and is set out in
+[§11 Overlap by role](#11-overlap-by-role).
+
 A role may hold more than one active key — an Ed25519 and an ML-DSA-44 attestation key
 signing as a proof set (VTI-KEY-103), for example. The rules above apply to each.
 
@@ -87,7 +90,6 @@ Authority is checked against the caller's role in the VTA's access-control list 
 | `keys/list`, custody projection | context `admin`, `super-admin` | same | same |
 | `keys/add`, `rotate-keys`, `keys/retire` | context `admin`, `super-admin` | `super-admin` | `super-admin` |
 | `keys/revoke` (compromise) | context `admin`, `super-admin` | context `admin`, `super-admin` | `super-admin` |
-| `keys/migrate` | — | `super-admin` | — |
 | `update` (non-key members) | context `admin`, `super-admin` | — | — |
 
 - A VTA **MAY** narrow any cell, and **MAY** delegate the `attestation` column to a named
@@ -174,7 +176,7 @@ refused the same way after the VTA has computed and stored a preview for it, wit
 preview in `details.preview`, so the step-up is always over a plan the human can be
 shown. The `reason` the VTA puts in the step-up request **MUST** name the DID, the role
 and the operation in words — *"Rotate the attestation key of vtc.example: every
-membership credential and status list issued from 2 October will be signed by the new
+membership credential and status list issued from 26 September will be signed by the new
 key"* — and **MUST NOT** be a generic "confirm this action".
 
 The client shows its human that `reason` with the preview beside it, obtains the gesture,
@@ -223,11 +225,10 @@ shows "waiting for 1 more approval".
    while the document still publishes the key leaves verifiers trusting a key the VTA can
    no longer use and will never announce as withdrawn; `vta/webvh/dids/keys/revoke`
    withdraws it in the document and in custody together.
-4. A retired `attestation` key **MUST** be destroyed (VTI-KEY-125); its record survives,
-   with `destroyed: true`. A retired `messaging` key's private half **SHOULD** be kept,
-   usable for decryption only, for as long as messages encrypted to it can still be in
-   transit. A revoked key **MUST NOT** be used for anything; a revoked `messaging` key
-   **MUST NOT** decrypt anything received after `compromisedSince`.
+4. A retired `attestation` or `messaging` key **MUST** be destroyed when the retiring entry
+   is published (VTI-KEY-125 for attestation; §11 for messaging); its record survives, with
+   `destroyed: true`. A revoked key **MUST NOT** be used for anything; a revoked `messaging`
+   key **MUST NOT** decrypt anything received after `compromisedSince`.
 5. No response of any task in this family carries private key material, in any member or
    in `ext`. The only way a private half leaves a VTA is `keys/export-secret`, and point 2
    closes that for the roles that must never leave.
@@ -262,7 +263,7 @@ every one of these, **including refusals**:
 |---|---|
 | `did.keys.preview` | A preview was computed and stored |
 | `did.keys.approval` | An approval bound to a preview was recorded, or declined |
-| `did.keys.add`, `did.keys.rotate`, `did.keys.retire`, `did.keys.revoke`, `did.keys.migrate`, `did.update` | A change was applied, left pending, or refused |
+| `did.keys.add`, `did.keys.rotate`, `did.keys.retire`, `did.keys.revoke`, `did.update` | A change was applied, left pending, or refused |
 | `did.keys.activate` | A staged successor became active at `activatesAt` |
 | `did.keys.autoRetire` | The VTA retired a predecessor itself at the end of an overlap |
 | `did.keys.destroy` | A retired attestation key's private half was destroyed |
@@ -351,26 +352,80 @@ Every task in this family that can reach one **MUST** declare it.
 - code: vta/webvh/dids:preRotationRequired
   meaning: The change would leave a durable node identity with no committed successor update key.
   retryable: false
-- code: vta/webvh/dids:legacyKeysPresent
-  meaning: The DID still publishes keys with no role; it must be migrated before its roles can be changed.
+- code: vta/webvh/dids:notKeyRoleIdentity
+  meaning: The DID was not created with key roles (its document does not satisfy §1). These tasks do not operate on it; create a new identity with key roles instead.
   retryable: false
 ```
 
 `stepUpRequired` is retryable because the same request succeeds once the approval it
 names is recorded — that is the whole of the flow in §3.2.
 
-## 10. DIDs created before key roles
+## 10. Only key-role identities
 
-A DID created before roles existed — one Ed25519 key in both `authentication` and
-`assertionMethod`, which also held the log's update authority — is a **legacy identity**
-(VTI-KEY-140). `keys/list` reports its keys under `unassigned`, and a VTA **MUST NOT**
-silently assign them a role.
+These tasks operate **only** on a DID whose every published key is bound to exactly one role
+as §1 requires, with `keyRoles` in agreement — a **key-role identity**. A DID created before
+key roles (one key in both `authentication` and `assertionMethod`, also holding the log's
+update authority), or any DID whose document breaks §1, is not converted in place. Every
+task in this family, `keys/list` included, **MUST** refuse it with
+`vta/webvh/dids:notKeyRoleIdentity`, and **MUST NOT** guess roles for its keys or repair it.
 
-Migration is one log entry, not a sequence: [`keys/migrate`](../../webvh/dids/keys/migrate/1.0/spec.md)
-adds the generated attestation key or keys and a new operational key, adds `keyRoles`,
-removes the legacy key from `assertionMethod`, moves the update authority to a generated
-update key, and records the grace period's end. Doing it as separate `keys/add` and
-`keys/retire` entries would publish, for however long the steps take, a document in which
-the legacy key and the new attestation key are both in `assertionMethod` with nothing to
-tell a verifier which is meant. Every other mutating task **MUST** refuse a legacy
-identity with `vta/webvh/dids:legacyKeysPresent`.
+The remedy is a new identity: create a new DID with key roles and move the node to it.
+There is no migration task and no grace period for artefacts a pre-role key signed; the
+deployments this family is being introduced into are recreated from scratch. A client
+**MUST** word the refusal as that instruction — "This DID was created before key roles.
+Create a new identity for this community" — and not as a failure to retry.
+
+## 11. Overlap by role
+
+A planned rotation publishes the successor before it is used and removes the predecessor
+after, so that no verifier or sender acting on a cached copy of the DID document meets a key
+it has never seen, or loses one it still relies on. Revocation for compromise never overlaps.
+
+### 11.1 The cache horizon
+
+The **cache horizon** of an entry is its publication time plus the longer of the document's
+stated validity period (its TTL, VTI-KEY-060) and the **verifier cache cap** — the maximum
+age of a cached document a verifier may rely on (VTI-KEY-134; proposed as 24 hours). After the
+cache horizon, no conforming verifier or sender still acts on a copy older than that entry.
+
+The cache cap is the VTI specification's number. A VTA **MUST** use it as published there,
+**MUST NOT** use a shorter one, and reports the horizon it applied as `cacheHorizonAt` on the
+rotation record, so every client can show it.
+
+### 11.2 Phases of a planned rotation
+
+| Phase | Entry | Successor | Predecessor | Earliest |
+|---|---|---|---|---|
+| **1. Publish** | successor added to the role's relationship and `keyRoles` | `staged` | `active` | — |
+| **2. Wait** | none | `staged` | `active` | lasts until the cache horizon of entry 1 |
+| **3. Switch** | none — the VTA begins signing (or preferring) with the successor, and stops signing with the predecessor | `active` | `retiring` | `activatesAt` ≥ cache horizon of entry 1 |
+| **4. Retire** | predecessor removed | `active` | `retired` | `overlapUntil` > `activatesAt` |
+
+A conforming VTA:
+
+1. **MUST NOT** switch before the cache horizon of the publishing entry.
+2. **MUST NOT** end a planned overlap — by `autoRetire`, by a `keys/retire` completing the
+   rotation, or by any other means — before the cache horizon of the publishing entry has
+   passed and the successor has switched. "Complete now" completes no earlier than that; a
+   request to retire sooner is refused (`vta/webvh/dids/keys/retire:notYetActive`), and a
+   rotation request whose `activatesAt` or `overlapUntil` would break this is refused
+   (`vta/webvh/dids/rotate-keys:overlapTooShort`).
+3. **MAY** abort at any phase before retirement by retiring the *successor*; aborting never
+   has to wait, because it removes a key nobody has yet been asked to rely on alone.
+
+### 11.3 By role
+
+| Role | During the overlap | At retirement |
+|---|---|---|
+| `attestation` | Both keys are in `assertionMethod` and `keyRoles`. The VTA signs new attestation artefacts only with the active key. | The predecessor leaves the document and its private half is **destroyed**. Everything it signed still verifies, judged against the DID version current at issuance (§7, VTI-KEY-130, VTI-KEY-132). |
+| `operational` | Both keys are in `authentication` and `keyRoles`. The VTA signs new messages and responses only with the active key; a peer accepts either. | The predecessor leaves the document; the VTA destroys its private half. |
+| `messaging` (`x25519`) | Both keys are in `keyAgreement` and `keyRoles`, and **the VTA holds both private halves for the whole overlap**, decrypting with whichever a message was encrypted to. **Senders may encrypt to either**; a sender that has seen both **SHOULD** prefer the successor, the key published later. | The predecessor leaves the document and its private half is **destroyed**. A message encrypted to it afterwards cannot be read; the VTA answers it with a decryption failure that tells the sender to re-resolve. Because the overlap outlasts the cache horizon, a sender that follows the preference above never meets this. |
+| `update` | **No overlap.** The handover is pre-rotation: one log entry moves the update authority to the successor the previous entry committed, and the same entry commits a fresh next key (§8, VTI-KEY-124). | — |
+
+### 11.4 Revocation
+
+A revocation for compromise has **no overlap in any role** (VTI-KEY-123): the key leaves its
+relationship and `keyRoles` in one entry, the VTA stops using it on receipt of an authorized
+request, and any replacement is published `active`. There is no cache-horizon wait; a
+verifier with a cached document meets a signature by the unknown replacement and must
+re-resolve (VTI-KEY-134), which is the price of not trusting a stolen key for a day.

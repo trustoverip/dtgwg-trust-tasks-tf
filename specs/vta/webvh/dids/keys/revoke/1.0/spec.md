@@ -74,7 +74,11 @@ errorCodes:
   - code: "vta/webvh/dids/keys/revoke:notApplicableToRole"
     meaning: "`verificationMethod` is missing for a role that needs it, or `verificationMethod` or `replacement` was given for `role: update`."
     retryable: false
+  - code: "vta/webvh/dids:notKeyRoleIdentity"
+    meaning: "The DID was not created with key roles. Create a new identity with key roles instead."
+    retryable: false
 related:
+  - vtc/credentials/reissue
   - vta/webvh/dids/keys/retire
   - vta/webvh/dids/rotate-keys
   - vta/webvh/dids/keys/list

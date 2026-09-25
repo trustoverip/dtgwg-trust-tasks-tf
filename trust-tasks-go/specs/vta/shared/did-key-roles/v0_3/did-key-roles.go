@@ -47,18 +47,20 @@ const (
 // RoleKeyState Where a key is in its role's lifecycle. `pending` — planned by a preview
 // or a change awaiting approval; not published; custody projection only. `staged` —
 // published and bound to its role, but not yet used: a planned rotation publishes the
-// successor at least the document's validity period (its TTL) before the VTA first uses
-// it, so that no verifier holding a cached document sees a signature by a key it has
-// never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` —
-// the key the VTA uses for new signatures (or, for `messaging`, advertises for new
-// sessions). `retiring` — still published so that what it signed and sessions keyed to it
-// keep working, but never used again: from the successor's first use the VTA MUST NOT
-// sign with it, and a retiring `messaging` key MUST NOT be used to encrypt. `retired` —
-// removed by planned rotation; what it signed while published remains valid, judged
+// successor and waits until the entry's cache horizon — publication plus the longer of
+// the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA
+// first uses it, so that no verifier holding a cached document sees a signature by a key
+// it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`.
+// `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for
+// new sessions). `retiring` — still published so that what it signed and sessions keyed
+// to it keep working, but never used again: from the successor's first use the VTA MUST
+// NOT sign with it, while a retiring `messaging` key stays usable for decryption, and
+// senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired`
+// — removed by planned rotation; what it signed while published remains valid, judged
 // against the DID version current at issuance (CONVENTIONS.md §7). A retired
-// `attestation` key is destroyed (VTI-KEY-125). `revoked` — removed from every
-// relationship and from `keyRoles` in one entry, without overlap, because it is or may be
-// compromised; what it signed from `compromisedSince` onward establishes nothing.
+// `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from
+// every relationship and from `keyRoles` in one entry, without overlap, because it is or
+// may be compromised; what it signed from `compromisedSince` onward establishes nothing.
 // `retired` and `revoked` are terminal.
 type RoleKeyState string
 
@@ -165,8 +167,8 @@ type RoleKey struct {
 	Custody *RoleKeyCustody `json:"custody,omitempty"`
 	Ext     *Ext            `json:"ext,omitempty"`
 
-	// For a `staged` key: when the VTA will begin using it — no earlier than its publication
-	// plus the document's validity period.
+	// For a `staged` key: when the VTA will begin using it — no earlier than the publishing
+	// entry's cache horizon (CONVENTIONS.md §11.1).
 	ActivatesAt *string `json:"activatesAt,omitempty"`
 }
 
@@ -191,8 +193,7 @@ type RoleSummary struct {
 // on the operator's schedule. `compromise` — a key was revoked and, where the role would
 // otherwise be empty, replaced in the same log entry. `addition` — a key was added to a
 // role without anything leaving it (for example a post-quantum key alongside a classical
-// one). `migration` — the single entry that moved a pre-role DID onto key roles
-// (VTI-KEY-140).
+// one).
 type RotationKind string
 
 // Values RotationKind may take, per this specification's schema.
@@ -200,16 +201,15 @@ const (
 	RotationKindPlanned    RotationKind = "planned"
 	RotationKindCompromise RotationKind = "compromise"
 	RotationKindAddition   RotationKind = "addition"
-	RotationKindMigration  RotationKind = "migration"
 )
 
 // RotationState `pendingApproval` — awaiting the approvals the VTA's policy requires;
 // nothing is published. `staged` — successor published, not yet used; predecessor still
 // active. `overlapping` — successor active, predecessor `retiring`. `completed` — every
-// predecessor retired (or, for `compromise`, `addition` and `migration`, the entry is
-// published and any overlap it began has ended). `aborted` — the successor was retired
-// instead of the predecessor, which stayed or returned to `active`. `expired` — approvals
-// were not gathered before the preview expired; nothing was published.
+// predecessor retired (or, for `compromise` and `addition`, the entry is published and
+// any overlap it began has ended). `aborted` — the successor was retired instead of the
+// predecessor, which stayed or returned to `active`. `expired` — approvals were not
+// gathered before the preview expired; nothing was published.
 type RotationState string
 
 // Values RotationState may take, per this specification's schema.
@@ -260,13 +260,15 @@ type RotationRecord struct {
 	Reason *string `json:"reason,omitempty"`
 	Ext    *Ext    `json:"ext,omitempty"`
 
-	// When the successor becomes `active` and the predecessor `retiring`.
+	// When the successor becomes `active` and the predecessor `retiring`; never before
+	// `cacheHorizonAt`.
 	ActivatesAt *string `json:"activatesAt,omitempty"`
 
-	// `migration` only: the end of the grace period stated in the migration entry
-	// (VTI-KEY-143), after which no verifier accepts an attestation artefact under the legacy
-	// key.
-	GracePeriodEnd *string `json:"gracePeriodEnd,omitempty"`
+	// Planned rotations: the publishing entry's cache horizon — publication plus the longer
+	// of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch,
+	// and any retirement of the predecessor, happen no earlier. Public: it follows from the
+	// log and the published cap.
+	CacheHorizonAt *string `json:"cacheHorizonAt,omitempty"`
 }
 
 // KeyRoleApprovalState Approval progress of a change the VTA's policy gates on more than
@@ -291,9 +293,7 @@ type KeyRoleApprovalState struct {
 // relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves
 // its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7).
 // `rotateUpdateKey` — the log's update key moves to a committed successor.
-// `setPreRotation` — the number of successors committed changes. `setKeyRoles` —
-// `keyRoles` is added (migration) or rewritten. `setGracePeriod` — the migration's
-// grace-period end is recorded.
+// `setPreRotation` — the number of successors committed changes.
 type DIDDocumentChangeOp string
 
 // Values DIDDocumentChangeOp may take, per this specification's schema.
@@ -303,8 +303,6 @@ const (
 	DIDDocumentChangeOpRevokeKey       DIDDocumentChangeOp = "revokeKey"
 	DIDDocumentChangeOpRotateUpdateKey DIDDocumentChangeOp = "rotateUpdateKey"
 	DIDDocumentChangeOpSetPreRotation  DIDDocumentChangeOp = "setPreRotation"
-	DIDDocumentChangeOpSetKeyRoles     DIDDocumentChangeOp = "setKeyRoles"
-	DIDDocumentChangeOpSetGracePeriod  DIDDocumentChangeOp = "setGracePeriod"
 )
 
 // DIDDocumentChange DidDocumentChange
@@ -314,8 +312,7 @@ type DIDDocumentChange struct {
 	// the document. `revokeKey` — a verification method leaves its relationship and
 	// `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the
 	// log's update key moves to a committed successor. `setPreRotation` — the number of
-	// successors committed changes. `setKeyRoles` — `keyRoles` is added (migration) or
-	// rewritten. `setGracePeriod` — the migration's grace-period end is recorded.
+	// successors committed changes.
 	Op                 DIDDocumentChangeOp            `json:"op"`
 	Role               KeyRole                        `json:"role"`
 	VerificationMethod *string                        `json:"verificationMethod,omitempty"`
@@ -331,13 +328,12 @@ type DIDDocumentPreviewWarningsItem string
 
 // Values DIDDocumentPreviewWarningsItem may take, per this specification's schema.
 const (
-	DIDDocumentPreviewWarningsItemPreRotationDisabled              DIDDocumentPreviewWarningsItem = "preRotationDisabled"
-	DIDDocumentPreviewWarningsItemSingleKeyRole                    DIDDocumentPreviewWarningsItem = "singleKeyRole"
-	DIDDocumentPreviewWarningsItemAlgorithmNotInAcceptedSet        DIDDocumentPreviewWarningsItem = "algorithmNotInAcceptedSet"
-	DIDDocumentPreviewWarningsItemOverlapShorterThanValidityPeriod DIDDocumentPreviewWarningsItem = "overlapShorterThanValidityPeriod"
-	DIDDocumentPreviewWarningsItemRoleWillHaveNoClassicalKey       DIDDocumentPreviewWarningsItem = "roleWillHaveNoClassicalKey"
-	DIDDocumentPreviewWarningsItemAttestationReissuanceRequired    DIDDocumentPreviewWarningsItem = "attestationReissuanceRequired"
-	DIDDocumentPreviewWarningsItemServerless                       DIDDocumentPreviewWarningsItem = "serverless"
+	DIDDocumentPreviewWarningsItemPreRotationDisabled           DIDDocumentPreviewWarningsItem = "preRotationDisabled"
+	DIDDocumentPreviewWarningsItemSingleKeyRole                 DIDDocumentPreviewWarningsItem = "singleKeyRole"
+	DIDDocumentPreviewWarningsItemAlgorithmNotInAcceptedSet     DIDDocumentPreviewWarningsItem = "algorithmNotInAcceptedSet"
+	DIDDocumentPreviewWarningsItemRoleWillHaveNoClassicalKey    DIDDocumentPreviewWarningsItem = "roleWillHaveNoClassicalKey"
+	DIDDocumentPreviewWarningsItemAttestationReissuanceRequired DIDDocumentPreviewWarningsItem = "attestationReissuanceRequired"
+	DIDDocumentPreviewWarningsItemServerless                    DIDDocumentPreviewWarningsItem = "serverless"
 )
 
 // DIDDocumentPreview What a change would publish, computed by the VTA by running the
@@ -367,13 +363,11 @@ type DIDDocumentPreview struct {
 	// deactivation. `singleKeyRole` — the role will hold one active key, so its next
 	// compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier
 	// population the VTA knows of does not accept the new key's algorithm.
-	// `overlapShorterThanValidityPeriod` — the overlap ends before resolvers caching the
-	// current document must re-resolve, so some verifiers will see the predecessor vanish
-	// before they see the successor. `roleWillHaveNoClassicalKey` — every remaining key is
-	// post-quantum, which verifiers without post-quantum support cannot check.
-	// `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to
-	// re-issue every attestation artefact still in force and re-sign every status list
-	// (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must.
+	// `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers
+	// without post-quantum support cannot check. `attestationReissuanceRequired` — revoking
+	// this `attestation` key obliges the node to re-issue every attestation artefact still in
+	// force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not
+	// publish the entry; the operator must.
 	Warnings *[]DIDDocumentPreviewWarningsItem `json:"warnings,omitempty"`
 
 	// True when appending this entry also moves the DID's update key to a committed

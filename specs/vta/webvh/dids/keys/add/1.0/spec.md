@@ -62,14 +62,13 @@ errorCodes:
   - code: "vta/webvh/dids:rotationInProgress"
     meaning: "The role already has a change staged, overlapping or awaiting approval."
     retryable: false
-  - code: "vta/webvh/dids:legacyKeysPresent"
-    meaning: "The DID still publishes keys with no role; migrate it first."
+  - code: "vta/webvh/dids:notKeyRoleIdentity"
+    meaning: "The DID was not created with key roles. Create a new identity with key roles instead."
     retryable: false
 related:
   - vta/webvh/dids/keys/list
   - vta/webvh/dids/rotate-keys
   - vta/webvh/dids/keys/retire
-  - vta/webvh/dids/keys/migrate
   - auth/step-up/approve-request
 ---
 
@@ -108,7 +107,7 @@ A conforming **consumer** (the VTA) **MUST**:
 3. Publish it in exactly the role's relationship and in `keyRoles`, under a fragment
    derived from the key, and create its custodian record in the same atomic step.
 4. Stage it: the key is `staged` on publication and becomes `active` no sooner than the
-   document's validity period later (VTI-KEY-122), so no verifier holding a cached
+   entry's cache horizon ([conventions §11.1](../../../../../_shared/0.3/CONVENTIONS.md#111-the-cache-horizon); VTI-KEY-122), so no verifier holding a cached
    document sees a signature by a key it has not seen. The response's `keys[0].activatesAt`
    says when.
 5. Compute and return the preview on `dryRun`, and apply exactly a previewed plan on

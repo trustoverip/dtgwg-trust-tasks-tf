@@ -45,21 +45,10 @@ export interface VTAWebVHDIDsKeysListResponsePayload {
    */
   roles: RoleSummary[];
   /**
-   * Published keys the VTA has no role for — a DID created before key roles (CONVENTIONS.md §10). Empty when the DID is fully migrated.
-   */
-  unassigned: UnassignedKey[];
-  /**
    * Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.
    */
   rotations?: RotationRecord[];
   ext?: Ext;
-}
-export interface UnassignedKey {
-  verificationMethod: string;
-  keyType: KeyType;
-  publicKeyMultibase: string;
-  relationships: DidVerificationRelationship[];
-  custody?: RoleKeyCustody;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
@@ -134,8 +123,7 @@ export const PAYLOAD_SCHEMA = {
         "did",
         "versionId",
         "projection",
-        "roles",
-        "unassigned"
+        "roles"
       ],
       "properties": {
         "did": {
@@ -155,13 +143,6 @@ export const PAYLOAD_SCHEMA = {
           },
           "description": "One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'."
         },
-        "unassigned": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/UnassignedKey"
-          },
-          "description": "Published keys the VTA has no role for — a DID created before key roles (CONVENTIONS.md §10). Empty when the DID is fully migrated."
-        },
         "rotations": {
           "type": "array",
           "items": {
@@ -173,117 +154,6 @@ export const PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/Ext"
         }
       }
-    },
-    "UnassignedKey": {
-      "title": "UnassignedKey",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "verificationMethod",
-        "keyType",
-        "publicKeyMultibase",
-        "relationships"
-      ],
-      "properties": {
-        "verificationMethod": {
-          "type": "string",
-          "minLength": 1
-        },
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1
-        },
-        "relationships": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DidVerificationRelationship"
-          },
-          "uniqueItems": true
-        },
-        "custody": {
-          "$ref": "#/$defs/RoleKeyCustody"
-        }
-      }
-    },
-    "RoleKeyCustody": {
-      "title": "RoleKeyCustody",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "exportable",
-        "neverExportable",
-        "inBackups"
-      ],
-      "description": "How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.",
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The custodian record identifier (`keys/*`'s `keyId`) behind this key."
-        },
-        "origin": {
-          "$ref": "#/$defs/KeyOrigin"
-        },
-        "exportable": {
-          "type": "boolean",
-          "description": "Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer."
-        },
-        "neverExportable": {
-          "type": "boolean",
-          "description": "True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`."
-        },
-        "hardwareBacked": {
-          "type": "boolean",
-          "description": "True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false."
-        },
-        "inBackups": {
-          "type": "boolean",
-          "description": "Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore."
-        },
-        "destroyed": {
-          "type": "boolean",
-          "description": "True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable."
-        }
-      }
-    },
-    "KeyOrigin": {
-      "title": "KeyOrigin",
-      "type": "string",
-      "enum": [
-        "derived",
-        "imported",
-        "internal"
-      ],
-      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
-      "default": "derived"
-    },
-    "DidVerificationRelationship": {
-      "title": "DidVerificationRelationship",
-      "type": "string",
-      "enum": [
-        "authentication",
-        "assertionMethod",
-        "keyAgreement",
-        "capabilityInvocation",
-        "capabilityDelegation"
-      ],
-      "description": "A DID Core verification relationship."
-    },
-    "KeyType": {
-      "title": "KeyType",
-      "type": "string",
-      "enum": [
-        "ed25519",
-        "x25519",
-        "p256",
-        "mldsa44",
-        "mldsa65"
-      ],
-      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     },
     "Ext": {
       "title": "Ext",
@@ -376,12 +246,12 @@ export const PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the successor becomes `active` and the predecessor `retiring`."
+          "description": "When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`."
         },
-        "gracePeriodEnd": {
+        "cacheHorizonAt": {
           "type": "string",
           "format": "date-time",
-          "description": "`migration` only: the end of the grace period stated in the migration entry (VTI-KEY-143), after which no verifier accepts an attestation artefact under the legacy key."
+          "description": "Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap."
         }
       }
     },
@@ -432,7 +302,7 @@ export const PAYLOAD_SCHEMA = {
         "aborted",
         "expired"
       ],
-      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise`, `addition` and `migration`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
+      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
     },
     "RotationKind": {
       "title": "RotationKind",
@@ -440,10 +310,9 @@ export const PAYLOAD_SCHEMA = {
       "enum": [
         "planned",
         "compromise",
-        "addition",
-        "migration"
+        "addition"
       ],
-      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one). `migration` — the single entry that moved a pre-role DID onto key roles (VTI-KEY-140)."
+      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one)."
     },
     "KeyRole": {
       "title": "KeyRole",
@@ -566,9 +435,62 @@ export const PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "For a `staged` key: when the VTA will begin using it — no earlier than its publication plus the document's validity period."
+          "description": "For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1)."
         }
       }
+    },
+    "RoleKeyCustody": {
+      "title": "RoleKeyCustody",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyId",
+        "exportable",
+        "neverExportable",
+        "inBackups"
+      ],
+      "description": "How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.",
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The custodian record identifier (`keys/*`'s `keyId`) behind this key."
+        },
+        "origin": {
+          "$ref": "#/$defs/KeyOrigin"
+        },
+        "exportable": {
+          "type": "boolean",
+          "description": "Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer."
+        },
+        "neverExportable": {
+          "type": "boolean",
+          "description": "True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`."
+        },
+        "hardwareBacked": {
+          "type": "boolean",
+          "description": "True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false."
+        },
+        "inBackups": {
+          "type": "boolean",
+          "description": "Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore."
+        },
+        "destroyed": {
+          "type": "boolean",
+          "description": "True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable."
+        }
+      }
+    },
+    "KeyOrigin": {
+      "title": "KeyOrigin",
+      "type": "string",
+      "enum": [
+        "derived",
+        "imported",
+        "internal"
+      ],
+      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
+      "default": "derived"
     },
     "RoleKeyState": {
       "title": "RoleKeyState",
@@ -581,7 +503,31 @@ export const PAYLOAD_SCHEMA = {
         "retired",
         "revoked"
       ],
-      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor at least the document's validity period (its TTL) before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, and a retiring `messaging` key MUST NOT be used to encrypt. `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` key is destroyed (VTI-KEY-125). `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
+      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
+    },
+    "DidVerificationRelationship": {
+      "title": "DidVerificationRelationship",
+      "type": "string",
+      "enum": [
+        "authentication",
+        "assertionMethod",
+        "keyAgreement",
+        "capabilityInvocation",
+        "capabilityDelegation"
+      ],
+      "description": "A DID Core verification relationship."
+    },
+    "KeyType": {
+      "title": "KeyType",
+      "type": "string",
+      "enum": [
+        "ed25519",
+        "x25519",
+        "p256",
+        "mldsa44",
+        "mldsa65"
+      ],
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     },
     "KeyRoleProjection": {
       "title": "KeyRoleProjection",
@@ -610,8 +556,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "did",
         "versionId",
         "projection",
-        "roles",
-        "unassigned"
+        "roles"
       ],
       "properties": {
         "did": {
@@ -631,13 +576,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           },
           "description": "One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'."
         },
-        "unassigned": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/UnassignedKey"
-          },
-          "description": "Published keys the VTA has no role for — a DID created before key roles (CONVENTIONS.md §10). Empty when the DID is fully migrated."
-        },
         "rotations": {
           "type": "array",
           "items": {
@@ -649,117 +587,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "$ref": "#/$defs/Ext"
         }
       }
-    },
-    "UnassignedKey": {
-      "title": "UnassignedKey",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "verificationMethod",
-        "keyType",
-        "publicKeyMultibase",
-        "relationships"
-      ],
-      "properties": {
-        "verificationMethod": {
-          "type": "string",
-          "minLength": 1
-        },
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1
-        },
-        "relationships": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DidVerificationRelationship"
-          },
-          "uniqueItems": true
-        },
-        "custody": {
-          "$ref": "#/$defs/RoleKeyCustody"
-        }
-      }
-    },
-    "RoleKeyCustody": {
-      "title": "RoleKeyCustody",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "exportable",
-        "neverExportable",
-        "inBackups"
-      ],
-      "description": "How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.",
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The custodian record identifier (`keys/*`'s `keyId`) behind this key."
-        },
-        "origin": {
-          "$ref": "#/$defs/KeyOrigin"
-        },
-        "exportable": {
-          "type": "boolean",
-          "description": "Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer."
-        },
-        "neverExportable": {
-          "type": "boolean",
-          "description": "True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`."
-        },
-        "hardwareBacked": {
-          "type": "boolean",
-          "description": "True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false."
-        },
-        "inBackups": {
-          "type": "boolean",
-          "description": "Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore."
-        },
-        "destroyed": {
-          "type": "boolean",
-          "description": "True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable."
-        }
-      }
-    },
-    "KeyOrigin": {
-      "title": "KeyOrigin",
-      "type": "string",
-      "enum": [
-        "derived",
-        "imported",
-        "internal"
-      ],
-      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
-      "default": "derived"
-    },
-    "DidVerificationRelationship": {
-      "title": "DidVerificationRelationship",
-      "type": "string",
-      "enum": [
-        "authentication",
-        "assertionMethod",
-        "keyAgreement",
-        "capabilityInvocation",
-        "capabilityDelegation"
-      ],
-      "description": "A DID Core verification relationship."
-    },
-    "KeyType": {
-      "title": "KeyType",
-      "type": "string",
-      "enum": [
-        "ed25519",
-        "x25519",
-        "p256",
-        "mldsa44",
-        "mldsa65"
-      ],
-      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     },
     "Ext": {
       "title": "Ext",
@@ -852,12 +679,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the successor becomes `active` and the predecessor `retiring`."
+          "description": "When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`."
         },
-        "gracePeriodEnd": {
+        "cacheHorizonAt": {
           "type": "string",
           "format": "date-time",
-          "description": "`migration` only: the end of the grace period stated in the migration entry (VTI-KEY-143), after which no verifier accepts an attestation artefact under the legacy key."
+          "description": "Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap."
         }
       }
     },
@@ -908,7 +735,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "aborted",
         "expired"
       ],
-      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise`, `addition` and `migration`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
+      "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published."
     },
     "RotationKind": {
       "title": "RotationKind",
@@ -916,10 +743,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "enum": [
         "planned",
         "compromise",
-        "addition",
-        "migration"
+        "addition"
       ],
-      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one). `migration` — the single entry that moved a pre-role DID onto key roles (VTI-KEY-140)."
+      "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one)."
     },
     "KeyRole": {
       "title": "KeyRole",
@@ -1042,9 +868,62 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "activatesAt": {
           "type": "string",
           "format": "date-time",
-          "description": "For a `staged` key: when the VTA will begin using it — no earlier than its publication plus the document's validity period."
+          "description": "For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1)."
         }
       }
+    },
+    "RoleKeyCustody": {
+      "title": "RoleKeyCustody",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyId",
+        "exportable",
+        "neverExportable",
+        "inBackups"
+      ],
+      "description": "How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.",
+      "properties": {
+        "keyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The custodian record identifier (`keys/*`'s `keyId`) behind this key."
+        },
+        "origin": {
+          "$ref": "#/$defs/KeyOrigin"
+        },
+        "exportable": {
+          "type": "boolean",
+          "description": "Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer."
+        },
+        "neverExportable": {
+          "type": "boolean",
+          "description": "True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`."
+        },
+        "hardwareBacked": {
+          "type": "boolean",
+          "description": "True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false."
+        },
+        "inBackups": {
+          "type": "boolean",
+          "description": "Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore."
+        },
+        "destroyed": {
+          "type": "boolean",
+          "description": "True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable."
+        }
+      }
+    },
+    "KeyOrigin": {
+      "title": "KeyOrigin",
+      "type": "string",
+      "enum": [
+        "derived",
+        "imported",
+        "internal"
+      ],
+      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
+      "default": "derived"
     },
     "RoleKeyState": {
       "title": "RoleKeyState",
@@ -1057,7 +936,31 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "retired",
         "revoked"
       ],
-      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor at least the document's validity period (its TTL) before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, and a retiring `messaging` key MUST NOT be used to encrypt. `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` key is destroyed (VTI-KEY-125). `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
+      "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal."
+    },
+    "DidVerificationRelationship": {
+      "title": "DidVerificationRelationship",
+      "type": "string",
+      "enum": [
+        "authentication",
+        "assertionMethod",
+        "keyAgreement",
+        "capabilityInvocation",
+        "capabilityDelegation"
+      ],
+      "description": "A DID Core verification relationship."
+    },
+    "KeyType": {
+      "title": "KeyType",
+      "type": "string",
+      "enum": [
+        "ed25519",
+        "x25519",
+        "p256",
+        "mldsa44",
+        "mldsa65"
+      ],
+      "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     },
     "KeyRoleProjection": {
       "title": "KeyRoleProjection",

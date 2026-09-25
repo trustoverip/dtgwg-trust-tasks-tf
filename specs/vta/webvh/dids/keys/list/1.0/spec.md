@@ -43,6 +43,9 @@ errorCodes:
   - code: "vta/webvh/dids:notFound"
     meaning: "No such DID is held by this VTA, or the caller cannot reach its context. See [conventions](../../../../../_shared/0.3/CONVENTIONS.md#9-family-error-codes)."
     retryable: false
+  - code: "vta/webvh/dids:notKeyRoleIdentity"
+    meaning: "The DID was not created with key roles. Create a new identity with key roles instead."
+    retryable: false
 related:
   - vta/webvh/dids/keys/add
   - vta/webvh/dids/rotate-keys
@@ -86,10 +89,11 @@ A conforming **consumer** (the VTA) **MUST**:
    §5 reserves to `custody`. The caller does not ask for a projection: a request member
    choosing one would be a request member to escalate with.
 3. Derive every key's role and relationships from its own records *and* check them
-   against the document published at `versionId`. A key published in relationships
-   other than exactly its role's is a defect in the DID, and the VTA **MUST** report the
-   key as it is published (under `unassigned` if no single role fits) rather than as
-   its records say it should be.
+   against the document published at `versionId`. A DID whose document does not bind
+   every key to exactly one role, in exactly its role's relationship, is not a key-role
+   identity: refuse it with `vta/webvh/dids:notKeyRoleIdentity`
+   ([conventions §10](../../../../../_shared/0.3/CONVENTIONS.md#10-only-key-role-identities))
+   rather than report what its records say it should be.
 4. Return every role asked for, including one with no keys.
 5. Report the key record behind each key (`custody.keyId`) in the custody projection,
    and state `exportable` and `neverExportable` explicitly — never by omission — so an
@@ -161,7 +165,7 @@ The predecessor is still published and `retiring`; the successor is `active`.
             "publicKeyMultibase": "z6MkOldAttestation",
             "state": "retiring",
             "publishedInVersionId": "2-QmEntryTwo",
-            "retireAfter": "2026-10-02T09:00:00Z",
+            "retireAfter": "2026-10-03T09:00:00Z",
             "rotationId": "rot-0003",
             "custody": { "keyId": "vtc-attestation-1", "origin": "internal", "exportable": false, "neverExportable": true, "inBackups": false }
           },
@@ -227,7 +231,6 @@ The predecessor is still published and `retiring`; the successor is `active`.
         ]
       }
     ],
-    "unassigned": [],
     "rotations": [
       {
         "rotationId": "rot-0003",
@@ -238,7 +241,9 @@ The predecessor is still published and `retiring`; the successor is `active`.
         "successors": ["did:webvh:QmVtcScid:vtc.example#key-9"],
         "startedInVersionId": "7-QmEntrySeven",
         "startedAt": "2026-09-25T08:40:00Z",
-        "overlapUntil": "2026-10-02T09:00:00Z",
+        "cacheHorizonAt": "2026-09-26T08:41:00Z",
+        "activatesAt": "2026-09-26T08:41:00Z",
+        "overlapUntil": "2026-10-03T09:00:00Z",
         "autoRetire": true,
         "initiatedBy": "did:key:z6MkAdmin",
         "approvals": { "required": 2, "received": 2, "approvers": ["did:key:z6MkAdmin", "did:key:z6MkSecondAdmin"], "expiresAt": "2026-09-25T09:40:00Z" },

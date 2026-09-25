@@ -1616,10 +1616,6 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response" => <crate::specs::vta::webvh::dids::keys::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
-        "https://trusttasks.org/spec/vta/webvh/dids/keys/migrate/1.0" => <crate::specs::vta::webvh::dids::keys::migrate::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
-        #[cfg(feature = "vta")]
-        "https://trusttasks.org/spec/vta/webvh/dids/keys/migrate/1.0#response" => <crate::specs::vta::webvh::dids::keys::migrate::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
-        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0" => <crate::specs::vta::webvh::dids::keys::retire::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0#response" => <crate::specs::vta::webvh::dids::keys::retire::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1739,6 +1735,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/config/import/0.1" => <crate::specs::vtc::config::import::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/config/import/0.1#response" => <crate::specs::vtc::config::import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1" => <crate::specs::vtc::credentials::reissue::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response" => <crate::specs::vtc::credentials::reissue::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => <crate::specs::vtc::directory::query::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
@@ -3997,12 +3997,6 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "vta")]
-        "https://trusttasks.org/spec/vta/webvh/dids/keys/migrate/1.0" => {
-            Some(crate::SpecPolicy::of::<
-                crate::specs::vta::webvh::dids::keys::migrate::v1_0::Payload,
-            >())
-        }
-        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::webvh::dids::keys::retire::v1_0::Payload,
@@ -4153,6 +4147,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/config/import/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::config::import::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::credentials::reissue::v0_1::Payload,
         >()),
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => Some(crate::SpecPolicy::of::<
@@ -6230,10 +6228,6 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::vta::webvh::dids::keys::list::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
-        "https://trusttasks.org/spec/vta/webvh/dids/keys/migrate/1.0" => {
-            Some(crate::specs::vta::webvh::dids::keys::migrate::v1_0::ERROR_CODES)
-        }
-        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0" => {
             Some(crate::specs::vta::webvh::dids::keys::retire::v1_0::ERROR_CODES)
         }
@@ -6352,6 +6346,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/config/import/0.1" => {
             Some(crate::specs::vtc::config::import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1" => {
+            Some(crate::specs::vtc::credentials::reissue::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => {
