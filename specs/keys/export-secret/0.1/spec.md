@@ -96,6 +96,14 @@ The authority is **standing over the key's scope**: the custodian has recorded t
 producer as entitled to act on the scope the key belongs to. A producer without it is
 refused with the framework's `permissionDenied`.
 
+Where that entitlement is expressed as a device capability, the registered value is
+**`keyExport`** (`key-export` in the `0.1` casing) — see `Capability` in
+[`device/_shared`](../../../device/_shared/0.2/device-binding.schema.json). It is
+deliberately distinct from `sign`. A producer that may ask the custodian to *use* a key
+loses that ability the moment its entitlement changes; a producer that has *taken* the key
+keeps it after its authority is withdrawn. A custodian **MUST NOT** treat a grant of `sign`
+as a grant of `keyExport`, and granting `keyExport` confers no other capability.
+
 **Entitlement is necessary and not sufficient.** A conforming consumer applies two further
 checks that no amount of authority satisfies:
 
