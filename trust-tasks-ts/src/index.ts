@@ -153,6 +153,7 @@ export * as GitNsBridgeJob_v0_3 from "./git-ns/bridge/job/0.3/payload.js";
 export * as GitNsBridgeResult_v0_1 from "./git-ns/bridge/result/0.1/payload.js";
 export * as GitNsDriftResolve_v0_1 from "./git-ns/drift/resolve/0.1/payload.js";
 export * as GitNsDriftResolve_v0_2 from "./git-ns/drift/resolve/0.2/payload.js";
+export * as GitNsDriftResolve_v0_3 from "./git-ns/drift/resolve/0.3/payload.js";
 export * as GitNsNamespaceBind_v0_1 from "./git-ns/namespace/bind/0.1/payload.js";
 export * as GitNsNamespaceReseat_v0_1 from "./git-ns/namespace/reseat/0.1/payload.js";
 export * as GitNsNamespaceReseat_v0_2 from "./git-ns/namespace/reseat/0.2/payload.js";
