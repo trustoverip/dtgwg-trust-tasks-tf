@@ -265,7 +265,8 @@
           "additionalProperties": false,
           "required": [
             "type",
-            "roleMap"
+            "roleMap",
+            "ladder"
           ],
           "properties": {
             "type": {
@@ -273,6 +274,16 @@
             },
             "roleMap": {
               "$ref": "#/$defs/RoleMap"
+            },
+            "ladder": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "description": "The levels the forge offers as a direct role on a repository in the namespace, lowest first, without `none` (which every forge has). Every role in `roleMap` and in each `repos[].roleMap` is `none` or one of these.",
+              "items": {
+                "$ref": "#/$defs/MappedRole"
+              }
             },
             "repos": {
               "type": "array",

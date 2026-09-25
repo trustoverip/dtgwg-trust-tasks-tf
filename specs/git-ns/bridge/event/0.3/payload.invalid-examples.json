@@ -52,6 +52,53 @@
     }
   },
   {
+    "note": "A role-map report names the ladder its map is rounded onto.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        }
+      }
+    }
+  },
+  {
+    "note": "A ladder lists each level once.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "ladder": [
+          "write",
+          "write"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A ladder lists at least one level.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "none",
+          "maintain": "none",
+          "commit": "none"
+        },
+        "ladder": []
+      }
+    }
+  },
+  {
     "note": "A role map has no member for `git.ns.admin`: a namespace admin projects to no forge role, whatever a bridge is configured with.",
     "payload": {
       "namespace": "ns_1",
@@ -62,7 +109,14 @@
           "maintain": "maintain",
           "commit": "none",
           "nsAdmin": "admin"
-        }
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ]
       }
     }
   },
@@ -75,7 +129,14 @@
         "roleMap": {
           "own": "admin",
           "maintain": "maintain"
-        }
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ]
       }
     }
   },
@@ -89,7 +150,14 @@
           "own": "owner",
           "maintain": "maintain",
           "commit": "none"
-        }
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ]
       }
     }
   },
@@ -104,6 +172,13 @@
           "maintain": "maintain",
           "commit": "none"
         },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ],
         "repos": [
           {
             "resource": "github.com/acme",
@@ -128,6 +203,13 @@
           "maintain": "maintain",
           "commit": "none"
         },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ],
         "stale": [
           "github.com/acme/widgets",
           "github.com/acme/widgets"

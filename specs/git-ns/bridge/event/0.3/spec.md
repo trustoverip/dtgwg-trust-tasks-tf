@@ -64,8 +64,11 @@ The VTC is the source of truth, so an event never changes a right directly. It c
 One event type is added, and nothing else in an event's meaning changes.
 
 1. **`roleMapReported`: the bridge reports the role map it projects with.** A bridge maps each right in a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md) `desiredRoles` entry to a forge role, and the map is the community's to configure per bridge, forge, namespace and repository (a Forgejo community may give maintainers `admin`; a repository may give committers `write`). In `0.2` nothing told the VTC what map was in force, so it could only assume the default: it showed operators forge roles the bridge did not give, and [`git-ns/drift/resolve`](../../../../git-ns/drift/resolve/0.2/spec.md) derived the right to adopt from a map that was not the bridge's — adopting a forge `admin` as `git.repo.own` on a repository where `admin` is what `git.repo.maintain` projects to. The bridge now reports, per namespace, the map as the forge applies it, each repository whose map differs, and each repository whose roles were projected under a map it no longer applies (`stale`) — which a change of configuration otherwise leaves in place until some unrelated right changes.
-2. **The report is how the VTC learns the mapping `git-ns/drift/resolve` inverts.** Every version of that task defines the *projected right of a role* as the inverse of the mapping the bridge applies to `desiredRoles`, without saying how the VTC knows it. This version says how, and which right is the inverse when two rights share a role (request step 5.3). No version of `git-ns/drift/resolve` changes.
-3. **The VTC re-projects stale repositories.** A map change reaches a repository only at its next `projectRoles`. A VTC **SHOULD** send one for each repository in `stale`, with its complete `desiredRoles`, on receiving the report ([Request](#request), step 5). Re-projecting changes no right: it asks the bridge to apply, now, what it would apply at the next projection anyway.
+2. **The report is how the VTC learns the mapping `git-ns/drift/resolve` inverts.** Every version of that task defines the *projected right of a role* as the inverse of the mapping the bridge applies to `desiredRoles`, without saying how the VTC knows it. This version says how, and which right is the inverse when two rights share a role (request step 5.4).
+3. **Without a report the map is unknown, and nothing is derived from a guess.** A VTC used to assume the default map, so after a binding, or after the namespace came to be served by another bridge, it adopted a forge `admin` as `git.repo.own` whatever the bridge actually gave owners. A VTC now holds a map only when the bridge serving the namespace reports one — the default included. Until then it refuses an adoption with `git-ns:roleMapUnknown`, and weighs a revert as the gravest it could be (request step 5.7). [`git-ns/drift/resolve`](../../../../git-ns/drift/resolve/0.2/spec.md) 0.1 and 0.2 now declare the code and state the conservative weighing. Nothing else in them changes.
+4. **The newest report wins.** Reports are ordered by `issuedAt`. A VTC ignores a report issued before the one it holds from the same bridge, and a bridge builds every report afresh, a resend included, so that a later `issuedAt` always carries the later map (request step 5.2).
+5. **A report names the forge's ladder.** `ladder` lists the levels the forge offers in the namespace, and a VTC refuses a map with a role that is not on it — `own: admin` on a GitHub personal account, or `triage` on Forgejo (request step 5.1).
+6. **The VTC re-projects stale repositories.** A map change reaches a repository only at its next `projectRoles`. A VTC **SHOULD** send one for each repository in `stale`, with its complete `desiredRoles`, on receiving the report ([Request](#request), step 5). Re-projecting changes no right: it asks the bridge to apply, now, what it would apply at the next projection anyway.
 
 The schema pins [`git-ns/_shared/0.3`](../../../_shared/0.3/git-ns.schema.json). The shapes an event carries are identical in `_shared/0.2` and `0.3` (`0.3` narrows only `Did`, which no event carries). A `0.2` document is a valid `0.3` document with the same meaning. Adding an event type is released as a `MINOR` increment under the `draft` allowance of [SPEC §5.2](/SPEC.md#52-compatibility-rules), because a VTC implementing only `0.2` refuses the new type. Everything else is restated unchanged below, so that this version stands on its own.
 
@@ -100,13 +103,32 @@ The entitlement is **being the bridge that serves the namespace**, and it extend
 | `installationRemoved` | the bridge lost its access to the namespace | marks every repository's sync `unchecked` and alerts the namespace admins; rights are unaffected |
 | `accountLinked` | a member completed a `beginAccountLink` job | completes the link begun with [`git-ns/account/link`](../../../../git-ns/account/link/0.1/spec.md) |
 | `bindCompleted` | the forge-side proof for a `beginBind` job arrived | completes the binding begun with [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.1/spec.md) |
-| `roleMapReported` | the bridge reports the role map it projects rights with in the namespace — whenever it starts serving the namespace, whenever it (re)establishes its link to the VTC, and whenever the map changes | replaces the map it holds for the namespace; uses it wherever it shows or derives a forge role; re-projects each repository in `stale` |
+| `roleMapReported` | the bridge reports the role map it projects rights with in the namespace — whenever it starts serving the namespace, whenever it (re)establishes its link to the VTC, and whenever the map changes | replaces the map it holds for the namespace, unless it holds a later report from the same bridge; uses it wherever it shows or derives a forge role; re-projects each repository in `stale` |
 
-**Role map** — the forge role each repository right is given on a repository, **as the forge applies it**: the role the bridge's configured map asks for, rounded down onto the forge's own ladder for this namespace (Forgejo has no `triage`, and its `maintain` is the adapter's own level — `write` plus the default branch's merge allow-list; a GitHub personal account has only collaborator `write`). Roles are levels of the bridge's forge-neutral ladder, lowest first — `none`, `read`, `triage`, `write`, `maintain`, `admin` — the same vocabulary a role drift item's `observed` and `expected` use. A map has exactly three members, `own`, `maintain` and `commit`, and is **ordered**: `own` ≥ `maintain` ≥ `commit`, and `commit` ≤ `write`. It has **no member for `git.ns.admin`** or `git.repo.create`: a namespace admin projects to no forge role ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md), `desiredRoles`), and no bridge configuration can change that. Where a level is more than a forge role — Forgejo's `maintain` is `write` on the repository and a place on the merge allow-list — the map reports the level, and role drift is reported in the same levels.
+**Role map** — the forge role each repository right is given on a repository, **as the forge applies it**: the role the bridge's configured map asks for, rounded down onto the forge's ladder for this namespace (below). Roles are levels of the bridge's forge-neutral ladder, lowest first — `none`, `read`, `triage`, `write`, `maintain`, `admin` — the same vocabulary a role drift item's `observed` and `expected` use. A map has exactly three members, `own`, `maintain` and `commit`, and is **ordered**: `own` ≥ `maintain` ≥ `commit`, and `commit` ≤ `write`. It has **no member for `git.ns.admin`** or `git.repo.create`: a namespace admin projects to no forge role ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md), `desiredRoles`), and no bridge configuration can change that. Where a level is more than a forge role — Forgejo's `maintain` is `write` on the repository and a place on the merge allow-list — the map reports the level, and role drift is reported in the same levels.
 
-**Default role map** — `own` → `admin`, `maintain` → `maintain`, `commit` → `none`, rounded down onto the forge's ladder as above. A VTC that holds no report for a namespace assumes it.
+**Ladder** — the levels a forge offers as a direct role on a repository in a namespace, lowest first. `none` is not listed: every forge has it. The ladder depends on the forge and on the namespace's kind:
 
-**`roleMap`, `repos`, `stale`** — in a `roleMapReported` event: the map the bridge applies to every repository in the namespace not listed in `repos`; each repository whose own map differs, with that map; and each repository whose forge roles the bridge last projected under a different map from the one it now applies to it. A repository is matched by `resource`, so a repository renamed on the forge takes the map of its new name.
+| Forge and kind | `ladder` |
+|---|---|
+| GitHub organisation | `read`, `triage`, `write`, `maintain`, `admin` |
+| GitHub personal account | `write` (a collaborator has only one level) |
+| Forgejo, either kind | `read`, `write`, `maintain`, `admin` (no `triage`; `maintain` is the adapter's own level — `write` plus the default branch's merge allow-list) |
+
+A forge adapter not listed here defines its own ladder from the same levels. Every role in a map is `none` or a level of the namespace's ladder, because a map is reported as the forge applies it.
+
+**Default role map** — `own` → `admin`, `maintain` → `maintain`, `commit` → `none`, rounded down onto the forge's ladder as above. A bridge applies it where its configuration names no map. **A VTC never assumes it.** It holds the default only when the bridge reports the default.
+
+**Unknown role map** — the VTC's state for a namespace when it holds no report from the bridge that serves the namespace now. This is the case from binding until the bridge's first report, and from the moment the namespace is served by a bridge with a different DID until that bridge reports. It is also the case on a namespace whose bridge implements only `0.1` or `0.2`, which never reports. When a later report is lost in transit, the VTC keeps the one before it, from the same bridge, until the next arrives. That report is still the bridge's latest statement the VTC holds, so the map is not unknown.
+
+**`roleMap`, `ladder`, `repos`, `stale`** — in a `roleMapReported` event:
+
+- `roleMap`: the map the bridge applies to every repository in the namespace not listed in `repos`;
+- `ladder`: the namespace's ladder, as the forge offers it;
+- `repos`: each repository whose own map differs, with that map;
+- `stale`: each repository whose forge roles the bridge last projected under a different map from the one it now applies to it.
+
+A repository is matched by `resource`, so a repository renamed on the forge takes the map of its new name.
 
 **`drift`** — the complete outstanding drift for each repository the event concerns, replacing what the VTC held for them. A repository whose drift is now empty is back in sync.
 
@@ -114,7 +136,9 @@ The entitlement is **being the bridge that serves the namespace**, and it extend
 
 The bridge sends the event to the VTC. See the top-level schema in [`payload.schema.json`](payload.schema.json). A conforming bridge verifies the forge's webhook signature before translating it and **MUST NOT** report an event from an unverified webhook. It **MUST NOT** report its own namespace-level repositories — a workflow repository it created when the namespace was bound — as `repoCreatedUnmanaged`; they are part of the binding, not repositories to govern. A repository transferred *into* the namespace is reported as `repoCreatedUnmanaged`, never as `repoTransferred`, whose `from` would lie outside it.
 
-A conforming bridge sends `roleMapReported` for a namespace **whenever it starts serving it** — when it starts, and when a namespace becomes its to serve (a binding completing, after `bindCompleted`, or the namespace being handed to it) — **whenever it establishes or re-establishes its link to the VTC** (a reconnection, a new session, a transport it had lost coming back), and **whenever the role map it applies there changes**. A VTC may have lost or never seen an earlier report, or may have been told of another bridge's map in between; sending at each of these moments means the VTC's view is never older than the link it holds with this bridge. It reports the map **as the forge applies it**, rounded onto the forge's ladder ([Definitions](#definitions)), lists in `repos` only repositories whose map differs from `roleMap`, and lists in `stale` every repository it manages whose forge roles it last projected under a map other than the one it now applies to it. A bridge that cannot tell under which map a repository was projected — one projected before the bridge kept that record — **SHOULD** take it to be the default role map. A later report replaces an earlier one, so a report lost in transit is made good by the next; a bridge **MAY** also send one at any other time.
+A conforming bridge sends `roleMapReported` for a namespace **whenever it starts serving it** — when it starts, and when a namespace becomes its to serve (a binding completing, after `bindCompleted`, or the namespace being handed to it) — **whenever it establishes or re-establishes its link to the VTC** (a reconnection, a new session, a transport it had lost coming back), and **whenever the role map it applies there changes**. A VTC may have lost or never seen an earlier report, or may have been told of another bridge's map in between; sending at each of these moments means the VTC's view is never older than the link it holds with this bridge. It reports the map **as the forge applies it**, rounded onto the forge's ladder, and reports that ladder in `ladder` ([Definitions](#definitions)). It lists in `repos` only repositories whose map differs from `roleMap`. It lists in `stale` every repository it manages whose forge roles it last projected under a map other than the one it now applies to it. A bridge that cannot tell under which map a repository was projected — one projected before the bridge kept that record — **SHOULD** take it to be the default role map. A bridge **MUST NOT** report a map that rounding leaves unordered (a defective adapter): it sends no report for the namespace, and records why for its operator.
+
+A report with a later `issuedAt` replaces an earlier one, so the next report makes good a report lost in transit. For that to hold, `issuedAt` must order what reports say, not only when they were signed. A bridge that sends a report again because the VTC did not acknowledge it **MUST** build it afresh: the map it applies at that moment, with a new `id` and `issuedAt`. It **MUST NOT** re-sign an earlier report's content under a new `issuedAt`. A resend therefore never carries a map older than one it already reported, and the document stays inside the VTC's freshness window however long the link was down. A bridge **MAY** also send a report at any other time.
 
 A conforming VTC:
 
@@ -123,11 +147,24 @@ A conforming VTC:
 3. Applies the event as the table above says. For `repoTransferred`, it **MUST NOT** move, copy or re-key any right to `to`, even when `to` lies in another namespace bound to this VTC. For `repoCreatedUnmanaged` at a resource where it records a repository with a different `forgeId`, it **MUST** detach that repository and withdraw its rights before recording the new one. A recorded repository with no `forgeId` yet (`pendingCreate`) is not detached this way; its `createRepo` job reports the name as taken.
 4. Treats a repeated event as harmless: every effect is keyed by forge id and is idempotent. A repeated `roleMapReported` replaces the map with itself.
 5. For `roleMapReported`:
-   1. Refuses with the framework's `malformedRequest`, and records nothing of, a report any of whose maps is not ordered ([Definitions](#definitions)), or that lists a repository twice in `repos`.
-   2. Replaces the map it holds for the namespace with the report — `roleMap`, `repos` and `stale` together.
-   3. Uses the map — the entry in `repos` for a repository listed there, `roleMap` otherwise — wherever it shows the forge role a right projects to on a repository, and wherever it derives a right from a forge role: the *projected right of a role* of [`git-ns/drift/resolve`](../../../../git-ns/drift/resolve/0.2/spec.md) — which every version of that task defines as the inverse of the mapping the namespace's bridge projects `desiredRoles` with — is, given a report, the **lowest** right whose role in the map is that role, and a role that no right's is, or `none`, has none. A namespace admin still projects to no forge role, whatever the map.
-   4. **SHOULD** send a `projectRoles` job, with its complete `desiredRoles`, for every repository in `stale` that it records `active` or `orphaned` in the namespace, without waiting for anyone to ask ([`git-ns/roles/reproject`](../../../../git-ns/roles/reproject/0.1/spec.md) is the same thing, asked for). Until a repository's re-projection succeeds, the VTC **SHOULD** show it as projected under an earlier role map. Re-projecting changes no right, and the map it applies was already the bridge's to apply at the next projection; what it changes is only *when* the forge comes to match — at a moment the community chose by changing the bridge's configuration, rather than at the next unrelated change of rights.
-   5. Holds the default role map for a namespace until a report arrives, and **MUST NOT** carry a report over to another bridge. When the namespace comes to be served by a bridge with a different DID (a reseat of its bridge, a new bridge configured for its forge), the VTC **MUST** treat the map as **unknown** until that bridge reports: it derives with the default map meanwhile, and **SHOULD** show the map as unknown — not as reported — wherever it shows it, so that nobody is told roles project as a bridge that no longer serves the namespace said. The new bridge reports when it starts serving the namespace (above), so the unknown state lasts only until its first report arrives.
+   1. Refuses with the framework's `malformedRequest`, and records nothing of, a report that:
+      - has a map that is not ordered ([Definitions](#definitions));
+      - has a `ladder` that lists `none` or is not strictly ascending;
+      - has a map with a role that is neither `none` nor on `ladder`;
+      - lists a repository twice in `repos`.
+
+      A VTC that knows the namespace's ladder independently — it knows the forge at the namespace's host, and it records the namespace's kind from `bindCompleted` — **MUST** also refuse a report whose `ladder` is not that ladder. For example, it refuses `own: admin` on a GitHub personal account, and `triage` on Forgejo.
+   2. Compares the report's `issuedAt` with that of the report it holds for the namespace from the same bridge. It acknowledges a report issued **before** the one it holds, and applies no part of it. Such a report is an earlier statement arriving late, and the report the VTC holds is newer. A report is never compared with one from another bridge, which is not the serving bridge's report (step 7).
+   3. Otherwise, replaces the map it holds for the namespace with the report — `roleMap`, `repos` and `stale` together — and keeps the report's `issuedAt`. It **MAY** leave out of `stale` a repository that it does not record as `active` or `orphaned` in the namespace, since it re-projects no other repository (step 5).
+   4. Uses the map — the entry in `repos` for a repository listed there, `roleMap` otherwise — wherever it shows the forge role a right projects to on a repository, and wherever it derives a right from a forge role: the *projected right of a role* of [`git-ns/drift/resolve`](../../../../git-ns/drift/resolve/0.2/spec.md) — which every version of that task defines as the inverse of the mapping the namespace's bridge projects `desiredRoles` with — is, given a report, the **lowest** right whose role in the map is that role, and a role that no right's is, or `none`, has none. A namespace admin still projects to no forge role, whatever the map.
+   5. **SHOULD** send a `projectRoles` job, with its complete `desiredRoles`, for every repository in `stale` that it records `active` or `orphaned` in the namespace, without waiting for anyone to ask ([`git-ns/roles/reproject`](../../../../git-ns/roles/reproject/0.1/spec.md) is the same thing, asked for). Until a repository's re-projection succeeds, the VTC **SHOULD** show it as projected under an earlier role map. Re-projecting changes no right, and the map it applies was already the bridge's to apply at the next projection; what it changes is only *when* the forge comes to match — at a moment the community chose by changing the bridge's configuration, rather than at the next unrelated change of rights.
+   6. **MUST NOT** carry a report over to another bridge. When the namespace comes to be served by a bridge with a different DID (a reseat of its bridge, a new bridge configured for its forge), the map is unknown until that bridge reports.
+   7. While the map is **unknown** ([Definitions](#definitions)), **MUST NOT** derive anything from any map, the default included:
+      - It refuses an `adopt` under every version of [`git-ns/drift/resolve`](../../../../git-ns/drift/resolve/0.2/spec.md) with `git-ns:roleMapUnknown`, before it evaluates the right. The code names the reason: the VTC cannot tell which right the observed role is the projection of. `noMatchingRight` would say that no right is.
+      - It weighs the impact of reverting a role conservatively, as that of revoking the highest right the role could project from. Under some ordered map, any role but `none` could be the role `git.repo.own` projects to, so a revert that removes or lowers such a role has the impact of revoking `git.repo.own`.
+      - It **SHOULD** show the map as unknown wherever it shows it, and **MUST NOT** show it as the default, or as a bridge that no longer serves the namespace reported it.
+
+      A bridge that implements `0.3` reports when it starts serving the namespace and whenever its link comes up (above), so the state lasts until its first report arrives. On a namespace whose bridge implements only `0.1` or `0.2`, the map stays unknown. Adoption is refused there, and revert, grant and revoke still work.
 
 ### A repository renamed on the forge
 
@@ -153,7 +190,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-02T14:20:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zX1BNqDY7HHzMVndp638Ye2Qw7s2xvZVrfbz7ZvnMWvVZHKJ1EEQHyUQGNwEB5ZhAzpCNYXntvAbAmk5tm46YaN"
   }
 }
@@ -185,7 +222,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-05T11:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Tn8Wq2Lb6Rx1Kc9Hm3Fd7Ya5Js2Vg8Ue4Zo1Ti6Pn3Xb9Cq5Dw2Ek7Sh4Gv1Ly8Au6Bj3Kf9Tr2Np5Zm7Rc"
   }
 }
@@ -223,7 +260,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-03T08:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zLKQi5maEpU3bgPaMfECN14do9qszZbcEDatyWhNH5es3Pc9UYi5jmbZ7AsPdE5TQEeoj8LcV5BBYY8w3s78nVS"
   }
 }
@@ -253,7 +290,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-09-23T10:03:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zErKBa1j26x1aicAi862KvPr5RvRvFaKU5EtMUicEE6BTmNsRMLKgPP6sMorj7tM5Kx2rKHE7KV73KziML7f9Vb"
   }
 }
@@ -276,6 +313,7 @@ The community's Forgejo bridge now gives maintainers `admin` in `acme` (full rep
     "event": {
       "type": "roleMapReported",
       "roleMap": { "own": "admin", "maintain": "admin", "commit": "none" },
+      "ladder": ["read", "write", "maintain", "admin"],
       "repos": [
         {
           "resource": "codeberg.org/acme/widgets",
@@ -290,13 +328,13 @@ The community's Forgejo bridge now gives maintainers `admin` in `acme` (full rep
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-06T09:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Hq8Lr5Tn2Wb7Kx4Vd9Fm1Ys6Jc3Pg8Ue5Zo2Ti7Nn4Xb1Cq6Dw3Ek8Sh5Gv2Ly9Au7Bj4Kf1Tr3Np6Zm8Rc"
   }
 }
 ```
 
-A report on a GitHub organisation with the default map, where every repository's roles are current, carries only `roleMap`: `{ "own": "admin", "maintain": "maintain", "commit": "none" }`. On a GitHub personal account the same configuration is reported as `{ "own": "write", "maintain": "write", "commit": "none" }`, the only collaborator level there; the projected right of `write` is then `git.repo.maintain`, the lower of the two.
+A report on a GitHub organisation with the default map, where every repository's roles are current, carries only `roleMap`, `{ "own": "admin", "maintain": "maintain", "commit": "none" }`, and `ladder`, `["read", "triage", "write", "maintain", "admin"]`. On a GitHub personal account the same configuration is reported as `{ "own": "write", "maintain": "write", "commit": "none" }` with `ladder` `["write"]`, the only collaborator level there. The projected right of `write` is then `git.repo.maintain`, the lower of the two.
 
 ## Response
 
@@ -318,7 +356,7 @@ The VTC acknowledges the event with an empty payload, per the sub-schema reachab
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-10-02T14:20:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5mPrASQ5cpsmsQik4scivNBxCv1fJCdQq7sNCvHL7XE4AHMMM4Emo86yAL6DnBDwF1PdKfcgz9bf6nKXS2KHh1"
   }
 }

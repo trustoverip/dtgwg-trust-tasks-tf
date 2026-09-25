@@ -108,6 +108,18 @@ export interface RoleMapReported {
   type: "roleMapReported";
   roleMap: RoleMap;
   /**
+   * The levels the forge offers as a direct role on a repository in the namespace, lowest first, without `none` (which every forge has). Every role in `roleMap` and in each `repos[].roleMap` is `none` or one of these.
+   *
+   * @minItems 1
+   * @maxItems 5
+   */
+  ladder:
+    | [MappedRole]
+    | [MappedRole, MappedRole]
+    | [MappedRole, MappedRole, MappedRole]
+    | [MappedRole, MappedRole, MappedRole, MappedRole]
+    | [MappedRole, MappedRole, MappedRole, MappedRole, MappedRole];
+  /**
    * Repositories whose own map differs from `roleMap`, each at most once. Absent or empty: every repository uses `roleMap`.
    *
    * @maxItems 1000
@@ -429,7 +441,8 @@ export const PAYLOAD_SCHEMA = {
           "additionalProperties": false,
           "required": [
             "type",
-            "roleMap"
+            "roleMap",
+            "ladder"
           ],
           "properties": {
             "type": {
@@ -437,6 +450,16 @@ export const PAYLOAD_SCHEMA = {
             },
             "roleMap": {
               "$ref": "#/$defs/RoleMap"
+            },
+            "ladder": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "description": "The levels the forge offers as a direct role on a repository in the namespace, lowest first, without `none` (which every forge has). Every role in `roleMap` and in each `repos[].roleMap` is `none` or one of these.",
+              "items": {
+                "$ref": "#/$defs/MappedRole"
+              }
             },
             "repos": {
               "type": "array",
@@ -869,7 +892,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "additionalProperties": false,
           "required": [
             "type",
-            "roleMap"
+            "roleMap",
+            "ladder"
           ],
           "properties": {
             "type": {
@@ -877,6 +901,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "roleMap": {
               "$ref": "#/$defs/RoleMap"
+            },
+            "ladder": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "description": "The levels the forge offers as a direct role on a repository in the namespace, lowest first, without `none` (which every forge has). Every role in `roleMap` and in each `repos[].roleMap` is `none` or one of these.",
+              "items": {
+                "$ref": "#/$defs/MappedRole"
+              }
             },
             "repos": {
               "type": "array",

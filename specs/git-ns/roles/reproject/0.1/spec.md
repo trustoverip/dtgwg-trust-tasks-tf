@@ -146,7 +146,7 @@ Dana, a community administrator, changed the Forgejo bridge's configuration so t
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmDanaScid8:acme-vtc.example:dana#key-1",
     "created": "2026-10-06T09:05:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Kd7Ns4Wq9Lb3Rx6Vc1Fm8Yt5Jh2Pg7Ue4Zo9Ti3Nn6Xb8Cq1Dw5Ek2Sh7Gv4Ly1Au9Bj6Kf3Tr8Np5Zm2Rc"
   }
 }
@@ -172,7 +172,7 @@ Alice, who owns `widgets`, suspects someone's role on `widgets` was changed by h
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid2:acme-vtc.example:alice#key-1",
     "created": "2026-10-06T11:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Wm2Hq7Lr4Tn9Wb1Kx6Vd3Fm8Ys5Jc2Pg7Ue4Zo1Ti6Nn3Xb9Cq4Dw1Ek6Sh3Gv8Ly5Au2Bj9Kf4Tr1Np7Zm3"
   }
 }
@@ -200,7 +200,7 @@ The VTC answers with the repositories it queued a re-projection for, per the sub
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-10-06T09:05:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Tq1Lb8Rx5Kc2Hm9Fd6Ya3Js7Vg4Ue1Zo8Ti5Pn2Xb6Cq3Dw9Ek4Sh1Gv7Ly2Au5Bj8Kf6Tr3Np9Zm1Rc7"
   }
 }
