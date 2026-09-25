@@ -57,6 +57,9 @@ errorCodes:
   - code: git-ns:policyDenied
     meaning: "The community's git-namespace policy refused the request after the fixed rules passed."
     retryable: false
+  - code: git-ns:selfGrantNotAllowed
+    meaning: "`adopt` would record an elevated right — `git.repo.own`, the only elevated right an adoption can record — for the resolver themselves: `subject` is the DID the VTC resolved the resolver to. Someone else must adopt it; when nobody else can, the resolver may record it for themselves explicitly with git-ns/right/break-glass."
+    retryable: false
   - code: git-ns/drift/resolve:driftNotFound
     meaning: "No outstanding drift item on the repository matches the selector: it was resolved already, the forge has changed since it was read (`observed` no longer matches), or it was never reported."
     retryable: false
@@ -96,6 +99,8 @@ This task is how an owner of the repository answers a reported item. **`adopt`**
 `adopt` names the member who receives the right. A `0.2` adoption did not: the VTC found the member by resolving the item's forge account to whoever had linked it **when the task ran**. A resolver reads the drift item and the account's owner, decides, and signs; in between, the account could be unlinked and linked again — to someone else — through [`git-ns/account/link`](../../../../git-ns/account/link/0.1/spec.md). The signed `0.2` document then granted a right, published to the Trust Registry, to a member the resolver never saw, and nothing in what they signed said otherwise. The `observed` value bounds *which role* an adoption can record; nothing bounded *to whom*.
 
 `0.3` adds **`subject`**, the DID of the member the resolver read as linked to the account. It is **required for `adopt`** and absent for `revert`, refused as `malformedRequest` otherwise, as a missing `observed` is. The VTC adopts only while the account is linked to exactly that member — checked where the right is recorded, so no relink can fall between the check and the write — and refuses otherwise with the new **`git-ns/drift/resolve:subjectChanged`**. What the resolver signs now names both halves of the grant it amounts to: the right, through `observed`, and its holder, through `subject`.
+
+`0.3` refuses an adoption that would record `git.repo.own` for the resolver themselves with the new **`git-ns:selfGrantNotAllowed`** ([Adopt](#adopt) step 6): the separation of duties `git-ns/right/grant` 0.3 introduces, which names this task among those it binds. Every elevated right is granted by someone other than its holder, or recorded through `git-ns/right/break-glass`. Adopting a lower right for oneself stays allowed. A `0.2` adoption of `own` for oneself was accepted; it is refused now — a VTC that still serves `0.1` or `0.2` **MUST** apply the same refusal to them, or the self-grant this version closes stays open through them.
 
 `0.3` also compares a `roleChanged` adoption with the member's **projected right** — the right in their own name that `desiredRoles` lists them at — where `0.2` compared it with their highest *effective* right. A namespace admin projects to no forge role, so under `0.2` their implied `git.repo.own` made every forge role they were given on a repository unadoptable, even one raising what the forge was meant to show for them; now it can be adopted. And it states the projected right of a role for any role map the bridge applies: the lowest right whose role it is.
 
@@ -170,9 +175,10 @@ Only a role that a member holds, and a right can express, can be adopted. A conf
 2. Refuses with `git-ns/drift/resolve:accountNotLinked` an item whose account is linked, with [`git-ns/account/link`](../../../../git-ns/account/link/0.1/spec.md), to no current member of the community. Rights are held by DIDs; a forge account with none can only be reverted.
 3. Refuses with `git-ns/drift/resolve:subjectChanged` when that member is not `subject`, compared by exact string equality.
 4. Determines the projected right of the observed role. Refuses with `git-ns/drift/resolve:noMatchingRight` a role that has none.
-5. For a `roleChanged` item, refuses with `git-ns/drift/resolve:notAdoptable` when that right is not strictly higher, in the order `git.commit.sign` < `git.repo.maintain` < `git.repo.own`, than the [member's projected right](#definitions) on the repository, a member with none counting below `git.commit.sign`: a forge-side lowering is accepted by revoking, not by adopting. The comparison is with the projected right, not the member's effective rights: a namespace admin who holds `git.repo.maintain` in their own name is projected at `maintain`, so a forge `admin` role they were given there can be adopted as `git.repo.own`, although their namespace admin right already implies it.
-6. Evaluates the right exactly as [`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md) evaluates a grant sent by the resolver with `subject` this request's `subject`, `right` the projected right, `resource` the repository, no `expiresAt`, and `reason` this request's `reason`: its request steps 3 to 7, including [the fixed rules](../../../../git-ns/right/grant/0.2/spec.md#the-fixed-rules) in order, policy, the idempotent return of a live record that already exists, and `grantedBy` set to the resolver. A refusal there is this task's refusal, with the same code. The VTC **MUST** make the checks of steps 2 and 3, and the selection of the item, again under the same exclusion as the write that records the right, and refuse as those steps do if either no longer holds: a relink or a new drift report between the first check and the write adopts nothing.
-7. Publishes the right as a grant is published, and sends the bridge a `projectRoles` job for the repository with its complete `desiredRoles`, now including the member at the adopted right. Because the adopted right is the one that projects the observed role, the forge already matches and the job converges without change.
+5. For a `roleChanged` item, refuses with `git-ns/drift/resolve:notAdoptable` when that right is not strictly higher, in the order `git.commit.sign` < `git.repo.maintain` < `git.repo.own`, than the [member's projected right](#definitions) on the repository, a member with none counting below `git.commit.sign`: a forge-side lowering is accepted by revoking, not by adopting. The comparison is with the projected right, not the member's effective rights: a namespace admin who holds `git.repo.maintain` in their own name is projected at `maintain`, so a forge `admin` role they were given there can be adopted as `git.repo.own` — by someone else (step 6) — although their namespace admin right already implies it.
+6. Refuses with `git-ns:selfGrantNotAllowed` when `subject` is the DID the VTC resolved the resolver to — after any delegation it honours, so a signing key acting for an administrator's DID is that administrator — and the right from step 4 is elevated. Of the rights an adoption can record, only `git.repo.own` is. Adopting `git.repo.maintain` or `git.commit.sign` for oneself stays allowed. This is the separation-of-duties rule of `git-ns/right/grant` 0.3, which names this task among those it binds. The message **SHOULD** name `git-ns/right/break-glass`, the one way a resolver records an elevated right for themselves. Community policy cannot waive it; it applies before policy is evaluated.
+7. Evaluates the right exactly as [`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md) evaluates a grant sent by the resolver with `subject` this request's `subject`, `right` the projected right, `resource` the repository, no `expiresAt`, and `reason` this request's `reason`: its request steps 3 to 7, including [the fixed rules](../../../../git-ns/right/grant/0.2/spec.md#the-fixed-rules) in order, policy, the idempotent return of a live record that already exists, and `grantedBy` set to the resolver. A refusal there is this task's refusal, with the same code. The VTC **MUST** make the checks of steps 2 and 3, and the selection of the item, again under the same exclusion as the write that records the right, and refuse as those steps do if either no longer holds: a relink or a new drift report between the first check and the write adopts nothing.
+8. Publishes the right as a grant is published, and sends the bridge a `projectRoles` job for the repository with its complete `desiredRoles`, now including the member at the adopted right. Because the adopted right is the one that projects the observed role, the forge already matches and the job converges without change.
 
 ### Revert
 
@@ -387,6 +393,30 @@ Had `bob-builds` been unlinked from Bob and linked to Dan between Carol reading 
 }
 ```
 
+### Refused: Carol cannot adopt ownership for herself
+
+Had the item been a `roleChanged` to `admin` on Carol's own linked account, `carol-c`, her adoption naming herself would record `git.repo.own` for her, and the VTC refuses it. Another owner or namespace admin can adopt it for her.
+
+```json
+{
+  "id": "urn:uuid:c3a7e0d4-51b2-4f6e-9a8d-0e1f2a3b4c0a",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.5",
+  "threadId": "urn:uuid:c3a7e0d4-51b2-4f6e-9a8d-0e1f2a3b4c09",
+  "issuer": "did:webvh:QmVtcScid7:acme-vtc.example",
+  "recipient": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+  "issuedAt": "2026-09-24T09:30:01Z",
+  "payload": {
+    "code": "git-ns:selfGrantNotAllowed",
+    "message": "Adopting this role would record git.repo.own for you, and you cannot grant an elevated right to yourself. Ask another owner or namespace admin to adopt it, or, if nobody else can, use git-ns/right/break-glass.",
+    "retryable": false,
+    "inResponseTo": {
+      "typeUri": "https://trusttasks.org/spec/git-ns/drift/resolve/0.3",
+      "id": "urn:uuid:c3a7e0d4-51b2-4f6e-9a8d-0e1f2a3b4c09"
+    }
+  }
+}
+```
+
 ## Security & Privacy
 
 ### Data carried
@@ -396,6 +426,10 @@ The request names a repository, a drift type, at most one forge account and the 
 ### Binding the recipient
 
 An adoption is a grant whose recipient the resolver did not type. Without `subject`, the VTC would pick the recipient at execution time from a link the resolver may never have seen in its current state, and the proof on the document would attest a decision the resolver did not make. Naming the recipient, and refusing when the link no longer resolves to it, keeps the signed document a complete statement of the grant. A VTC that also serves `0.1` or `0.2` **SHOULD NOT** accept an `adopt` over them — it has no way to know whom that resolver meant — and **SHOULD** answer one with a refusal that names this version.
+
+### Separation of duties
+
+An adoption records a right exactly as a grant does, so it is bound by the same rule: nobody records an elevated right for themselves on their own authority. Without step 6 an owner or namespace admin could raise their own role in the forge's interface and then adopt it, turning a forge-side change they made into a published `git.repo.own` with nobody else involved — the self-grant `git-ns/right/grant` 0.3 refuses, by another route. The subject is compared with the DID the VTC resolved the resolver to after delegation, so a console or signing key acting for an administrator cannot adopt for that administrator what they could not adopt themselves. The rule is fixed: policy cannot waive it. The one way to record an elevated right for oneself is `git-ns/right/break-glass`, which is explicit, justified and shown to every other administrator until one of them ratifies or revokes it.
 
 ### Correlation
 

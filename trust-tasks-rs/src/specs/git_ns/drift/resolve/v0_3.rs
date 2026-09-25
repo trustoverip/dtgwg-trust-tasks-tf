@@ -2593,6 +2593,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::UNKNOWN_REPO,
     error_codes::REPO_NOT_ACTIVE,
     error_codes::POLICY_DENIED,
+    error_codes::SELF_GRANT_NOT_ALLOWED,
     error_codes::DRIFT_NOT_FOUND,
     error_codes::NOT_ADOPTABLE,
     error_codes::ACCOUNT_NOT_LINKED,
@@ -2650,6 +2651,15 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
+        retryable: false,
+    };
+    /// `git-ns:selfGrantNotAllowed`
+    ///
+    /// `adopt` would record an elevated right — `git.repo.own`, the only elevated right an adoption can record — for the resolver themselves: `subject` is the DID the VTC resolved the resolver to. Someone else must adopt it; when nobody else can, the resolver may record it for themselves explicitly with git-ns/right/break-glass.
+    ///
+    /// Declared `retryable: false`.
+    pub const SELF_GRANT_NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "git-ns:selfGrantNotAllowed",
         retryable: false,
     };
     /// `git-ns/drift/resolve:driftNotFound`
