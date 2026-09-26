@@ -21,8 +21,8 @@ parties:
     member: recipient
     identifierScope: public
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: "A read. The VTC identifies the caller from the transport or the proof; nothing is changed and the response is not evidence, so transport integrity suffices where the transport already authenticates the caller."
+  requirement: REQUIRED
+  rationale: "A read, but of one member's records: the VTC answers the caller about their own namespaces and links, so it must know from the document itself who the caller is. A proof binds the request to its `issuer` on every transport."
 sideEffects:
   level: none
   rationale: "Reads the VTC's records and changes nothing."
