@@ -21,8 +21,8 @@ parties:
     member: recipient
     identifierScope: public
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: "A poll. It changes nothing and answers only the member who began the link, whom the VTC identifies from the transport or the proof."
+  requirement: REQUIRED
+  rationale: "A poll that answers only the member who began the link, so the VTC must know from the document itself which member is asking. A proof binds the request to its `issuer` on every transport."
 sideEffects:
   level: none
   rationale: "Reads the state of a link attempt and changes nothing."

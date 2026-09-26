@@ -232,7 +232,7 @@ With a reference the operator may find useful, and a proof:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-16T11:02:00Z",
     "verificationMethod": "did:web:maintainer.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(signature over the JCS-canonical document)"
   }
 }

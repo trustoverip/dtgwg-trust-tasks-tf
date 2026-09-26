@@ -112,7 +112,7 @@ may not be exported:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-19T09:30:00Z",
     "verificationMethod": "did:key:z6MkSuperAdmin#z6MkSuperAdmin",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z58Gh..."
   }
 }

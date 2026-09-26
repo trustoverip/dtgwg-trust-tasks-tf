@@ -1,0 +1,75 @@
+[
+  {
+    "note": "A justification is required: a break-glass nobody explained is the one the audit cannot answer.",
+    "payload": {
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "A justification of only whitespace is no justification.",
+    "payload": {
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "justification": "   \n\t"
+    }
+  },
+  {
+    "note": "An empty justification is refused.",
+    "payload": {
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "justification": ""
+    }
+  },
+  {
+    "note": "`git.commit.sign` is not elevated: grant it with git-ns/right/grant, which allows it to oneself.",
+    "payload": {
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets",
+      "justification": "Hotfix tonight"
+    }
+  },
+  {
+    "note": "`git.repo.maintain` is not elevated either.",
+    "payload": {
+      "right": "git.repo.maintain",
+      "resource": "github.com/acme/widgets",
+      "justification": "Hotfix tonight"
+    }
+  },
+  {
+    "note": "There is no `subject`: a break-glass is always for the actor. Granting someone else goes through git-ns/right/grant.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "justification": "Bob is away"
+    }
+  },
+  {
+    "note": "There is no `expiresAt`: a break-glass never lapses on its own, because it must still work when nobody else is there to extend it. It ends when it is revoked.",
+    "payload": {
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "justification": "Release blocked; both owners on leave",
+      "expiresAt": "2026-10-01T00:00:00Z"
+    }
+  },
+  {
+    "note": "A resource always names its forge.",
+    "payload": {
+      "right": "git.repo.own",
+      "resource": "acme/widgets",
+      "justification": "Release blocked; both owners on leave"
+    }
+  },
+  {
+    "note": "The justification is bounded.",
+    "payload": {
+      "right": "git.ns.admin",
+      "resource": "github.com/acme",
+      "justification": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  }
+]

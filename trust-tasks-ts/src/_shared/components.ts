@@ -182,6 +182,15 @@ export type DeviceAttestation_DeviceV0_2 =
   | NitroEnclave_DeviceV0_2
   | NoAttestation_DeviceV0_2;
 /**
+ * A DID Core verification relationship.
+ */
+export type DidVerificationRelationship =
+  | "authentication"
+  | "assertionMethod"
+  | "keyAgreement"
+  | "capabilityInvocation"
+  | "capabilityDelegation";
+/**
  * A DID, compared by exact string equality.
  */
 export type Did_GitNsV0_1 = string;
@@ -213,6 +222,10 @@ export type DriftType =
  * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";
+/**
+ * The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.
+ */
+export type ElevatedRight = "git.ns.admin" | "git.repo.create" | "git.repo.own";
 /**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
@@ -302,6 +315,18 @@ export type Key = string;
  * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
  */
 export type KeyOrigin = "derived" | "imported" | "internal";
+/**
+ * The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.
+ */
+export type KeyRole = "attestation" | "operational" | "messaging" | "update";
+/**
+ * `preview` — nothing was written; the response carries the plan. `applied` — the entry was appended (and published, unless `serverless`). `pendingApproval` — the plan is recorded and awaits further approvals; nothing is published until they arrive (CONVENTIONS.md §3.3).
+ */
+export type KeyRoleChangeOutcome = "preview" | "applied" | "pendingApproval";
+/**
+ * Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.
+ */
+export type KeyRoleProjection = "public" | "custody";
 /**
  * Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
  */
@@ -522,6 +547,18 @@ export type RetentionPolicy = "chained" | "fromJoin";
  * One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
  */
 export type Right = "git.ns.admin" | "git.repo.create" | "git.repo.own" | "git.repo.maintain" | "git.commit.sign";
+/**
+ * Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.
+ */
+export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retired" | "revoked";
+/**
+ * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
+ */
+export type RotationKind = "planned" | "compromise" | "addition";
+/**
+ * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.
+ */
+export type RotationState = "pendingApproval" | "staged" | "overlapping" | "completed" | "aborted" | "expired";
 /**
  * How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
  */
@@ -1447,6 +1484,35 @@ export interface Bootstrap {
   requiredCheck: boolean;
 }
 /**
+ * How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
+ */
+export interface BreakGlass {
+  /**
+   * Who broke the glass: always the record's `subject`, restated so the flag reads on its own.
+   */
+  by: Did_GitNsV0_3;
+  /**
+   * When the VTC recorded the break-glass.
+   */
+  at: string;
+  /**
+   * The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.
+   */
+  justification: string;
+  /**
+   * When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.
+   */
+  effectiveAt?: string;
+  /**
+   * The administrator who ratified the record — never its subject. Absent while unratified.
+   */
+  ratifiedBy?: Did_GitNsV0_3;
+  /**
+   * When it was ratified. Present exactly when `ratifiedBy` is.
+   */
+  ratifiedAt?: string;
+}
+/**
  * The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.
  */
 export interface CapabilityManifest {
@@ -2105,6 +2171,55 @@ export interface DeviceBinding_DeviceV0_2 {
    */
   wipedAt?: string;
   ext?: Ext;
+}
+export interface DidDocumentChange {
+  /**
+   * `addKey` — a verification method is added, listed in its role's relationship and in `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and the compromise is recorded (CONVENTIONS.md §7). `rotateUpdateKey` — the log's update key moves to a committed successor. `setPreRotation` — the number of successors committed changes.
+   */
+  op: "addKey" | "retireKey" | "revokeKey" | "rotateUpdateKey" | "setPreRotation";
+  role: KeyRole;
+  verificationMethod?: string;
+  keyType?: KeyType;
+  publicKeyMultibase?: string;
+  relationships?: DidVerificationRelationship[];
+  preRotationCount?: number;
+}
+/**
+ * What a change would publish, computed by the VTA by running the handler it would run to apply it, and nothing else (CONVENTIONS.md §3.1). This is what a consent surface renders and what an approval is bound to.
+ */
+export interface DidDocumentPreview {
+  /**
+   * Opaque, unguessable identifier for this exact plan. Carried back by the apply request, and the thing every approval is bound to.
+   */
+  previewId: string;
+  /**
+   * versionId of the log entry the plan was computed against. The plan is void once the log moves past it.
+   */
+  baseVersionId: string;
+  expiresAt: string;
+  /**
+   * Every change the entry would make, including the ones the caller did not ask for — in particular `rotateUpdateKey`, which accompanies every entry appended under pre-rotation.
+   */
+  changes: DidDocumentChange[];
+  /**
+   * The complete DID document the entry would publish. Public data by construction; no key material beyond public halves.
+   */
+  document: {};
+  /**
+   * Conditions a human should be shown before approving. `preRotationDisabled` — the entry leaves no committed successor, so a later update-key compromise can only end in deactivation. `singleKeyRole` — the role will hold one active key, so its next compromise empties it until replaced. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum, which verifiers without post-quantum support cannot check. `attestationReissuanceRequired` — revoking this `attestation` key obliges the node to re-issue every attestation artefact still in force and re-sign every status list (VTI-KEY-133). `serverless` — the VTA will not publish the entry; the operator must.
+   */
+  warnings?: (
+    | "preRotationDisabled"
+    | "singleKeyRole"
+    | "algorithmNotInAcceptedSet"
+    | "roleWillHaveNoClassicalKey"
+    | "attestationReissuanceRequired"
+    | "serverless"
+  )[];
+  /**
+   * True when appending this entry also moves the DID's update key to a committed successor. Stated as its own member, not left to be found in `changes`, because it is the consequence a reviewer most often misses.
+   */
+  updateKeyRotates: boolean;
 }
 export interface DidRecord {
   /**
@@ -2928,6 +3043,27 @@ export interface KeyRecord {
    */
   updatedAt?: string;
   ext?: Ext;
+}
+/**
+ * Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).
+ */
+export interface KeyRoleApprovalState {
+  /**
+   * Distinct approvals the VTA's policy requires.
+   */
+  required: number;
+  /**
+   * Distinct approvals recorded so far, including the initiator's own.
+   */
+  received: number;
+  /**
+   * VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
+   */
+  approvers?: string[];
+  /**
+   * When the preview, and every approval bound to it, stops being usable.
+   */
+  expiresAt: string;
 }
 /**
  * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
@@ -4105,6 +4241,129 @@ export interface RightRecord_GitNsV0_3 {
   reason?: string;
 }
 /**
+ * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.
+ */
+export interface RightRecord_GitNsV0_4 {
+  /**
+   * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource;
+  /**
+   * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
+   */
+  grantedBy: Did_GitNsV0_3;
+  grantedAt: string;
+  /**
+   * When the right lapses. Absent: no expiry.
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
+   */
+  reason?: string;
+  /**
+   * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
+   */
+  breakGlass?: BreakGlass;
+}
+/**
+ * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.
+ */
+export interface RoleKey {
+  /**
+   * The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).
+   */
+  verificationMethod?: string;
+  role: KeyRole;
+  /**
+   * The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.
+   */
+  relationships?: DidVerificationRelationship[];
+  keyType: KeyType;
+  /**
+   * The public half, multibase-encoded, exactly as published.
+   */
+  publicKeyMultibase: string;
+  state: RoleKeyState;
+  /**
+   * versionId of the log entry that first published the key. Absent while `pending`.
+   */
+  publishedInVersionId?: string;
+  /**
+   * versionId of the log entry that retired or revoked the key.
+   */
+  removedInVersionId?: string;
+  /**
+   * For a `retiring` key: the end of its overlap window. Custody projection only.
+   */
+  retireAfter?: string;
+  /**
+   * For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.
+   */
+  compromisedSince?: string;
+  /**
+   * The rotation this key was introduced or retired by, when it was.
+   */
+  rotationId?: string;
+  /**
+   * Operator-facing label. Custody projection only.
+   */
+  label?: string;
+  custody?: RoleKeyCustody;
+  ext?: Ext;
+  /**
+   * For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).
+   */
+  activatesAt?: string;
+}
+/**
+ * How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
+ */
+export interface RoleKeyCustody {
+  /**
+   * The custodian record identifier (`keys/*`'s `keyId`) behind this key.
+   */
+  keyId: string;
+  origin?: KeyOrigin;
+  /**
+   * Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.
+   */
+  exportable: boolean;
+  /**
+   * True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.
+   */
+  neverExportable: boolean;
+  /**
+   * True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.
+   */
+  hardwareBacked?: boolean;
+  /**
+   * Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.
+   */
+  inBackups: boolean;
+  /**
+   * True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.
+   */
+  destroyed?: boolean;
+}
+export interface RoleSummary {
+  role: KeyRole;
+  /**
+   * The relationship this role owns (CONVENTIONS.md §1). Empty for `update`.
+   */
+  relationships: DidVerificationRelationship[];
+  /**
+   * The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them.
+   */
+  keys: RoleKey[];
+  /**
+   * `update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).
+   */
+  preRotationCommitments?: number;
+}
+/**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
  */
 export interface RollbackResult {
@@ -4137,6 +4396,56 @@ export interface RollbackResult {
    */
   serverless?: boolean;
   ext?: Ext;
+}
+/**
+ * One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.
+ */
+export interface RotationRecord {
+  rotationId: string;
+  role: KeyRole;
+  kind: RotationKind;
+  state: RotationState;
+  /**
+   * Verification-method identifiers (or, for `update`, public keys) leaving the role.
+   */
+  predecessors?: string[];
+  /**
+   * Verification-method identifiers (or, for `update`, public keys) entering the role.
+   */
+  successors?: string[];
+  startedInVersionId?: string;
+  endedInVersionId?: string;
+  startedAt?: string;
+  /**
+   * Custody projection only. End of the overlap window.
+   */
+  overlapUntil?: string;
+  /**
+   * Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.
+   */
+  autoRetire?: boolean;
+  endedAt?: string;
+  /**
+   * Custody projection only. VID of the administrator whose signed request started the change.
+   */
+  initiatedBy?: string;
+  /**
+   * Custody projection only.
+   */
+  approvals?: KeyRoleApprovalState;
+  /**
+   * Custody projection only. The operator's stated reason. Never published.
+   */
+  reason?: string;
+  ext?: Ext;
+  /**
+   * When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.
+   */
+  activatesAt?: string;
+  /**
+   * Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.
+   */
+  cacheHorizonAt?: string;
 }
 export interface Builtin_VtaV0_1 {
   type: "builtin";

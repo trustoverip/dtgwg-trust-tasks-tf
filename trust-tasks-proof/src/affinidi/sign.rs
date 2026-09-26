@@ -11,11 +11,17 @@
 //! the consumer.
 //!
 //! Defaults match the reference ecosystem's signing profile:
-//! `proofPurpose: assertionMethod` (the upstream default) and the
-//! `eddsa-jcs-2022` cryptosuite (applied here whenever the caller does
-//! not pick a suite explicitly, overriding any signer-declared default so
-//! the emitted suite is deterministic). Override either via
-//! [`SignOptions`].
+//! `proofPurpose: authentication` — a Trust Task document's proof shows
+//! that the party controlling the issuer identifier produced it, and
+//! `assertionMethod` is reserved for keys a specification authorises to
+//! attest — and the `eddsa-jcs-2022` cryptosuite. Both are applied here
+//! whenever the caller does not choose, overriding the upstream and
+//! signer-declared defaults so the emitted proof is deterministic.
+//! Override either via [`SignOptions`]; a `proofPurpose` naming no signing
+//! relationship (`keyAgreement`, or an unknown value) is refused.
+//!
+//! The signer's key must be listed under the chosen relationship in the
+//! issuer's DID document, or the stock verifier refuses the proof.
 //!
 //! ```rust,ignore
 //! use trust_tasks_proof::affinidi::{sign_trust_task, SignOptions};
@@ -30,6 +36,8 @@ use affinidi_data_integrity::crypto_suites::CryptoSuite;
 use affinidi_data_integrity::signer::Signer;
 use affinidi_data_integrity::{DataIntegrityError, DataIntegrityProof, SignOptions};
 use serde_json::Value;
+
+use super::purpose::ProofPurpose;
 
 /// Errors surfaced by [`sign_trust_task`].
 #[derive(Debug, thiserror::Error)]
@@ -90,13 +98,14 @@ pub enum SignError {
 /// a fresh proof over the current content", never as appending a proof
 /// set or signing over the old proof.
 ///
-/// Defaults: `proofPurpose` falls back to `"assertionMethod"` (upstream
-/// default) and the cryptosuite to [`CryptoSuite::EddsaJcs2022`] whenever
-/// [`SignOptions::cryptosuite`] is unset — deliberately overriding the
-/// signer's own declared default so the wire suite does not silently vary
-/// with the signer implementation. Pass
+/// Defaults: `proofPurpose` falls back to `"authentication"` and the
+/// cryptosuite to [`CryptoSuite::EddsaJcs2022`] whenever the caller sets
+/// neither — deliberately overriding the upstream (`assertionMethod`) and
+/// the signer's own declared defaults so the proof does not silently vary
+/// with the dependency or signer implementation. Pass
 /// [`SignOptions::with_cryptosuite`] / [`SignOptions::with_proof_purpose`]
-/// to choose different values.
+/// to choose different values. A `proofPurpose` that names no signing
+/// relationship is refused with [`SignError::DataIntegrity`].
 ///
 /// The document **must** already carry an in-band `issuer` equal to the
 /// DID of the signer's `verificationMethod` (the portion before `#`,
@@ -138,14 +147,19 @@ pub async fn sign_trust_task(
         });
     }
 
-    // ─── 3. Apply the ecosystem default suite when the caller picked
-    //        none. Done here (not left to the signer's declared default)
-    //        so the emitted suite is deterministic across signer
-    //        implementations.
+    // ─── 3. Apply the ecosystem defaults when the caller picked none.
+    //        Done here (not left to the upstream or signer defaults) so
+    //        the emitted proof is deterministic across implementations.
+    //        A purpose no verifier accepts is refused before signing.
     let mut options = options;
     if options.cryptosuite.is_none() {
         options.cryptosuite = Some(CryptoSuite::EddsaJcs2022);
     }
+    let purpose = match options.proof_purpose.as_deref() {
+        None => ProofPurpose::Authentication,
+        Some(value) => ProofPurpose::parse(value)?,
+    };
+    options.proof_purpose = Some(purpose.as_str().to_string());
 
     // ─── 4. Sign the proof-less document and embed the result.
     let unsigned = Value::Object(unsigned);

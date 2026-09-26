@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0",
+  "title": "VTA WebVH DIDs Keys Add — payload",
+  "description": "Add a newly generated key to one role of a did:webvh, without removing any — a post-quantum key beside a classical one, or a second operational key.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "role",
+    "keyType"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The DID whose keys change."
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "attestation",
+        "operational",
+        "messaging"
+      ],
+      "description": "The role the key joins. `update` keys are not added; they move by rotation."
+    },
+    "keyType": {
+      "$ref": "../../../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType",
+      "description": "Algorithm of the key to generate. Must suit the role (CONVENTIONS.md §1 item 6)."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Operator-facing label for the key. Never published."
+    },
+    "expectedVersionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optimistic-concurrency precondition: the versionId the caller based this change on (for example `keys/list`'s `versionId`). The VTA MUST refuse the change with `vta/webvh/dids:versionConflict` if the DID's latest entry no longer matches."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and return the preview without writing anything but the plan (CONVENTIONS.md §3.1). Absent reads as false."
+    },
+    "previewId": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Apply exactly the plan a previous dry run of this same request returned. The VTA MUST apply that plan or nothing, and MUST refuse with `vta/webvh/dids:previewStale` if it has expired, the log has moved past its base, or this request differs from the one previewed. An approval (step-up or quorum) is bound to this identifier."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why the change is being made, for the audit trail and for other approvers. Never published."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA WebVH DIDs Keys Add — response payload",
+      "description": "Success response. Type https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0#response. A refusal is a `trust-task-error` document, never this.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "outcome",
+        "keys"
+      ],
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleChangeOutcome"
+        },
+        "preview": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/DidDocumentPreview",
+          "description": "Present when `outcome` is `preview` or `pendingApproval`: the plan, and what an approval is bound to."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "Present when `outcome` is `applied`: the versionId of the appended entry. Pass it as the next change's `expectedVersionId`."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RoleKey"
+          },
+          "description": "Every key whose state this change sets or would set, after the change."
+        },
+        "rotation": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/RotationRecord"
+        },
+        "approvals": {
+          "$ref": "../../../../../_shared/0.3/did-key-roles.schema.json#/$defs/KeyRoleApprovalState",
+          "description": "Present when `outcome` is `pendingApproval`."
+        },
+        "serverless": {
+          "type": "boolean",
+          "description": "True when no hosting server holds this DID. The caller must publish `newLogEntry` itself; until it does, resolvers still see the previous version."
+        },
+        "newLogEntry": {
+          "type": "string",
+          "description": "The appended entry as JSON text. Present when `serverless` is true."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

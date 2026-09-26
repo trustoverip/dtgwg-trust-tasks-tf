@@ -1,0 +1,33 @@
+[
+  {
+    "note": "`forge` is required.",
+    "payload": {}
+  },
+  {
+    "note": "`forge` is a bare host, not a URL.",
+    "payload": {
+      "forge": "https://github.com/"
+    }
+  },
+  {
+    "note": "`accountId` is not empty.",
+    "payload": {
+      "forge": "github.com",
+      "accountId": ""
+    }
+  },
+  {
+    "note": "There is no subject member: in this version a member unlinks only their own account.",
+    "payload": {
+      "forge": "github.com",
+      "subject": "did:webvh:QmDanScid4:dan.example"
+    }
+  },
+  {
+    "note": "The account is named by its forge id, never by its login.",
+    "payload": {
+      "forge": "github.com",
+      "login": "bob-builds"
+    }
+  }
+]

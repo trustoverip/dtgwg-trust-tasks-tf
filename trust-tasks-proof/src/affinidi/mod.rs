@@ -15,9 +15,11 @@
 //! verifier.verify(&inbound_doc).await?;
 //! ```
 //!
-//! For `did:web` or other resolvers, supply a
-//! [`affinidi_data_integrity::VerificationMethodResolver`] via
-//! [`Verifier::with_resolver`].
+//! For `did:web` or other resolvers, supply a [`ProofPurposeResolver`] —
+//! normally [`CachedDidResolver`] — via [`Verifier::with_resolver`]. The
+//! verifier accepts a proof only when the issuer's DID document lists the
+//! proof's `verificationMethod` under the relationship its `proofPurpose`
+//! names ([`ProofPurpose`]).
 //!
 //! The implementation removes the `proof` member from the document before
 //! handing it to the Affinidi `verify` call, as required by the W3C
@@ -27,16 +29,17 @@
 //! the identical document-minus-`proof` contract on the sign side, so
 //! what it emits is what [`Verifier`] verifies.
 
+mod purpose;
 mod resolver;
 mod sign;
+pub use purpose::{ProofPurpose, ProofPurposeResolver, PurposeBound};
 pub use resolver::CachedDidResolver;
 pub use sign::{sign_trust_task, SignError};
 
 use std::sync::Arc;
 
 use affinidi_data_integrity::{
-    DataIntegrityError, DataIntegrityProof, DidKeyResolver, SignatureFailure,
-    VerificationMethodResolver, VerifyOptions,
+    DataIntegrityError, DataIntegrityProof, DidKeyResolver, SignatureFailure, VerifyOptions,
 };
 use async_trait::async_trait;
 use serde::Serialize;
@@ -65,21 +68,26 @@ pub use affinidi_data_integrity::{crypto_suites::CryptoSuite, SignOptions};
 /// [`Self::with_resolver`] when you need to resolve `did:web` /
 /// `did:webvh` / other DID methods.
 pub struct Verifier {
-    resolver: Arc<dyn VerificationMethodResolver>,
+    resolver: Arc<dyn ProofPurposeResolver>,
     options: VerifyOptions,
 }
 
 impl Verifier {
     /// Verifier that resolves `did:key:` URIs locally; rejects every other
-    /// DID method.
+    /// DID method. A `did:key`'s signing key is authorised for every
+    /// signing purpose, as the `did:key` method defines.
     pub fn for_did_key() -> Self {
         Self::with_resolver(Arc::new(DidKeyResolver))
     }
 
-    /// Verifier with a caller-supplied resolver. Use this with the
-    /// Affinidi DID-resolver cache SDK, an in-process `did:web` lookup,
-    /// a custom HSM bridge, etc.
-    pub fn with_resolver(resolver: Arc<dyn VerificationMethodResolver>) -> Self {
+    /// Verifier with a caller-supplied resolver: normally
+    /// [`CachedDidResolver`], or any [`ProofPurposeResolver`] that checks a
+    /// method against the relationship its proof's `proofPurpose` names.
+    ///
+    /// Earlier releases took an upstream `VerificationMethodResolver`, which
+    /// cannot see the proof's purpose; a key-only resolver now implements
+    /// [`ProofPurposeResolver`] and states how it applies the relationship.
+    pub fn with_resolver(resolver: Arc<dyn ProofPurposeResolver>) -> Self {
         Self {
             resolver,
             options: VerifyOptions::default(),
@@ -124,8 +132,10 @@ impl Verifier {
     ///
     /// Checks, in order: a `proof` member is present and well-formed; the
     /// document names an `issuer` controlling the proof's verificationMethod
-    /// (SPEC §4.8, exact string equality); the signature verifies over the
-    /// document minus its `proof`.
+    /// (SPEC §4.8, exact string equality); the `proofPurpose` names a signing
+    /// relationship and the issuer lists the verificationMethod under it
+    /// (W3C Data Integrity / Controlled Identifiers §3.3); the signature
+    /// verifies over the document minus its `proof`.
     pub async fn verify_raw(&self, doc: &Value) -> Result<(), VerificationError> {
         // ─── 1. Extract the proof.
         let proof_value = doc.get("proof").cloned().ok_or_else(|| {
@@ -164,9 +174,15 @@ impl Verifier {
             }
         }
 
-        // ─── 4. Hand to Affinidi.
+        // ─── 4. The key must be one the issuer authorised for the purpose
+        //        the proof declares: `keyAgreement` and unknown purposes are
+        //        refused here, and the resolver checks the relationship.
+        let purpose = ProofPurpose::parse(&parsed_proof.proof_purpose).map_err(map_error)?;
+        let resolver = PurposeBound::new(&*self.resolver, purpose);
+
+        // ─── 5. Hand to Affinidi.
         parsed_proof
-            .verify(&doc_value, &*self.resolver, self.options.clone())
+            .verify(&doc_value, &resolver, self.options.clone())
             .await
             .map_err(map_error)?;
         Ok(())

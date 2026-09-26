@@ -137,7 +137,7 @@ The full JSON Schema is in [`payload.schema.json`](payload.schema.json).
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:alice.example#key-1",
     "created": "2026-05-23T10:00:30Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg…"
   }
 }
