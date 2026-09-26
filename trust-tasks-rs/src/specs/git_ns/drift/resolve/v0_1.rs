@@ -2567,6 +2567,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::NOT_ADOPTABLE,
     error_codes::ACCOUNT_NOT_LINKED,
     error_codes::NO_MATCHING_RIGHT,
+    error_codes::ROLE_MAP_UNKNOWN,
     error_codes::NOT_REVERTIBLE,
 ];
 /// One constant per extended error code this specification declares
@@ -2656,6 +2657,15 @@ pub mod error_codes {
     pub const NO_MATCHING_RIGHT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/drift/resolve:noMatchingRight",
         retryable: false,
+    };
+    /// `git-ns:roleMapUnknown`
+    ///
+    /// `adopt` was asked while the VTC holds no role map from the bridge that serves the namespace: that bridge has not reported one since the namespace was bound or came to be served by it, or it implements a git-ns/bridge/event version before 0.3 and never reports one. The VTC cannot tell which right the observed role is the projection of. Adopt once the bridge has reported its map, or revert.
+    ///
+    /// Declared `retryable: true`.
+    pub const ROLE_MAP_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "git-ns:roleMapUnknown",
+        retryable: true,
     };
     /// `git-ns/drift/resolve:notRevertible`
     ///

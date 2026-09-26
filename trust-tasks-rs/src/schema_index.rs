@@ -469,6 +469,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.2#response" => <crate::specs::git_ns::bridge::event::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/event/0.3" => <crate::specs::git_ns::bridge::event::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/event/0.3#response" => <crate::specs::git_ns::bridge::event::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.1" => <crate::specs::git_ns::bridge::job::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.1#response" => <crate::specs::git_ns::bridge::job::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -564,6 +568,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/git-ns/right/revoke/0.2" => <crate::specs::git_ns::right::revoke::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/revoke/0.2#response" => <crate::specs::git_ns::right::revoke::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/roles/reproject/0.1" => <crate::specs::git_ns::roles::reproject::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/roles/reproject/0.1#response" => <crate::specs::git_ns::roles::reproject::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/view/0.1" => <crate::specs::git_ns::view::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -2687,6 +2695,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::git_ns::bridge::event::v0_2::Payload,
         >()),
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/event/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::bridge::event::v0_3::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::bridge::job::v0_1::Payload,
         >()),
@@ -2781,6 +2793,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/revoke/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::right::revoke::v0_2::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/roles/reproject/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::roles::reproject::v0_1::Payload,
         >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/view/0.1" => Some(crate::SpecPolicy::of::<
@@ -5086,6 +5102,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::git_ns::bridge::event::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/event/0.3" => {
+            Some(crate::specs::git_ns::bridge::event::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.1" => {
             Some(crate::specs::git_ns::bridge::job::v0_1::ERROR_CODES)
         }
@@ -5180,6 +5200,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/revoke/0.2" => {
             Some(crate::specs::git_ns::right::revoke::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/roles/reproject/0.1" => {
+            Some(crate::specs::git_ns::roles::reproject::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/view/0.1" => {
