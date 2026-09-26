@@ -54,9 +54,9 @@ related:
 
 ## Abstract
 
-When an agent moves to a new DIDComm mediator, its DID document changes at once, but its correspondents do not all notice at once: a sender that cached the old document keeps delivering through the old mediator, which the agent keeps listening on for a drain period. Before the operator ends that period, it needs to know whether anyone is still using the old route.
+When an agent moves to a new mediator, its DID document changes at once, but its correspondents do not all notice at once: a sender that cached the old document keeps delivering through the old mediator — over DIDComm or TSP alike — which the agent keeps listening on for a drain period. Before the operator ends that period, it needs to know whether anyone is still using the old route, by either transport.
 
-**VTA Services — Report** answers that from the agent's inbound telemetry: for a time window, how many messages arrived through each mediator, and for each sender the mediator it most recently arrived through.
+**VTA Services — Report** answers that from the agent's inbound telemetry: for a time window, how many messages arrived through each mediator, and for each sender the mediator — and the transport — its most recent message arrived by. It covers every mediated transport; a report that counted only one would tell the operator the drain is empty while the other is still in use.
 
 ## Status of this Document
 
@@ -123,6 +123,7 @@ A recipient **MUST** refuse a window whose `since` is after its `until` with `vt
       {
         "senderDid": "did:key:z6MkLaggingSenderKey",
         "lastSeenMediator": "did:web:old-mediator.example.com",
+        "lastSeenTransport": "tsp",
         "lastSeenAt": "2026-09-24T17:40:00Z"
       }
     ]
@@ -131,13 +132,14 @@ A recipient **MUST** refuse a window whose `since` is after its `until` with `vt
 ```
 
 - `until` is the upper bound the recipient applied, so an open-ended request learns what "now" was.
-- A sender whose `lastSeenMediator` is the old mediator is one the drain is still serving.
+- A sender whose `lastSeenMediator` is the old mediator is one the drain is still serving, whichever `lastSeenTransport` it used.
+- `inboundCount` counts both mediated transports together; the per-sender `lastSeenTransport` says which one a sender is on.
 
 ## Security & Privacy
 
 ### Data carried
 
-The request carries a time window. The response carries mediator DIDs, sender DIDs, message counts and the times of first and last contact — never content.
+The request carries a time window. The response carries mediator DIDs, sender DIDs, the transport each sender last used, message counts and the times of first and last contact — never content.
 
 ### Correlation
 

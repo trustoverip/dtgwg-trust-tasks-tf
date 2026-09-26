@@ -157,7 +157,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "format": "date-time"
 ///    },
 ///    "inboundCount": {
-///      "description": "Messages that arrived through it in the window.",
+///      "description": "Messages that arrived through it in the window, over every mediated transport.",
 ///      "type": "integer",
 ///      "minimum": 0.0
 ///    },
@@ -184,7 +184,7 @@ pub struct MediatorStats {
     ///The first arrival through it in the window.
     #[serde(rename = "firstSeen")]
     pub first_seen: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///Messages that arrived through it in the window.
+    ///Messages that arrived through it in the window, over every mediated transport.
     #[serde(rename = "inboundCount")]
     pub inbound_count: u64,
     ///The last arrival through it in the window.
@@ -426,6 +426,14 @@ impl Response {
 ///      "maxLength": 1000,
 ///      "minLength": 1
 ///    },
+///    "lastSeenTransport": {
+///      "description": "The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.",
+///      "type": "string",
+///      "enum": [
+///        "didcomm",
+///        "tsp"
+///      ]
+///    },
 ///    "senderDid": {
 ///      "description": "A sender that reached the agent in the window.",
 ///      "type": "string",
@@ -447,6 +455,13 @@ pub struct SenderLastSeen {
     ///The mediator its most recent message arrived through.
     #[serde(rename = "lastSeenMediator")]
     pub last_seen_mediator: SenderLastSeenLastSeenMediator,
+    ///The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.
+    #[serde(
+        rename = "lastSeenTransport",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub last_seen_transport: ::std::option::Option<SenderLastSeenLastSeenTransport>,
     ///A sender that reached the agent in the window.
     #[serde(rename = "senderDid")]
     pub sender_did: SenderLastSeenSenderDid,
@@ -527,6 +542,80 @@ impl<'de> ::serde::Deserialize<'de> for SenderLastSeenLastSeenMediator {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+///The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.",
+///  "type": "string",
+///  "enum": [
+///    "didcomm",
+///    "tsp"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum SenderLastSeenLastSeenTransport {
+    #[serde(rename = "didcomm")]
+    Didcomm,
+    #[serde(rename = "tsp")]
+    Tsp,
+}
+impl ::std::fmt::Display for SenderLastSeenLastSeenTransport {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Didcomm => f.write_str("didcomm"),
+            Self::Tsp => f.write_str("tsp"),
+        }
+    }
+}
+impl ::std::str::FromStr for SenderLastSeenLastSeenTransport {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "didcomm" => Ok(Self::Didcomm),
+            "tsp" => Ok(Self::Tsp),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for SenderLastSeenLastSeenTransport {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for SenderLastSeenLastSeenTransport {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for SenderLastSeenLastSeenTransport {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///A sender that reached the agent in the window.
@@ -872,6 +961,10 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         last_seen_mediator:
             ::std::result::Result<super::SenderLastSeenLastSeenMediator, ::std::string::String>,
+        last_seen_transport: ::std::result::Result<
+            ::std::option::Option<super::SenderLastSeenLastSeenTransport>,
+            ::std::string::String,
+        >,
         sender_did: ::std::result::Result<super::SenderLastSeenSenderDid, ::std::string::String>,
     }
     impl ::std::default::Default for SenderLastSeen {
@@ -879,6 +972,7 @@ pub mod builder {
             Self {
                 last_seen_at: Err("no value supplied for last_seen_at".to_string()),
                 last_seen_mediator: Err("no value supplied for last_seen_mediator".to_string()),
+                last_seen_transport: Ok(Default::default()),
                 sender_did: Err("no value supplied for sender_did".to_string()),
             }
         }
@@ -904,6 +998,18 @@ pub mod builder {
             });
             self
         }
+        pub fn last_seen_transport<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::SenderLastSeenLastSeenTransport>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.last_seen_transport = value.try_into().map_err(|e| {
+                format!("error converting supplied value for last_seen_transport: {e}")
+            });
+            self
+        }
         pub fn sender_did<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::SenderLastSeenSenderDid>,
@@ -923,6 +1029,7 @@ pub mod builder {
             Ok(Self {
                 last_seen_at: value.last_seen_at?,
                 last_seen_mediator: value.last_seen_mediator?,
+                last_seen_transport: value.last_seen_transport?,
                 sender_did: value.sender_did?,
             })
         }
@@ -932,6 +1039,7 @@ pub mod builder {
             Self {
                 last_seen_at: Ok(value.last_seen_at),
                 last_seen_mediator: Ok(value.last_seen_mediator),
+                last_seen_transport: Ok(value.last_seen_transport),
                 sender_did: Ok(value.sender_did),
             }
         }
@@ -942,14 +1050,14 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorStats\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"firstSeen\": {\n          \"description\": \"The first arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inboundCount\": {\n          \"description\": \"Messages that arrived through it in the window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastSeen\": {\n          \"description\": \"The last arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator the traffic arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"inboundCount\",\n        \"firstSeen\",\n        \"lastSeen\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"mediators\": {\n          \"description\": \"One entry per mediator that carried inbound traffic in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/MediatorStats\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"senders\": {\n          \"description\": \"One entry per sender that reached the agent in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SenderLastSeen\"\n          },\n          \"maxItems\": 100000,\n          \"type\": \"array\"\n        },\n        \"since\": {\n          \"description\": \"The lower bound applied, when the request gave one.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"The upper bound applied — now, when the request gave none.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"until\",\n        \"mediators\",\n        \"senders\"\n      ],\n      \"title\": \"VTA Services Report — response payload\",\n      \"type\": \"object\"\n    },\n    \"SenderLastSeen\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"lastSeenAt\": {\n          \"description\": \"When that message arrived.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastSeenMediator\": {\n          \"description\": \"The mediator its most recent message arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"senderDid\": {\n          \"description\": \"A sender that reached the agent in the window.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"senderDid\",\n        \"lastSeenMediator\",\n        \"lastSeenAt\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/report/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks an agent for its per-mediator inbound counts and each sender's last-seen mediator over a time window. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"since\": {\n      \"description\": \"Lower bound, RFC 3339. Absent means as far back as the agent's telemetry goes.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"until\": {\n      \"description\": \"Upper bound, RFC 3339. Absent means now.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTA Services — Report — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorStats\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"firstSeen\": {\n          \"description\": \"The first arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inboundCount\": {\n          \"description\": \"Messages that arrived through it in the window, over every mediated transport.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastSeen\": {\n          \"description\": \"The last arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator the traffic arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"inboundCount\",\n        \"firstSeen\",\n        \"lastSeen\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"mediators\": {\n          \"description\": \"One entry per mediator that carried inbound traffic in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/MediatorStats\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"senders\": {\n          \"description\": \"One entry per sender that reached the agent in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SenderLastSeen\"\n          },\n          \"maxItems\": 100000,\n          \"type\": \"array\"\n        },\n        \"since\": {\n          \"description\": \"The lower bound applied, when the request gave one.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"The upper bound applied — now, when the request gave none.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"until\",\n        \"mediators\",\n        \"senders\"\n      ],\n      \"title\": \"VTA Services Report — response payload\",\n      \"type\": \"object\"\n    },\n    \"SenderLastSeen\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"lastSeenAt\": {\n          \"description\": \"When that message arrived.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastSeenMediator\": {\n          \"description\": \"The mediator its most recent message arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastSeenTransport\": {\n          \"description\": \"The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.\",\n          \"enum\": [\n            \"didcomm\",\n            \"tsp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"senderDid\": {\n          \"description\": \"A sender that reached the agent in the window.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"senderDid\",\n        \"lastSeenMediator\",\n        \"lastSeenAt\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/report/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks an agent for its per-mediator inbound counts and each sender's last-seen mediator over a time window. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"since\": {\n      \"description\": \"Lower bound, RFC 3339. Absent means as far back as the agent's telemetry goes.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"until\": {\n      \"description\": \"Upper bound, RFC 3339. Absent means now.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTA Services — Report — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/report/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorStats\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"firstSeen\": {\n          \"description\": \"The first arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inboundCount\": {\n          \"description\": \"Messages that arrived through it in the window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastSeen\": {\n          \"description\": \"The last arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator the traffic arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"inboundCount\",\n        \"firstSeen\",\n        \"lastSeen\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"mediators\": {\n          \"description\": \"One entry per mediator that carried inbound traffic in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/MediatorStats\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"senders\": {\n          \"description\": \"One entry per sender that reached the agent in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SenderLastSeen\"\n          },\n          \"maxItems\": 100000,\n          \"type\": \"array\"\n        },\n        \"since\": {\n          \"description\": \"The lower bound applied, when the request gave one.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"The upper bound applied — now, when the request gave none.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"until\",\n        \"mediators\",\n        \"senders\"\n      ],\n      \"title\": \"VTA Services Report — response payload\",\n      \"type\": \"object\"\n    },\n    \"SenderLastSeen\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"lastSeenAt\": {\n          \"description\": \"When that message arrived.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastSeenMediator\": {\n          \"description\": \"The mediator its most recent message arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"senderDid\": {\n          \"description\": \"A sender that reached the agent in the window.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"senderDid\",\n        \"lastSeenMediator\",\n        \"lastSeenAt\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorStats\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"firstSeen\": {\n          \"description\": \"The first arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inboundCount\": {\n          \"description\": \"Messages that arrived through it in the window, over every mediated transport.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lastSeen\": {\n          \"description\": \"The last arrival through it in the window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator the traffic arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"inboundCount\",\n        \"firstSeen\",\n        \"lastSeen\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"mediators\": {\n          \"description\": \"One entry per mediator that carried inbound traffic in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/MediatorStats\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"senders\": {\n          \"description\": \"One entry per sender that reached the agent in the window.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SenderLastSeen\"\n          },\n          \"maxItems\": 100000,\n          \"type\": \"array\"\n        },\n        \"since\": {\n          \"description\": \"The lower bound applied, when the request gave one.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"The upper bound applied — now, when the request gave none.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"until\",\n        \"mediators\",\n        \"senders\"\n      ],\n      \"title\": \"VTA Services Report — response payload\",\n      \"type\": \"object\"\n    },\n    \"SenderLastSeen\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"lastSeenAt\": {\n          \"description\": \"When that message arrived.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastSeenMediator\": {\n          \"description\": \"The mediator its most recent message arrived through.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastSeenTransport\": {\n          \"description\": \"The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.\",\n          \"enum\": [\n            \"didcomm\",\n            \"tsp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"senderDid\": {\n          \"description\": \"A sender that reached the agent in the window.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"senderDid\",\n        \"lastSeenMediator\",\n        \"lastSeenAt\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -991,7 +1099,7 @@ mod conformance {
     }
     #[test]
     fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:8f9a0b1c-2d3e-4f4a-8b5c-6d7e8f9a0b1c\",\n  \"threadId\": \"urn:uuid:3e4f5a6b-7c8d-4e9f-8a0b-1c2d3e4f5a6b\",\n  \"type\": \"https://trusttasks.org/spec/vta/services/report/0.1#response\",\n  \"issuer\": \"did:webvh:QmExampleScid:vta.example.com\",\n  \"issuedAt\": \"2026-09-26T12:00:01Z\",\n  \"payload\": {\n    \"since\": \"2026-09-19T00:00:00Z\",\n    \"until\": \"2026-09-26T12:00:01Z\",\n    \"mediators\": [\n      {\n        \"mediatorDid\": \"did:web:old-mediator.example.com\",\n        \"inboundCount\": 12,\n        \"firstSeen\": \"2026-09-19T08:12:00Z\",\n        \"lastSeen\": \"2026-09-24T17:40:00Z\"\n      },\n      {\n        \"mediatorDid\": \"did:web:new-mediator.example.com\",\n        \"inboundCount\": 431,\n        \"firstSeen\": \"2026-09-20T09:00:00Z\",\n        \"lastSeen\": \"2026-09-26T11:59:30Z\"\n      }\n    ],\n    \"senders\": [\n      {\n        \"senderDid\": \"did:key:z6MkLaggingSenderKey\",\n        \"lastSeenMediator\": \"did:web:old-mediator.example.com\",\n        \"lastSeenAt\": \"2026-09-24T17:40:00Z\"\n      }\n    ]\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8f9a0b1c-2d3e-4f4a-8b5c-6d7e8f9a0b1c\",\n  \"threadId\": \"urn:uuid:3e4f5a6b-7c8d-4e9f-8a0b-1c2d3e4f5a6b\",\n  \"type\": \"https://trusttasks.org/spec/vta/services/report/0.1#response\",\n  \"issuer\": \"did:webvh:QmExampleScid:vta.example.com\",\n  \"issuedAt\": \"2026-09-26T12:00:01Z\",\n  \"payload\": {\n    \"since\": \"2026-09-19T00:00:00Z\",\n    \"until\": \"2026-09-26T12:00:01Z\",\n    \"mediators\": [\n      {\n        \"mediatorDid\": \"did:web:old-mediator.example.com\",\n        \"inboundCount\": 12,\n        \"firstSeen\": \"2026-09-19T08:12:00Z\",\n        \"lastSeen\": \"2026-09-24T17:40:00Z\"\n      },\n      {\n        \"mediatorDid\": \"did:web:new-mediator.example.com\",\n        \"inboundCount\": 431,\n        \"firstSeen\": \"2026-09-20T09:00:00Z\",\n        \"lastSeen\": \"2026-09-26T11:59:30Z\"\n      }\n    ],\n    \"senders\": [\n      {\n        \"senderDid\": \"did:key:z6MkLaggingSenderKey\",\n        \"lastSeenMediator\": \"did:web:old-mediator.example.com\",\n        \"lastSeenTransport\": \"tsp\",\n        \"lastSeenAt\": \"2026-09-24T17:40:00Z\"\n      }\n    ]\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

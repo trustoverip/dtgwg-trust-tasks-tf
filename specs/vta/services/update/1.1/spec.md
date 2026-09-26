@@ -59,20 +59,29 @@ where the operator meant to correct one.
 
 ## Changes from 1.0
 
-1.1 adds one optional request member, `drainTtlSecs`, for `didcomm`. Replacing
-the mediator puts the old one in a drain — it keeps accepting delivery for
-senders still holding the previous DID document — and 1.0 gave the operator no
-say in how long, so a recipient could only apply its own default. An operator
-who knows its correspondents refresh slowly needs a longer window, and one
-decommissioning a mediator it no longer trusts needs the shortest it is
-allowed. Nothing else changes; a 1.0 request is a valid 1.1 request.
+1.1 adds one optional request member, `drainTtlSecs`, for the **mediated**
+transports — `didcomm` and `tsp`, the two whose `config` names a `mediatorDid`.
+Replacing a mediator puts the old one in a drain: it keeps accepting delivery
+for correspondents still holding the previous DID document, and a DIDComm
+sender and a TSP sender with a cached document are stranded in exactly the same
+way when it stops. 1.0 gave the operator no say in how long the drain lasts, so
+a recipient could only apply its own default. An operator who knows its
+correspondents refresh slowly needs a longer window, and one decommissioning a
+mediator it no longer trusts needs the shortest it is allowed. Nothing else
+changes; a 1.0 request is a valid 1.1 request.
 
-`drainTtlSecs` is refused for any service other than `didcomm`, as a `url` is
-for `didcomm`: a member that does not apply to the named service makes the
-request malformed rather than being ignored. A recipient **MAY** raise a value
-below its floor to the floor — over a DIDComm-carried request it **MUST**, since
-tearing down the mediator the request arrived through discards the reply — and
-reports the window it applied in the result's `drainUntil`.
+`drainTtlSecs` is refused for a non-mediated transport (`rest`, `webauthn`), as
+a `url` is for a mediated one: a member that does not apply to the named
+service makes the request malformed rather than being ignored. A recipient
+**MAY** raise a value below its floor to the floor — over a request that
+arrived through the mediator being replaced it **MUST**, since tearing that
+mediator down discards the reply — and reports the window it applied in the
+result's `drainUntil`.
+
+Where one mediator carries both mediated transports, replacing it for either
+drains it for both: the old mediator keeps accepting DIDComm and TSP delivery
+until the one `drainUntil` the result reports. A recipient **MUST NOT** run two
+drains of different lengths on one mediator.
 
 ## Replacement, not merge
 
@@ -116,7 +125,7 @@ is not the authorization; the caller's super-admin role is.
 }
 ```
 
-Replacing the DIDComm mediator with a two-day drain for the old one:
+Replacing the mediator with a two-day drain for the old one:
 
 ```json
 {
@@ -161,7 +170,7 @@ Replacing the DIDComm mediator with a two-day drain for the old one:
 ### Data carried
 
 The request carries the transport to change and its new setting — an endpoint
-URL or a mediator DID — and, for `didcomm`, the drain window. The response
+URL or a mediator DID — and, for a mediated transport, the drain window. The response
 carries the log entry that made the change. Everything here ends up in, or
 describes, the agent's public DID document.
 

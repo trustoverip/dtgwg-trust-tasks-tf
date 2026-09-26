@@ -23,7 +23,7 @@ class MediatorStats {
   /// The mediator the traffic arrived through.
   final String mediatorDid;
 
-  /// Messages that arrived through it in the window.
+  /// Messages that arrived through it in the window, over every mediated transport.
   final int inboundCount;
 
   /// The first arrival through it in the window.
@@ -41,11 +41,29 @@ class MediatorStats {
       };
 }
 
+/// The mediated transport the sender's most recent message arrived by. Absent when the
+/// agent's telemetry did not record it.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const SenderLastSeenLastSeenTransport(String value) {
+  static const SenderLastSeenLastSeenTransport didcomm =
+      SenderLastSeenLastSeenTransport('didcomm');
+  static const SenderLastSeenLastSeenTransport tsp =
+      SenderLastSeenLastSeenTransport('tsp');
+
+  /// Every value this specification's schema permits.
+  static const List<SenderLastSeenLastSeenTransport> values =
+      <SenderLastSeenLastSeenTransport>[didcomm, tsp];
+}
+
 /// SenderLastSeen, generated from its schema.
 class SenderLastSeen {
   const SenderLastSeen({
     required this.senderDid,
     required this.lastSeenMediator,
+    this.lastSeenTransport,
     required this.lastSeenAt,
   });
 
@@ -53,6 +71,10 @@ class SenderLastSeen {
   factory SenderLastSeen.fromJson(Map<String, dynamic> json) => SenderLastSeen(
         senderDid: json['senderDid'] as String,
         lastSeenMediator: json['lastSeenMediator'] as String,
+        lastSeenTransport: json['lastSeenTransport'] == null
+            ? null
+            : SenderLastSeenLastSeenTransport(
+                json['lastSeenTransport'] as String),
         lastSeenAt: json['lastSeenAt'] as String,
       );
 
@@ -62,6 +84,10 @@ class SenderLastSeen {
   /// The mediator its most recent message arrived through.
   final String lastSeenMediator;
 
+  /// The mediated transport the sender's most recent message arrived by. Absent when the
+  /// agent's telemetry did not record it.
+  final SenderLastSeenLastSeenTransport? lastSeenTransport;
+
   /// When that message arrived.
   final String lastSeenAt;
 
@@ -69,6 +95,8 @@ class SenderLastSeen {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'senderDid': senderDid,
         'lastSeenMediator': lastSeenMediator,
+        if (lastSeenTransport != null)
+          'lastSeenTransport': lastSeenTransport!.value,
         'lastSeenAt': lastSeenAt,
       };
 }
@@ -174,11 +202,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vta/services/report/0.1","title":"VTA Services — Report — payload","description":"Asks an agent for its per-mediator inbound counts and each sender\'s last-seen mediator over a time window. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"properties":{"since":{"type":"string","format":"date-time","description":"Lower bound, RFC 3339. Absent means as far back as the agent\'s telemetry goes."},"until":{"type":"string","format":"date-time","description":"Upper bound, RFC 3339. Absent means now."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"MediatorStats":{"type":"object","additionalProperties":false,"required":["mediatorDid","inboundCount","firstSeen","lastSeen"],"properties":{"mediatorDid":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator the traffic arrived through."},"inboundCount":{"type":"integer","minimum":0,"description":"Messages that arrived through it in the window."},"firstSeen":{"type":"string","format":"date-time","description":"The first arrival through it in the window."},"lastSeen":{"type":"string","format":"date-time","description":"The last arrival through it in the window."}}},"SenderLastSeen":{"type":"object","additionalProperties":false,"required":["senderDid","lastSeenMediator","lastSeenAt"],"properties":{"senderDid":{"type":"string","minLength":1,"maxLength":1000,"description":"A sender that reached the agent in the window."},"lastSeenMediator":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator its most recent message arrived through."},"lastSeenAt":{"type":"string","format":"date-time","description":"When that message arrived."}}},"Response":{"\$anchor":"response","title":"VTA Services Report — response payload","type":"object","additionalProperties":false,"required":["until","mediators","senders"],"properties":{"since":{"type":"string","format":"date-time","description":"The lower bound applied, when the request gave one."},"until":{"type":"string","format":"date-time","description":"The upper bound applied — now, when the request gave none."},"mediators":{"type":"array","maxItems":1000,"items":{"\$ref":"#/\$defs/MediatorStats"},"description":"One entry per mediator that carried inbound traffic in the window."},"senders":{"type":"array","maxItems":100000,"items":{"\$ref":"#/\$defs/SenderLastSeen"},"description":"One entry per sender that reached the agent in the window."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vta/services/report/0.1","title":"VTA Services — Report — payload","description":"Asks an agent for its per-mediator inbound counts and each sender\'s last-seen mediator over a time window. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"properties":{"since":{"type":"string","format":"date-time","description":"Lower bound, RFC 3339. Absent means as far back as the agent\'s telemetry goes."},"until":{"type":"string","format":"date-time","description":"Upper bound, RFC 3339. Absent means now."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"MediatorStats":{"type":"object","additionalProperties":false,"required":["mediatorDid","inboundCount","firstSeen","lastSeen"],"properties":{"mediatorDid":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator the traffic arrived through."},"inboundCount":{"type":"integer","minimum":0,"description":"Messages that arrived through it in the window, over every mediated transport."},"firstSeen":{"type":"string","format":"date-time","description":"The first arrival through it in the window."},"lastSeen":{"type":"string","format":"date-time","description":"The last arrival through it in the window."}}},"SenderLastSeen":{"type":"object","additionalProperties":false,"required":["senderDid","lastSeenMediator","lastSeenAt"],"properties":{"senderDid":{"type":"string","minLength":1,"maxLength":1000,"description":"A sender that reached the agent in the window."},"lastSeenMediator":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator its most recent message arrived through."},"lastSeenTransport":{"type":"string","enum":["didcomm","tsp"],"description":"The mediated transport the sender\'s most recent message arrived by. Absent when the agent\'s telemetry did not record it."},"lastSeenAt":{"type":"string","format":"date-time","description":"When that message arrived."}}},"Response":{"\$anchor":"response","title":"VTA Services Report — response payload","type":"object","additionalProperties":false,"required":["until","mediators","senders"],"properties":{"since":{"type":"string","format":"date-time","description":"The lower bound applied, when the request gave one."},"until":{"type":"string","format":"date-time","description":"The upper bound applied — now, when the request gave none."},"mediators":{"type":"array","maxItems":1000,"items":{"\$ref":"#/\$defs/MediatorStats"},"description":"One entry per mediator that carried inbound traffic in the window."},"senders":{"type":"array","maxItems":100000,"items":{"\$ref":"#/\$defs/SenderLastSeen"},"description":"One entry per sender that reached the agent in the window."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"MediatorStats":{"type":"object","additionalProperties":false,"required":["mediatorDid","inboundCount","firstSeen","lastSeen"],"properties":{"mediatorDid":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator the traffic arrived through."},"inboundCount":{"type":"integer","minimum":0,"description":"Messages that arrived through it in the window."},"firstSeen":{"type":"string","format":"date-time","description":"The first arrival through it in the window."},"lastSeen":{"type":"string","format":"date-time","description":"The last arrival through it in the window."}}},"SenderLastSeen":{"type":"object","additionalProperties":false,"required":["senderDid","lastSeenMediator","lastSeenAt"],"properties":{"senderDid":{"type":"string","minLength":1,"maxLength":1000,"description":"A sender that reached the agent in the window."},"lastSeenMediator":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator its most recent message arrived through."},"lastSeenAt":{"type":"string","format":"date-time","description":"When that message arrived."}}},"Response":{"\$anchor":"response","title":"VTA Services Report — response payload","type":"object","additionalProperties":false,"required":["until","mediators","senders"],"properties":{"since":{"type":"string","format":"date-time","description":"The lower bound applied, when the request gave one."},"until":{"type":"string","format":"date-time","description":"The upper bound applied — now, when the request gave none."},"mediators":{"type":"array","maxItems":1000,"items":{"\$ref":"#/\$defs/MediatorStats"},"description":"One entry per mediator that carried inbound traffic in the window."},"senders":{"type":"array","maxItems":100000,"items":{"\$ref":"#/\$defs/SenderLastSeen"},"description":"One entry per sender that reached the agent in the window."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"MediatorStats":{"type":"object","additionalProperties":false,"required":["mediatorDid","inboundCount","firstSeen","lastSeen"],"properties":{"mediatorDid":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator the traffic arrived through."},"inboundCount":{"type":"integer","minimum":0,"description":"Messages that arrived through it in the window, over every mediated transport."},"firstSeen":{"type":"string","format":"date-time","description":"The first arrival through it in the window."},"lastSeen":{"type":"string","format":"date-time","description":"The last arrival through it in the window."}}},"SenderLastSeen":{"type":"object","additionalProperties":false,"required":["senderDid","lastSeenMediator","lastSeenAt"],"properties":{"senderDid":{"type":"string","minLength":1,"maxLength":1000,"description":"A sender that reached the agent in the window."},"lastSeenMediator":{"type":"string","minLength":1,"maxLength":1000,"description":"The mediator its most recent message arrived through."},"lastSeenTransport":{"type":"string","enum":["didcomm","tsp"],"description":"The mediated transport the sender\'s most recent message arrived by. Absent when the agent\'s telemetry did not record it."},"lastSeenAt":{"type":"string","format":"date-time","description":"When that message arrived."}}},"Response":{"\$anchor":"response","title":"VTA Services Report — response payload","type":"object","additionalProperties":false,"required":["until","mediators","senders"],"properties":{"since":{"type":"string","format":"date-time","description":"The lower bound applied, when the request gave one."},"until":{"type":"string","format":"date-time","description":"The upper bound applied — now, when the request gave none."},"mediators":{"type":"array","maxItems":1000,"items":{"\$ref":"#/\$defs/MediatorStats"},"description":"One entry per mediator that carried inbound traffic in the window."},"senders":{"type":"array","maxItems":100000,"items":{"\$ref":"#/\$defs/SenderLastSeen"},"description":"One entry per sender that reached the agent in the window."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

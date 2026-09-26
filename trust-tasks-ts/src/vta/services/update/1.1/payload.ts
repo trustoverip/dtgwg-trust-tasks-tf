@@ -34,7 +34,7 @@ export interface VTAServicesUpdatePayload {
   };
   ext?: Ext;
   /**
-   * `didcomm` only: how long the replaced mediator keeps accepting delivery for senders still holding the previous DID document. Absent takes the agent's default. The agent may raise a value below its floor to the floor — and does, over a request that arrived through the mediator being replaced — so read `drainUntil` in the result for the window actually applied.
+   * Mediated transports only (`didcomm`, `tsp`): how long the replaced mediator keeps accepting delivery for correspondents still holding the previous DID document. Refused for `rest` and `webauthn`. Absent takes the agent's default. The agent may raise a value below its floor to the floor — and does, over a request that arrived through the mediator being replaced — and one mediator carrying both mediated transports drains once for both, so read `drainUntil` in the result for the window actually applied.
    */
   drainTtlSecs?: number;
 }
@@ -117,7 +117,7 @@ export const PAYLOAD_SCHEMA = {
     "drainTtlSecs": {
       "type": "integer",
       "minimum": 0,
-      "description": "`didcomm` only: how long the replaced mediator keeps accepting delivery for senders still holding the previous DID document. Absent takes the agent's default. The agent may raise a value below its floor to the floor — and does, over a request that arrived through the mediator being replaced — so read `drainUntil` in the result for the window actually applied."
+      "description": "Mediated transports only (`didcomm`, `tsp`): how long the replaced mediator keeps accepting delivery for correspondents still holding the previous DID document. Refused for `rest` and `webauthn`. Absent takes the agent's default. The agent may raise a value below its floor to the floor — and does, over a request that arrived through the mediator being replaced — and one mediator carrying both mediated transports drains once for both, so read `drainUntil` in the result for the window actually applied."
     }
   },
   "$defs": {

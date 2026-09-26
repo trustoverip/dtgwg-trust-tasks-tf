@@ -55,7 +55,7 @@ export interface MediatorStats {
    */
   mediatorDid: string;
   /**
-   * Messages that arrived through it in the window.
+   * Messages that arrived through it in the window, over every mediated transport.
    */
   inboundCount: number;
   /**
@@ -76,6 +76,10 @@ export interface SenderLastSeen {
    * The mediator its most recent message arrived through.
    */
   lastSeenMediator: string;
+  /**
+   * The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it.
+   */
+  lastSeenTransport?: "didcomm" | "tsp";
   /**
    * When that message arrived.
    */
@@ -149,7 +153,7 @@ export const PAYLOAD_SCHEMA = {
         "inboundCount": {
           "type": "integer",
           "minimum": 0,
-          "description": "Messages that arrived through it in the window."
+          "description": "Messages that arrived through it in the window, over every mediated transport."
         },
         "firstSeen": {
           "type": "string",
@@ -183,6 +187,14 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 1,
           "maxLength": 1000,
           "description": "The mediator its most recent message arrived through."
+        },
+        "lastSeenTransport": {
+          "type": "string",
+          "enum": [
+            "didcomm",
+            "tsp"
+          ],
+          "description": "The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it."
         },
         "lastSeenAt": {
           "type": "string",
@@ -271,7 +283,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "inboundCount": {
           "type": "integer",
           "minimum": 0,
-          "description": "Messages that arrived through it in the window."
+          "description": "Messages that arrived through it in the window, over every mediated transport."
         },
         "firstSeen": {
           "type": "string",
@@ -305,6 +317,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minLength": 1,
           "maxLength": 1000,
           "description": "The mediator its most recent message arrived through."
+        },
+        "lastSeenTransport": {
+          "type": "string",
+          "enum": [
+            "didcomm",
+            "tsp"
+          ],
+          "description": "The mediated transport the sender's most recent message arrived by. Absent when the agent's telemetry did not record it."
         },
         "lastSeenAt": {
           "type": "string",
