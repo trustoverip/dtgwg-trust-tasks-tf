@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/right/ratify/0.1",
+  "title": "Git Namespaces — Ratify Break-Glass — payload",
+  "description": "An administrator other than its subject ratifies one unratified break-glass record, turning it into an ordinary grant: it stops being flagged, and starts counting toward the last-owner and last-admin invariants.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "right",
+    "resource",
+    "breakGlassAt"
+  ],
+  "properties": {
+    "subject": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/Did",
+      "description": "Who broke the glass: the record's subject."
+    },
+    "right": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/ElevatedRight"
+    },
+    "resource": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/Resource",
+      "description": "The resource exactly as recorded."
+    },
+    "breakGlassAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The record's `breakGlass.at`, as the ratifier read it. Binds the ratification to the one break-glass the ratifier read and judged, so that it cannot ratify a later one — made after that one was revoked, with a different justification — by the same subject for the same right."
+    },
+    "statement": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, in the ratifier's words. Kept in the audit record and carried in the notice; shown to the same people as the justification."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Ratify Break-Glass — response payload",
+      "description": "The ratified record.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "right"
+      ],
+      "properties": {
+        "right": {
+          "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/RightRecord",
+          "description": "The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
