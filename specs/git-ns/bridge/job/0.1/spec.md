@@ -152,7 +152,7 @@ The VTC sends the job to its bridge. See the top-level schema in [`payload.schem
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zk5f5NdC3fyVGTjHt3wAfoua65baH7EMsYGngmCMHUp8sV5gfHLq5eCqkQi6wZn3HAfnsE8Rzu9XAaaK4nxDHRy"
   }
 }
@@ -179,7 +179,7 @@ The VTC sends the job to its bridge. See the top-level schema in [`payload.schem
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zsMQG7URHk2DRiFd9kuB5WojM61NFSJj7eLqEjFLvuU4LTcw2FSegdznkN8yDuRtdrVo1twjjPb4Ndfzh3sTqBV"
   }
 }
@@ -209,7 +209,7 @@ The VTC sends the job to its bridge. See the top-level schema in [`payload.schem
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zfNBCVyyxc4YJ4LBc3MC4LswfMaAVgwC7Pv5mW2ZAnXCCP84g3KpfQX3UjZL63ovm2257Fbk78GdZNt2rZTCDPF"
   }
 }
@@ -238,7 +238,7 @@ The bridge, now responding, says whether it took the job, per the sub-schema rea
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zB6QrBqXENi973GjjCeVjVVUUDempgtCdj4GY4ztNUpL2ZvJv97ZVmZo66EkCYFZbu1YdaWPJnTj42jJ57qx6cv"
   }
 }
@@ -268,7 +268,7 @@ The bridge, now responding, says whether it took the job, per the sub-schema rea
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6xNLK38BZKGr3S86pfLF3E6y77dxH2i8Kv7mpPG7uVLBBDGgEac6CRC8T9UrHP9L8CSpUmp3yc3GETRsV2dB2N"
   }
 }

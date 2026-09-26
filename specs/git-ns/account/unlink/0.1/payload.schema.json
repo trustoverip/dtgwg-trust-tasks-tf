@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/account/unlink/0.1",
+  "title": "Git Namespaces — Unlink Forge Account — payload",
+  "description": "A member removes the binding between their DID and their account on one forge, made with git-ns/account/link. The VTC deletes it and re-projects, so the bridge withdraws the forge roles it gave that account.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forge"
+  ],
+  "properties": {
+    "forge": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/ForgeHost",
+      "description": "The forge whose linked account to unlink."
+    },
+    "accountId": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/ForgeId",
+      "description": "The forge id of the account the member means to unlink, as they last read it. When present, the VTC unlinks only if this is the account linked on `forge` now, so a request made before a re-link cannot remove the account linked since."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Unlink Forge Account — response payload",
+      "description": "The account that was unlinked, and when.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unlinked",
+        "unlinkedAt"
+      ],
+      "properties": {
+        "unlinked": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/ForgeAccount",
+          "description": "The account that is no longer linked to the member's DID."
+        },
+        "unlinkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the binding was deleted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

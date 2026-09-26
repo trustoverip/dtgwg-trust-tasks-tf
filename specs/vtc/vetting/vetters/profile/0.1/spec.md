@@ -151,7 +151,7 @@ The vetter sends the request to the community. See the top-level schema in [`pay
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1",
     "created": "2026-09-15T08:30:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N"
   }
 }

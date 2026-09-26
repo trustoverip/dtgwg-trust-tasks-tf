@@ -132,7 +132,7 @@ A *request* document carries `type: https://trusttasks.org/spec/acl/change-role/
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:org.example#key-1",
     "created": "2026-06-10T14:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5xy..."
   }
 }

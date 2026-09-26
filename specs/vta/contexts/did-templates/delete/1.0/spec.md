@@ -102,7 +102,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/contexts/did
     "cryptosuite": "eddsa-rdfc-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-06-16T09:10:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg..."
   }
 }

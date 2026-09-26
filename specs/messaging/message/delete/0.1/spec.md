@@ -117,7 +117,7 @@ The requester sends the request to its mediator. The payload validates against t
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-09-21T10:05:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4hq..."
   }
 }

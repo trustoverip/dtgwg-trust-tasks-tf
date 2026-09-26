@@ -118,7 +118,7 @@ This specification defines no task that reverses an archive. A repository unarch
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2027-03-01T12:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zN2rt1iKhWTjfKeYVjBvMrcibvzonCFnFopvdK8ezeFiL4Y9BXhnyBYnH3LpoD1jMnC8YQbMKU99KqLuPppsH9j"
   }
 }
@@ -165,7 +165,7 @@ The VTC, now responding, returns the repository, per the sub-schema reachable vi
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2027-03-01T12:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2QGW1wZnYPVdPT1KsKoA38XFT47bQDDh8NJXEj3fsZh2JHgxa9GrM35JhnXEs9pKEgdZkvR7tkWbKkn33XiMtF"
   }
 }
