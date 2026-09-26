@@ -52,6 +52,7 @@ export * as AuthStepUpApproveResponse_v0_1 from "./auth/step-up/approve-response
 export * as AuthStepUpApproveResponse_v0_2 from "./auth/step-up/approve-response/0.2/payload.js";
 export * as AuthStepUpApproveResponse_v0_3 from "./auth/step-up/approve-response/0.3/payload.js";
 export * as AuthStepUpApproveResponse_v0_4 from "./auth/step-up/approve-response/0.4/payload.js";
+export * as AuthStepUpApproveResponse_v0_5 from "./auth/step-up/approve-response/0.5/payload.js";
 export * as AuthStepUpPolicy_v0_1 from "./auth/step-up/policy/0.1/payload.js";
 export * as AuthStepUpPolicy_v0_2 from "./auth/step-up/policy/0.2/payload.js";
 export * as AuthWhoami_v0_1 from "./auth/whoami/0.1/payload.js";
