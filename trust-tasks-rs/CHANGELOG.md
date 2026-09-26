@@ -31,6 +31,43 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.23.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.23.1...trust-tasks-rs-v0.23.2) — 2026-09-26
+
+
+### Added
+
+- **vta/attestation**: Status, report and config-report as Trust Tasks ([#654](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/654))
+
+A VTA running in a TEE answers three attestation reads today only as
+  unauthenticated REST routes (`GET /attestation/status`, `POST`/`GET
+  /attestation/report`, `POST /attestation/config-report`), and a DIDComm
+  protocol arm nothing sends to. Specifying them lets the agent serve them on its
+  Trust Task spine over TSP, DIDComm and HTTPS alike, and retire both.
+
+  - `vta/attestation/status/0.1` — which TEE the agent detected at boot. A claim,
+    not evidence; it tells the verifier what to ask for.
+  - `vta/attestation/report/0.1` — fresh evidence binding a verifier-chosen
+    32-byte nonce and the agent's DID. The nonce is REQUIRED: there is no
+    nonce-less (cached) form, because a report nobody asked for is one anybody can
+    replay.
+  - `vta/attestation/config-report/0.1` — fresh evidence binding the nonce and
+    the SHA-384 of the canonical, secret-free view of the configuration the
+    enclave booted, so a tenant can check operator-supplied settings (its KMS key)
+    before onboarding.
+
+  All three: request proof OPTIONAL (a verifier asks before it trusts the agent,
+  often with no key the agent knows, and the nonce is what makes an answer its
+  own), response proof REQUIRED (the agent's `authentication` signature ties its
+  DID to the evidence it returns), no side effects, transient retention. Each
+  spec states the verifier's checks — vendor root, measured image, the nonce
+  inside the evidence, and the DID the evidence binds against the document's
+  issuer.
+
+  Rust, TypeScript, Go and Dart bindings regenerated; `npm run build`,
+  `check-bindings` and the Rust tests pass.
+
+
+
 ## [0.23.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.23.0...trust-tasks-rs-v0.23.1) — 2026-09-26
 
 
