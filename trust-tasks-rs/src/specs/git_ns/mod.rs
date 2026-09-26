@@ -6,4 +6,5 @@ pub mod drift;
 pub mod namespace;
 pub mod repo;
 pub mod right;
+pub mod roles;
 pub mod view;

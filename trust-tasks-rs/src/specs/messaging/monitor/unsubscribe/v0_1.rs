@@ -477,7 +477,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:4a7b9c2d-6e1f-4a3b-9c8d-1e2f3a4b5c01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T11:07:30Z\",\n  \"payload\": {\n    \"subscriptionId\": \"mon_8f3a2c1e9b7d4a60\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T11:07:30Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2pn...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:4a7b9c2d-6e1f-4a3b-9c8d-1e2f3a4b5c01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T11:07:30Z\",\n  \"payload\": {\n    \"subscriptionId\": \"mon_8f3a2c1e9b7d4a60\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T11:07:30Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2pn...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

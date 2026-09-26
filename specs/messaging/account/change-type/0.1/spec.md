@@ -93,7 +93,7 @@ A *request* document carries `type: https://trusttasks.org/spec/messaging/accoun
     "cryptosuite": "eddsa-rdfc-2022",
     "verificationMethod": "did:web:root.example#key-1",
     "created": "2026-06-22T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg..."
   }
 }

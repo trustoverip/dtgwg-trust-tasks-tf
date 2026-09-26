@@ -180,11 +180,20 @@ fn a_fragment_less_sender_kid_is_an_error_not_an_absent_sender() {
     let doc = grant_doc("did:web:trusted-authority.example", &bob.did);
     let wire = pack_trust_task(&doc, &mallory_agent, &mallory.did, &bob.did).expect("pack");
 
+    // Since affinidi-messaging-didcomm 0.15.9 the library itself refuses an
+    // authcrypt `skid` that names no key, before this binding sees the kid;
+    // either refusal is an authentication failure.
     let err = unpack_trust_task::<GrantPayload>(&wire, &bob_agent, Some(&mallory.did))
         .expect_err("a fragment-less sender kid must be rejected");
     assert!(
-        matches!(&err, DidcommError::UnqualifiedSenderKid { kid } if kid == "did:peer:mallory"),
-        "expected UnqualifiedSenderKid, got {err}"
+        matches!(&err, DidcommError::UnqualifiedSenderKid { kid } if kid == "did:peer:mallory")
+            || matches!(
+                &err,
+                DidcommError::Upstream(affinidi_messaging_didcomm::DIDCommError::SenderKeyBinding(
+                    _
+                ))
+            ),
+        "expected UnqualifiedSenderKid or SenderKeyBinding, got {err}"
     );
     assert!(matches!(
         err.into_reject_reason(),

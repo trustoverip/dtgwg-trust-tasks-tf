@@ -157,7 +157,7 @@ Alice, the namespace's only admin, has left the community, and her rights were r
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmDanaScid8:acme-vtc.example:dana#key-1",
     "created": "2026-11-02T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Lm9Qx2Rb7Tk4Wd1Hc8Np3Fz6Ya2Js9Vg5Ue7Ti3Ob1Qn8Mk4Cr6Pw2El9Gh5Sy1Ad7Bv3Xf8Lj4Tq2Rz6Kn9M"
   }
 }
@@ -192,7 +192,7 @@ The VTC, now responding, returns the recorded right, per the sub-schema reachabl
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-11-02T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Pq7Wn1Kb5Tx8Lm2Rc6Hd9Fz4Ya7Js2Vg8Ue1Ti5Ob3Qn6Mk9Cr2Pw7El4Gh1Sy8Ad5Bv2Xf6Lj9Tq3Rz1Kn4M"
   }
 }

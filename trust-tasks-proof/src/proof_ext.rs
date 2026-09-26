@@ -81,7 +81,7 @@ pub trait ProofExt {
     ///   [`SignError::MissingIssuer`] / [`SignError::IssuerMismatch`]
     ///   *before* a signature is produced, rather than emitting a
     ///   document no conforming verifier could accept.
-    /// * `proofPurpose` defaults to `assertionMethod` and the
+    /// * `proofPurpose` defaults to `authentication` and the
     ///   cryptosuite to `eddsa-jcs-2022` unless
     ///   [`SignOptions`](crate::affinidi::SignOptions) says otherwise.
     ///

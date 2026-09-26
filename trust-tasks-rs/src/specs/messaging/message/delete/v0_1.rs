@@ -841,7 +841,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:2b8e4a60-51c7-4a9e-8f0d-6b3c1d2e4f01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/message/delete/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:05:00Z\",\n  \"payload\": {\n    \"did\": \"did:web:alice.example\",\n    \"msgIds\": [\"1726912345000-0\", \"1726912399000-0\"]\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:05:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z4hq...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:2b8e4a60-51c7-4a9e-8f0d-6b3c1d2e4f01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/message/delete/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:05:00Z\",\n  \"payload\": {\n    \"did\": \"did:web:alice.example\",\n    \"msgIds\": [\"1726912345000-0\", \"1726912399000-0\"]\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:05:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4hq...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

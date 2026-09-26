@@ -228,7 +228,7 @@ A producer cancels a long-running issuance:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-16T09:00:00Z",
     "verificationMethod": "did:web:agent.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(signature over the JCS-canonical document)"
   }
 }
@@ -254,7 +254,7 @@ The consumer stopped in time, and nothing had been issued:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-16T09:00:02Z",
     "verificationMethod": "did:web:issuer.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(signature over the JCS-canonical document)"
   }
 }
@@ -288,7 +288,7 @@ the producer now knows it must revoke rather than assume nothing happened:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-16T09:00:02Z",
     "verificationMethod": "did:web:issuer.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(signature over the JCS-canonical document)"
   }
 }
