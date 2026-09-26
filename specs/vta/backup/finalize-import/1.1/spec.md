@@ -128,6 +128,12 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 This specification does not, and **MUST NOT**, declare that a human approval or a step-up is required ([SPEC §7.3 item 13](/SPEC.md#73-specification-requirements)). Where a consumer chooses to place one, this task — and specifically the `confirm: true` variant — is where it belongs, because it is the only document in the family that changes the agent. An approval attached to `initiate-import` gates opening a slot and leaves the commitment ungated.
 
+## Channel requirement
+
+This task **MUST** be carried over a channel confidential end-to-end between the producer and the recipient: one on which the producer encrypts to the recipient itself, such as the DIDComm binding with authenticated encryption, or the TSP binding. The request carries `password`, for a bundle whose ciphertext may itself have travelled over HTTPS. A party that can read both holds a complete copy of the agent. A channel confidential only hop by hop does not qualify, the HTTPS binding included: TLS terminates wherever the recipient's operator terminates it (a load balancer, an ingress, a sidecar), and the plaintext document exists there.
+
+A recipient **MUST** refuse this task with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) when it arrives over any other channel. It refuses after establishing entitlement (see [Authorization](#authorization)) and before deriving any key from `password`. The refusal **SHOULD** name the bindings the recipient accepts, since the producer's remedy is to send the same request again over one of them.
+
 ## Why commit is not idempotent
 
 [`abort`](../../abort/1.0/spec.md) is idempotent and this task deliberately is not. A second `finalize-import` against a committed bundle is refused with `terminalState`.
