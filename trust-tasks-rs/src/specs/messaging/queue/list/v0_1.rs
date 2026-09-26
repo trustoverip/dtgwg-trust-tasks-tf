@@ -1327,7 +1327,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:7d2e5a90-1c3b-4f6e-8a2d-4b9c0e1f2a01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/queue/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:05:00Z\",\n  \"payload\": {\n    \"queue\": \"send\",\n    \"sort\": \"saturation\",\n    \"limit\": 10\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:05:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2Lm...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:7d2e5a90-1c3b-4f6e-8a2d-4b9c0e1f2a01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/queue/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:05:00Z\",\n  \"payload\": {\n    \"queue\": \"send\",\n    \"sort\": \"saturation\",\n    \"limit\": 10\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:05:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2Lm...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

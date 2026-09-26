@@ -3,6 +3,7 @@
 pub mod create;
 pub mod delete;
 pub mod get;
+pub mod keys;
 pub mod list;
 pub mod realign_keys;
 pub mod register_with_server;

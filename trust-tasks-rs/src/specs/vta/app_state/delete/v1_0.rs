@@ -980,7 +980,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"7f91b2d6-41f8-437a-8c4e-6283accf4157\",\n  \"type\": \"https://trusttasks.org/spec/vta/app-state/delete/1.0\",\n  \"issuer\": \"did:key:z6MkOpenVtcClient\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-22T12:00:00Z\",\n  \"payload\": {\n    \"contextId\": \"personal\",\n    \"namespace\": \"openvtc\",\n    \"key\": \"community/defunct\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-22T12:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkOpenVtcClient#z6MkOpenVtcClient\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"7f91b2d6-41f8-437a-8c4e-6283accf4157\",\n  \"type\": \"https://trusttasks.org/spec/vta/app-state/delete/1.0\",\n  \"issuer\": \"did:key:z6MkOpenVtcClient\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-22T12:00:00Z\",\n  \"payload\": {\n    \"contextId\": \"personal\",\n    \"namespace\": \"openvtc\",\n    \"key\": \"community/defunct\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-22T12:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkOpenVtcClient#z6MkOpenVtcClient\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -989,7 +989,7 @@ mod conformance {
     }
     #[test]
     fn request_example_2() {
-        const JSON: &str = "{\n  \"id\": \"80a2c3e7-52f9-448b-9d5f-7394bdd05268\",\n  \"type\": \"https://trusttasks.org/spec/vta/app-state/delete/1.0\",\n  \"issuer\": \"did:key:z6MkOpenVtcClient\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-22T12:01:00Z\",\n  \"payload\": {\n    \"contextId\": \"personal\",\n    \"namespace\": \"openvtc\",\n    \"key\": \"lease/reconcile\",\n    \"expectedVersion\": 53\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-22T12:01:00Z\",\n    \"verificationMethod\": \"did:key:z6MkOpenVtcClient#z6MkOpenVtcClient\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"80a2c3e7-52f9-448b-9d5f-7394bdd05268\",\n  \"type\": \"https://trusttasks.org/spec/vta/app-state/delete/1.0\",\n  \"issuer\": \"did:key:z6MkOpenVtcClient\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-22T12:01:00Z\",\n  \"payload\": {\n    \"contextId\": \"personal\",\n    \"namespace\": \"openvtc\",\n    \"key\": \"lease/reconcile\",\n    \"expectedVersion\": 53\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-22T12:01:00Z\",\n    \"verificationMethod\": \"did:key:z6MkOpenVtcClient#z6MkOpenVtcClient\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

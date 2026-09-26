@@ -108,7 +108,7 @@ A *request* document carries `type: https://trusttasks.org/spec/keys/derive-and-
       "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
       "payload": { "sessionId": "s-1", "challenge": "c-1" }
     },
-    "proofPurpose": "assertionMethod"
+    "proofPurpose": "authentication"
   }
 }
 ```
