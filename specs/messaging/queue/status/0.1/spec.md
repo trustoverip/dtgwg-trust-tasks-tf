@@ -119,7 +119,7 @@ The requester names an account, or omits it for its own; see the top-level schem
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-09-21T10:07:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Tr..."
   }
 }

@@ -134,7 +134,7 @@ The subscriber sends the request to the mediator whose traffic it wants to watch
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-09-21T11:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5mc..."
   }
 }

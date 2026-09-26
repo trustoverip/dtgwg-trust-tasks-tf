@@ -110,7 +110,7 @@ A member may link one account per forge, and accounts on several forges, and rem
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zC9FQHmXCvSgqeqtZQtB8ZrLjda82d8fLMMBJ2fxytAsHQqCMDjvBA5QNRFHCeUPy66TtSzFn7qeuYn4hT4G2cf"
   }
 }
@@ -134,7 +134,7 @@ A member may link one account per forge, and accounts on several forges, and rem
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zrhiYoJTFEXmh1bTbFczT5qchgpygHgyJdyYVcCwanQvkQbBKkL3UjCAEqg2xC5zUv8h7U315sDJ6B525DQDSQm"
   }
 }
@@ -165,7 +165,7 @@ The VTC, now responding, returns where to authorise, per the sub-schema reachabl
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zUFtQjyzA2TWvwh2uk6Uqk1twGq9NqeYA618M7mo8KooyZs6CJVU9T8LEKCdaqCFgZ2XbSUGd24FAcRMzeqi1nL"
   }
 }
@@ -191,7 +191,7 @@ The VTC, now responding, returns where to authorise, per the sub-schema reachabl
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zG6dB4niuDxvww3pvw5ogaRG1P6PCF2MMNja3xLxPmMWfQGWMkVScbYKYaP7ydMYJ9bXY3MX2wBz42ifGrMCQk6"
   }
 }
