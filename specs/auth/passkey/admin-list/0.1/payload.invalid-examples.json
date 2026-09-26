@@ -1,0 +1,58 @@
+[
+  {
+    "note": "Missing subject — an administrator lists one named subject; the owner's own listing is auth/passkey/list.",
+    "payload": {
+      "purpose": "stepUp"
+    }
+  },
+  {
+    "note": "Missing purpose — there is no default, so the inventory read is always the one asked for.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol"
+    }
+  },
+  {
+    "note": "Empty subject.",
+    "payload": {
+      "subject": "",
+      "purpose": "stepUp"
+    }
+  },
+  {
+    "note": "Unknown purpose.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "purpose": "recovery"
+    }
+  },
+  {
+    "note": "Several subjects — one subject per request, each authorised on its own.",
+    "payload": {
+      "subject": [
+        "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "did:webvh:QmErinScid4:acme-vtc.example:erin"
+      ],
+      "purpose": "stepUp"
+    }
+  },
+  {
+    "note": "Unknown top-level member.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "purpose": "stepUp",
+      "includePublicKeys": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "purpose": "stepUp",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

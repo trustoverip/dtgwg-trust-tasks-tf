@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/admin-list/0.1",
+  "title": "Auth — Passkey Admin List",
+  "description": "An administrator lists one subject's passkeys of one purpose — for example a member's step-up passkeys — as non-secret metadata, so they can tell which to revoke. The owner's own listing is auth/passkey/list, which takes no subject; this task exists because a subject in that payload is refused by design.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "purpose"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VID whose credentials are listed. A request, never a grant: the consumer authorises the producer over this subject from its own state."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "session",
+        "stepUp"
+      ],
+      "description": "Which credentials to list: `session` (sign-in) or `stepUp` (the step-up-only passkeys of auth/passkey/enroll/invite 0.2). REQUIRED, with no default, so an administrator reads exactly the inventory they asked for and a consumer can refuse one it does not disclose to administrators."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "ListedCredential": {
+      "$anchor": "listedCredential",
+      "title": "ListedCredential",
+      "description": "The administrator's view of one credential: an identifier, a label, two instants and the signature counter. Never key material, never the credential public key, never attestation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId",
+        "registeredAt"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Durable identifier of the credential, as auth/passkey/revoke/start takes it. Opaque to the producer: echoed verbatim, never parsed."
+        },
+        "deviceLabel": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Label captured at enrolment. Untrusted free text; absent when none was given. Consumers MUST NOT synthesize one."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential was bound to the subject."
+        },
+        "lastUsedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential last completed an assertion. Absent if it never has, or if the consumer does not track use."
+        },
+        "signCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The WebAuthn signature counter the consumer last recorded for the credential. Absent when the consumer does not track it. Zero is a real value: many platform authenticators never increment the counter."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Admin List — response payload",
+      "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/admin-list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "purpose",
+        "credentials"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echo of payload.subject."
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "session",
+            "stepUp"
+          ],
+          "description": "Echo of payload.purpose."
+        },
+        "credentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListedCredential"
+          },
+          "description": "Every credential of that purpose currently bound to the subject, newest registeredAt first. MAY be empty: a member holding none is not an error."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
