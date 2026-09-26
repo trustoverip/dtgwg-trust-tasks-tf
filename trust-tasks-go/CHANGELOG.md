@@ -11,6 +11,37 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.3.3 — 2026-09-26
+
+
+### Added
+
+- **vta/services**: Report, and update 1.1 with a mediator drain window (#656)
+
+* feat(vta/services): report, and update 1.1 with a DIDComm drain window
+
+  Two gaps that keep the VTA's service management on bespoke REST routes, found
+  moving the SDK onto the Trust Task spine.
+
+  - `vta/services/report/0.1` — per-mediator inbound counts and each sender's
+    last-seen mediator over a window, so an operator can tell who is still on the
+    old route before ending a drain. Today it exists only as a bearer-token REST
+    route (`GET /mediators/report`). Operator-only, with a REQUIRED request proof:
+    the response is a contact log of other parties' DIDs, which the recipient may
+    release only to a signer it has decided is the agent's operator.
+  - `vta/services/update/1.1` — adds an optional `drainTtlSecs` for `didcomm`.
+    Replacing the mediator drains the old one, and 1.0 gave the operator no say in
+    how long, so the agent could only apply its default. The REST route and the
+    CLI (`services didcomm update --drain-ttl`) carry an operator-chosen window;
+    without it here, moving the CLI to the Trust Task would silently drop the
+    option. A 1.0 request is a valid 1.1 request; a value below the recipient's
+    floor may be raised to it, and must be over a DIDComm-carried request.
+
+  (`services/report` was pushed to #654 after it merged, so it did not ship there.)
+
+  Rust, TypeScript, Go and Dart bindings regenerated; `npm run build` (strict
+  Security & Privacy), `check-bindings` and the Rust tests (903) pass.
+
 ## 0.3.2 — 2026-09-26
 
 
