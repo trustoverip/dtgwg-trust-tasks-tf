@@ -457,6 +457,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/link-status/0.1#response" => <crate::specs::git_ns::account::link_status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => <crate::specs::git_ns::account::unlink::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1#response" => <crate::specs::git_ns::account::unlink::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => <crate::specs::git_ns::bridge::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1#response" => <crate::specs::git_ns::bridge::event::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2642,6 +2646,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::git_ns::account::link_status::v0_1::Payload,
             >())
         }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::account::unlink::v0_1::Payload,
+        >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::bridge::event::v0_1::Payload,
@@ -5000,6 +5008,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/link-status/0.1" => {
             Some(crate::specs::git_ns::account::link_status::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => {
+            Some(crate::specs::git_ns::account::unlink::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => {
