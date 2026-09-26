@@ -91,6 +91,7 @@ extension type const Capability(String value) {
   static const Capability memoryWrite = Capability('memory-write');
   static const Capability roomPresent = Capability('room-present');
   static const Capability roomOpen = Capability('room-open');
+  static const Capability keyExport = Capability('key-export');
 
   /// Every value this specification's schema permits.
   static const List<Capability> values = <Capability>[
@@ -107,7 +108,8 @@ extension type const Capability(String value) {
     memoryRead,
     memoryWrite,
     roomPresent,
-    roomOpen
+    roomOpen,
+    keyExport
   ];
 }
 
