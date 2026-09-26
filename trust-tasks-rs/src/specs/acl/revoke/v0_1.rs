@@ -1370,7 +1370,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/revoke/0.1\",\n  \"issuer\": \"did:web:org.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-05-20T11:00:00Z\",\n  \"payload\": {\n    \"subject\": \"did:web:contractor.example\",\n    \"reason\": \"Engagement completed.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:org.example#key-1\",\n    \"created\": \"2026-05-20T11:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z4ab...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"9e2a1c44-7b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/acl/revoke/0.1\",\n  \"issuer\": \"did:web:org.example\",\n  \"recipient\": \"did:web:maintainer.example\",\n  \"issuedAt\": \"2026-05-20T11:00:00Z\",\n  \"payload\": {\n    \"subject\": \"did:web:contractor.example\",\n    \"reason\": \"Engagement completed.\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:org.example#key-1\",\n    \"created\": \"2026-05-20T11:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4ab...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

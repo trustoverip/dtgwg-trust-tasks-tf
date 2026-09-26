@@ -65,7 +65,7 @@ async fn signed_typed_document_round_trips() {
     let proof = doc.proof.as_ref().expect("proof attached in place");
     assert_eq!(proof.proof_type, "DataIntegrityProof");
     assert_eq!(proof.cryptosuite, "eddsa-jcs-2022");
-    assert_eq!(proof.proof_purpose, "assertionMethod");
+    assert_eq!(proof.proof_purpose, "authentication");
     assert_eq!(proof.verification_method, secret.id);
 
     doc.verify(&Verifier::for_did_key())

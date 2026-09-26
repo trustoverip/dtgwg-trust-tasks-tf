@@ -129,7 +129,7 @@ The actor sends the revocation to the VTC. See the top-level schema in [`payload
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1",
     "created": "2026-10-30T09:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zxaAku4fwygNT9a9njHkiy5c6g6nGp6BF6JKqZ9nQH7zS9NXVbX1VSRaK3Ykm9PCXPBCfauX3J5CGHc9zC9eoBV"
   }
 }
@@ -165,7 +165,7 @@ The VTC, now responding, returns the record as it stood when revoked, per the su
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-10-30T09:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zbxqLJo8L25NAFufkrjX1Y38vbi5cfoFDyL7iHzsh1uPVDBLKm5FrwZjGGi6ei2UZqq4b2Z1tTNs2EqLMgmDemv"
   }
 }

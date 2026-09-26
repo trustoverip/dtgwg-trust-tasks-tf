@@ -165,7 +165,7 @@ agent holding the keys. The payload is described by the top-level schema in
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-09-14T11:00:00Z",
     "verificationMethod": "did:key:z6MkAdmin#z6MkAdmin",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }

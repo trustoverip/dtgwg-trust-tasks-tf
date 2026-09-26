@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/right/break-glass/0.1",
+  "title": "Git Namespaces — Break Glass — payload",
+  "description": "The actor records an elevated git right for themselves — one they already have the authority to grant, but which separation of duties forbids them granting to themselves through git-ns/right/grant — with a mandatory justification. The right takes effect at once, never expires on its own, and is flagged as break-glass, and shown to every other administrator, until another administrator ratifies it with git-ns/right/ratify or anyone entitled revokes it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "right",
+    "resource",
+    "justification"
+  ],
+  "properties": {
+    "right": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/ElevatedRight",
+      "description": "The elevated right the actor records for themselves. The other two rights need no break-glass: git-ns/right/grant lets anyone with authority over them grant them to themselves."
+    },
+    "resource": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/Resource",
+      "description": "Where the right applies: the namespace resource for `git.ns.admin` and `git.repo.create`, a repository resource for `git.repo.own`."
+    },
+    "justification": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "\\S",
+      "description": "Why nobody else could grant this right now, in the actor's words. Required and never blank. Recorded with the right as `breakGlass.justification`, carried in the audit record and in every notice, and shown to every community administrator, every namespace admin of the namespace and every owner of the resource. Never published to the Trust Registry."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Break Glass — response payload",
+      "description": "The recorded right, carrying its `breakGlass` flag.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "right"
+      ],
+      "properties": {
+        "right": {
+          "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/RightRecord",
+          "description": "The recorded right — newly recorded with `breakGlass`, or the live record the actor already held, returned unchanged."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

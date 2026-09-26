@@ -1,0 +1,47 @@
+[
+  {
+    "note": "`breakGlassAt` is required: a ratification names the one break-glass the ratifier read.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets"
+    }
+  },
+  {
+    "note": "Only elevated rights are ever break-glass records.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/widgets",
+      "breakGlassAt": "2026-09-25T02:10:31Z"
+    }
+  },
+  {
+    "note": "`breakGlassAt` is an RFC 3339 date-time.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "breakGlassAt": "last night"
+    }
+  },
+  {
+    "note": "`subject` is a bare DID, not a DID URL.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol#key-1",
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "breakGlassAt": "2026-09-25T02:10:31Z"
+    }
+  },
+  {
+    "note": "Ratification takes no expiry: it confirms the right as it is.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "right": "git.repo.own",
+      "resource": "github.com/acme/widgets",
+      "breakGlassAt": "2026-09-25T02:10:31Z",
+      "expiresAt": "2026-12-31T00:00:00Z"
+    }
+  }
+]

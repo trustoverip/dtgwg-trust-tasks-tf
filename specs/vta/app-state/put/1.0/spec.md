@@ -191,7 +191,7 @@ access is refused, and the access check happens after the signature is settled
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T10:00:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
@@ -222,7 +222,7 @@ access is refused, and the access check happens after the signature is settled
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T10:01:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
@@ -256,7 +256,7 @@ concurrently produce exactly one winner; the loser receives a
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T10:02:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
@@ -289,7 +289,7 @@ would have had to retry.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T10:03:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
