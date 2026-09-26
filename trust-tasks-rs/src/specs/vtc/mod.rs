@@ -6,6 +6,7 @@ pub mod backup;
 pub mod ceremonies;
 pub mod community;
 pub mod config;
+pub mod credentials;
 pub mod directory;
 pub mod endorsement_types;
 pub mod endorsements;
