@@ -31,6 +31,29 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.23.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.23.0...trust-tasks-rs-v0.23.1) — 2026-09-26
+
+
+### Fixed
+
+- **git-ns/view**: 0.4 requires a proof, as 0.1–0.3 do ([#652](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/652))
+
+#642 made `proof` REQUIRED on git-ns/view 0.1, 0.2 and 0.3, because the
+  VTC answers the caller about their own namespaces, rights and linked
+  accounts and must know from the document itself who the caller is.
+  View 0.4 ([#641](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/641)) was written against the earlier text and landed after,
+  still declaring `proof` RECOMMENDED with the old transport-integrity
+  rationale.
+
+  View 0.4 now declares `proof` REQUIRED with 0.3's rationale. Nothing
+  else in the specification discussed the proof. Bindings regenerated for
+  Rust, TypeScript, Go and Dart: `IS_PROOF_REQUIRED` is true for v0_4.
+
+  No other version added by #635–#651 declares a weaker proof
+  requirement than its predecessor.
+
+
+
 ## [0.23.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.22.7...trust-tasks-rs-v0.23.0) — 2026-09-26
 
 
