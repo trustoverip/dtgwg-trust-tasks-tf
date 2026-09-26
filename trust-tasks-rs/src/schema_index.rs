@@ -795,6 +795,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/message/list/0.1#response" => <crate::specs::messaging::message::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/status/0.1" => <crate::specs::messaging::message::status::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/status/0.1#response" => <crate::specs::messaging::message::status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/monitor/event/0.1" => <crate::specs::messaging::monitor::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1" => <crate::specs::messaging::monitor::subscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3128,6 +3132,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/messaging/message/list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::message::list::v0_1::Payload,
         >()),
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/status/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::message::status::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/monitor/event/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::monitor::event::v0_1::Payload,
@@ -5564,6 +5574,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/message/list/0.1" => {
             Some(crate::specs::messaging::message::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        "https://trusttasks.org/spec/messaging/message/status/0.1" => {
+            Some(crate::specs::messaging::message::status::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "messaging")]
         "https://trusttasks.org/spec/messaging/monitor/event/0.1" => {
