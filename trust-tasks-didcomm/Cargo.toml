@@ -12,7 +12,7 @@ publish = true
 
 [dependencies]
 trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.22" }
-affinidi-messaging-didcomm = "0.15"
+affinidi-messaging-didcomm = "0.15.9"
 base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
@@ -29,13 +29,13 @@ uuid = { version = "1", features = ["v4"] }
 # integration test that depends on these is gated `#[ignore]` so a
 # default `cargo test` skips it (and the compile cost falls only on
 # developers who opt in with `cargo test -- --ignored`).
-affinidi-messaging-test-mediator = "0.8"
-affinidi-messaging-sdk = "0.25"
-affinidi-tdk = "0.15"
+affinidi-messaging-test-mediator = "0.10.2"
+affinidi-messaging-sdk = "0.27.2"
+affinidi-tdk = "0.17"
 affinidi-tdk-common = "0.6"
-affinidi-messaging-didcomm = "0.15"
+affinidi-messaging-didcomm = "0.15.9"
 affinidi-secrets-resolver = "0.5"
 # For the Go-interop test: construct affinidi key-agreement types from raw
-# X25519 bytes and call the low-level jwe::decrypt on a Go-produced JWE.
+# X25519 bytes and call the low-level jwe::decrypt_bound on a Go-produced JWE.
 affinidi-crypto = "0.2"
 serde_json = "1"
