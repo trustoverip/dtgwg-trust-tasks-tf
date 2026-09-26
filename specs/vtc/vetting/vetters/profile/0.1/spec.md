@@ -24,8 +24,8 @@ parties:
     member: recipient
     identifierScope: public
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: The community acts on the authenticated sender, which it checks against its own member and grant records, so an authenticated transport identifies the vetter well enough to store a profile the vetter can overwrite at any time. A proof is recommended so a published profile stays attributable to its vetter after the transport has closed — which matters if a listed contact hint turns out to mislead applicants.
+  requirement: REQUIRED
+  rationale: "The profile is stored as the vetter's and shown to applicants, so the community must be able to attribute it to that vetter from the document itself: a proof binds the profile to its `issuer`, and the community checks that issuer against its own member and grant records. It also keeps a published profile attributable after the transport has closed — which matters if a listed contact hint turns out to mislead applicants."
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: A profile replaces the stored one. An older document replayed after a newer one would re-list a vetter who had unlisted, or restore a location or event they had removed. Placing every document in a window is what lets the community refuse the stale copy.

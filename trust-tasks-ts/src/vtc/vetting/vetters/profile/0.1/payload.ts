@@ -626,7 +626,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
 export const SPEC = {
   typeUri: TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
@@ -640,7 +640,7 @@ export const SPEC = {
 export const RESPONSE_SPEC = {
   typeUri: RESPONSE_TYPE_URI,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
