@@ -24,8 +24,8 @@ parties:
     member: recipient
     identifierScope: public
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: The community delivers the credential only to the DID its grant names, so a forged request can at most cause a credential to be delivered again to its own holder. An authenticated transport is enough to find the sender's grant; a proof is recommended so a community that rate-limits resends can attribute them on every transport.
+  requirement: REQUIRED
+  rationale: "The community finds the grant to resend from the requester's identity, and rate-limits resends per requester, so it must know from the document itself who is asking. A proof binds the request to its `issuer` on every transport."
 sideEffects:
   level: none
   rationale: "Delivers an existing credential again over credential-exchange/issue. It issues nothing, and changes no grant, status-list entry or member record."

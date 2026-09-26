@@ -90,11 +90,26 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here, and the invariants in [the category conventions](../../_shared/0.1/CONVENTIONS.md).
 
+
+**Keys published in a DID's key role.** Where the custodian maintains a DID whose key roles are
+governed by the [DID key-role conventions](../../../vta/_shared/0.3/CONVENTIONS.md#4-custody-and-exportability),
+a key in the `attestation` or `update` role is never exportable by any authority: it is generated
+inside the custodian, not derived, and excluded from every backup (VTI-KEY-110, VTI-KEY-112,
+VTI-KEY-113). The custodian **MUST** answer `keys/export-secret:neverExportable` for such a key, whatever the caller's authority, and **MUST** decide that from the key's role before, and independently of, the caller's entitlement, so the answer reveals nothing about the caller's standing.
+
 ## Authorization
 
 The authority is **standing over the key's scope**: the custodian has recorded this
 producer as entitled to act on the scope the key belongs to. A producer without it is
 refused with the framework's `permissionDenied`.
+
+Where that entitlement is expressed as a device capability, the registered value is
+**`keyExport`** (`key-export` in the `0.1` casing) — see `Capability` in
+[`device/_shared`](../../../device/_shared/0.2/device-binding.schema.json). It is
+deliberately distinct from `sign`. A producer that may ask the custodian to *use* a key
+loses that ability the moment its entitlement changes; a producer that has *taken* the key
+keeps it after its authority is withdrawn. A custodian **MUST NOT** treat a grant of `sign`
+as a grant of `keyExport`, and granting `keyExport` confers no other capability.
 
 **Entitlement is necessary and not sufficient.** A conforming consumer applies two further
 checks that no amount of authority satisfies:

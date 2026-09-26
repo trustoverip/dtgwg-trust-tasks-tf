@@ -144,7 +144,7 @@ A maintainer that has already registered an approver promotes its posture: ACL g
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.acme.example#key-1",
     "created": "2026-06-01T09:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg…"
   }
 }
@@ -167,7 +167,7 @@ The form an operator applies from the local console to recover from an over-stri
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.acme.example#key-1",
     "created": "2026-06-01T09:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg…"
   }
 }

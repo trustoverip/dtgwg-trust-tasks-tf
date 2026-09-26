@@ -108,7 +108,7 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2027-01-10T09:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zeSLNHXSyA3v4j1EdFCiMWs6d827zNL9GYSJB5yR3CSQC1hGxhtWCAng2dwo3zDjcRdJeFmTizFKUtJNWsmF7Vt"
   }
 }
@@ -138,7 +138,7 @@ The VTC, now responding, returns what was removed, per the sub-schema reachable 
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2027-01-10T09:00:02Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zA7mUBg4joL9kaAHiz6TuANDMNghEfRkuixzHJYudsMeK55B8NBWbAcTABqELEViNj8RZbmbU8w4Vb3x4ZpaSp2"
   }
 }

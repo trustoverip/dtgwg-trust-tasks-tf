@@ -124,7 +124,7 @@ Refused, because the context still holds keys:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-19T10:00:00Z",
     "verificationMethod": "did:key:z6MkAdmin#z6MkAdmin",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z7QRs..."
   }
 }

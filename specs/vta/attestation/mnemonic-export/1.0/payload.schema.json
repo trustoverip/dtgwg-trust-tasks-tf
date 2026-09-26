@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0",
+  "title": "VTA Attestation — Mnemonic Export — payload",
+  "description": "Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to a key only the producer holds. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "clientDid",
+    "nonce"
+  ],
+  "properties": {
+    "clientDid": {
+      "type": "string",
+      "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$",
+      "maxLength": 128,
+      "description": "The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request."
+    },
+    "nonce": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{22}$",
+      "description": "Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Operator-visible label for the request. Never sealed into the answer and never treated as an instruction."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Attestation Mnemonic Export — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle",
+        "digest",
+        "windowRemainingSecs"
+      ],
+      "properties": {
+        "bundle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key."
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it."
+        },
+        "windowRemainingSecs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

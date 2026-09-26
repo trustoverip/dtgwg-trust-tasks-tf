@@ -71,7 +71,7 @@ async fn signed_doc_verifies_with_stock_did_key_verifier() {
     let proof = signed.get("proof").expect("proof member inserted");
     assert_eq!(proof["type"], "DataIntegrityProof");
     assert_eq!(proof["cryptosuite"], "eddsa-jcs-2022");
-    assert_eq!(proof["proofPurpose"], "assertionMethod");
+    assert_eq!(proof["proofPurpose"], "authentication");
     assert_eq!(proof["verificationMethod"], secret.id);
 
     // Round-trip through the framework's typed document and the crate's
@@ -178,14 +178,14 @@ async fn existing_proof_is_replaced_not_nested() {
     let second = sign_trust_task(
         &first,
         &secret,
-        SignOptions::new().with_proof_purpose("authentication"),
+        SignOptions::new().with_proof_purpose("assertionMethod"),
     )
     .await
     .expect("re-sign");
 
     let proof = &second["proof"];
     assert!(proof.is_object(), "single proof object, not a proof set");
-    assert_eq!(proof["proofPurpose"], "authentication");
+    assert_eq!(proof["proofPurpose"], "assertionMethod");
     assert_ne!(proof["proofValue"], first_value, "fresh signature minted");
 
     let typed: TrustTask<DemoPayload> = serde_json::from_value(second).expect("wire shape");

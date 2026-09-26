@@ -210,7 +210,7 @@ other two should still land.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T14:00:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
@@ -250,7 +250,7 @@ pair, so this batch is `atomic`.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-22T14:05:00Z",
     "verificationMethod": "did:key:z6MkOpenVtcClient#z6MkOpenVtcClient",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }

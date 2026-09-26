@@ -202,7 +202,7 @@ conversation, so it carries no `prev`:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-06-16T12:00:00Z",
     "verificationMethod": "did:key:z6MkAgentExampleAaaaaaaaaaaaaaaaaaaaaaaaaaaa#z6MkAgentExampleAaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(eddsa-jcs-2022 signature over the JCS-canonical document)"
   }
 }
@@ -236,7 +236,7 @@ message above via `prev`:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-06-16T12:00:09Z",
     "verificationMethod": "did:key:z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb#z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(eddsa-jcs-2022 signature over the JCS-canonical document)"
   }
 }
@@ -281,7 +281,7 @@ binds to it positionally:
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-06-16T12:01:00Z",
     "verificationMethod": "did:key:z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb#z6MkBridgeExampleBbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z…(eddsa-jcs-2022 signature over the JCS-canonical document)"
   }
 }

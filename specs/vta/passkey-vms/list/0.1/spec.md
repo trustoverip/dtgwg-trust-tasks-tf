@@ -96,7 +96,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/passkey-vms/
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-05-16T11:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg..."
   }
 }

@@ -129,7 +129,7 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zLnCQGPuHG1wbA87XMKy7riryLHbPdwqoTSxN2DXECSFEEyPBkDU8UCc1epQdPWxM33xrr9PbbsJe7jGC1fXuqF"
   }
 }
@@ -175,7 +175,7 @@ The VTC, now responding, returns the repository, per the sub-schema reachable vi
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zuuoFLE7iAySistUC8tj1UmNrWU7ZFrgW5PSKCyn6bAKGuYwEi11NbLuPU3XvGHAp8V4ryuQg4FvDKzvXJD2YGw"
   }
 }

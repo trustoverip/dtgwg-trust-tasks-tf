@@ -136,7 +136,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-02T14:20:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zX1BNqDY7HHzMVndp638Ye2Qw7s2xvZVrfbz7ZvnMWvVZHKJ1EEQHyUQGNwEB5ZhAzpCNYXntvAbAmk5tm46YaN"
   }
 }
@@ -168,7 +168,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-05T11:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Tn8Wq2Lb6Rx1Kc9Hm3Fd7Ya5Js2Vg8Ue4Zo1Ti6Pn3Xb9Cq5Dw2Ek7Sh4Gv1Ly8Au6Bj3Kf9Tr2Np5Zm7Rc"
   }
 }
@@ -206,7 +206,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-10-03T08:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zLKQi5maEpU3bgPaMfECN14do9qszZbcEDatyWhNH5es3Pc9UYi5jmbZ7AsPdE5TQEeoj8LcV5BBYY8w3s78nVS"
   }
 }
@@ -236,7 +236,7 @@ A conforming VTC:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-09-23T10:03:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zErKBa1j26x1aicAi862KvPr5RvRvFaKU5EtMUicEE6BTmNsRMLKgPP6sMorj7tM5Kx2rKHE7KV73KziML7f9Vb"
   }
 }
@@ -262,7 +262,7 @@ The VTC acknowledges the event with an empty payload, per the sub-schema reachab
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-10-02T14:20:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5mPrASQ5cpsmsQik4scivNBxCv1fJCdQq7sNCvHL7XE4AHMMM4Emo86yAL6DnBDwF1PdKfcgz9bf6nKXS2KHh1"
   }
 }

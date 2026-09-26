@@ -54,6 +54,12 @@ Consumer: verify the super-admin capability. Decrypt; on failure return `decrypt
 
 Where the envelope carries the audit log, its signed checkpoints MUST be restored with it. Restoring one without the other leaves the log contradicting its own attestations and reads as truncation.
 
+## Channel requirement
+
+This task **MUST** be carried over a channel confidential end-to-end between the producer and the recipient: one on which the producer encrypts to the recipient itself, such as the DIDComm binding with authenticated encryption, or the TSP binding. The request carries the envelope and the `password` that opens it, which together are the community's signing key bundle. A channel confidential only hop by hop does not qualify, the HTTPS binding included: TLS terminates wherever the recipient's operator terminates it (a load balancer, an ingress, a sidecar), and the plaintext document exists there.
+
+A recipient **MUST** refuse this task with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) when it arrives over any other channel. It refuses after establishing entitlement and before decrypting anything. The refusal **SHOULD** name the bindings the recipient accepts, since the producer's remedy is to send the same request again over one of them.
+
 ## Security & Privacy
 
 **This is the most destructive operation the community exposes.** A confirmed import discards live state wholesale, which is why `confirm` is opt-in rather than a flag that defaults on, and why the preview returns real row counts rather than a bare acknowledgement.
