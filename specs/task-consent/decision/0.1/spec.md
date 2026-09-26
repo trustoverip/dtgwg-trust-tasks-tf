@@ -106,13 +106,13 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 A conforming **producer** (the approver device) **MUST**:
 
-1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/task-consent/decision/0.1`, with itself as `issuer` and the executor as `recipient`, carrying a verifiable `proof`.
+1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/task-consent/decision/0.1`, with itself as `issuer` and the executor as `recipient`, carrying a verifiable `proof`. The decision is the approver's attestation, not an operational message: the `proof.proofPurpose` **MUST** be `assertionMethod`, and its `verificationMethod` **MUST** be listed under the `assertionMethod` verification relationship of the approver's DID document.
 2. Echo `challenge` and `payloadDigest` **verbatim** from the `task-consent/request` it verified. It **MUST NOT** recompute `payloadDigest` from any payload supplied to it by a party other than the executor, and it **MUST NOT** emit a decision for a request whose proof it could not verify.
 3. Set `decision` to the human's actual answer. A device **MUST NOT** synthesise an approval — including on a timeout, a dismissal, or a closed window, all of which are denials or silence, never assent.
 
 A conforming **consumer** (the executor) **MUST**, on receipt:
 
-1. Verify the `proof` and take the approver's identity from it.
+1. Verify the `proof` and take the approver's identity from it. It **MUST** refuse a proof whose `proofPurpose` is not `assertionMethod`, whose `verificationMethod` is not listed under the approver's `assertionMethod` relationship, or whose approver DID it cannot resolve. A proof made for `authentication` authenticates a message; it does not attest a decision.
 2. Look up the pending request by `payloadDigest`; absent or lapsed → `noPending`.
 3. Assert `challenge` matches that pending request → else `challengeMismatch`.
 4. Assert the proven signer is a member of the approver set the policy named → else `notAnApprover`.
@@ -169,7 +169,7 @@ persistence.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-13T09:43:18Z",
     "verificationMethod": "did:key:z6MkApproverPhoneExample#z6MkApproverPhoneExample",
-    "proofPurpose": "authentication",
+    "proofPurpose": "assertionMethod",
     "proofValue": "z2QpLmExampleProofValueForTaskConsentDecision"
   }
 }
