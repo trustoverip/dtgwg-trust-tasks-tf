@@ -499,8 +499,10 @@ export * as VtaServicesDrainList_v1_0 from "./vta/services/drain/list/1.0/payloa
 export * as VtaServicesEnable_v1_0 from "./vta/services/enable/1.0/payload.js";
 export * as VtaServicesGet_v1_0 from "./vta/services/get/1.0/payload.js";
 export * as VtaServicesList_v1_0 from "./vta/services/list/1.0/payload.js";
+export * as VtaServicesReport_v0_1 from "./vta/services/report/0.1/payload.js";
 export * as VtaServicesRollback_v1_0 from "./vta/services/rollback/1.0/payload.js";
 export * as VtaServicesUpdate_v1_0 from "./vta/services/update/1.0/payload.js";
+export * as VtaServicesUpdate_v1_1 from "./vta/services/update/1.1/payload.js";
 export * as VtaWebvhAgentNameCheck_v1_0 from "./vta/webvh/agent-name/check/1.0/payload.js";
 export * as VtaWebvhAgentNameDisable_v1_0 from "./vta/webvh/agent-name/disable/1.0/payload.js";
 export * as VtaWebvhAgentNameEnable_v1_0 from "./vta/webvh/agent-name/enable/1.0/payload.js";

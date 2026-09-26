@@ -1,0 +1,14 @@
+[
+  {
+    "note": "`since` must be an RFC 3339 timestamp.",
+    "payload": {
+      "since": "last tuesday"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "mediator": "did:web:old-mediator.example.com"
+    }
+  }
+]

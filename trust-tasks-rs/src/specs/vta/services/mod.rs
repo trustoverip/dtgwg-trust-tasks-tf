@@ -5,5 +5,6 @@ pub mod drain;
 pub mod enable;
 pub mod get;
 pub mod list;
+pub mod report;
 pub mod rollback;
 pub mod update;

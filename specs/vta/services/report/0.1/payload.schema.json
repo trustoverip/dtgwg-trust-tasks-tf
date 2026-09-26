@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/report/0.1",
+  "title": "VTA Services — Report — payload",
+  "description": "Asks an agent for its per-mediator inbound counts and each sender's last-seen mediator over a time window. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Lower bound, RFC 3339. Absent means as far back as the agent's telemetry goes."
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Upper bound, RFC 3339. Absent means now."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "MediatorStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mediatorDid", "inboundCount", "firstSeen", "lastSeen"],
+      "properties": {
+        "mediatorDid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "The mediator the traffic arrived through."
+        },
+        "inboundCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Messages that arrived through it in the window."
+        },
+        "firstSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The first arrival through it in the window."
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The last arrival through it in the window."
+        }
+      }
+    },
+    "SenderLastSeen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["senderDid", "lastSeenMediator", "lastSeenAt"],
+      "properties": {
+        "senderDid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "A sender that reached the agent in the window."
+        },
+        "lastSeenMediator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "The mediator its most recent message arrived through."
+        },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When that message arrived."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services Report — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["until", "mediators", "senders"],
+      "properties": {
+        "since": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The lower bound applied, when the request gave one."
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The upper bound applied — now, when the request gave none."
+        },
+        "mediators": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": { "$ref": "#/$defs/MediatorStats" },
+          "description": "One entry per mediator that carried inbound traffic in the window."
+        },
+        "senders": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": { "$ref": "#/$defs/SenderLastSeen" },
+          "description": "One entry per sender that reached the agent in the window."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}
