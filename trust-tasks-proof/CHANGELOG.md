@@ -6,6 +6,44 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.23.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.22.7...trust-tasks-proof-v0.23.0) — 2026-09-26
+
+
+### Security
+
+- **proof**: Check a proof's verificationMethod against its proofPurpose ([#637](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/637))
+
+* security(proof)!: check a proof's verificationMethod against its proofPurpose
+
+  The stock Verifier accepted a proof signed by any key listed under the
+  issuer's authentication or assertionMethod, whatever proofPurpose the proof
+  declared. It did not check that the verification method's controller was the
+  issuer. W3C Data Integrity requires both, through Controlled Identifiers
+  v1.0 §3.3.
+
+  - New ProofPurpose type (assertionMethod, authentication,
+    capabilityInvocation, capabilityDelegation). Parsing refuses keyAgreement
+    and unknown values.
+  - New ProofPurposeResolver trait resolves a verificationMethod for one
+    purpose. CachedDidResolver implements it. It requires the resolved
+    document's id and the method's controller to be the DID that names the
+    method. It requires the method to be listed under the relationship the
+    purpose names, by absolute DID URL, by a fragment relative to the
+    document id, or embedded. DidKeyResolver implements it with did:key's
+    implicit relationships: the key named `did:key:<id>#<id>` signs for all
+    four purposes, and an X25519 did:key signs for none.
+  - Verifier resolves through a ProofPurposeResolver, so every proof is
+    checked against its own purpose.
+  - New PurposeBound wraps a ProofPurposeResolver as an upstream
+    VerificationMethodResolver bound to one proof's purpose. It is for
+    callers of DataIntegrityProof::verify.
+  - sign_trust_task and ProofExt::sign default to proofPurpose authentication.
+    They refuse a purpose that names no signing relationship.
+  - Resolver errors name the rule that failed. They carry no DID, document or
+    key material.
+
+
+
 ## [0.22.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.22.6...trust-tasks-proof-v0.22.7) — 2026-09-24
 
 

@@ -11,6 +11,239 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.0 — 2026-09-26
+
+
+### Added
+
+- **git-ns**: Separation of duties for elevated rights, with an audited break-glass (#641)
+
+* feat(git-ns): separation of duties for elevated rights, with an audited break-glass
+
+  An elevated git right (git.ns.admin, git.repo.create, git.repo.own) is now
+  always granted by someone other than its recipient, and the one way to give
+  oneself one is an explicit, justified, highly visible break-glass that another
+  administrator ratifies or revokes.
+
+  - git-ns/right/grant 0.3: fixed rule 7, separation of duties, refused with
+    git-ns:selfGrantNotAllowed. It binds every task that records a right on the
+    actor's own authority (drift/resolve adopt, repo/adopt, namespace/reseat);
+    bind and repo/create are not self-grants. Rules 3 and 4 count only records
+    with no expiry that are not unratified break-glass.
+  - git-ns/right/break-glass 0.1 (new): self-grant of an elevated right the
+    actor may already grant, or git.ns.admin on a headless namespace for a
+    community administrator. Mandatory justification, destructive, immediate,
+    no expiry, highest-severity audit, notice to every administrator, visible
+    until ratified or revoked. Policy may disable, delay or tighten it, never
+    quieten it.
+  - git-ns/right/ratify 0.1 (new): another administrator clears the flag,
+    bound to the breakGlass.at they read.
+  - git-ns/right/break-glass-notice 0.1 (new): the VTC's signed push to every
+    community administrator and namespace admin, for break-glass, ratified and
+    revoked.
+  - git-ns/right/revoke 0.3: any community administrator may revoke an
+    unratified break-glass record; policy cannot refuse that.
+  - git-ns/view 0.4: unratified break-glass records go to every administrator
+    they concern, whatever else the caller may see.
+  - git-ns/_shared 0.4: BreakGlass, RightRecord.breakGlass, ElevatedRight.
+
+  Rust, TypeScript, Go and Dart bindings regenerated.
+
+- **git-ns**: Drift/resolve 0.3 binds an adoption to the member it names (#640)
+
+* feat(git-ns): drift/resolve 0.3 binds an adoption to the member it names
+
+  A drift/resolve 0.2 adoption did not name who receives the right. The VTC
+  resolved the item's forge account to whoever had linked it when the task
+  ran, so an account unlinked and linked again, to someone else, between the
+  resolver reading the item and signing granted a right, published to the
+  Trust Registry, to a member the resolver never saw. The signed document
+  said nothing otherwise: observed bounded which role an adoption records,
+  nothing bounded to whom.
+
+  drift/resolve 0.3 adds `subject`, the DID of the member the resolver read
+  as linked to the account. It is required for adopt and absent for revert,
+  refused as malformedRequest otherwise (as a missing `observed` is, and
+  likewise stated in prose rather than a schema conditional). The VTC adopts
+  only while the account is still linked to exactly that member, re-checked
+  under the same exclusion as the write that records the right, and refuses
+  otherwise with the new git-ns/drift/resolve:subjectChanged.
+
+  Versioning. A 0.2 document is a 0.3 document with no `subject`: still a
+  valid revert, now a malformed adopt. Required-for-one-action is not
+  backwards-compatible, so this is a MINOR increment under the draft
+  allowance of SPEC 5.2. A VTC serving older versions SHOULD NOT accept a
+  0.1 or 0.2 adopt, since it cannot know whom that resolver meant, and SHOULD
+  refuse one naming 0.3.
+
+  git-ns/view still returns a member only their own account links, so a
+  client that has only git-ns/view cannot adopt another member's role; the
+  spec says so. Invalid examples cover a DID URL, shell metacharacters and a
+  list as `subject`.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **git-ns**: Re-project roles on demand, and the bridge reports its role map (#639)
+
+* feat(git-ns): re-project roles on demand, and the bridge reports its role map
+
+  A bridge's role map (which forge role own, maintain and commit.sign get)
+  is the community's to configure per bridge, forge, namespace and
+  repository, but nothing told the VTC what map was in force, and a
+  change reached a repository only at its next unrelated projection.
+
+  - git-ns/bridge/event 0.3: a new event type, roleMapReported. The bridge
+    reports, per namespace, its role map as the forge applies it (rounded
+    onto the forge's ladder: `none` < `read` < `triage` < `write` <
+    `maintain` < `admin`), each repository whose map differs (`repos`), and
+    each repository whose roles it last projected under a different map
+    (`stale`). Sent at start-up, on a map change and after bindCompleted.
+    The map has no member for git.ns.admin: a namespace admin projects to
+    no forge role whatever the configuration. The VTC refuses an unordered
+    map, confines `repos` and `stale` to the namespace, uses the map
+    wherever it shows or derives a forge role, and SHOULD re-project each
+    stale repository. Everything else is restated unchanged from 0.2; the
+    schema pins _shared/0.3, wire-identical for every event shape.
+
+  - git-ns/roles/reproject 0.1 (new): a community administrator, or a
+    namespace admin by explicit record, has the VTC send the complete
+    desiredRoles of one repository, or of every active or orphaned
+    repository in a namespace, again. No right changes and nothing is
+    published; the audit record says who asked and why. Refused in manual
+    mode (manualMode) and while the bridge has no access (noForgeAccess).
+
+  - git-ns/drift/resolve 0.2 (draft, in place): the projected right of a
+    role is the lowest right whose role in the bridge's reported map is
+    that role; the default map without a report.
+
+  Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vta/webvh/dids/keys**: Named key roles and per-role rotation for a VTA's DIDs (#638)
+
+* feat(vta/webvh/dids/keys): named key roles and per-role rotation for a VTA's DIDs
+
+  Adds the Trust Tasks every client uses to manage the key roles of the
+  did:webvh identities a VTA holds keys for (its own, and those of the
+  VTCs and VTNs provisioned on it), aligned with the VTI key-roles draft
+  (dtgwg-vti-spec#42): attestation, operational, messaging and update.
+
+- **git-ns/account/unlink**: A member unlinks their own forge account (#636)
+
+* feat(git-ns/account/unlink): a member unlinks their own forge account
+
+  git-ns/account/link said a binding lasts "until the member unlinks or
+  leaves", but no task unlinked: the only way to drop an account was to
+  link another on the same forge, or to leave the community.
+
+- **git-ns**: Bridge/job 0.4 and namespace/reseat 0.3, a namespace admin gets no forge role (#635)
+
+* feat(git-ns): bridge/job 0.4 and namespace/reseat 0.3 — a namespace admin gets no forge role
+
+  A namespace admin exercises git.ns.admin through the VTC and its bridge,
+  never through a forge role: the bridge does not make them an owner of the
+  organisation and gives them no role on any repository for it.
+
+  git-ns/bridge/job 0.4:
+  - desiredRoles carries, per person, the highest right recorded in their
+    own name on the repository (own, maintain or commit.sign there, or
+    commit.sign on the namespace), never one held only because git.ns.admin
+    implies it. A namespace admin with none is listed at git.ns.admin, which
+    every adapter maps to no role, so the bridge takes off a role it manages
+    that they still hold. An admin who is also a recorded owner is listed as
+    the owner.
+  - Each forge account appears in desiredRoles at most once.
+  - repo is required for projectRoles: the namespace-level job, which only
+    ever projected git.ns.admin as organisation owners, no longer exists.
+  - removeAccounts may name an account listed at git.ns.admin.
+  - A VTC must not send 0.4 to a bridge that has not shown it takes 0.4, and
+    should read an unsupportedType or unsupportedVersion refusal as the
+    bridge taking only earlier versions.
+
+  git-ns/namespace/reseat 0.3: step 8 no longer queues a namespace-level
+  forge projection. Wire-identical to 0.2.
+
+  Earlier versions are unchanged. Both are draft, so the breaking changes
+  ship as MINOR increments under the draft allowance of SPEC 5.2.
+
+
+
+### Security
+
+- **didcomm**: A consumer may require a proof over DIDComm (#642)
+
+The DIDComm binding lets a producer omit `proof` because the envelope
+  authenticates the sender. A consumer that authorizes on the sender's identity
+  now MAY decline that allowance and require an in-band proof on every document
+  it accepts over the binding, rejecting a document without one as
+  `proofRequired` and one whose proof does not identify the transport sender as
+  `identityMismatch`. A producer SHOULD include a proof on every document it
+  sends over DIDComm so it is accepted either way.
+
+  The tasks whose consumer authorizes or answers on the caller's identity alone
+  now declare `proof` REQUIRED, so the identity rests on the document on every
+  transport:
+
+  - vtc/vetting/vetters/profile/0.1
+  - vtc/vetting/vetters/resend/0.1
+  - vtc/members/personhood/challenge/0.1
+  - git-ns/view/0.1, 0.2 and 0.3
+  - git-ns/account/link-status/0.1
+
+  All are drafts, edited in place. Bindings regenerated for Rust, TS, Go and
+  Dart.
+
+- **proof**: Check a proof's verificationMethod against its proofPurpose (#637)
+
+* security(proof)!: check a proof's verificationMethod against its proofPurpose
+
+  The stock Verifier accepted a proof signed by any key listed under the
+  issuer's authentication or assertionMethod, whatever proofPurpose the proof
+  declared. It did not check that the verification method's controller was the
+  issuer. W3C Data Integrity requires both, through Controlled Identifiers
+  v1.0 §3.3.
+
+  - New ProofPurpose type (assertionMethod, authentication,
+    capabilityInvocation, capabilityDelegation). Parsing refuses keyAgreement
+    and unknown values.
+  - New ProofPurposeResolver trait resolves a verificationMethod for one
+    purpose. CachedDidResolver implements it. It requires the resolved
+    document's id and the method's controller to be the DID that names the
+    method. It requires the method to be listed under the relationship the
+    purpose names, by absolute DID URL, by a fragment relative to the
+    document id, or embedded. DidKeyResolver implements it with did:key's
+    implicit relationships: the key named `did:key:<id>#<id>` signs for all
+    four purposes, and an X25519 did:key signs for none.
+  - Verifier resolves through a ProofPurposeResolver, so every proof is
+    checked against its own purpose.
+  - New PurposeBound wraps a ProofPurposeResolver as an upstream
+    VerificationMethodResolver bound to one proof's purpose. It is for
+    callers of DataIntegrityProof::verify.
+  - sign_trust_task and ProofExt::sign default to proofPurpose authentication.
+    They refuse a purpose that names no signing relationship.
+  - Resolver errors name the rule that failed. They carry no DID, document or
+    key material.
+
+
+
+### Specifications
+
+- **device**: Register the keyExport capability (#643)
+
+keys/export-secret/0.1 authorizes against "standing over the key's
+  scope" and leaves the grant's shape to the implementation. Where it is a
+  device capability there should be a registered value, as there is for
+  roomPresent and roomOpen, so implementations do not each carry a private
+  one. The VTA already gates export on it.
+
+  keyExport (key-export in the 0.1 casing) is deliberately separate from
+  sign: a producer that may ask the custodian to use a key loses that the
+  moment its entitlement changes, while a producer that took the key keeps
+  it after its authority is withdrawn. export-secret now names the value
+  and says a sign grant is not a keyExport grant. The value is additive,
+  so a consumer that does not recognise it ignores it.
+
+  Bindings regenerated (Rust, TS, Go, Dart); no version bumps.
+
 ## 0.2.8 — 2026-09-24
 
 
