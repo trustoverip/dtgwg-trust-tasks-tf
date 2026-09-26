@@ -6,6 +6,35 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.23.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v0.22.7...trust-tasks-didcomm-v0.23.0) — 2026-09-26
+
+
+### Fixed
+
+- **didcomm**: Require affinidi-messaging-didcomm 0.15.9, which binds the authcrypt sender to its key ([#644](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/644))
+
+affinidi-messaging-didcomm 0.15.9 resolves an authcrypt sender only from
+  the `skid` the envelope names and refuses a JWE whose `apu` disagrees
+  with it, or whose `skid` names no key. Requiring it means the sender this
+  binding hands to §4.8.1 is always the key that opened the ECDH-1PU wrap.
+
+  - `affinidi-messaging-didcomm` 0.15 -> 0.15.9 (floor).
+  - `DidcommError::into_reject_reason`: the library's sender/signer key
+    binding refusals (`SenderKeyBinding`, `SignerKeyBinding`) map to
+    `ProofRequired`, like this binding's own sender checks.
+  - tests/fail_closed.rs: a fragment-less `skid` is now refused by the
+    library first; either refusal is accepted.
+  - tests/interop.rs: the Go-produced JWE decrypts through `decrypt_bound`
+    with the fixture's sender key id (the key-only `decrypt` is deprecated
+    and refuses authcrypt when given a key).
+  - pack.rs: the comment on the ignored `UnpackResult` fields no longer
+    describes the removed pre-0.14 KEK fallback.
+  - dev-dependencies move to the 0.27 SDK line the crate is built against
+    (affinidi-tdk 0.17, affinidi-messaging-sdk 0.27.2,
+    affinidi-messaging-test-mediator 0.10.2).
+
+
+
 ## [0.22.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v0.22.6...trust-tasks-didcomm-v0.22.7) — 2026-09-24
 
 

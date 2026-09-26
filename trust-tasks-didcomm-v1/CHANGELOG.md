@@ -3,6 +3,9 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.23.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.22.7...trust-tasks-didcomm-v1-v0.23.0) — 2026-09-26
+
+
 ## [0.22.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.22.6...trust-tasks-didcomm-v1-v0.22.7) — 2026-09-24
 
 
