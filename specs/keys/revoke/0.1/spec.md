@@ -37,7 +37,12 @@ errorCodes:
   - code: keys:notFound
     meaning: No key record on this custodian carries the named `keyId`. See [category conventions](../../_shared/0.1/CONVENTIONS.md#1-family-error-codes).
     retryable: false
+  - code: keys/revoke:boundToIdentifier
+    meaning: The key is published in a key role of a DID the custodian maintains. Revoking the custodian record alone would leave the DID publishing a key nobody will announce as withdrawn; the key is revoked for compromise, or retired, through that DID's key-role tasks instead (`vta/webvh/dids/keys/revoke`, `vta/webvh/dids/keys/retire`).
+    retryable: false
 related:
+  - vta/webvh/dids/keys/revoke
+  - vta/webvh/dids/keys/retire
   - keys/show
   - keys/list
   - keys/sign
@@ -65,6 +70,7 @@ A conforming **consumer** (the key custodian) **MUST**:
 1. Validate the document per [SPEC.md §7.2](/SPEC.md#72-consumer-requirements).
 2. Establish the producer's authority over the key, refusing with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) otherwise.
 3. Refuse with `keys:notFound` where no record carries `keyId`.
+3a. Refuse with `keys/revoke:boundToIdentifier` where the key is published in a key role of a DID the custodian maintains ([DID key-role conventions §4](../../../vta/_shared/0.3/CONVENTIONS.md#4-custody-and-exportability)). A key a DID document still publishes is withdrawn in the document and in custody together, or not at all: revoking only the record leaves every verifier trusting a key the custodian can no longer use and will never announce as withdrawn. *(Added after first publication; a custodian that maintains no DIDs is unaffected.)*
 4. Set the record's status to `revoked`, **retain the record**, and refuse every subsequent [`keys/sign`](../../sign/0.1/spec.md) naming it.
 5. **Never** return a revoked key to `active`. Reactivation would make the audit trail unfalsifiable in the wrong direction: a signature made during the revoked window would afterwards look as though it were made by a valid key.
 6. Return the realized `status` and the `updatedAt` boundary under the `#response` variant.

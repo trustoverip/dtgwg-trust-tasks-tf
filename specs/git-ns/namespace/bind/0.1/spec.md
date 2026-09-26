@@ -126,7 +126,7 @@ A VTC **MUST** make clear to the administrator, before the namespace is bound, t
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zLDdgsoRSHNLhQUJF9qMYB3YE7p41YyJRe4rB9CbQ8g8jivGKgNnHxAeKMPXtCFfwoPkGBzLjq6Wmbx8C597fCB"
   }
 }
@@ -152,7 +152,7 @@ A VTC **MUST** make clear to the administrator, before the namespace is bound, t
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5ey7bYryGdKep1V7KEgjY8qja6ZgMSoKkyMr467YWQv8F6iRCmFvJxY89aXftvDR4tuXKn7pbiFe3QsuP7y9S8"
   }
 }
@@ -189,7 +189,7 @@ The VTC, now responding, returns the namespace, per the sub-schema reachable via
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zr9epKdKkNUNA8UWbWNZV8SH7ee2n9h87SkQbbc6CA99tfThEUj8Nc1PyV5oBwBBLk1CFoLc523MBEtWvwX1wXH"
   }
 }
@@ -219,7 +219,7 @@ The VTC, now responding, returns the namespace, per the sub-schema reachable via
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zE9R8jFQGXqHf2rD4b2Y5wjvcPsSoKndPn6yA1D99qYdAQvgrKS7ZDHUVetfRhxWy5DjfsDybJBLMBuWn5yGcDk"
   }
 }

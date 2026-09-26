@@ -132,7 +132,7 @@ The requester names the queue and any narrowing; see the top-level schema in [`p
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-09-21T10:10:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Wq..."
   }
 }

@@ -149,7 +149,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/credentials/
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:vta.example#key-1",
     "created": "2026-06-24T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3kg..."
   }
 }
@@ -239,7 +239,7 @@ When `payload.credentialType` is `GovernancePolicyCredential`:
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:vta.example#key-1",
     "created": "2026-07-29T09:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z9dw..."
   }
 }

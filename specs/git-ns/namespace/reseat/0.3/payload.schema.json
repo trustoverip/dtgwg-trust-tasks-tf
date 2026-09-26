@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/namespace/reseat/0.3",
+  "title": "Git Namespaces — Reseat Namespace — payload",
+  "description": "A community administrator recovers a headless bound namespace — one with no live git.ns.admin — by granting git.ns.admin on it to a current member. Refused unless the namespace is headless.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "namespace",
+    "subject",
+    "statement"
+  ],
+  "properties": {
+    "namespace": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/NamespaceId",
+      "description": "The headless namespace."
+    },
+    "subject": {
+      "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/Did",
+      "description": "The current member who receives git.ns.admin on the namespace. Never the administrator reseating: that is a self-grant of git.ns.admin, refused with git-ns:selfGrantNotAllowed (git-ns/right/break-glass is the way to do it)."
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why the namespace is being reseated and why to this member, in the administrator's words. Kept in the audit record, recorded as the new right's `reason`, and shown to the namespace's repository owners."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Reseat Namespace — response payload",
+      "description": "The recorded git.ns.admin right.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "right"
+      ],
+      "properties": {
+        "right": {
+          "$ref": "../../../_shared/0.3/git-ns.schema.json#/$defs/RightRecord",
+          "description": "The git.ns.admin record the reseat created. It never carries `expiresAt`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
