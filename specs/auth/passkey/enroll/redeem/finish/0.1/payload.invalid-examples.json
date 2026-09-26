@@ -1,0 +1,38 @@
+[
+  {
+    "note": "Missing credential — the attestation is what is bound.",
+    "payload": {
+      "enrollmentId": "enr_5c9a1e7b3d2f4068"
+    }
+  },
+  {
+    "note": "Missing enrollmentId — without the handle there is no invite to bind to.",
+    "payload": {
+      "credential": {
+        "id": "bmV3LWNyZWQ",
+        "rawId": "bmV3LWNyZWQ",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
+          "attestationObject": "o2NmbXRkbm9uZQ"
+        }
+      }
+    }
+  },
+  {
+    "note": "subject at finish — rejected on purpose: the subject is bound to the enrollmentId from the invite.",
+    "payload": {
+      "enrollmentId": "enr_5c9a1e7b3d2f4068",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "credential": {
+        "id": "bmV3LWNyZWQ",
+        "rawId": "bmV3LWNyZWQ",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
+          "attestationObject": "o2NmbXRkbm9uZQ"
+        }
+      }
+    }
+  }
+]

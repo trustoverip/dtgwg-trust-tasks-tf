@@ -115,6 +115,7 @@ const (
 	CapabilityMemoryWrite     Capability = "memoryWrite"
 	CapabilityRoomPresent     Capability = "roomPresent"
 	CapabilityRoomOpen        Capability = "roomOpen"
+	CapabilityKeyExport       Capability = "keyExport"
 )
 
 // DeviceAttestation Producer-supplied attestation at registration time, verifiable by the

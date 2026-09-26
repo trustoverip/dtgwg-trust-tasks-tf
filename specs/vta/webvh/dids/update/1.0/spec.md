@@ -179,7 +179,7 @@ remains the sanctioned place for anything not defined here.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-14T10:12:00Z",
     "verificationMethod": "did:key:z6MkCallerExample#z6MkCallerExample",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Xq7WExampleProofValueForWebvhUpdateRequest"
   }
 }
@@ -205,7 +205,7 @@ remains the sanctioned place for anything not defined here.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-14T10:12:04Z",
     "verificationMethod": "did:key:z6MkAgentExample#z6MkAgentExample",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z9LmTpExampleProofValueForWebvhUpdateResponse"
   }
 }

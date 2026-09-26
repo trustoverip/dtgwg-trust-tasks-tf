@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`clientDid` is required — an answer sealed to nobody is an answer in the clear.",
+    "payload": { "nonce": "BwcHBwcHBwcHBwcHBwcHBw" }
+  },
+  {
+    "note": "`nonce` is required. It binds the attestation quote to this request; without it an old answer could be replayed as a new one.",
+    "payload": { "clientDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK" }
+  },
+  {
+    "note": "Only an Ed25519 did:key. A DID that must be resolved would let whoever controls its resolution choose the key the root mnemonic is sealed to.",
+    "payload": { "clientDid": "did:web:example.com", "nonce": "BwcHBwcHBwcHBwcHBwcHBw" }
+  },
+  {
+    "note": "The nonce is exactly sixteen bytes, base64url without padding.",
+    "payload": { "clientDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "nonce": "short" }
+  },
+  {
+    "note": "No plaintext option. The mnemonic is only ever sealed, so there is no member that could ask for it otherwise.",
+    "payload": { "clientDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "nonce": "BwcHBwcHBwcHBwcHBwcHBw", "plaintext": true }
+  },
+  {
+    "note": "Nor a destination. The answer goes to the producer that asked, over the channel it asked on.",
+    "payload": { "clientDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "nonce": "BwcHBwcHBwcHBwcHBwcHBw", "deliverTo": "did:example:elsewhere" }
+  }
+]

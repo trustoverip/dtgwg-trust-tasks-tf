@@ -109,7 +109,7 @@ refused, and the role check happens after the signature is settled
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-19T09:20:00Z",
     "verificationMethod": "did:key:z6MkAdmin#z6MkAdmin",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }

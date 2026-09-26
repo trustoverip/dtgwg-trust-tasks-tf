@@ -92,6 +92,13 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here, and the invariants in [the category conventions](../../_shared/0.1/CONVENTIONS.md).
 
+
+**Keys published in a DID's key role.** Where the custodian maintains a DID whose key roles are
+governed by the [DID key-role conventions](../../../vta/_shared/0.3/CONVENTIONS.md#4-custody-and-exportability),
+a key in the `attestation` or `update` role is never exportable by any authority: it is generated
+inside the custodian, not derived, and excluded from every backup (VTI-KEY-110, VTI-KEY-112,
+VTI-KEY-113). The custodian **MUST** answer a request setting `exportable: true` on such a key with `keys/set-exportability:notPermittedForThisKey`, whatever the caller's authority, and **MUST** report the key with `exportable: false` in every response.
+
 ## Authorization
 
 The authority is **standing over the key's scope**: the custodian has recorded this

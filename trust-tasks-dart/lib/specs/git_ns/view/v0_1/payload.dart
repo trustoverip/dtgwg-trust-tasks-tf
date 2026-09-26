@@ -659,7 +659,7 @@ const String responsePayloadSchemaJson =
 const SpecPolicy spec = SpecPolicy(
   typeUri: typeUri,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: false,
   payloadSchema: payloadSchemaJson,
@@ -672,7 +672,7 @@ const SpecPolicy spec = SpecPolicy(
 const SpecPolicy responseSpec = SpecPolicy(
   typeUri: responseTypeUri,
   isBearer: false,
-  isProofRequired: false,
+  isProofRequired: true,
   isRecipientRequired: true,
   isIssuedAtRequired: false,
   payloadSchema: responsePayloadSchemaJson,

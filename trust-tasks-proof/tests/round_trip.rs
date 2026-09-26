@@ -24,7 +24,7 @@ use affinidi_data_integrity::{
 use affinidi_secrets_resolver::secrets::{KeyType, Secret};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use trust_tasks_proof::affinidi::Verifier;
+use trust_tasks_proof::affinidi::{ProofPurpose, ProofPurposeResolver, Verifier};
 use trust_tasks_rs::{Payload, Proof, ProofVerifier, TrustTask, TypeUri, VerificationError};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -48,9 +48,16 @@ impl MapResolver {
     }
 }
 
+/// A key-only stand-in: every registered key is taken as authorised for
+/// every signing purpose. The relationship check itself is exercised
+/// against real DID documents in `proof_purpose.rs`.
 #[async_trait]
-impl VerificationMethodResolver for MapResolver {
-    async fn resolve_vm(&self, vm: &str) -> Result<ResolvedKey, DataIntegrityError> {
+impl ProofPurposeResolver for MapResolver {
+    async fn resolve_vm_for_purpose(
+        &self,
+        vm: &str,
+        _purpose: ProofPurpose,
+    ) -> Result<ResolvedKey, DataIntegrityError> {
         if let Some(hit) = self.entries.lock().unwrap().get(vm) {
             return Ok(hit.clone());
         }

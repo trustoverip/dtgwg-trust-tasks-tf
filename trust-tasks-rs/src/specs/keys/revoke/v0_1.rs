@@ -635,7 +635,8 @@ impl crate::RequestPayload for Payload {
 }
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
-pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::NOT_FOUND];
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::NOT_FOUND, error_codes::BOUND_TO_IDENTIFIER];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
 ///
@@ -650,6 +651,15 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:notFound",
+        retryable: false,
+    };
+    /// `keys/revoke:boundToIdentifier`
+    ///
+    /// The key is published in a key role of a DID the custodian maintains. Revoking the custodian record alone would leave the DID publishing a key nobody will announce as withdrawn; the key is revoked for compromise, or retired, through that DID's key-role tasks instead (`vta/webvh/dids/keys/revoke`, `vta/webvh/dids/keys/retire`).
+    ///
+    /// Declared `retryable: false`.
+    pub const BOUND_TO_IDENTIFIER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "keys/revoke:boundToIdentifier",
         retryable: false,
     };
 }

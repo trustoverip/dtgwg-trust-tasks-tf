@@ -1,0 +1,49 @@
+[
+  {
+    "note": "Missing subject — an invite always names whose credential it binds.",
+    "payload": {
+      "purpose": "stepUp"
+    }
+  },
+  {
+    "note": "Unknown purpose — only session and stepUp are defined.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "purpose": "admin"
+    }
+  },
+  {
+    "note": "ttl of zero — an invite must remain valid for at least a second.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "purpose": "stepUp",
+      "ttl": 0
+    }
+  },
+  {
+    "note": "A claim code in the request — the consumer generates it; an inviter who chose it would know it before it was delivered.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "purpose": "stepUp",
+      "claimCode": "7KQ4-MX2P-9TDA"
+    }
+  },
+  {
+    "note": "deviceLabel longer than 256 characters.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "deviceLabel": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key.",
+    "payload": {
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]
