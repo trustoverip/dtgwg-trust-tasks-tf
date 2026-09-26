@@ -2,7 +2,7 @@
 slug: vta/attestation/mnemonic-export
 version: "1.0"
 title: "VTA Attestation — Mnemonic Export"
-summary: "Release a TEE agent's seed mnemonic once, sealed to the requester, over an end-to-end channel only."
+summary: "Release a TEE agent's seed mnemonic once, sealed to the requester, over an end-to-end channel or as a request the requester signed for its own key."
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: key-management
@@ -52,7 +52,7 @@ related:
 
 An agent running inside a trusted execution environment (TEE) generates its seed on first boot, inside the enclave, and never displays it. If the operator wants an offline backup of that seed, there is one short window after first boot in which the agent will release its BIP-39 mnemonic, once. This task is that release.
 
-The mnemonic is the root every derived key of the agent comes from. So the task is shaped to keep it off every party except the one that asked: the answer is sealed to a key the producer generated for this one export, the recipient proves by attestation that the answer came from the enclave, and the task travels only over a channel that is confidential end to end.
+The mnemonic is the root every derived key of the agent comes from. So the task is shaped to keep it off every party except the one that asked: the answer is sealed to a key only the producer holds, the recipient proves by attestation that the answer came from the enclave, and the request is either carried over a channel that is confidential end to end or signed by the producer so that no intermediary can change whom the answer is sealed to (see [Channel](#channel)).
 
 ## Status of this Document
 
@@ -76,25 +76,45 @@ This specification does not, and **MUST NOT**, declare that a human approval or 
 
 **Export window** — the period after the agent's first boot during which it holds the entropy its seed was generated from. Outside it, or once the mnemonic has been released, the agent holds no entropy and cannot perform this task. The window's length is deployment configuration; an agent **MAY** have none.
 
-**`clientDid`** — the producer's ephemeral Ed25519 `did:key`. The answer is sealed to its X25519 counterpart. It is a `did:key` so that no resolution is involved: the key the root mnemonic is sealed to is in the request itself, and no party that controls a resolver can substitute another.
+**`clientDid`** — the Ed25519 `did:key` the answer is sealed to, by its X25519 counterpart. On the [end-to-end path](#end-to-end-path) it is a key the producer generated for this one export; on the [signed first-boot path](#signed-first-boot-path) it is the producer's own DID, the one that signed the request. It is a `did:key` so that no resolution is involved: the key the root mnemonic is sealed to is in the request itself, and no party that controls a resolver can substitute another.
 
 **`nonce`** — sixteen random bytes, base64url without padding. The sealed bundle is identified by it, and the recipient's attestation quote binds it.
 
 **Sealed bundle** — the answer: the mnemonic sealed with HPKE to `clientDid`'s X25519 key, carrying a producer assertion whose attestation quote binds `SHA-256(client Ed25519 key ‖ nonce ‖ recipient sealing key)`. `digest` is the SHA-256 of the sealed bytes.
 
-## Channel requirement
+## Channel
 
-This task **MUST** be carried over a channel confidential end to end between the producer and the recipient: one on which the producer encrypts to the recipient itself, such as the DIDComm binding with authenticated encryption, or the TSP binding. A channel confidential only hop by hop does not qualify, the HTTPS binding included: TLS terminates wherever the recipient's operator terminates it, which for an agent in a TEE is outside the enclave by definition.
+A recipient **MUST** accept this task over exactly two paths, the [end-to-end path](#end-to-end-path) and the [signed first-boot path](#signed-first-boot-path), and **MUST** refuse it over any other with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)). Whichever path carries it, the recipient establishes entitlement first (see [Authorization](#authorization)) and applies the path's rules before it reads the entropy, so a refused request does not spend the release. A refusal **SHOULD** say which path the request failed and what that path requires.
 
-The seal does not make the channel irrelevant. The seal keeps the words from anyone without `clientDid`'s private key. The channel keeps an intermediary from reading the request, learning which key the root is sealed to and when the one release happened, or holding the sealed answer against a later compromise of the producer's machine. For the root of every key the agent holds, both are required.
+On both paths the request carries a `proof` ([SPEC §4.7](/SPEC.md#47-proof)) with `proofPurpose` `authentication`, made by a verification method listed under the `issuer`'s `authentication` relationship. The `issuer` **MUST** be the identity the transport or the session authenticated, and `recipient` **MUST** be present and name the recipient. A recipient **MUST** refuse a request whose proof is absent or fails verification, or verifies as a DID other than `issuer`.
 
-A recipient **MUST** refuse this task with `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)) when it arrives over any other channel. It refuses after establishing entitlement (see [Authorization](#authorization)) and before it reads the entropy, so a refused request does not spend the release. The refusal **SHOULD** name the bindings the recipient accepts.
+### End-to-end path
+
+The task travels over a channel confidential end to end between the producer and the recipient: one on which the producer encrypts to the recipient itself, such as the DIDComm binding with authenticated encryption, or the TSP binding. `clientDid` **SHOULD** be a key the producer generated for this one export, on the machine that will hold the backup.
+
+The seal does not make the channel irrelevant. The seal keeps the words from anyone without `clientDid`'s private key. The channel keeps an intermediary from reading the request, learning which key the root is sealed to and when the one release happened, or holding the sealed answer against a later compromise of that key.
+
+### Signed first-boot path
+
+An agent that has just booted may not yet be reachable over an end-to-end channel: its DID is not yet published with a DIDComm or TSP endpoint, or it has no mediator. The export window is short, so waiting for one can mean losing the only chance to take the backup. For that case the recipient **MAY** accept the task over a channel confidential only hop by hop, the HTTPS binding included, when **all** of the following hold. It **MUST** refuse it otherwise.
+
+1. The producer is entitled ([Authorization](#authorization)).
+2. The request carries a `proof` that verifies as `issuer`, with `proofPurpose` `authentication`, and `issuer` is the DID the session authenticated. A bearer credential alone never qualifies: whoever terminates TLS holds it too.
+3. `clientDid` is **exactly** `issuer`. The producer signs with the key the answer is sealed to.
+4. `recipient` is present and is the recipient's own DID.
+5. `issuedAt` is present and inside the recipient's freshness bound, and the document's `id` has not been seen before: the recipient records it in its duplicate-execution record ([SPEC §7.2 item 11](/SPEC.md#72-consumer-requirements)) before it acts, and a duplicate **MUST NOT** be answered with the bundle.
+
+The requirements are chosen against an active intermediary that terminates TLS and holds the producer's bearer credential. It cannot sign as the producer, so it cannot make a request of its own that passes item 2. It cannot change `clientDid` in the producer's request, because the proof covers the payload, and item 3 leaves it nothing to change it to. It cannot redirect the request to another agent (item 4) or replay it (item 5). What it can still do is see that the export happened, which key the answer is sealed to, and the sealed answer itself, and keep that answer. Whoever later obtains the producer's private key can open it. So on this path the producer **SHOULD** sign with a `did:key` credential kept for this purpose on the machine that will hold the backup, and **SHOULD** retire it (revoke its access to the agent and destroy its private key) once the words are written down.
+
+A request over a hop-by-hop channel whose `clientDid` differs from `issuer`, or which lacks a proof, **MUST** be refused, even when every other requirement holds.
 
 ## Request
 
 The producer is the backup operator, on the machine that will hold the backup; the recipient is the agent. The request payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
 
-### Asking for the mnemonic
+### Asking for the mnemonic over an end-to-end channel
+
+The answer is sealed to an ephemeral key; the operator signs as itself.
 
 ```json
 {
@@ -106,6 +126,40 @@ The producer is the backup operator, on the machine that will hold the backup; t
   "payload": {
     "clientDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
     "nonce": "BwcHBwcHBwcHBwcHBwcHBw"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-01-01T00:00:00Z",
+    "verificationMethod": "did:example:operator#key-0",
+    "proofPurpose": "authentication",
+    "proofValue": "z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNSARiKBk9czhSePTNQ2p4D5eQzGnakbDwhXSbpYKMFwHUdktgYZZT"
+  }
+}
+```
+
+### Asking for the mnemonic on the signed first-boot path
+
+The operator is `did:key:z6MkhaXg…`, signs with that key, and names the same DID as `clientDid`.
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0#request",
+  "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+  "recipient": "did:example:agent",
+  "issuedAt": "2026-01-01T00:00:00Z",
+  "payload": {
+    "clientDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+    "nonce": "CAgICAgICAgICAgICAgICA"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-01-01T00:00:00Z",
+    "verificationMethod": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+    "proofPurpose": "authentication",
+    "proofValue": "z4oey5q2M3XKaxup3tmzN4DRFTLVqpLMweBrSxMY2xHX5XTYVQeVbY8nQAVHMrXFkXJpmEAXm5Yjv8fbvq7FxpLpJ"
   }
 }
 ```
@@ -136,7 +190,7 @@ The response payload is `#/$defs/Response` in [`payload.schema.json`](payload.sc
 
 A recipient performs the release in this order, and **MUST NOT** reorder the last three steps:
 
-1. Establish entitlement ([Authorization](#authorization)), then the channel ([Channel requirement](#channel-requirement)).
+1. Establish entitlement ([Authorization](#authorization)), then the path and its rules ([Channel](#channel)).
 2. Refuse, with a failure naming the reason, when it holds no entropy (not a first boot, the window has closed, or the release already happened), or when another release is in progress.
 3. Seal the mnemonic to `clientDid` and produce the attestation-bound assertion.
 4. Durably record the release — who asked, the recipient key, the transport, and `digest`; never the words — and refuse if it cannot. An unrecorded release of the root is not permitted.
@@ -148,15 +202,15 @@ A failure in steps 2 to 4 **MUST** leave the release available inside the window
 
 ### Data carried
 
-The response carries the agent's **root secret**, sealed. Whoever opens it can re-derive every key the agent derives. The producer **MUST** open it only on the machine that will hold the backup, **MUST** confirm `digest` out of band before opening, and **SHOULD** discard `clientDid`'s private key once the words are written down.
+The response carries the agent's **root secret**, sealed. Whoever opens it can re-derive every key the agent derives. The producer **MUST** open it only on the machine that will hold the backup, **MUST** confirm `digest` out of band before opening, and **SHOULD** discard `clientDid`'s private key once the words are written down. On the [signed first-boot path](#signed-first-boot-path) that key is the producer's own credential, and discarding it means retiring the credential.
 
 The request carries only a public key and a nonce, and the recipient **MUST NOT** treat `label` as anything but text to show an operator.
 
-The recipient **MUST NOT** answer with the mnemonic in any form other than the sealed bundle, and **MUST NOT** log, audit or cache the words or the bundle.
+The recipient **MUST NOT** answer with the mnemonic in any form other than the sealed bundle, and **MUST NOT** log, audit or cache the words or the bundle. Its duplicate-execution record keeps the document's `id` and digest, never the response.
 
 ### Correlation
 
-The recipient learns when the operator took the backup and which ephemeral key it used. Both are recorded, deliberately: the release of the root is the one fact about the agent a later investigation has to be able to find. `clientDid` is ephemeral and **SHOULD NOT** be reused anywhere else.
+The recipient learns when the operator took the backup and which key it used. Both are recorded, deliberately: the release of the root is the one fact about the agent a later investigation has to be able to find. On the end-to-end path `clientDid` is ephemeral and **SHOULD NOT** be reused anywhere else. On the signed first-boot path an intermediary terminating TLS learns the same two facts; that is the price of the path, and the reason the credential is retired afterwards.
 
 ### Retention
 

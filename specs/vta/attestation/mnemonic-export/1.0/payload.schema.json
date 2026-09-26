@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0",
   "title": "VTA Attestation — Mnemonic Export — payload",
-  "description": "Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to the producer's ephemeral key. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to a key only the producer holds. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,7 +14,7 @@
       "type": "string",
       "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$",
       "maxLength": 128,
-      "description": "The producer's ephemeral Ed25519 did:key. The mnemonic is sealed to its X25519 counterpart, so only the holder of this key's private half can open the answer. Ephemeral by intent: a key generated for this one export, on the machine that will hold the backup, and discarded after."
+      "description": "The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request."
     },
     "nonce": {
       "type": "string",
