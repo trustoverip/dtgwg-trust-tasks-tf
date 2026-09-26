@@ -1608,6 +1608,7 @@ pub mod builder {
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/vetting/vetters/profile/0.1";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
@@ -1617,6 +1618,7 @@ impl crate::Payload for Payload {
 impl crate::Payload for Response {
     const TYPE_URI: &'static str =
         "https://trusttasks.org/spec/vtc/vetting/vetters/profile/0.1#response";
+    const IS_PROOF_REQUIRED: bool = true;
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
@@ -1653,7 +1655,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:3a7c9e1f-2b4d-4f6a-8c0e-9d1b3f5a7c01\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/profile/0.1\",\n  \"threadId\": \"urn:uuid:3a7c9e1f-2b4d-4f6a-8c0e-9d1b3f5a7c01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n  \"issuedAt\": \"2026-09-15T08:30:00Z\",\n  \"payload\": {\n    \"listed\": true,\n    \"displayName\": \"Carol M.\",\n    \"languages\": [\"en\", \"de-AT\"],\n    \"location\": { \"country\": \"AT\", \"city\": \"Vienna\" },\n    \"methods\": [\"inPerson\", \"video\"],\n    \"acceptsDocumentation\": [\"passport\", \"nationalId\", \"none\"],\n    \"availability\": \"Weekday evenings, Central European Time.\",\n    \"contactHint\": \"Ask for a ticket at the kernel-vtc table at the meetup, or message me in the community chat.\",\n    \"events\": [\n      {\n        \"name\": \"Kernel Maintainers Meetup 2026\",\n        \"startDate\": \"2026-10-05\",\n        \"endDate\": \"2026-10-07\",\n        \"location\": { \"country\": \"AT\", \"city\": \"Vienna\" },\n        \"url\": \"https://kernel-vtc.example/events/maintainers-meetup-2026\"\n      }\n    ]\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-09-15T08:30:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:3a7c9e1f-2b4d-4f6a-8c0e-9d1b3f5a7c01\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/profile/0.1\",\n  \"threadId\": \"urn:uuid:3a7c9e1f-2b4d-4f6a-8c0e-9d1b3f5a7c01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n  \"issuedAt\": \"2026-09-15T08:30:00Z\",\n  \"payload\": {\n    \"listed\": true,\n    \"displayName\": \"Carol M.\",\n    \"languages\": [\"en\", \"de-AT\"],\n    \"location\": { \"country\": \"AT\", \"city\": \"Vienna\" },\n    \"methods\": [\"inPerson\", \"video\"],\n    \"acceptsDocumentation\": [\"passport\", \"nationalId\", \"none\"],\n    \"availability\": \"Weekday evenings, Central European Time.\",\n    \"contactHint\": \"Ask for a ticket at the kernel-vtc table at the meetup, or message me in the community chat.\",\n    \"events\": [\n      {\n        \"name\": \"Kernel Maintainers Meetup 2026\",\n        \"startDate\": \"2026-10-05\",\n        \"endDate\": \"2026-10-07\",\n        \"location\": { \"country\": \"AT\", \"city\": \"Vienna\" },\n        \"url\": \"https://kernel-vtc.example/events/maintainers-meetup-2026\"\n      }\n    ]\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-09-15T08:30:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

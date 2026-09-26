@@ -139,7 +139,7 @@ asked.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-23T09:14:07Z",
     "verificationMethod": "did:web:community.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }
@@ -170,7 +170,7 @@ recorded — which is itself information.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-23T11:02:44Z",
     "verificationMethod": "did:web:community.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQ..."
   }
 }

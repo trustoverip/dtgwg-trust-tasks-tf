@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/right/break-glass-notice/0.1",
+  "title": "Git Namespaces — Break-Glass Notice — payload",
+  "description": "The VTC tells an administrator that a member broke the glass on an elevated git right, or that a break-glass record was ratified or revoked. Unsolicited: it answers no request from the recipient.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event",
+    "namespace",
+    "record",
+    "by",
+    "at"
+  ],
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": [
+        "breakGlass",
+        "ratified",
+        "revoked"
+      ],
+      "description": "`breakGlass` — `record.subject` recorded the right for themselves with git-ns/right/break-glass. `ratified` — another administrator ratified it with git-ns/right/ratify. `revoked` — it was revoked with git-ns/right/revoke, before or after ratification."
+    },
+    "namespace": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/NamespaceId",
+      "description": "The namespace the record's resource lies in."
+    },
+    "record": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/RightRecord",
+      "description": "The record as it stands after the event — for `revoked`, as it stood when it was revoked. Always carries `breakGlass`, justification included."
+    },
+    "by": {
+      "$ref": "../../../_shared/0.4/git-ns.schema.json#/$defs/Did",
+      "description": "Who acted: the subject for `breakGlass`, the ratifier for `ratified`, the revoker for `revoked`."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event took effect at the VTC — not when the notice was sent, which differs whenever the recipient was offline."
+    },
+    "statement": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "For `ratified`, the ratifier's statement; for `revoked`, the revoker's reason. Absent when none was given, and always for `breakGlass`, whose justification is in `record.breakGlass`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

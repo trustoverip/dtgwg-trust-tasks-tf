@@ -103,7 +103,7 @@ infer control of `payload.did` from a valid proof over the request.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-08-19T09:40:00Z",
     "verificationMethod": "did:key:z6MkAdmin#z6MkAdmin",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2LmN..."
   }
 }

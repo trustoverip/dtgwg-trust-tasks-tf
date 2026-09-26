@@ -125,7 +125,7 @@ The response describes the reservation. Creation on the forge is asynchronous, a
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3cYpu9WxGrCPqvwQVDTnKBwKBEMo1bKAzAwoNcDNvB9BTNNL82y5QmhQuGcrGJNpjKZ1pqZbrbr4CPxr1r2SC2"
   }
 }
@@ -151,7 +151,7 @@ The response describes the reservation. Creation on the forge is asynchronous, a
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zLmooyi3mJ1rQwMTCzQMPMijoR4MS75bwiek5Sqr5f91DRrJuTepibbCAKpEZjN1Am5arqnhmFZQSUW7bvv2gG7"
   }
 }
@@ -196,7 +196,7 @@ The VTC, now responding, returns the repository, per the sub-schema reachable vi
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zFPoKoLdEDjJrL4E5QUC88CFkBsBoHhFcpUDhvWAZFGpAxkVZ7Trye6JrW8HJb1R18UHnEbGKQxJLJuPpksX11u"
   }
 }
@@ -242,7 +242,7 @@ The VTC, now responding, returns the repository, per the sub-schema reachable vi
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zS67v51YSfJ9GvcvW8itNsEm6Q5TDMo3Wo35PbTFSqjZAE1yQpFLjzqN51zyfFN4JxufZjYwsEXENzqVEtHrEUr"
   }
 }

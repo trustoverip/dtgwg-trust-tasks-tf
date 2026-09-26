@@ -1,5 +1,6 @@
 //! `Verifier::verify_raw` checks the document as it was received, and
-//! `CachedDidResolver` accepts only keys the DID authorises for signing, in
+//! `CachedDidResolver` accepts only keys the DID authorises for the proof's
+//! purpose, in
 //! either `publicKeyMultibase` or `publicKeyJwk` form.
 //!
 //! The issuer's DID document is seeded straight into the resolver's cache, so
@@ -81,12 +82,13 @@ fn heartbeat(issued_at: &str) -> Value {
 
 #[tokio::test]
 async fn a_jwk_signing_key_verifies() {
-    let (verifier, secret) = verifier_for("authentication").await;
+    // `signed` uses the default proofPurpose, assertionMethod.
+    let (verifier, secret) = verifier_for("assertionMethod").await;
     let doc = signed(heartbeat("2026-01-01T00:00:00Z"), &secret).await;
     verifier
         .verify_raw(&doc)
         .await
-        .expect("an authentication key published as publicKeyJwk verifies");
+        .expect("an assertionMethod key published as publicKeyJwk verifies");
 }
 
 #[tokio::test]
@@ -97,8 +99,7 @@ async fn a_key_agreement_key_cannot_sign() {
     let doc = signed(heartbeat("2026-01-01T00:00:00Z"), &secret).await;
     let err = verifier.verify_raw(&doc).await.unwrap_err();
     assert!(
-        err.to_string()
-            .contains("not an authentication or assertionMethod key"),
+        err.to_string().contains("not listed under assertionMethod"),
         "{err}"
     );
 }

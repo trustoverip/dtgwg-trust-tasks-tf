@@ -21,8 +21,8 @@ parties:
     requirement: REQUIRED
     member: recipient
 proofRequirement:
-  requirement: RECOMMENDED
-  rationale: Opening the ceremony only issues a challenge; the binding evidence is the Verifiable Presentation submitted to the assert task.
+  requirement: REQUIRED
+  rationale: "Opening the ceremony issues a challenge only to a member, so the community must know from the document itself which member is asking; a proof binds the request to its `issuer` on every transport. The binding evidence for personhood is still the Verifiable Presentation submitted to the assert task."
 sideEffects:
   level: none
   rationale: "Issues a single-use personhood challenge; the assertion is a separate task."

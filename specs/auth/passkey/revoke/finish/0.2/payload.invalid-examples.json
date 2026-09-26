@@ -1,0 +1,42 @@
+[
+  {
+    "note": "Missing uvCredential — the assertion is the whole point of the finish leg.",
+    "payload": {
+      "revocationId": "rev_4c1d7e9a0b3f5268"
+    }
+  },
+  {
+    "note": "credentialId at finish — the target is bound to the revocationId at start.",
+    "payload": {
+      "revocationId": "rev_4c1d7e9a0b3f5268",
+      "credentialId": "c3RlcHVwLWNyZWQtY2Fyb2w",
+      "uvCredential": {
+        "id": "q1w2e3r4t5y6u7i8o9p0",
+        "rawId": "q1w2e3r4t5y6u7i8o9p0",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+          "signature": "MEUCIQDx"
+        }
+      }
+    }
+  },
+  {
+    "note": "subject at finish — the target subject is bound to the revocationId at start.",
+    "payload": {
+      "revocationId": "rev_4c1d7e9a0b3f5268",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "uvCredential": {
+        "id": "q1w2e3r4t5y6u7i8o9p0",
+        "rawId": "q1w2e3r4t5y6u7i8o9p0",
+        "type": "public-key",
+        "response": {
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+          "signature": "MEUCIQDx"
+        }
+      }
+    }
+  }
+]

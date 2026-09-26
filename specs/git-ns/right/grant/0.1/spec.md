@@ -192,7 +192,7 @@ During a migration from unqualified `owner/repo` resources, a VTC **MAY** also p
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmAliceScid1:acme-vtc.example:alice#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z1AUm77BtBhgbq5F32U342uC65uF2CTarSEpsY6TycKX63465sLaxoS1qT855iZWG2cAtJnL5yi4oAyY8FZYi7s"
   }
 }
@@ -222,7 +222,7 @@ Whether Dan, who is not a member, may hold `git.commit.sign` at all is the commu
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1",
     "created": "2026-09-23T11:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zruBgAAFQz8BXbHiPTQCnaFN3AaPrStzvD6xULYjck5grZhMF4r27L3r6M1qS1pp7rMWZCELSxTeBJ4pqTR9KMx"
   }
 }
@@ -257,7 +257,7 @@ The VTC, now responding, returns the record, per the sub-schema reachable via `$
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zVby74ybhcW78BE5wAyg7Y4pQN5GGcDCZp9FC8eXPZ8wCJcFwLHi6Fc6T9P8Ma7EKVQQ7d5DWinWJJB3pyB4Nmc"
   }
 }
@@ -289,7 +289,7 @@ The VTC, now responding, returns the record, per the sub-schema reachable via `$
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T11:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6KcSaifkLYVnwMJYGU6GdqtGuM9XY1ofD382spt35DWmSnAuVKZ7iXiNj1VTJsMPkjJAuQxikkvFxZ2x7U69nk"
   }
 }

@@ -137,7 +137,7 @@ The digest is the real value for the statement shown in [`vetting/session`](../.
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1",
     "created": "2026-10-02T11:30:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR"
   }
 }
@@ -165,7 +165,7 @@ The community, now responding, confirms it recorded the notice, per the sub-sche
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid:kernel-vtc.example#key-1",
     "created": "2026-10-02T11:30:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5k2pxtz3XrdADnsNJ1XQiZ4oj7XHVqTamscwe3Wir6JjjNKp6mJZZTmynBW32NBmWCxjs5g8Xmjck9ZLfPKtU5G4"
   }
 }
