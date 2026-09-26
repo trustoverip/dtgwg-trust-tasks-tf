@@ -435,6 +435,7 @@ export * as VtaAppStateGet_v1_0 from "./vta/app-state/get/1.0/payload.js";
 export * as VtaAppStateList_v1_0 from "./vta/app-state/list/1.0/payload.js";
 export * as VtaAppStatePutMany_v1_0 from "./vta/app-state/put-many/1.0/payload.js";
 export * as VtaAppStatePut_v1_0 from "./vta/app-state/put/1.0/payload.js";
+export * as VtaAttestationMnemonicExport_v1_0 from "./vta/attestation/mnemonic-export/1.0/payload.js";
 export * as VtaBackupAbort_v1_0 from "./vta/backup/abort/1.0/payload.js";
 export * as VtaBackupCompleteExport_v1_0 from "./vta/backup/complete-export/1.0/payload.js";
 export * as VtaBackupFinalizeImport_v1_0 from "./vta/backup/finalize-import/1.0/payload.js";
