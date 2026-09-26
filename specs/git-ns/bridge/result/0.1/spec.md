@@ -135,7 +135,7 @@ The bridge sends the result to the VTC. See the top-level schema in [`payload.sc
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:40Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zG3UD8d6xMATBJFTFfaeRkCC5FzhYwYJpJHECtHkfV4fyjiiGesGi9vkzLE8YaZGBvTyyDQq2MMCVDzcPPLHP6F"
   }
 }
@@ -193,7 +193,7 @@ Every step but the last applied. The repository is protected, but its required c
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmBridgeScid5:bridge.acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zUo2civRis64RDNrGy84MnV3v8kbWSK3n4XD5EMrmtnTBd6hGAYWaVP6FqHENTD2Q96BP7rU51UrCFiu7MFEz1s"
   }
 }
@@ -221,7 +221,7 @@ The VTC, now responding, acknowledges the result, per the sub-schema reachable v
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-23T10:00:41Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "zsNBhcsMawQ96N6GJfD94KE1ySYqEVPaWB9K9q6vJ1NvvL3wPQYE3uq3CCksdFE4UNXGyr92MH1CiugbXi4EZjE"
   }
 }

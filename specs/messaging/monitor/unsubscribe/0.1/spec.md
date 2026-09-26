@@ -96,7 +96,7 @@ The subscriber sends the request to the mediator that holds the subscription. Th
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-09-21T11:07:30Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2pn..."
   }
 }

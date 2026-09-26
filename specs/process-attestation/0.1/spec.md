@@ -274,7 +274,7 @@ specification defines no extended error codes of its own.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-09-09T14:02:14Z",
     "verificationMethod": "did:web:author.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4oey6cnBVUCyx9YKvQZ8mR2vN4pT7sYwD1jB6xK0aC3eI9Mh"
   }
 }
@@ -306,7 +306,7 @@ to say. A Verifier cannot distinguish the two, by design.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-09-09T14:02:14Z",
     "verificationMethod": "did:web:author.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3xKp7mQzR2vLbN9hJ4cWfA6dY0sE5uT8gO1iZBVUCyx9"
   }
 }

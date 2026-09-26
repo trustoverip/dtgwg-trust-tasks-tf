@@ -1,0 +1,63 @@
+[
+  {
+    "note": "`event` is one of the three break-glass events.",
+    "payload": {
+      "event": "granted",
+      "namespace": "ns_01J8Z6Q4M2",
+      "record": {
+        "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "right": "git.repo.own",
+        "resource": "github.com/acme/widgets",
+        "grantedBy": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "grantedAt": "2026-09-25T02:10:31Z",
+        "breakGlass": {
+          "by": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+          "at": "2026-09-25T02:10:31Z",
+          "justification": "CVE fix must ship tonight"
+        }
+      },
+      "by": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "at": "2026-09-25T02:10:31Z"
+    }
+  },
+  {
+    "note": "A notice names who acted.",
+    "payload": {
+      "event": "breakGlass",
+      "namespace": "ns_01J8Z6Q4M2",
+      "record": {
+        "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "right": "git.repo.own",
+        "resource": "github.com/acme/widgets",
+        "grantedBy": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "grantedAt": "2026-09-25T02:10:31Z",
+        "breakGlass": {
+          "by": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+          "at": "2026-09-25T02:10:31Z",
+          "justification": "CVE fix must ship tonight"
+        }
+      },
+      "at": "2026-09-25T02:10:31Z"
+    }
+  },
+  {
+    "note": "A break-glass record always carries its justification.",
+    "payload": {
+      "event": "breakGlass",
+      "namespace": "ns_01J8Z6Q4M2",
+      "record": {
+        "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "right": "git.repo.own",
+        "resource": "github.com/acme/widgets",
+        "grantedBy": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+        "grantedAt": "2026-09-25T02:10:31Z",
+        "breakGlass": {
+          "by": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+          "at": "2026-09-25T02:10:31Z"
+        }
+      },
+      "by": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "at": "2026-09-25T02:10:31Z"
+    }
+  }
+]

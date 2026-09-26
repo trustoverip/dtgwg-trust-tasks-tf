@@ -111,7 +111,7 @@ The administrator sends an empty payload to the mediator; see the top-level sche
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:admin.example#key-1",
     "created": "2026-09-21T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4xQ..."
   }
 }

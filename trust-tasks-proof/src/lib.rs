@@ -30,7 +30,7 @@
 //!
 //! Producers sign with the same backend's
 //! [`affinidi::sign_trust_task`] — defaults to `eddsa-jcs-2022` /
-//! `assertionMethod` and enforces the issuer↔verificationMethod binding
+//! `authentication` and enforces the issuer↔verificationMethod binding
 //! at sign time, so its output verifies with the stock
 //! [`affinidi::Verifier`] by construction:
 //!

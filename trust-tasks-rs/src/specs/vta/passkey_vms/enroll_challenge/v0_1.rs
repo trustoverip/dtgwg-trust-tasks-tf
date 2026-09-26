@@ -1209,7 +1209,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"0d6b1c3a-7e21-4a90-9c2f-3b9d1e7a55c1\",\n  \"type\": \"https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-05-16T10:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmcExampleScid:example.com\",\n    \"label\": \"MacBook Touch ID\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-05-16T10:00:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"0d6b1c3a-7e21-4a90-9c2f-3b9d1e7a55c1\",\n  \"type\": \"https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-05-16T10:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmcExampleScid:example.com\",\n    \"label\": \"MacBook Touch ID\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-05-16T10:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
