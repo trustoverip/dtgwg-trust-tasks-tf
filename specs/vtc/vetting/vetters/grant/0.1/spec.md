@@ -126,7 +126,7 @@ The administrator sends the request to the community. See the top-level schema i
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmDanaScid1:kernel-vtc.example:dana#key-1",
     "created": "2026-09-13T10:00:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2RA8945kouBqzqifZqkbB8ZSrj1sfVLZPvr6wz4RvHSaYqXySHQoep9vM1fRYit6tNfmaTDThA2ibMPhBMFh8w3N"
   }
 }
@@ -157,7 +157,7 @@ The community, now responding, returns the grant, per the sub-schema reachable v
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid:kernel-vtc.example#key-1",
     "created": "2026-09-13T10:00:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5k2pxtz3XrdADnsNJ1XQiZ4oj7XHVqTamscwe3Wir6JjjNKp6mJZZTmynBW32NBmWCxjs5g8Xmjck9ZLfPKtU5G4"
   }
 }

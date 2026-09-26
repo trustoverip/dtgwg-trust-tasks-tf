@@ -202,7 +202,7 @@ A revert that removes or lowers the role `git.repo.own` projects to — `admin` 
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmCarolScid3:acme-vtc.example:carol#key-1",
     "created": "2026-09-24T09:09:58Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Vx8mQp2Lr7TbN5kWc9Hd3Ja6Ys1Fg8Ue4Zo2Ri7Pn5Xt3Mb9Cq6Dw1Ek8Sh4Gv2Ly7Au5Bj3Kf9Tr6Np1Zm"
   }
 }
@@ -239,7 +239,7 @@ Alice, a namespace admin, made Bob a maintainer of `widgets` in GitHub's interfa
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmCarolScid3:acme-vtc.example:carol#key-1",
     "created": "2026-09-24T09:20:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Hn6Tq9Wd4Lx1Cb7Rm3Ks8Fv5Pa2Yg9Jt6Ne4Uz1Qo7Mh3Xr8Db5Gc2Lw9Sk6Ap1Vf4Ej7Bn3Ty8Rz5Kq2Mc"
   }
 }
@@ -274,7 +274,7 @@ The item is no longer outstanding and nothing else was, so `widgets` is `pending
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-24T09:09:59Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z8Kp3Wm6Qa1Tz9Lc4Rb7Hn2Xv5Fd8Jg3Ys6Ue1No4Mt9Ci2Pr7Dh5Ek3Gw8Lq1Sx6Bz4Av9Tj2Kn7Rf5Ym3Hc"
   }
 }
@@ -311,7 +311,7 @@ The item is no longer outstanding and nothing else was, so `widgets` is `pending
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:webvh:QmVtcScid7:acme-vtc.example#key-1",
     "created": "2026-09-24T09:20:01Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z6Rt2Yb8Kq4Nm1Wx7Hc3Lp9Dz5Fa2Js8Vg6Ue3Ti1Ob4Qn7Mk9Cr5Pw2El8Gh3Sy6Ad1Bv4Xf7Lj2Tq9Rz5Kn3M"
   }
 }

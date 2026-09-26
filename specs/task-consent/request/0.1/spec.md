@@ -156,7 +156,7 @@ A conforming **consumer** (the approver device) **MUST**:
 
 A conforming consumer **SHOULD**, for a `sideEffects: destructive` task, require the human to **match** a prefix of `payloadDigest` against the same prefix displayed by the requesting surface, rather than to tap "approve". Only a comparison across two independent screens survives a compromised consent surface; a tap is a reflex, and a reflex is what habituation destroys first.
 
-> **Note (non-normative).** The reference ecosystem signs this document with the `eddsa-jcs-2022` Data Integrity cryptosuite and `proofPurpose: assertionMethod`, as the examples show. This is an implementation profile, not a requirement of this specification: [SPEC.md §4.7](/SPEC.md#47-proof) leaves the choice of cryptosuite open, and any registered suite whose `verificationMethod` resolves to material controlled by the `issuer` satisfies the `proof` requirement.
+> **Note (non-normative).** The reference ecosystem signs this document with the `eddsa-jcs-2022` Data Integrity cryptosuite and `proofPurpose: authentication`, as the examples show. This is an implementation profile, not a requirement of this specification: [SPEC.md §4.7](/SPEC.md#47-proof) leaves the choice of cryptosuite open, and any registered suite whose `verificationMethod` resolves to material controlled by the `issuer` satisfies the `proof` requirement.
 
 ## Binding — what the human approved is what executes
 
@@ -268,7 +268,7 @@ requester could compute.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-13T09:41:00Z",
     "verificationMethod": "did:key:z6MkExecutorVtaExample#z6MkExecutorVtaExample",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3FXQmV6ExampleProofValueForTaskConsentRequest"
   }
 }
@@ -291,7 +291,7 @@ requester could compute.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2026-07-13T09:41:02Z",
     "verificationMethod": "did:key:z6MkApproverPhoneExample#z6MkApproverPhoneExample",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z58aKqExampleProofValueForTaskConsentRequestResponse"
   }
 }

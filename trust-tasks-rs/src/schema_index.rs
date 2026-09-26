@@ -457,6 +457,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/link-status/0.1#response" => <crate::specs::git_ns::account::link_status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => <crate::specs::git_ns::account::unlink::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1#response" => <crate::specs::git_ns::account::unlink::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => <crate::specs::git_ns::bridge::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1#response" => <crate::specs::git_ns::bridge::event::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -481,6 +485,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.3#response" => <crate::specs::git_ns::bridge::job::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/0.4" => <crate::specs::git_ns::bridge::job::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/0.4#response" => <crate::specs::git_ns::bridge::job::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1" => <crate::specs::git_ns::bridge::result::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1#response" => <crate::specs::git_ns::bridge::result::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -504,6 +512,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/git-ns/namespace/reseat/0.2" => <crate::specs::git_ns::namespace::reseat::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/reseat/0.2#response" => <crate::specs::git_ns::namespace::reseat::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/namespace/reseat/0.3" => <crate::specs::git_ns::namespace::reseat::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/namespace/reseat/0.3#response" => <crate::specs::git_ns::namespace::reseat::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1" => <crate::specs::git_ns::namespace::unbind::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -1616,6 +1628,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/get/1.0#response" => <crate::specs::vta::webvh::dids::get::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0" => <crate::specs::vta::webvh::dids::keys::add::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0#response" => <crate::specs::vta::webvh::dids::keys::add::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0" => <crate::specs::vta::webvh::dids::keys::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response" => <crate::specs::vta::webvh::dids::keys::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0" => <crate::specs::vta::webvh::dids::keys::retire::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0#response" => <crate::specs::vta::webvh::dids::keys::retire::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/revoke/1.0" => <crate::specs::vta::webvh::dids::keys::revoke::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/revoke/1.0#response" => <crate::specs::vta::webvh::dids::keys::revoke::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/list/1.0" => <crate::specs::vta::webvh::dids::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/list/1.0#response" => <crate::specs::vta::webvh::dids::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -1632,9 +1660,17 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response" => <crate::specs::vta::webvh::dids::rotate_keys::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0" => <crate::specs::vta::webvh::dids::rotate_keys::v2_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0#response" => <crate::specs::vta::webvh::dids::rotate_keys::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" => <crate::specs::vta::webvh::dids::update::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/update/1.0#response" => <crate::specs::vta::webvh::dids::update::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/update/2.0" => <crate::specs::vta::webvh::dids::update::v2_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/update/2.0#response" => <crate::specs::vta::webvh::dids::update::v2_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1" => <crate::specs::vta::webvh::servers::domains::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
@@ -1719,6 +1755,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/config/import/0.1" => <crate::specs::vtc::config::import::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/config/import/0.1#response" => <crate::specs::vtc::config::import::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1" => <crate::specs::vtc::credentials::reissue::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response" => <crate::specs::vtc::credentials::reissue::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => <crate::specs::vtc::directory::query::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
@@ -2643,6 +2683,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::account::unlink::v0_1::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::bridge::event::v0_1::Payload,
         >()),
@@ -2667,6 +2711,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::git_ns::bridge::job::v0_3::Payload,
         >()),
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::bridge::job::v0_4::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::bridge::result::v0_1::Payload,
         >()),
@@ -2689,6 +2737,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/reseat/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::namespace::reseat::v0_2::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/namespace/reseat/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::namespace::reseat::v0_3::Payload,
         >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1" => Some(crate::SpecPolicy::of::<
@@ -3975,6 +4027,28 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::vta::webvh::dids::get::v1_0::Payload,
         >()),
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webvh::dids::keys::add::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webvh::dids::keys::list::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webvh::dids::keys::retire::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/revoke/1.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webvh::dids::keys::revoke::v1_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/list/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::webvh::dids::list::v1_0::Payload,
         >()),
@@ -3997,8 +4071,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webvh::dids::rotate_keys::v2_0::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::webvh::dids::update::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/update/2.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webvh::dids::update::v2_0::Payload,
         >()),
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1" => {
@@ -4103,6 +4187,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/config/import/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::config::import::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::credentials::reissue::v0_1::Payload,
         >()),
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => Some(crate::SpecPolicy::of::<
@@ -5002,6 +5090,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::git_ns::account::link_status::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => {
+            Some(crate::specs::git_ns::account::unlink::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => {
             Some(crate::specs::git_ns::bridge::event::v0_1::ERROR_CODES)
         }
@@ -5026,6 +5118,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::git_ns::bridge::job::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/0.4" => {
+            Some(crate::specs::git_ns::bridge::job::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1" => {
             Some(crate::specs::git_ns::bridge::result::v0_1::ERROR_CODES)
         }
@@ -5048,6 +5144,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/reseat/0.2" => {
             Some(crate::specs::git_ns::namespace::reseat::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/namespace/reseat/0.3" => {
+            Some(crate::specs::git_ns::namespace::reseat::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1" => {
@@ -6180,6 +6280,22 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::vta::webvh::dids::get::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0" => {
+            Some(crate::specs::vta::webvh::dids::keys::add::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0" => {
+            Some(crate::specs::vta::webvh::dids::keys::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0" => {
+            Some(crate::specs::vta::webvh::dids::keys::retire::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/keys/revoke/1.0" => {
+            Some(crate::specs::vta::webvh::dids::keys::revoke::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/list/1.0" => {
             Some(crate::specs::vta::webvh::dids::list::v1_0::ERROR_CODES)
         }
@@ -6196,8 +6312,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::vta::webvh::dids::rotate_keys::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0" => {
+            Some(crate::specs::vta::webvh::dids::rotate_keys::v2_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" => {
             Some(crate::specs::vta::webvh::dids::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        "https://trusttasks.org/spec/vta/webvh/dids/update/2.0" => {
+            Some(crate::specs::vta::webvh::dids::update::v2_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         "https://trusttasks.org/spec/vta/webvh/servers/domains/0.1" => {
@@ -6282,6 +6406,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/config/import/0.1" => {
             Some(crate::specs::vtc::config::import::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/credentials/reissue/0.1" => {
+            Some(crate::specs::vtc::credentials::reissue::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/directory/query/0.1" => {

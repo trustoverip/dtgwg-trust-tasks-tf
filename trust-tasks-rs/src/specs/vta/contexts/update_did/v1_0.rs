@@ -944,7 +944,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"5e6f7081-92a3-4b4c-d5e6-f708192a3b4c\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/update-did/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T09:40:00Z\",\n  \"payload\": {\n    \"id\": \"personal/banking\",\n    \"did\": \"did:webvh:QmNewScid:example.com\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-19T09:40:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z2LmN...\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"5e6f7081-92a3-4b4c-d5e6-f708192a3b4c\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/update-did/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T09:40:00Z\",\n  \"payload\": {\n    \"id\": \"personal/banking\",\n    \"did\": \"did:webvh:QmNewScid:example.com\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-19T09:40:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2LmN...\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

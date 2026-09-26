@@ -119,7 +119,7 @@ The requester names the queue and optionally the account and counterparty; see t
     "cryptosuite": "eddsa-jcs-2022",
     "verificationMethod": "did:web:alice.example#key-1",
     "created": "2026-09-21T10:12:00Z",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z4Hn..."
   }
 }
