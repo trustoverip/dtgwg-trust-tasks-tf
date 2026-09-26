@@ -216,6 +216,7 @@ export * as MessagingAdminStrip_v0_1 from "./messaging/admin/strip/0.1/payload.j
 export * as MessagingMessageDelete_v0_1 from "./messaging/message/delete/0.1/payload.js";
 export * as MessagingMessageGet_v0_1 from "./messaging/message/get/0.1/payload.js";
 export * as MessagingMessageList_v0_1 from "./messaging/message/list/0.1/payload.js";
+export * as MessagingMessageStatus_v0_1 from "./messaging/message/status/0.1/payload.js";
 export * as MessagingMonitorEvent_v0_1 from "./messaging/monitor/event/0.1/payload.js";
 export * as MessagingMonitorSubscribe_v0_1 from "./messaging/monitor/subscribe/0.1/payload.js";
 export * as MessagingMonitorUnsubscribe_v0_1 from "./messaging/monitor/unsubscribe/0.1/payload.js";
