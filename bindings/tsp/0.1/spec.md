@@ -153,6 +153,24 @@ Accordingly, the §3 allowance to omit in-band `issuer`/`recipient` applies in d
 
 TSP exchanges presuppose a bidirectional relationship between the two VIDs of each hop (established via TSP relationship-forming, [TSP spec §7.1](https://trustoverip.github.io/tswg-tsp-specification/)). Establishing or maintaining that relationship is a TSP-layer concern outside this binding; a Trust Task exchange simply requires that the necessary relationships exist for the chosen direct/routed path.
 
+### 5.5 Sender delegation
+
+A *consumer* **MAY** require every document it accepts over this binding to carry an in-band `proof` whose verified signer is the authenticated `VID_sndr`, rejecting a document without one with `proofRequired` and one signed by another party with `identityMismatch` ([SPEC §4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity)). Where the signer cannot be the sender, it **MAY** instead name the sender in a [Sender Delegation](../../../specs/sender-delegation/0.1/spec.md).
+
+**Carriage.** The delegation document is carried as an additional member of the envelope object of [§2](#2-document-carriage):
+
+```json
+{
+  "type": "https://trusttasks.org/binding/tsp/0.1/envelope",
+  "document": { /* the covered Trust Task document */ },
+  "senderDelegation": { /* the Sender Delegation document */ }
+}
+```
+
+**Consumer.** A *consumer* **MAY** accept such a document, and **MUST** then apply the Sender Delegation's [consumer requirements](../../../specs/sender-delegation/0.1/spec.md#consumer-requirements), taking as the transport-authenticated sender the authenticated `VID_sndr` of the message the consumer opens. In non-nested routed mode that is the last relaying hop ([§5.3](#53-proof-and-identity-under-routing)), which cannot be a delegate: a *consumer* **MUST NOT** accept a delegation for a document it received that way. A *consumer* that does not implement delegation ignores the member and rejects the document on the ordinary rule.
+
+**Responses.** A response or `trust-task-error` to a delegated document is sent to the authenticated `VID_sndr`, per [§6](#6-responses-and-error-delivery).
+
 ## 6. Responses and error delivery
 
 A `#response`-variant *Trust Task document* and a `trust-task-error` document are both returned by packing them into a fresh Trust Task envelope ([§2](#2-document-carriage)) and sending them as a TSP message back toward the originating producer:
