@@ -2,4 +2,5 @@
 
 pub mod finish;
 pub mod invite;
+pub mod redeem;
 pub mod start;
