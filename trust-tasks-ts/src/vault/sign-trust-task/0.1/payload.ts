@@ -67,7 +67,7 @@ export interface UnsignedTrustTaskEnvelope {
 }
 export interface VaultSignTrustTaskResponsePayload {
   /**
-   * The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
+   * The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` when the envelope's `type` names an attestation (an approver's decision such as `auth/step-up/approve-response` or `task-consent/decision`, or `confirm/response`) and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
    */
   signedEnvelope: {};
   ext?: Ext;
@@ -205,7 +205,7 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "signedEnvelope": {
           "type": "object",
-          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
+          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` when the envelope's `type` names an attestation (an approver's decision such as `auth/step-up/approve-response` or `task-consent/decision`, or `confirm/response`) and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
           "required": [
             "id",
             "type",
@@ -370,7 +370,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "signedEnvelope": {
           "type": "object",
-          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod`; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
+          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` when the envelope's `type` names an attestation (an approver's decision such as `auth/step-up/approve-response` or `task-consent/decision`, or `confirm/response`) and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
           "required": [
             "id",
             "type",

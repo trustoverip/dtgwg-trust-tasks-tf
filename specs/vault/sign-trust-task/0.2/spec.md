@@ -104,11 +104,11 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 2. Verify `entry.secretKind` is `didSelfIssued` or `didcommPeer`. Reject with `notSignable` otherwise.
 3. Verify `unsignedEnvelope.issuer == entry.principalDid`. Reject with `envelopeIssuerMismatch` on mismatch.
 4. Verify `unsignedEnvelope` has no `proof` member. Reject with `envelopeAlreadyProofed` if present.
-5. Verify the envelope's framework-required fields (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload`) are all present and well-typed. Reject with `envelopeInvalid` otherwise. The maintainer is NOT obligated to validate the inner `payload` against the task type's schema — that's the recipient's job. The maintainer signs the envelope as it stands.
+5. Verify the envelope's framework-required fields (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload`) are all present and well-typed. `type` MUST parse as a Trust Task Type URI, since it decides the proof purpose (item 9). Reject with `envelopeInvalid` otherwise. The maintainer is NOT obligated to validate the inner `payload` against the task type's schema — that's the recipient's job. The maintainer signs the envelope as it stands.
 6. If `expiresAt` is present and in the past, reject with `envelopeExpired`.
 7. Evaluate the policy engine against `{ entry, consumer, envelope: { type, recipient }, request: { kind: "sign_trust_task" } }`. Possible outcomes: `allow`, `requireStepUp`, `deny`.
 8. On allow, JCS-canonicalise the envelope (proof slot first set to the proof's metadata without `proofValue`, per the eddsa-jcs-2022 Data Integrity rules), sign with the entry's signing key, attach `proof` to the envelope, return.
-9. The proof's `verificationMethod` MUST be `<principalDid>#<signingKeyId>` (same shape the proxy-login id_tokens use). `proof.proofPurpose` MUST be `assertionMethod`. `proof.cryptosuite` MUST be `eddsa-jcs-2022`.
+9. The proof's `verificationMethod` MUST be `<principalDid>#<signingKeyId>` (same shape the proxy-login id_tokens use). `proof.cryptosuite` MUST be `eddsa-jcs-2022`. `proof.proofPurpose` MUST be decided by the envelope's `type` alone, as the framework's *Proof Purpose and Verification Relationship* rule requires: `assertionMethod` when `type` names a specification that defines its documents as the issuer's attestation (for example [`auth/step-up/approve-response`](../../../auth/step-up/approve-response/0.5/spec.md), [`task-consent/decision`](../../../task-consent/decision/0.1/spec.md) and [`confirm/response`](../../../confirm/response/0.1/spec.md)), and `authentication` for every other, operational, document. The consumer does not choose it, and the maintainer MUST NOT sign an operational document for `assertionMethod`.
 10. Audit-log the sign with `{ who, when, entryId, envelope: { id, type, recipient }, outcome }`. The audit MUST NOT include the envelope's `payload` (which may carry sensitive RP-side data).
 
 ## Payload
@@ -181,7 +181,7 @@ The `unsignedEnvelope.issuer` (`did:webvh:…:work-persona`) matches the princip
         "cryptosuite": "eddsa-jcs-2022",
         "verificationMethod": "did:webvh:QmTenant…:host.example:work-persona#z6Mk…",
         "created": "2026-05-27T08:48:00.123Z",
-        "proofPurpose": "assertionMethod",
+        "proofPurpose": "authentication",
         "proofValue": "z47…"
       }
     }
@@ -232,6 +232,8 @@ Maintainer's first response:
 The producer is expected to set `unsignedEnvelope.issuer` correctly on retry. The maintainer does not silently fix this — see Security & Privacy.
 
 ## Security & Privacy
+
+**Proof purpose follows the document type.** A proof made for `assertionMethod` is an attestation a third party may rely on long after the exchange; one made for `authentication` shows that the issuer's controller produced an operational message. The maintainer decides which from the envelope's `type` and never from the consumer, so a consumer holding `SignTrustTask` cannot turn an operational request into something that reads as the principal's attestation, and a relying party that refuses `assertionMethod` on operational tasks accepts what the maintainer signs. The acceptable purposes are the ones the inner task's own specification names; a relying party checks the purpose against the key's verification relationship as usual.
 
 **Key containment.** The principal's long-term signing key MUST stay on the maintainer side throughout. Maintainers MUST NOT log the key, MUST NOT include it in any response field, MUST NOT export it to the consumer. The maintainer's signing oracle (per implementation) wipes the key from memory immediately after signing.
 
