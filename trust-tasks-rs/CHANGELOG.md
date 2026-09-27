@@ -31,6 +31,64 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.24.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.1...trust-tasks-rs-v0.24.2) — 2026-09-27
+
+
+### Added
+
+- **vta/services**: Rollback 1.1 with a mediator drain window ([#670](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/670))
+
+`vta/services/rollback/1.1` adds an optional `drainTtlSecs`, the member
+  update 1.1 added in #656, with the same rules. A rollback of a mediated
+  transport (`didcomm`, `tsp`) can move it off its current mediator, which then
+  drains; 1.0 gave the operator no say in how long, so the agent could only apply
+  its default. The VTA's CLI (`services didcomm rollback --drain-ttl`) and SDK
+  carry an operator-chosen window that rollback 1.0 cannot express, so a rollback
+  landing on a drain transition silently took the default.
+
+  - Refused (`malformedRequest`) for `rest` and `webauthn`.
+  - Absent takes the agent's default; a value below the floor may be raised to
+    it, and must be over a request carried by the mediator being replaced.
+  - One mediator carrying both mediated transports drains once, reported by a
+    single `drainUntil`.
+  - Accepted with no effect when the rollback leaves no mediator draining, since
+    whether it drains depends on stored state the operator may not have in view.
+
+  A 1.0 request is a valid 1.1 request; the response is unchanged (the shared
+  `RollbackResult` already carries `drainingMediator` and `drainUntil`).
+
+  Rust, TypeScript, Go and Dart bindings regenerated.
+
+
+
+### Documentation
+
+- **specs**: Operational examples sign for authentication ([#669](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/669))
+
+VTI-KEY-022 ([#637](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/637)) moved a Trust Task document's proof default to
+  proofPurpose: authentication, reserving assertionMethod for the closed
+  list of attestations and approver decisions (auth/step-up/approve-response,
+  task-consent/decision, confirm/response). #637's own sweep updated the
+  top-level examples that existed at the time; this catches the git-ns
+  minor versions published after that sweep, plus acl/swap-key,
+  did-management/did/publish and SPEC.md's own examples, which still
+  showed assertionMethod on an operational document's proof.
+
+  Left unchanged: real attestations (task-consent/decision,
+  auth/step-up/approve-response, confirm/response), embedded
+  credentials and signed artefacts (vetting cards, witness proofs, the
+  vault/credentials responses, the role credential in
+  vtc/vetting/vetters/grant), DID-document verification-relationship
+  references, the generic keys/derive-and-sign-document signing service,
+  vault/sign-trust-task (PR #667 is open against it), and the
+  provision/integration invalid-examples fixtures that already
+  demonstrate this rule.
+
+  Regenerated all four bindings; only Rust had a diff, since its codegen
+  embeds each spec's fenced examples as conformance tests.
+
+
+
 ## [0.24.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.0...trust-tasks-rs-v0.24.1) — 2026-09-27
 
 
