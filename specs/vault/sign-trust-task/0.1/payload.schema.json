@@ -88,7 +88,7 @@
       "properties": {
         "signedEnvelope": {
           "type": "object",
-          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` when the envelope's `type` names an attestation (an approver's decision such as `auth/step-up/approve-response` or `task-consent/decision`, or `confirm/response`) and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
+          "description": "The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` only when the envelope's `type` is a `https://trusttasks.org` request of `auth/step-up/approve-response`, `task-consent/decision` or `confirm/response` (the closed list of attestations), and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.",
           "required": ["id", "type", "issuer", "recipient", "issuedAt", "payload", "proof"]
         },
         "ext": { "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
