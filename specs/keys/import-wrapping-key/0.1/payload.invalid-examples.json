@@ -1,0 +1,20 @@
+[
+  {
+    "note": "The request carries nothing — an unknown top-level member is rejected (additionalProperties: false). A producer cannot choose the key's type, lifetime or value.",
+    "payload": {
+      "wrappingKey": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  },
+  {
+    "note": "`ext` must be an object, not a string.",
+    "payload": {
+      "ext": "vendor"
+    }
+  }
+]

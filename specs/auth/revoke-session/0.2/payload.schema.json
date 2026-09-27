@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/revoke-session/0.2",
+  "title": "Auth — Revoke Session",
+  "description": "Invalidate one named session, every session of the producer, or every session of a named subject the producer may manage. The auth service drops the targeted session(s); any future use of their access or refresh tokens MUST fail. Exactly one of `sessionId`, `all` and `subject` is present.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The session to revoke. Mutually exclusive with `all` and `subject`."
+    },
+    "all": {
+      "type": "boolean",
+      "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`."
+    },
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "oneOf": [
+    { "required": ["sessionId"], "not": { "anyOf": [{ "required": ["all"] }, { "required": ["subject"] }] } },
+    { "required": ["all"], "not": { "anyOf": [{ "required": ["sessionId"] }, { "required": ["subject"] }] } },
+    { "required": ["subject"], "not": { "anyOf": [{ "required": ["sessionId"] }, { "required": ["all"] }] } }
+  ],
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Revoke Session — response payload",
+      "description": "Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revokedCount"],
+      "properties": {
+        "revokedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

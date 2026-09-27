@@ -5,6 +5,7 @@ pub mod derive_and_sign;
 pub mod derive_and_sign_document;
 pub mod export_secret;
 pub mod import;
+pub mod import_wrapping_key;
 pub mod list;
 pub mod rename;
 pub mod revoke;

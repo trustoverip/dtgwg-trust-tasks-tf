@@ -54,6 +54,7 @@ export * as AuthPasskeyRevokeStart_v0_1 from "./auth/passkey/revoke/start/0.1/pa
 export * as AuthPasskeyRevokeStart_v0_2 from "./auth/passkey/revoke/start/0.2/payload.js";
 export * as AuthRefresh_v0_1 from "./auth/refresh/0.1/payload.js";
 export * as AuthRevokeSession_v0_1 from "./auth/revoke-session/0.1/payload.js";
+export * as AuthRevokeSession_v0_2 from "./auth/revoke-session/0.2/payload.js";
 export * as AuthSessionsList_v0_1 from "./auth/sessions/list/0.1/payload.js";
 export * as AuthStepUpApproveRequest_v0_1 from "./auth/step-up/approve-request/0.1/payload.js";
 export * as AuthStepUpApproveRequest_v0_2 from "./auth/step-up/approve-request/0.2/payload.js";
@@ -233,6 +234,7 @@ export * as KeysCreate_v0_1 from "./keys/create/0.1/payload.js";
 export * as KeysDeriveAndSignDocument_v0_1 from "./keys/derive-and-sign-document/0.1/payload.js";
 export * as KeysDeriveAndSign_v0_1 from "./keys/derive-and-sign/0.1/payload.js";
 export * as KeysExportSecret_v0_1 from "./keys/export-secret/0.1/payload.js";
+export * as KeysImportWrappingKey_v0_1 from "./keys/import-wrapping-key/0.1/payload.js";
 export * as KeysImport_v0_1 from "./keys/import/0.1/payload.js";
 export * as KeysList_v0_1 from "./keys/list/0.1/payload.js";
 export * as KeysRename_v0_1 from "./keys/rename/0.1/payload.js";
@@ -514,6 +516,7 @@ export * as VtaDidTemplatesRender_v2_0 from "./vta/did-templates/render/2.0/payl
 export * as VtaDidTemplatesUpdate_v1_0 from "./vta/did-templates/update/1.0/payload.js";
 export * as VtaDidTemplatesUpdate_v2_0 from "./vta/did-templates/update/2.0/payload.js";
 export * as VtaDidTemplatesUpdate_v3_0 from "./vta/did-templates/update/3.0/payload.js";
+export * as VtaHealthDetails_v0_1 from "./vta/health/details/0.1/payload.js";
 export * as VtaManagementReloadServices_v1_0 from "./vta/management/reload-services/1.0/payload.js";
 export * as VtaMemoryDelete_v0_1 from "./vta/memory/delete/0.1/payload.js";
 export * as VtaMemoryList_v0_1 from "./vta/memory/list/0.1/payload.js";

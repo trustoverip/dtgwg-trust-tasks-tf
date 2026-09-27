@@ -1,0 +1,20 @@
+[
+  {
+    "note": "The request carries nothing — an unknown top-level member is rejected (additionalProperties: false). An observer cannot select which members to receive; the answer is the same for everyone.",
+    "payload": {
+      "include": ["restored"]
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  },
+  {
+    "note": "`ext` must be an object, not a string.",
+    "payload": {
+      "ext": "vendor"
+    }
+  }
+]
