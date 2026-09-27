@@ -11,6 +11,39 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.6 — 2026-09-27
+
+
+### Added
+
+- **vta**: Trust Tasks for the VTA's REST-only health, restore-status, session-revocation and wrapping-key routes (#663)
+
+* feat(vta): Trust Tasks for the VTA's REST-only health, session-revocation and wrapping-key routes
+
+  Three Verifiable Trust Agent routes were reachable only over REST. Each
+  gets a Trust Task, so an agent serves it identically over TSP, DIDComm
+  and HTTPS.
+
+  - vta/health/details/0.1 replaces GET /health/details: version,
+    mediator, seal and at-rest encryption state, TEE status, TSP
+    advertisement, and the restore the agent's state derives from.
+    Public, anonymous, request proof OPTIONAL and response proof
+    REQUIRED, like vta/attestation/status/0.1.
+  - auth/revoke-session/0.2 replaces DELETE /auth/sessions?did=: adds a
+    `subject` form ending every session of a subject the producer could
+    withdraw the access of (a scoped administrator cannot reach an
+    unrestricted one), answers a refusal with permissionDenied, and drops
+    0.1's `notOwner`, which contradicted 0.1's own non-disclosure rule.
+    Backwards-compatible: every 0.1 payload is a valid 0.2 payload.
+  - keys/import-wrapping-key/0.1 replaces GET /keys/import/wrapping-key:
+    a fresh, single-use, minutes-long key a producer seals a private key
+    to for keys/import's privateKeySealed carrier over a transport that
+    is not end to end. Returned as an Ed25519 did:key; the response proof
+    is REQUIRED because the TLS terminator the task routes around could
+    otherwise substitute its own key.
+
+  Rust, TypeScript, Go and Dart bindings regenerated.
+
 ## 0.3.5 — 2026-09-27
 
 
