@@ -11,6 +11,24 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.21.5 — 2026-09-27
+
+
+### Added
+
+- **did-management**: Trust Tasks for the DID hosting service's REST-only surface (#661)
+
+* feat(did-management): Trust Tasks for the DID hosting service's REST-only surface
+
+  Specs for every remote surface of affinidi-webvh-service that had none, so each can move onto the service's central Trust Task dispatch over TSP, DIDComm and HTTPS:
+
+  - did-management: did/log, agent-name/resolve, domain/list, registry/list|get|check|purge-domain, stats/get|timeseries, server/config|info, identity/list|retire, and _shared/0.2 service-instance.
+  - did-management/replica/domain: upsert, assign, unassign, purge (the control plane to edge hop, today sent on the admin URIs or unspecified).
+  - webvh: sync/update 0.2 and sync/delete 0.2 (proof required, a disabled member, watchers as replicas), sync/batch 0.1, witness/sign and witness/key/create|list|delete.
+  - auth: step-up/start (replaces the bespoke REST start/finish paths), and passkey/enroll/invite/list|update|revoke addressed by inviteId, never by token.
+
+  Every task requires a proof except the public did-management/server/info read. Bindings regenerated for Rust, TypeScript, Go and Dart.
+
 ## 0.21.4 — 2026-09-27
 
 
