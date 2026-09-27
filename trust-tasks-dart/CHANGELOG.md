@@ -11,6 +11,62 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.7 — 2026-09-27
+
+
+### Fixed
+
+- **codegen**: Generate usable types for oneOf branches that use not (#665)
+
+typify (0.6) merges a `oneOf` branch's own keywords into the untagged
+  enum variant it synthesizes for that branch. A bare `not: {"required":
+  ["x"]}` is a shape it handles directly — property `x` is simply absent
+  from that variant. Wrap the same exclusion in `anyOf` (the shape a
+  3-way mutual-exclusion group needs, e.g.
+  auth/passkey/enroll/invite/update/0.1's role/expiresAt/extendBy) and
+  typify's merge instead produces an uninhabited `pub enum
+  PayloadVariant0 {}` for that branch, so a payload carrying only `role`
+  (plus `inviteId`) could never deserialize — and silently drops a
+  property required only by that branch from every *other* branch's
+  variant too, so `role` + `expiresAt` together also failed to
+  round-trip. auth/revoke-session/0.2 has the same three-way `not:
+  {anyOf: [...]}` shape and produced the same uninhabited nested type,
+  though there it never broke a valid document (no shared field to
+  drop).
+
+  Only conformance example exercised extendBy alone, which is why this
+  was never caught. Added role-only, expiresAt-only and role+expiresAt
+  examples to auth/passkey/enroll/invite/update/0.1's spec.md, one per
+  oneOf branch plus their combination.
+
+  Fixed with a new preprocessing pass in trust-tasks-codegen,
+  desugar_oneof_with_compound_not, which drops a oneOf combinator from
+  the copy of the schema handed to typify whenever any branch's not is
+  more than a single {"required": ["x"]} guard. Re-expressing the oneOf
+  as anyOf (at least one) plus a pairwise not (no two at once) -
+  oneOf's own JSON Schema definition - was tried first and does not
+  help: typify applies the identical broken merge to a not wrapping
+  anyOf/allOf regardless of which combinator carries it. The wire
+  schema (SCHEMA_JSON / ValidatedPayload::validate_value, and the
+  TypeScript/Go/Dart bindings, generated independently of typify) is
+  captured before this pass runs and is unaffected, so the actual
+  mutual-exclusion constraint is still enforced at runtime; only the
+  Rust type for the two affected specs becomes fully permissive, matching
+  what the other three languages already generate for this schema. A
+  plain discriminated oneOf (every branch's not, if any, a single
+  {"required": ["x"]}) is untouched and still renders as a clean Rust
+  enum.
+
+  Scanned every schema under specs/ for a oneOf/anyOf branch using not.
+  Only these two combine it with oneOf; the rest (auth/revoke-session/0.1,
+  vta/app-state/put/1.0, vta/app-state/put-many/1.0,
+  vtc/registry/sync-jobs/retry/0.1, credential-exchange/issue/0.1, and a
+  few uses of not outside any oneOf) were unaffected and are unchanged
+  after regenerating.
+
+  Regenerated all four bindings; only the two affected Rust modules
+  changed.
+
 ## 0.3.6 — 2026-09-27
 
 

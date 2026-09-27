@@ -3,6 +3,9 @@
 All notable changes to `trust-tasks-capability-client` are documented in this
 file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.24.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.23.6...trust-tasks-capability-client-v0.24.0) — 2026-09-27
+
+
 ## [0.23.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.23.5...trust-tasks-capability-client-v0.23.6) — 2026-09-27
 
 
