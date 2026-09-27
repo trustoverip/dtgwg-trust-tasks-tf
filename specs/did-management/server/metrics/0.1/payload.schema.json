@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/server/metrics/0.1",
+  "title": "DID Management — Server Metrics — payload",
+  "description": "The read takes no selector — the whole snapshot is returned. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management — Server Metrics — response payload",
+      "description": "The service's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/did-management/server/metrics/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot"],
+      "properties": {
+        "snapshot": {
+          "$ref": "../../../_shared/0.2/metrics-snapshot.schema.json#/$defs/MetricsSnapshot"
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

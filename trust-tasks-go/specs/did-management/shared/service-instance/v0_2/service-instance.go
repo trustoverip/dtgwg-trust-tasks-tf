@@ -55,9 +55,9 @@ type ServiceInstance struct {
 	// configured window.
 	Status ServiceInstanceStatus `json:"status"`
 
-	// Hosting domains the instance has acknowledged serving. Empty for an instance that
-	// serves none; always present on a `server`.
-	ServedDomains *[]string `json:"servedDomains,omitempty"`
+	// Hosting domains the instance has acknowledged serving. Always present — empty for an
+	// instance that serves none, which includes every `witness` and `watcher`.
+	ServedDomains []string `json:"servedDomains"`
 
 	// DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at
 	// registration.

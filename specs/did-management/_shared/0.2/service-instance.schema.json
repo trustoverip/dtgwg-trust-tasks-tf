@@ -8,7 +8,14 @@
       "title": "ServiceInstance",
       "type": "object",
       "additionalProperties": false,
-      "required": ["instanceId", "did", "serviceType", "status", "registeredAt"],
+      "required": [
+        "instanceId",
+        "did",
+        "serviceType",
+        "status",
+        "registeredAt",
+        "servedDomains"
+      ],
       "properties": {
         "instanceId": {
           "type": "string",
@@ -43,7 +50,7 @@
         "servedDomains": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
-          "description": "Hosting domains the instance has acknowledged serving. Empty for an instance that serves none; always present on a `server`."
+          "description": "Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`."
         },
         "enabledMethods": {
           "type": "array",

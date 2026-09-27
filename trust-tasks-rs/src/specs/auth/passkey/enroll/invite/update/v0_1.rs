@@ -446,29 +446,47 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummarySubject {
 ///  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
 ///  "title": "Payload",
 ///  "type": "object",
-///  "anyOf": [
+///  "oneOf": [
 ///    {
+///      "not": {
+///        "anyOf": [
+///          {
+///            "required": [
+///              "expiresAt"
+///            ]
+///          },
+///          {
+///            "required": [
+///              "extendBy"
+///            ]
+///          }
+///        ]
+///      },
 ///      "required": [
 ///        "role"
 ///      ]
 ///    },
 ///    {
+///      "not": {
+///        "required": [
+///          "extendBy"
+///        ]
+///      },
 ///      "required": [
 ///        "expiresAt"
 ///      ]
 ///    },
 ///    {
+///      "not": {
+///        "required": [
+///          "expiresAt"
+///        ]
+///      },
 ///      "required": [
 ///        "extendBy"
 ///      ]
 ///    }
 ///  ],
-///  "not": {
-///    "required": [
-///      "expiresAt",
-///      "extendBy"
-///    ]
-///  },
 ///  "required": [
 ///    "inviteId"
 ///  ],
@@ -502,22 +520,136 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummarySubject {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
+#[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
-pub struct Payload {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ext: ::std::option::Option<Ext>,
-    #[serde(rename = "inviteId")]
-    pub invite_id: PayloadInviteId,
-    ///The role the invitee will receive. Absent leaves the role unchanged.
-    pub role: PayloadRole,
+pub enum Payload {
+    Variant0(PayloadVariant0),
+    Variant1 {
+        ///The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.
+        #[serde(rename = "expiresAt")]
+        expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        ext: ::std::option::Option<Ext>,
+        #[serde(rename = "inviteId")]
+        invite_id: PayloadVariant1InviteId,
+    },
+    Variant2 {
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        ext: ::std::option::Option<Ext>,
+        ///Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.
+        #[serde(rename = "extendBy")]
+        extend_by: ::std::num::NonZeroU64,
+        #[serde(rename = "inviteId")]
+        invite_id: PayloadVariant2InviteId,
+    },
 }
-impl Payload {
-    pub fn builder() -> builder::Payload {
-        Default::default()
+impl ::std::convert::From<PayloadVariant0> for Payload {
+    fn from(value: PayloadVariant0) -> Self {
+        Self::Variant0(value)
     }
 }
-///`PayloadInviteId`
+///`PayloadVariant0`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "allOf": [
+///    {
+///      "type": "object",
+///      "required": [
+///        "inviteId"
+///      ],
+///      "properties": {
+///        "expiresAt": {
+///          "description": "The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.",
+///          "type": "string",
+///          "format": "date-time"
+///        },
+///        "ext": {
+///          "$ref": "#/definitions/Ext"
+///        },
+///        "extendBy": {
+///          "description": "Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.",
+///          "type": "integer",
+///          "minimum": 1.0
+///        },
+///        "inviteId": {
+///          "type": "string",
+///          "maxLength": 128,
+///          "minLength": 1
+///        },
+///        "role": {
+///          "description": "The role the invitee will receive. Absent leaves the role unchanged.",
+///          "type": "string",
+///          "minLength": 1
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "not": {
+///        "anyOf": [
+///          {
+///            "required": [
+///              "expiresAt"
+///            ]
+///          },
+///          {
+///            "required": [
+///              "extendBy"
+///            ]
+///          }
+///        ]
+///      },
+///      "required": [
+///        "role"
+///      ]
+///    },
+///    {
+///      "not": {
+///        "not": {
+///          "required": [
+///            "extendBy"
+///          ]
+///        },
+///        "required": [
+///          "expiresAt"
+///        ]
+///      }
+///    },
+///    {
+///      "not": {
+///        "not": {
+///          "required": [
+///            "expiresAt"
+///          ]
+///        },
+///        "required": [
+///          "extendBy"
+///        ]
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub enum PayloadVariant0 {}
+///`PayloadVariant1InviteId`
 ///
 /// <details><summary>JSON schema</summary>
 ///
@@ -531,19 +663,19 @@ impl Payload {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadInviteId(::std::string::String);
-impl ::std::ops::Deref for PayloadInviteId {
+pub struct PayloadVariant1InviteId(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant1InviteId {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadInviteId> for ::std::string::String {
-    fn from(value: PayloadInviteId) -> Self {
+impl ::std::convert::From<PayloadVariant1InviteId> for ::std::string::String {
+    fn from(value: PayloadVariant1InviteId) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadInviteId {
+impl ::std::str::FromStr for PayloadVariant1InviteId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 128usize {
@@ -555,13 +687,13 @@ impl ::std::str::FromStr for PayloadInviteId {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadInviteId {
+impl ::std::convert::TryFrom<&str> for PayloadVariant1InviteId {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadInviteId {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1InviteId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -569,7 +701,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadInviteId {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadInviteId {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1InviteId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -577,7 +709,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadInviteId {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadInviteId {
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant1InviteId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -589,48 +721,51 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInviteId {
             })
     }
 }
-///The role the invitee will receive. Absent leaves the role unchanged.
+///`PayloadVariant2InviteId`
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "The role the invitee will receive. Absent leaves the role unchanged.",
 ///  "type": "string",
+///  "maxLength": 128,
 ///  "minLength": 1
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadRole(::std::string::String);
-impl ::std::ops::Deref for PayloadRole {
+pub struct PayloadVariant2InviteId(::std::string::String);
+impl ::std::ops::Deref for PayloadVariant2InviteId {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadRole> for ::std::string::String {
-    fn from(value: PayloadRole) -> Self {
+impl ::std::convert::From<PayloadVariant2InviteId> for ::std::string::String {
+    fn from(value: PayloadVariant2InviteId) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadRole {
+impl ::std::str::FromStr for PayloadVariant2InviteId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadRole {
+impl ::std::convert::TryFrom<&str> for PayloadVariant2InviteId {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadRole {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2InviteId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -638,7 +773,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadRole {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadRole {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2InviteId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -646,7 +781,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadRole {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadRole {
+impl<'de> ::serde::Deserialize<'de> for PayloadVariant2InviteId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -827,72 +962,6 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct Payload {
-        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        invite_id: ::std::result::Result<super::PayloadInviteId, ::std::string::String>,
-        role: ::std::result::Result<super::PayloadRole, ::std::string::String>,
-    }
-    impl ::std::default::Default for Payload {
-        fn default() -> Self {
-            Self {
-                ext: Ok(Default::default()),
-                invite_id: Err("no value supplied for invite_id".to_string()),
-                role: Err("no value supplied for role".to_string()),
-            }
-        }
-    }
-    impl Payload {
-        pub fn ext<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ext = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ext: {e}"));
-            self
-        }
-        pub fn invite_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::PayloadInviteId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.invite_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for invite_id: {e}"));
-            self
-        }
-        pub fn role<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::PayloadRole>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.role = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for role: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<Payload> for super::Payload {
-        type Error = super::error::ConversionError;
-        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                ext: value.ext?,
-                invite_id: value.invite_id?,
-                role: value.role?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::Payload> for Payload {
-        fn from(value: super::Payload) -> Self {
-            Self {
-                ext: Ok(value.ext),
-                invite_id: Ok(value.invite_id),
-                role: Ok(value.role),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         invite: ::std::result::Result<super::InviteSummary, ::std::string::String>,
@@ -952,7 +1021,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InviteSummary\": {\n      \"$anchor\": \"inviteSummary\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expired\": {\n          \"description\": \"True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.\",\n          \"type\": \"boolean\"\n        },\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inviteId\": {\n          \"description\": \"Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.\",\n          \"enum\": [\n            \"session\",\n            \"stepUp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The VID the invite binds a passkey to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"inviteId\",\n        \"subject\",\n        \"purpose\",\n        \"createdAt\",\n        \"expiresAt\",\n        \"expired\"\n      ],\n      \"title\": \"InviteSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"$ref\": \"#/$defs/InviteSummary\"\n        }\n      },\n      \"required\": [\n        \"invite\"\n      ],\n      \"title\": \"Auth Passkey Invite Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"anyOf\": [\n    {\n      \"required\": [\n        \"role\"\n      ]\n    },\n    {\n      \"required\": [\n        \"expiresAt\"\n      ]\n    },\n    {\n      \"required\": [\n        \"extendBy\"\n      ]\n    }\n  ],\n  \"not\": {\n    \"required\": [\n      \"expiresAt\",\n      \"extendBy\"\n    ]\n  },\n  \"properties\": {\n    \"expiresAt\": {\n      \"description\": \"The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extendBy\": {\n      \"description\": \"Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"inviteId\": {\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"role\": {\n      \"description\": \"The role the invitee will receive. Absent leaves the role unchanged.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"inviteId\"\n  ],\n  \"title\": \"Auth Passkey Invite Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InviteSummary\": {\n      \"$anchor\": \"inviteSummary\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expired\": {\n          \"description\": \"True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.\",\n          \"type\": \"boolean\"\n        },\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inviteId\": {\n          \"description\": \"Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.\",\n          \"enum\": [\n            \"session\",\n            \"stepUp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The VID the invite binds a passkey to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"inviteId\",\n        \"subject\",\n        \"purpose\",\n        \"createdAt\",\n        \"expiresAt\",\n        \"expired\"\n      ],\n      \"title\": \"InviteSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"$ref\": \"#/$defs/InviteSummary\"\n        }\n      },\n      \"required\": [\n        \"invite\"\n      ],\n      \"title\": \"Auth Passkey Invite Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"expiresAt\"\n            ]\n          },\n          {\n            \"required\": [\n              \"extendBy\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"role\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"extendBy\"\n        ]\n      },\n      \"required\": [\n        \"expiresAt\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"expiresAt\"\n        ]\n      },\n      \"required\": [\n        \"extendBy\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"expiresAt\": {\n      \"description\": \"The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extendBy\": {\n      \"description\": \"Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"inviteId\": {\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"role\": {\n      \"description\": \"The role the invitee will receive. Absent leaves the role unchanged.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"inviteId\"\n  ],\n  \"title\": \"Auth Passkey Invite Update — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {

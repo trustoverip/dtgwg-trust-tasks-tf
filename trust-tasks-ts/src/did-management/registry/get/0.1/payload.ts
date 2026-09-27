@@ -99,7 +99,8 @@ export const PAYLOAD_SCHEMA = {
         "did",
         "serviceType",
         "status",
-        "registeredAt"
+        "registeredAt",
+        "servedDomains"
       ],
       "properties": {
         "instanceId": {
@@ -146,7 +147,7 @@ export const PAYLOAD_SCHEMA = {
             "type": "string",
             "minLength": 1
           },
-          "description": "Hosting domains the instance has acknowledged serving. Empty for an instance that serves none; always present on a `server`."
+          "description": "Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`."
         },
         "enabledMethods": {
           "type": "array",
@@ -259,7 +260,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "did",
         "serviceType",
         "status",
-        "registeredAt"
+        "registeredAt",
+        "servedDomains"
       ],
       "properties": {
         "instanceId": {
@@ -306,7 +308,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "type": "string",
             "minLength": 1
           },
-          "description": "Hosting domains the instance has acknowledged serving. Empty for an instance that serves none; always present on a `server`."
+          "description": "Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`."
         },
         "enabledMethods": {
           "type": "array",

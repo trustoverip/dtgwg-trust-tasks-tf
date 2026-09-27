@@ -9,24 +9,67 @@ typedef Ext = Map<String, dynamic>;
 
 /// A complete, signed auth/step-up/approve-request/0.3 document for this session:
 /// issuer the relying party, recipient the approver. The approver verifies it on its
-/// own terms; it is carried as a document, not unpacked into this payload, so its
-/// proof survives.
+/// own terms; the framework-level envelope members are modelled here so none are lost
+/// on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated
+/// by that spec, not by this one) so the proof survives.
 class ResponseApproveRequest {
   const ResponseApproveRequest({
+    required this.id,
     required this.type,
+    this.threadId,
+    required this.issuer,
+    required this.recipient,
+    this.issuedAt,
+    this.expiresAt,
+    required this.payload,
+    required this.proof,
+    this.ext,
   });
 
   /// Read this payload from a decoded JSON object.
   factory ResponseApproveRequest.fromJson(Map<String, dynamic> json) =>
       ResponseApproveRequest(
+        id: json['id'] as String,
         type: json['type'],
+        threadId: json['threadId'] as String?,
+        issuer: json['issuer'] as String,
+        recipient: json['recipient'] as String,
+        issuedAt: json['issuedAt'] as String?,
+        expiresAt: json['expiresAt'] as String?,
+        payload: json['payload'],
+        proof: json['proof'] as Map<String, dynamic>,
+        ext: json['ext'] as Map<String, dynamic>?,
       );
 
+  final String id;
   final Object? type;
+  final String? threadId;
+  final String issuer;
+  final String recipient;
+  final String? issuedAt;
+  final String? expiresAt;
+
+  /// The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its
+  /// shape.
+  final Object? payload;
+
+  /// A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on
+  /// its own terms.
+  final Map<String, dynamic> proof;
+  final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
         'type': type,
+        if (threadId != null) 'threadId': threadId!,
+        'issuer': issuer,
+        'recipient': recipient,
+        if (issuedAt != null) 'issuedAt': issuedAt!,
+        if (expiresAt != null) 'expiresAt': expiresAt!,
+        'payload': payload,
+        'proof': proof,
+        if (ext != null) 'ext': ext!,
       };
 }
 
@@ -46,8 +89,9 @@ class Response {
 
   /// A complete, signed auth/step-up/approve-request/0.3 document for this session:
   /// issuer the relying party, recipient the approver. The approver verifies it on its
-  /// own terms; it is carried as a document, not unpacked into this payload, so its
-  /// proof survives.
+  /// own terms; the framework-level envelope members are modelled here so none are lost
+  /// on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated
+  /// by that spec, not by this one) so the proof survives.
   final ResponseApproveRequest approveRequest;
   final Ext? ext;
 
@@ -104,11 +148,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/auth/step-up/start/0.1","title":"Auth Step-up Start — payload","type":"object","additionalProperties":false,"required":["sessionId"],"properties":{"sessionId":{"type":"string","minLength":1,"maxLength":256,"description":"The relying-party session to elevate."},"targetAcr":{"type":"string","minLength":1,"description":"The assurance level the holder wants the session raised to. Absent means the relying party\'s own next level above the session\'s current one."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"Auth Step-up Start — response payload","type":"object","additionalProperties":false,"required":["approveRequest"],"properties":{"approveRequest":{"type":"object","description":"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.","required":["id","type","issuer","recipient","payload","proof"],"properties":{"type":{"const":"https://trusttasks.org/spec/auth/step-up/approve-request/0.3"}}},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/auth/step-up/start/0.1","title":"Auth Step-up Start — payload","type":"object","additionalProperties":false,"required":["sessionId"],"properties":{"sessionId":{"type":"string","minLength":1,"maxLength":256,"description":"The relying-party session to elevate."},"targetAcr":{"type":"string","minLength":1,"description":"The assurance level the holder wants the session raised to. Absent means the relying party\'s own next level above the session\'s current one."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"Auth Step-up Start — response payload","type":"object","additionalProperties":false,"required":["approveRequest"],"properties":{"approveRequest":{"type":"object","additionalProperties":false,"description":"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.","required":["id","type","issuer","recipient","payload","proof"],"properties":{"id":{"type":"string","minLength":1},"type":{"const":"https://trusttasks.org/spec/auth/step-up/approve-request/0.3"},"threadId":{"type":"string","minLength":1},"issuer":{"type":"string","minLength":1},"recipient":{"type":"string","minLength":1},"issuedAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"},"payload":{"description":"The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape."},"proof":{"type":"object","description":"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms."},"ext":{"\$ref":"#/\$defs/Ext"}}},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Auth Step-up Start — response payload","type":"object","additionalProperties":false,"required":["approveRequest"],"properties":{"approveRequest":{"type":"object","description":"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.","required":["id","type","issuer","recipient","payload","proof"],"properties":{"type":{"const":"https://trusttasks.org/spec/auth/step-up/approve-request/0.3"}}},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"Auth Step-up Start — response payload","type":"object","additionalProperties":false,"required":["approveRequest"],"properties":{"approveRequest":{"type":"object","additionalProperties":false,"description":"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.","required":["id","type","issuer","recipient","payload","proof"],"properties":{"id":{"type":"string","minLength":1},"type":{"const":"https://trusttasks.org/spec/auth/step-up/approve-request/0.3"},"threadId":{"type":"string","minLength":1},"issuer":{"type":"string","minLength":1},"recipient":{"type":"string","minLength":1},"issuedAt":{"type":"string","format":"date-time"},"expiresAt":{"type":"string","format":"date-time"},"payload":{"description":"The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape."},"proof":{"type":"object","description":"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms."},"ext":{"\$ref":"#/\$defs/Ext"}}},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

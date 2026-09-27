@@ -19,10 +19,27 @@ export interface AuthStepUpStartPayload {
 }
 export interface AuthStepUpStartResponsePayload {
   /**
-   * A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.
+   * A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.
    */
   approveRequest: {
+    id: string;
     type: "https://trusttasks.org/spec/auth/step-up/approve-request/0.3";
+    threadId?: string;
+    issuer: string;
+    recipient: string;
+    issuedAt?: string;
+    expiresAt?: string;
+    /**
+     * The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape.
+     */
+    payload: {
+      [k: string]: unknown | undefined;
+    };
+    /**
+     * A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.
+     */
+    proof: {};
+    ext?: Ext;
   };
   ext?: Ext;
 }
@@ -88,7 +105,8 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "approveRequest": {
           "type": "object",
-          "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.",
+          "additionalProperties": false,
+          "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.",
           "required": [
             "id",
             "type",
@@ -98,8 +116,42 @@ export const PAYLOAD_SCHEMA = {
             "proof"
           ],
           "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
             "type": {
               "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.3"
+            },
+            "threadId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "issuer": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1
+            },
+            "issuedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "payload": {
+              "description": "The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape."
+            },
+            "proof": {
+              "type": "object",
+              "description": "A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms."
+            },
+            "ext": {
+              "$ref": "#/$defs/Ext"
             }
           }
         },
@@ -137,7 +189,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "approveRequest": {
           "type": "object",
-          "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.",
+          "additionalProperties": false,
+          "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.",
           "required": [
             "id",
             "type",
@@ -147,8 +200,42 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "proof"
           ],
           "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
             "type": {
               "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.3"
+            },
+            "threadId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "issuer": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1
+            },
+            "issuedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "payload": {
+              "description": "The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape."
+            },
+            "proof": {
+              "type": "object",
+              "description": "A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms."
+            },
+            "ext": {
+              "$ref": "#/$defs/Ext"
             }
           }
         },

@@ -7,8 +7,6 @@ import type { Ext, InviteSummary_AuthV0_1 as InviteSummary } from "../../../../.
 
 
 export type AuthPasskeyInviteUpdatePayload = {
-  [k: string]: unknown | undefined;
-} & {
   inviteId: string;
   /**
    * The role the invitee will receive. Absent leaves the role unchanged.
@@ -23,6 +21,8 @@ export type AuthPasskeyInviteUpdatePayload = {
    */
   extendBy?: number;
   ext?: Ext;
+} & {
+  [k: string]: unknown | undefined;
 };
 
 export interface AuthPasskeyInviteUpdateResponsePayload {
@@ -63,29 +63,47 @@ export const PAYLOAD_SCHEMA = {
   "required": [
     "inviteId"
   ],
-  "anyOf": [
+  "oneOf": [
     {
       "required": [
         "role"
-      ]
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "expiresAt"
+            ]
+          },
+          {
+            "required": [
+              "extendBy"
+            ]
+          }
+        ]
+      }
     },
     {
       "required": [
         "expiresAt"
-      ]
+      ],
+      "not": {
+        "required": [
+          "extendBy"
+        ]
+      }
     },
     {
       "required": [
         "extendBy"
-      ]
+      ],
+      "not": {
+        "required": [
+          "expiresAt"
+        ]
+      }
     }
   ],
-  "not": {
-    "required": [
-      "expiresAt",
-      "extendBy"
-    ]
-  },
   "properties": {
     "inviteId": {
       "type": "string",

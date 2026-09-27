@@ -5,12 +5,16 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["inviteId"],
-  "anyOf": [
-    { "required": ["role"] },
-    { "required": ["expiresAt"] },
-    { "required": ["extendBy"] }
+  "oneOf": [
+    {
+      "required": ["role"],
+      "not": {
+        "anyOf": [{ "required": ["expiresAt"] }, { "required": ["extendBy"] }]
+      }
+    },
+    { "required": ["expiresAt"], "not": { "required": ["extendBy"] } },
+    { "required": ["extendBy"], "not": { "required": ["expiresAt"] } }
   ],
-  "not": { "required": ["expiresAt", "extendBy"] },
   "properties": {
     "inviteId": { "type": "string", "minLength": 1, "maxLength": 128 },
     "role": {

@@ -1,0 +1,4 @@
+[
+  { "note": "The read takes no selector — the whole snapshot is returned.", "payload": { "names": ["did_hosting_requests_total"] } },
+  { "note": "Not a member of this task's payload; it belongs to a response snapshot.", "payload": { "counters": [] } }
+]

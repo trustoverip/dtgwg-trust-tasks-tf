@@ -3,5 +3,6 @@
 pub mod config;
 pub mod health;
 pub mod info;
+pub mod metrics;
 pub mod register;
 pub mod stats_sync;

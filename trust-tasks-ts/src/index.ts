@@ -118,6 +118,7 @@ export * as WebvhShared_v0_1 from "./did-management/_shared/0.1/did-method-exten
 export * as DidRecordShared_v0_1 from "./did-management/_shared/0.1/did-record.js";
 export * as DomainEntryShared_v0_1 from "./did-management/_shared/0.1/domain-entry.js";
 export * as ServiceInstanceShared_v0_1 from "./did-management/_shared/0.1/service-instance.js";
+export * as MetricsSnapshotShared_v0_2 from "./did-management/_shared/0.2/metrics-snapshot.js";
 export * as ServiceInstanceShared_v0_2 from "./did-management/_shared/0.2/service-instance.js";
 export * as DidManagementAgentNameCheck_v0_1 from "./did-management/agent-name/check/0.1/payload.js";
 export * as DidManagementAgentNameDisable_v0_1 from "./did-management/agent-name/disable/0.1/payload.js";
@@ -166,6 +167,7 @@ export * as DidManagementReplicaDomainUpsert_v0_1 from "./did-management/replica
 export * as DidManagementServerConfig_v0_1 from "./did-management/server/config/0.1/payload.js";
 export * as DidManagementServerHealth_v0_1 from "./did-management/server/health/0.1/payload.js";
 export * as DidManagementServerInfo_v0_1 from "./did-management/server/info/0.1/payload.js";
+export * as DidManagementServerMetrics_v0_1 from "./did-management/server/metrics/0.1/payload.js";
 export * as DidManagementServerRegister_v0_1 from "./did-management/server/register/0.1/payload.js";
 export * as DidManagementServerStatsSync_v0_1 from "./did-management/server/stats-sync/0.1/payload.js";
 export * as DidManagementStatsGet_v0_1 from "./did-management/stats/get/0.1/payload.js";

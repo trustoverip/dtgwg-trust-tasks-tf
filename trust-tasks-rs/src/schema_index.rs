@@ -545,6 +545,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/info/0.1#response" => <crate::specs::did_management::server::info::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/metrics/0.1" => <crate::specs::did_management::server::metrics::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/metrics/0.1#response" => <crate::specs::did_management::server::metrics::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/register/0.1" => <crate::specs::did_management::server::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/register/0.1#response" => <crate::specs::did_management::server::register::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3018,6 +3022,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/did-management/server/info/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::server::info::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/metrics/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::server::metrics::v0_1::Payload,
             >())
         }
         #[cfg(feature = "did-management")]
@@ -5662,6 +5672,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/info/0.1" => {
             Some(crate::specs::did_management::server::info::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/metrics/0.1" => {
+            Some(crate::specs::did_management::server::metrics::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/register/0.1" => {

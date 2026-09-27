@@ -99,7 +99,7 @@ class ServiceInstance {
     this.label,
     this.publicUrl,
     required this.status,
-    this.servedDomains,
+    required this.servedDomains,
     this.enabledMethods,
     this.advertisedServices,
     this.servicesCheckedAt,
@@ -119,11 +119,9 @@ class ServiceInstance {
         label: json['label'] as String?,
         publicUrl: json['publicUrl'] as String?,
         status: ServiceInstanceStatus(json['status'] as String),
-        servedDomains: json['servedDomains'] == null
-            ? null
-            : (json['servedDomains'] as List<dynamic>)
-                .map((e) => e as String)
-                .toList(),
+        servedDomains: (json['servedDomains'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
         enabledMethods: json['enabledMethods'] == null
             ? null
             : (json['enabledMethods'] as List<dynamic>)
@@ -173,9 +171,9 @@ class ServiceInstance {
   /// control plane's configured window.
   final ServiceInstanceStatus status;
 
-  /// Hosting domains the instance has acknowledged serving. Empty for an instance that
-  /// serves none; always present on a `server`.
-  final List<String>? servedDomains;
+  /// Hosting domains the instance has acknowledged serving. Always present — empty for
+  /// an instance that serves none, which includes every `witness` and `watcher`.
+  final List<String> servedDomains;
 
   /// DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at
   /// registration.
@@ -210,7 +208,7 @@ class ServiceInstance {
         if (label != null) 'label': label!,
         if (publicUrl != null) 'publicUrl': publicUrl!,
         'status': status.value,
-        if (servedDomains != null) 'servedDomains': servedDomains!,
+        'servedDomains': servedDomains,
         if (enabledMethods != null) 'enabledMethods': enabledMethods!,
         if (advertisedServices != null)
           'advertisedServices': advertisedServices!,

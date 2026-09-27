@@ -346,7 +346,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetAcr {
 ///  ],
 ///  "properties": {
 ///    "approveRequest": {
-///      "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.",
+///      "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.",
 ///      "type": "object",
 ///      "required": [
 ///        "id",
@@ -357,10 +357,45 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetAcr {
 ///        "type"
 ///      ],
 ///      "properties": {
+///        "expiresAt": {
+///          "type": "string",
+///          "format": "date-time"
+///        },
+///        "ext": {
+///          "$ref": "#/definitions/Ext"
+///        },
+///        "id": {
+///          "type": "string",
+///          "minLength": 1
+///        },
+///        "issuedAt": {
+///          "type": "string",
+///          "format": "date-time"
+///        },
+///        "issuer": {
+///          "type": "string",
+///          "minLength": 1
+///        },
+///        "payload": {
+///          "description": "The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape."
+///        },
+///        "proof": {
+///          "description": "A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.",
+///          "type": "object"
+///        },
+///        "recipient": {
+///          "type": "string",
+///          "minLength": 1
+///        },
+///        "threadId": {
+///          "type": "string",
+///          "minLength": 1
+///        },
 ///        "type": {
 ///          "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.3"
 ///        }
-///      }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
@@ -385,13 +420,13 @@ impl Response {
         Default::default()
     }
 }
-///A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.
+///A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.",
+///  "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.",
 ///  "type": "object",
 ///  "required": [
 ///    "id",
@@ -402,27 +437,357 @@ impl Response {
 ///    "type"
 ///  ],
 ///  "properties": {
+///    "expiresAt": {
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "ext": {
+///      "$ref": "#/definitions/Ext"
+///    },
+///    "id": {
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "issuedAt": {
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "issuer": {
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "payload": {
+///      "description": "The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape."
+///    },
+///    "proof": {
+///      "description": "A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.",
+///      "type": "object"
+///    },
+///    "recipient": {
+///      "type": "string",
+///      "minLength": 1
+///    },
+///    "threadId": {
+///      "type": "string",
+///      "minLength": 1
+///    },
 ///    "type": {
 ///      "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.3"
 ///    }
-///  }
+///  },
+///  "additionalProperties": false
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ResponseApproveRequest {
-    pub id: ::serde_json::Value,
-    pub issuer: ::serde_json::Value,
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    pub id: ResponseApproveRequestId,
+    #[serde(
+        rename = "issuedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub issued_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub issuer: ResponseApproveRequestIssuer,
+    ///The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape.
     pub payload: ::serde_json::Value,
-    pub proof: ::serde_json::Value,
-    pub recipient: ::serde_json::Value,
+    ///A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.
+    pub proof: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub recipient: ResponseApproveRequestRecipient,
+    #[serde(
+        rename = "threadId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub thread_id: ::std::option::Option<ResponseApproveRequestThreadId>,
     #[serde(rename = "type")]
     pub type_: ::serde_json::Value,
 }
 impl ResponseApproveRequest {
     pub fn builder() -> builder::ResponseApproveRequest {
         Default::default()
+    }
+}
+///`ResponseApproveRequestId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseApproveRequestId(::std::string::String);
+impl ::std::ops::Deref for ResponseApproveRequestId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseApproveRequestId> for ::std::string::String {
+    fn from(value: ResponseApproveRequestId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseApproveRequestId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseApproveRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseApproveRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseApproveRequestId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`ResponseApproveRequestIssuer`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseApproveRequestIssuer(::std::string::String);
+impl ::std::ops::Deref for ResponseApproveRequestIssuer {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseApproveRequestIssuer> for ::std::string::String {
+    fn from(value: ResponseApproveRequestIssuer) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseApproveRequestIssuer {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseApproveRequestIssuer {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseApproveRequestIssuer {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseApproveRequestIssuer {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestIssuer {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`ResponseApproveRequestRecipient`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseApproveRequestRecipient(::std::string::String);
+impl ::std::ops::Deref for ResponseApproveRequestRecipient {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseApproveRequestRecipient> for ::std::string::String {
+    fn from(value: ResponseApproveRequestRecipient) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseApproveRequestRecipient {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseApproveRequestRecipient {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseApproveRequestRecipient {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseApproveRequestRecipient {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestRecipient {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`ResponseApproveRequestThreadId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseApproveRequestThreadId(::std::string::String);
+impl ::std::ops::Deref for ResponseApproveRequestThreadId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseApproveRequestThreadId> for ::std::string::String {
+    fn from(value: ResponseApproveRequestThreadId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseApproveRequestThreadId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseApproveRequestThreadId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseApproveRequestThreadId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseApproveRequestThreadId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestThreadId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 /// Types for composing complex structures.
@@ -551,29 +916,72 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ResponseApproveRequest {
-        id: ::std::result::Result<::serde_json::Value, ::std::string::String>,
-        issuer: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        id: ::std::result::Result<super::ResponseApproveRequestId, ::std::string::String>,
+        issued_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        issuer: ::std::result::Result<super::ResponseApproveRequestIssuer, ::std::string::String>,
         payload: ::std::result::Result<::serde_json::Value, ::std::string::String>,
-        proof: ::std::result::Result<::serde_json::Value, ::std::string::String>,
-        recipient: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+        proof: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        recipient:
+            ::std::result::Result<super::ResponseApproveRequestRecipient, ::std::string::String>,
+        thread_id: ::std::result::Result<
+            ::std::option::Option<super::ResponseApproveRequestThreadId>,
+            ::std::string::String,
+        >,
         type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
     }
     impl ::std::default::Default for ResponseApproveRequest {
         fn default() -> Self {
             Self {
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
                 id: Err("no value supplied for id".to_string()),
+                issued_at: Ok(Default::default()),
                 issuer: Err("no value supplied for issuer".to_string()),
                 payload: Err("no value supplied for payload".to_string()),
                 proof: Err("no value supplied for proof".to_string()),
                 recipient: Err("no value supplied for recipient".to_string()),
+                thread_id: Ok(Default::default()),
                 type_: Err("no value supplied for type_".to_string()),
             }
         }
     }
     impl ResponseApproveRequest {
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
         pub fn id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<super::ResponseApproveRequestId>,
             T::Error: ::std::fmt::Display,
         {
             self.id = value
@@ -581,9 +989,21 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for id: {e}"));
             self
         }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
         pub fn issuer<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<super::ResponseApproveRequestIssuer>,
             T::Error: ::std::fmt::Display,
         {
             self.issuer = value
@@ -603,7 +1023,9 @@ pub mod builder {
         }
         pub fn proof<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
             T::Error: ::std::fmt::Display,
         {
             self.proof = value
@@ -613,12 +1035,24 @@ pub mod builder {
         }
         pub fn recipient<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::serde_json::Value>,
+            T: ::std::convert::TryInto<super::ResponseApproveRequestRecipient>,
             T::Error: ::std::fmt::Display,
         {
             self.recipient = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for recipient: {e}"));
+            self
+        }
+        pub fn thread_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::ResponseApproveRequestThreadId>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.thread_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for thread_id: {e}"));
             self
         }
         pub fn type_<T>(mut self, value: T) -> Self
@@ -638,11 +1072,15 @@ pub mod builder {
             value: ResponseApproveRequest,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                expires_at: value.expires_at?,
+                ext: value.ext?,
                 id: value.id?,
+                issued_at: value.issued_at?,
                 issuer: value.issuer?,
                 payload: value.payload?,
                 proof: value.proof?,
                 recipient: value.recipient?,
+                thread_id: value.thread_id?,
                 type_: value.type_?,
             })
         }
@@ -650,11 +1088,15 @@ pub mod builder {
     impl ::std::convert::From<super::ResponseApproveRequest> for ResponseApproveRequest {
         fn from(value: super::ResponseApproveRequest) -> Self {
             Self {
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
                 id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
                 issuer: Ok(value.issuer),
                 payload: Ok(value.payload),
                 proof: Ok(value.proof),
                 recipient: Ok(value.recipient),
+                thread_id: Ok(value.thread_id),
                 type_: Ok(value.type_),
             }
         }
@@ -666,7 +1108,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approveRequest\": {\n          \"description\": \"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.\",\n          \"properties\": {\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.3\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approveRequest\"\n      ],\n      \"title\": \"Auth Step-up Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"sessionId\": {\n      \"description\": \"The relying-party session to elevate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"targetAcr\": {\n      \"description\": \"The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"sessionId\"\n  ],\n  \"title\": \"Auth Step-up Start — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approveRequest\": {\n          \"additionalProperties\": false,\n          \"description\": \"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"ext\": {\n              \"$ref\": \"#/$defs/Ext\"\n            },\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"issuer\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"payload\": {\n              \"description\": \"The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape.\"\n            },\n            \"proof\": {\n              \"description\": \"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.\",\n              \"type\": \"object\"\n            },\n            \"recipient\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"threadId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.3\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approveRequest\"\n      ],\n      \"title\": \"Auth Step-up Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"sessionId\": {\n      \"description\": \"The relying-party session to elevate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"targetAcr\": {\n      \"description\": \"The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"sessionId\"\n  ],\n  \"title\": \"Auth Step-up Start — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -675,7 +1117,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approveRequest\": {\n          \"description\": \"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.\",\n          \"properties\": {\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.3\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approveRequest\"\n      ],\n      \"title\": \"Auth Step-up Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approveRequest\": {\n          \"additionalProperties\": false,\n          \"description\": \"A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"ext\": {\n              \"$ref\": \"#/$defs/Ext\"\n            },\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"issuer\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"payload\": {\n              \"description\": \"The auth/step-up/approve-request/0.3 payload, opaque here — see that spec for its shape.\"\n            },\n            \"proof\": {\n              \"description\": \"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.\",\n              \"type\": \"object\"\n            },\n            \"recipient\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"threadId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.3\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approveRequest\"\n      ],\n      \"title\": \"Auth Step-up Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

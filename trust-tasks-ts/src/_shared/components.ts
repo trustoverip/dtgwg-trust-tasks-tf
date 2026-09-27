@@ -2778,6 +2778,43 @@ export interface GitNamespace {
   state: "pending" | "bound";
 }
 /**
+ * One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.
+ */
+export interface Histogram {
+  /**
+   * The histogram's stable name (e.g. `did_hosting_resolve_seconds`).
+   */
+  name: string;
+  /**
+   * Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.
+   */
+  labels?: {
+    [k: string]: string | undefined;
+  };
+  /**
+   * Total number of observations.
+   */
+  count: number;
+  /**
+   * Sum of all observed values.
+   */
+  sum: number;
+  /**
+   * Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.
+   */
+  buckets: HistogramBucket[];
+}
+export interface HistogramBucket {
+  /**
+   * Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.
+   */
+  le: number;
+  /**
+   * Number of observations at or below `le`.
+   */
+  count: number;
+}
+/**
  * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
  *
  * No open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.
@@ -3247,6 +3284,44 @@ export interface MessageMeta {
    * When the message was first handed to the recipient. Present only when deliveryState is `delivered`.
    */
   deliveredAt?: string;
+}
+/**
+ * One counter or gauge reading.
+ */
+export interface Metric {
+  /**
+   * The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.
+   */
+  name: string;
+  /**
+   * The current reading.
+   */
+  value: number;
+  /**
+   * Dimensions the value is broken down by (e.g. `{"method": "resolve"}`). Absent or empty when the metric carries none.
+   */
+  labels?: {
+    [k: string]: string | undefined;
+  };
+}
+export interface MetricsSnapshot {
+  /**
+   * When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.
+   */
+  takenAt: string;
+  /**
+   * Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell "no counters" from "the field was dropped".
+   */
+  counters: Metric[];
+  /**
+   * Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.
+   */
+  gauges: Metric[];
+  /**
+   * Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.
+   */
+  histograms: Histogram[];
+  ext?: Ext;
 }
 /**
  * One observed step in the life of one message at the mediator. Carries metadata only — never a message body.
@@ -4542,9 +4617,9 @@ export interface ServiceInstance_DidManagementV0_2 {
    */
   status: "active" | "degraded" | "unreachable";
   /**
-   * Hosting domains the instance has acknowledged serving. Empty for an instance that serves none; always present on a `server`.
+   * Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.
    */
-  servedDomains?: string[];
+  servedDomains: string[];
   /**
    * DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.
    */
