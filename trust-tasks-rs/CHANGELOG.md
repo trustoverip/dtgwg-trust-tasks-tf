@@ -31,6 +31,23 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.24.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.0...trust-tasks-rs-v0.24.1) — 2026-09-27
+
+
+### Specifications
+
+- **vault/sign-trust-task**: The proof purpose follows the document type ([#667](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/667))
+
+* spec(vault/sign-trust-task): the proof purpose follows the document type
+
+  An operational document is signed for authentication; assertionMethod only
+  for types whose specification defines them as the issuer's attestation
+  (approve-response, task-consent/decision, confirm/response). The maintainer
+  decides it from type, never the consumer. Aligns 0.1 and 0.2 with the
+  framework's proof-purpose rule.
+
+
+
 ## [0.24.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.23.6...trust-tasks-rs-v0.24.0) — 2026-09-27
 
 

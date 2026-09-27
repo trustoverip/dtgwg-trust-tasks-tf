@@ -11,6 +11,21 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.8 — 2026-09-27
+
+
+### Specifications
+
+- **vault/sign-trust-task**: The proof purpose follows the document type (#667)
+
+* spec(vault/sign-trust-task): the proof purpose follows the document type
+
+  An operational document is signed for authentication; assertionMethod only
+  for types whose specification defines them as the issuer's attestation
+  (approve-response, task-consent/decision, confirm/response). The maintainer
+  decides it from type, never the consumer. Aligns 0.1 and 0.2 with the
+  framework's proof-purpose rule.
+
 ## 0.3.7 — 2026-09-27
 
 

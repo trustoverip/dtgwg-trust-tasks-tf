@@ -11,6 +11,21 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.21.8 — 2026-09-27
+
+
+### Specifications
+
+- **vault/sign-trust-task**: The proof purpose follows the document type (#667)
+
+* spec(vault/sign-trust-task): the proof purpose follows the document type
+
+  An operational document is signed for authentication; assertionMethod only
+  for types whose specification defines them as the issuer's attestation
+  (approve-response, task-consent/decision, confirm/response). The maintainer
+  decides it from type, never the consumer. Aligns 0.1 and 0.2 with the
+  framework's proof-purpose rule.
+
 ## 0.21.7 — 2026-09-27
 
 
