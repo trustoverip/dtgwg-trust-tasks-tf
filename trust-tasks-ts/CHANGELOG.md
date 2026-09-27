@@ -11,6 +11,60 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.21.4 — 2026-09-27
+
+
+### Added
+
+- **git-ns**: Administrator reads — view 0.5, namespace/list and repo/list (#659)
+
+* feat(git-ns): administrator reads — view 0.5, namespace/list and repo/list
+
+  Three signed read tasks replace the bearer-authenticated administrator
+  views VTCs served beside git-ns/view:
+
+  - git-ns/view/0.5 adds scope: administrator (everything in the
+    namespaces the caller administers, reasons included) and
+    breakGlass: true (narrow to break-glass records). The response is
+    0.4's.
+  - git-ns/namespace/list/0.1 lists administered namespaces with admins,
+    repository count, bridge, role map and forge status.
+  - git-ns/repo/list/0.1 lists repositories in administered namespaces
+    with owners, right counts, bootstrap, sync and the bridge's report.
+
+  Proof REQUIRED on all three; no side effects. Authority is the
+  community-administrator capability (every namespace) or a live explicit
+  git.ns.admin (that namespace); each declares notAdministrator, answered
+  alike for an unknown namespace and one the caller does not administer.
+
+- **auth/passkey**: An administrator lists one member's passkeys (admin-list 0.1) (#658)
+
+auth/passkey/list lists only the signer's own credentials and refuses a
+  subject in the payload, so no task let an administrator see which step-up
+  passkeys a member holds — and so which credentialId to hand to
+  auth/passkey/revoke/start 0.2.
+
+  auth/passkey/admin-list 0.1:
+
+  - Proof REQUIRED: the administrator is the issuer. The subject and a purpose
+    (session | stepUp, no default) are named in the payload, and are a request,
+    never a grant: the consumer authorises the administrator over that subject
+    from its own state.
+  - Refusals, in order: notAdministrator (before the subject is looked at);
+    subjectUnknown, also for a subject outside the administrator's authority,
+    so the code is no oracle; purposeNotSupported; subjectNotMember.
+  - The response is { subject, purpose, credentials }, each a ListedCredential
+    of credentialId, deviceLabel, registeredAt, lastUsedAt and signCount — no
+    key material, no public key, no attestation, additionalProperties false.
+    The counter is disclosed to the administrator, as the operator who acts on
+    a cloning signal.
+  - sideEffects none: listing touches no counter and no last-used time.
+  - Privacy: only administrators with authority over the subject; the family
+    audits writes, not reads, and a consumer that audits administrative reads
+    SHOULD include this one.
+
+  Rust, TypeScript, Go and Dart bindings regenerated.
+
 ## 0.21.3 — 2026-09-26
 
 
