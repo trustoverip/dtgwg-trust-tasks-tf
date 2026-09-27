@@ -59,111 +59,6 @@ class TeeStatus {
       };
 }
 
-/// The kind of deployment an agent's state lives in, as a backup restore classifies
-/// it: plain (an unencrypted store), hardened (the store encrypted under a key derived
-/// from the agent's seed), or tee (seed and signing keys sealed to an attested trusted
-/// execution environment).
-///
-/// An extension type rather than an enum: a value from a newer MINOR of this
-/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
-/// Compare against the constants below, and treat anything else as unrecognised.
-extension type const DeploymentEnvironment(String value) {
-  static const DeploymentEnvironment plain = DeploymentEnvironment('plain');
-  static const DeploymentEnvironment hardened =
-      DeploymentEnvironment('hardened');
-  static const DeploymentEnvironment tee = DeploymentEnvironment('tee');
-
-  /// Every value this specification's schema permits.
-  static const List<DeploymentEnvironment> values = <DeploymentEnvironment>[
-    plain,
-    hardened,
-    tee
-  ];
-}
-
-/// The backup restore the agent's current state derives from. Present on every
-/// response from an agent whose state was restored, for as long as that state
-/// persists.
-class RestoredFrom {
-  const RestoredFrom({
-    required this.appliedAt,
-    required this.stagedAt,
-    required this.stagedBy,
-    this.sourceDid,
-    this.sourceEnvironment,
-    required this.targetEnvironment,
-    this.internalKeysLost,
-    this.hostedDidsDetached,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory RestoredFrom.fromJson(Map<String, dynamic> json) => RestoredFrom(
-        appliedAt: json['appliedAt'] as String,
-        stagedAt: json['stagedAt'] as String,
-        stagedBy: json['stagedBy'] as String,
-        sourceDid: json['sourceDid'] as String?,
-        sourceEnvironment: json['sourceEnvironment'] == null
-            ? null
-            : DeploymentEnvironment(json['sourceEnvironment'] as String),
-        targetEnvironment:
-            DeploymentEnvironment(json['targetEnvironment'] as String),
-        internalKeysLost: json['internalKeysLost'] == null
-            ? null
-            : (json['internalKeysLost'] as List<dynamic>)
-                .map((e) => e as String)
-                .toList(),
-        hostedDidsDetached: json['hostedDidsDetached'] == null
-            ? null
-            : (json['hostedDidsDetached'] as List<dynamic>)
-                .map((e) => e as String)
-                .toList(),
-      );
-
-  /// When the restored state was applied — the boot at which it replaced the agent's
-  /// previous state.
-  final String appliedAt;
-
-  /// When the restore was committed and staged for the next boot.
-  final String stagedAt;
-
-  /// The DID of the administrator who committed the restore.
-  final String stagedBy;
-
-  /// The DID of the agent the backup was taken from, when the backup records one.
-  /// Differs from the responding agent's own DID when a restore replaced its identity.
-  final String? sourceDid;
-
-  /// The kind of deployment the backup was taken from, when the backup records it.
-  final DeploymentEnvironment? sourceEnvironment;
-
-  /// The kind of deployment the restore was applied to — this agent's.
-  final DeploymentEnvironment targetEnvironment;
-
-  /// Identifiers of keys whose records came back without their material: keys the agent
-  /// generated internally and never exports, so no backup carries them. Absent when none
-  /// were lost.
-  final List<String>? internalKeysLost;
-
-  /// DIDs whose hosting registrations the restore detached because it replaced a
-  /// different identity; each must be registered with its host again. Absent when none
-  /// were.
-  final List<String>? hostedDidsDetached;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'appliedAt': appliedAt,
-        'stagedAt': stagedAt,
-        'stagedBy': stagedBy,
-        if (sourceDid != null) 'sourceDid': sourceDid!,
-        if (sourceEnvironment != null)
-          'sourceEnvironment': sourceEnvironment!.value,
-        'targetEnvironment': targetEnvironment.value,
-        if (internalKeysLost != null) 'internalKeysLost': internalKeysLost!,
-        if (hostedDidsDetached != null)
-          'hostedDidsDetached': hostedDidsDetached!,
-      };
-}
-
 /// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
 /// reverse-DNS namespace; structure under each namespace is opaque to the framework.
 typedef Ext = Map<String, dynamic>;
@@ -181,27 +76,26 @@ extension type const ResponseStatus(String value) {
   static const List<ResponseStatus> values = <ResponseStatus>[ok];
 }
 
-/// The agent's report on its own deployment, carried in a Trust Task document whose
-/// type is https://trusttasks.org/spec/vta/health/details/0.1#response. Failures use
-/// trust-task-error, not this shape.
+/// The agent's public report on its own deployment, carried in a Trust Task document
+/// whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed
+/// for every asker. It MUST NOT carry the software version or the restore record, and
+/// additionalProperties: false means it cannot: those are served only by
+/// vta/restore/status. Failures use trust-task-error, not this shape.
 class Response {
   const Response({
     required this.status,
-    required this.version,
     this.mediatorUrl,
     this.mediatorDid,
     this.teeStatus,
     required this.sealed,
     required this.storageEncrypted,
     required this.tspEnabled,
-    this.restored,
     this.ext,
   });
 
   /// Read this payload from a decoded JSON object.
   factory Response.fromJson(Map<String, dynamic> json) => Response(
         status: ResponseStatus(json['status'] as String),
-        version: json['version'] as String,
         mediatorUrl: json['mediatorUrl'] as String?,
         mediatorDid: json['mediatorDid'] as String?,
         teeStatus: json['teeStatus'] == null
@@ -210,18 +104,12 @@ class Response {
         sealed: json['sealed'] as bool,
         storageEncrypted: json['storageEncrypted'] as bool,
         tspEnabled: json['tspEnabled'] as bool,
-        restored: json['restored'] == null
-            ? null
-            : RestoredFrom.fromJson(json['restored'] as Map<String, dynamic>),
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
   /// The agent's overall health. `ok` is the only value this version defines: an agent
   /// able to answer is serving.
   final ResponseStatus status;
-
-  /// The agent's software version, as its build reports it.
-  final String version;
 
   /// The endpoint of the mediator the agent's messaging routes through. Absent when the
   /// agent has no messaging configured.
@@ -248,34 +136,28 @@ class Response {
   /// reported.
   final bool tspEnabled;
 
-  /// Present when the agent's state derives from a backup restore: when, by whom, from
-  /// which agent and kind of deployment, and what did not come back. Absent when the
-  /// agent's state was never restored.
-  final RestoredFrom? restored;
-
   /// Ecosystem-defined extension members per SPEC.md §4.5.1.
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'status': status.value,
-        'version': version,
         if (mediatorUrl != null) 'mediatorUrl': mediatorUrl!,
         if (mediatorDid != null) 'mediatorDid': mediatorDid!,
         if (teeStatus != null) 'teeStatus': teeStatus!.toJson(),
         'sealed': sealed,
         'storageEncrypted': storageEncrypted,
         'tspEnabled': tspEnabled,
-        if (restored != null) 'restored': restored!.toJson(),
         if (ext != null) 'ext': ext!,
       };
 }
 
-/// Asks a Verifiable Trust Agent for its deployment health: version, messaging
-/// configuration, seal and storage-encryption state, trusted-execution status, and
-/// whether its state derives from a backup restore. The payload carries nothing. The
-/// outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof)
-/// are owned by the framework — SPEC §6.3.
+/// Asks a Verifiable Trust Agent for its public health flags: messaging configuration,
+/// seal and storage-encryption state, trusted-execution status and transport
+/// advertisement. Deliberately carries neither the software version nor the restore
+/// record — see vta/restore/status. The payload carries nothing. The outer document
+/// members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
+/// framework — SPEC §6.3.
 class Payload {
   const Payload({
     this.ext,
@@ -310,11 +192,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vta/health/details/0.1","title":"VTA Health — Details — payload","description":"Asks a Verifiable Trust Agent for its deployment health: version, messaging configuration, seal and storage-encryption state, trusted-execution status, and whether its state derives from a backup restore. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"properties":{"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"TeeStatus":{"title":"TeeStatus","description":"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.","type":"object","additionalProperties":false,"required":["teeType","detected"],"properties":{"teeType":{"type":"string","enum":["nitro","sev-snp","simulated"],"description":"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept)."},"detected":{"type":"boolean","description":"Whether the agent found the platform at boot. False means it was configured for one it did not find."},"platformVersion":{"type":"string","minLength":1,"maxLength":256,"description":"The platform\'s own version string, when it reports one. Informational."}}},"DeploymentEnvironment":{"title":"DeploymentEnvironment","description":"The kind of deployment an agent\'s state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent\'s seed), or tee (seed and signing keys sealed to an attested trusted execution environment).","type":"string","enum":["plain","hardened","tee"]},"RestoredFrom":{"title":"RestoredFrom","description":"The backup restore the agent\'s current state derives from. Present on every response from an agent whose state was restored, for as long as that state persists.","type":"object","additionalProperties":false,"required":["appliedAt","stagedAt","stagedBy","targetEnvironment"],"properties":{"appliedAt":{"type":"string","format":"date-time","description":"When the restored state was applied — the boot at which it replaced the agent\'s previous state."},"stagedAt":{"type":"string","format":"date-time","description":"When the restore was committed and staged for the next boot."},"stagedBy":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of the administrator who committed the restore."},"sourceDid":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent\'s own DID when a restore replaced its identity."},"sourceEnvironment":{"\$ref":"#/\$defs/DeploymentEnvironment","description":"The kind of deployment the backup was taken from, when the backup records it."},"targetEnvironment":{"\$ref":"#/\$defs/DeploymentEnvironment","description":"The kind of deployment the restore was applied to — this agent\'s."},"internalKeysLost":{"type":"array","items":{"type":"string","minLength":1,"maxLength":256},"maxItems":10000,"description":"Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost."},"hostedDidsDetached":{"type":"array","items":{"type":"string","pattern":"^did:","maxLength":2048},"maxItems":10000,"description":"DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were."}}},"Response":{"\$anchor":"response","title":"VTA Health Details — response payload","description":"The agent\'s report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["status","version","sealed","storageEncrypted","tspEnabled"],"properties":{"status":{"type":"string","enum":["ok"],"description":"The agent\'s overall health. `ok` is the only value this version defines: an agent able to answer is serving."},"version":{"type":"string","minLength":1,"maxLength":64,"description":"The agent\'s software version, as its build reports it."},"mediatorUrl":{"type":"string","format":"uri","maxLength":2048,"description":"The endpoint of the mediator the agent\'s messaging routes through. Absent when the agent has no messaging configured."},"mediatorDid":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured."},"teeStatus":{"\$ref":"#/\$defs/TeeStatus","description":"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider."},"sealed":{"type":"boolean","description":"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks."},"storageEncrypted":{"type":"boolean","description":"Whether the agent\'s key store is encrypted at rest."},"tspEnabled":{"type":"boolean","description":"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported."},"restored":{"\$ref":"#/\$defs/RestoredFrom","description":"Present when the agent\'s state derives from a backup restore: when, by whom, from which agent and kind of deployment, and what did not come back. Absent when the agent\'s state was never restored."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vta/health/details/0.1","title":"VTA Health — Details — payload","description":"Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"properties":{"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}},"\$defs":{"TeeStatus":{"title":"TeeStatus","description":"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.","type":"object","additionalProperties":false,"required":["teeType","detected"],"properties":{"teeType":{"type":"string","enum":["nitro","sev-snp","simulated"],"description":"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept)."},"detected":{"type":"boolean","description":"Whether the agent found the platform at boot. False means it was configured for one it did not find."},"platformVersion":{"type":"string","minLength":1,"maxLength":256,"description":"The platform\'s own version string, when it reports one. Informational."}}},"Response":{"\$anchor":"response","title":"VTA Health Details — response payload","description":"The agent\'s public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["status","sealed","storageEncrypted","tspEnabled"],"properties":{"status":{"type":"string","enum":["ok"],"description":"The agent\'s overall health. `ok` is the only value this version defines: an agent able to answer is serving."},"mediatorUrl":{"type":"string","format":"uri","maxLength":2048,"description":"The endpoint of the mediator the agent\'s messaging routes through. Absent when the agent has no messaging configured."},"mediatorDid":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured."},"teeStatus":{"\$ref":"#/\$defs/TeeStatus","description":"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider."},"sealed":{"type":"boolean","description":"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks."},"storageEncrypted":{"type":"boolean","description":"Whether the agent\'s key store is encrypted at rest."},"tspEnabled":{"type":"boolean","description":"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"TeeStatus":{"title":"TeeStatus","description":"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.","type":"object","additionalProperties":false,"required":["teeType","detected"],"properties":{"teeType":{"type":"string","enum":["nitro","sev-snp","simulated"],"description":"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept)."},"detected":{"type":"boolean","description":"Whether the agent found the platform at boot. False means it was configured for one it did not find."},"platformVersion":{"type":"string","minLength":1,"maxLength":256,"description":"The platform\'s own version string, when it reports one. Informational."}}},"DeploymentEnvironment":{"title":"DeploymentEnvironment","description":"The kind of deployment an agent\'s state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent\'s seed), or tee (seed and signing keys sealed to an attested trusted execution environment).","type":"string","enum":["plain","hardened","tee"]},"RestoredFrom":{"title":"RestoredFrom","description":"The backup restore the agent\'s current state derives from. Present on every response from an agent whose state was restored, for as long as that state persists.","type":"object","additionalProperties":false,"required":["appliedAt","stagedAt","stagedBy","targetEnvironment"],"properties":{"appliedAt":{"type":"string","format":"date-time","description":"When the restored state was applied — the boot at which it replaced the agent\'s previous state."},"stagedAt":{"type":"string","format":"date-time","description":"When the restore was committed and staged for the next boot."},"stagedBy":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of the administrator who committed the restore."},"sourceDid":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent\'s own DID when a restore replaced its identity."},"sourceEnvironment":{"\$ref":"#/\$defs/DeploymentEnvironment","description":"The kind of deployment the backup was taken from, when the backup records it."},"targetEnvironment":{"\$ref":"#/\$defs/DeploymentEnvironment","description":"The kind of deployment the restore was applied to — this agent\'s."},"internalKeysLost":{"type":"array","items":{"type":"string","minLength":1,"maxLength":256},"maxItems":10000,"description":"Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost."},"hostedDidsDetached":{"type":"array","items":{"type":"string","pattern":"^did:","maxLength":2048},"maxItems":10000,"description":"DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were."}}},"Response":{"\$anchor":"response","title":"VTA Health Details — response payload","description":"The agent\'s report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["status","version","sealed","storageEncrypted","tspEnabled"],"properties":{"status":{"type":"string","enum":["ok"],"description":"The agent\'s overall health. `ok` is the only value this version defines: an agent able to answer is serving."},"version":{"type":"string","minLength":1,"maxLength":64,"description":"The agent\'s software version, as its build reports it."},"mediatorUrl":{"type":"string","format":"uri","maxLength":2048,"description":"The endpoint of the mediator the agent\'s messaging routes through. Absent when the agent has no messaging configured."},"mediatorDid":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured."},"teeStatus":{"\$ref":"#/\$defs/TeeStatus","description":"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider."},"sealed":{"type":"boolean","description":"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks."},"storageEncrypted":{"type":"boolean","description":"Whether the agent\'s key store is encrypted at rest."},"tspEnabled":{"type":"boolean","description":"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported."},"restored":{"\$ref":"#/\$defs/RestoredFrom","description":"Present when the agent\'s state derives from a backup restore: when, by whom, from which agent and kind of deployment, and what did not come back. Absent when the agent\'s state was never restored."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"TeeStatus":{"title":"TeeStatus","description":"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.","type":"object","additionalProperties":false,"required":["teeType","detected"],"properties":{"teeType":{"type":"string","enum":["nitro","sev-snp","simulated"],"description":"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept)."},"detected":{"type":"boolean","description":"Whether the agent found the platform at boot. False means it was configured for one it did not find."},"platformVersion":{"type":"string","minLength":1,"maxLength":256,"description":"The platform\'s own version string, when it reports one. Informational."}}},"Response":{"\$anchor":"response","title":"VTA Health Details — response payload","description":"The agent\'s public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.","type":"object","additionalProperties":false,"required":["status","sealed","storageEncrypted","tspEnabled"],"properties":{"status":{"type":"string","enum":["ok"],"description":"The agent\'s overall health. `ok` is the only value this version defines: an agent able to answer is serving."},"mediatorUrl":{"type":"string","format":"uri","maxLength":2048,"description":"The endpoint of the mediator the agent\'s messaging routes through. Absent when the agent has no messaging configured."},"mediatorDid":{"type":"string","pattern":"^did:","maxLength":2048,"description":"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured."},"teeStatus":{"\$ref":"#/\$defs/TeeStatus","description":"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider."},"sealed":{"type":"boolean","description":"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks."},"storageEncrypted":{"type":"boolean","description":"Whether the agent\'s key store is encrypted at rest."},"tspEnabled":{"type":"boolean","description":"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported."},"ext":{"\$ref":"#/\$defs/Ext","description":"Ecosystem-defined extension members per SPEC.md §4.5.1."}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

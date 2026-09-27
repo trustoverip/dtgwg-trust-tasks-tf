@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/restore/status/0.1",
+  "title": "VTA Restore — Status — payload",
+  "description": "An administrator asks a Verifiable Trust Agent whether its current state derives from a backup restore, and which software version it runs. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "DeploymentEnvironment": {
+      "title": "DeploymentEnvironment",
+      "description": "The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).",
+      "type": "string",
+      "enum": ["plain", "hardened", "tee"]
+    },
+    "RestoreRecord": {
+      "title": "RestoreRecord",
+      "description": "The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appliedAt", "stagedAt", "stagedBy", "targetEnvironment"],
+      "properties": {
+        "appliedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the restored state was applied — the boot at which it replaced the agent's previous state."
+        },
+        "stagedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the restore was committed and staged for the next boot."
+        },
+        "stagedBy": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The DID of the administrator who committed the restore."
+        },
+        "sourceDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity."
+        },
+        "sourceEnvironment": { "$ref": "#/$defs/DeploymentEnvironment" },
+        "targetEnvironment": { "$ref": "#/$defs/DeploymentEnvironment" },
+        "internalKeysLost": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "maxItems": 10000,
+          "description": "Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost."
+        },
+        "hostedDidsDetached": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^did:", "maxLength": 2048 },
+          "maxItems": 10000,
+          "description": "DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Restore Status — response payload",
+      "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "restored"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The agent's software version, as its build reports it."
+        },
+        "restored": {
+          "type": "boolean",
+          "description": "Whether the agent's current state derives from a backup restore. Always present, so 'not restored' is stated rather than inferred from an absent member. True exactly when `restore` is present."
+        },
+        "restore": {
+          "$ref": "#/$defs/RestoreRecord",
+          "description": "The restore the agent's current state derives from. Present exactly when `restored` is true."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

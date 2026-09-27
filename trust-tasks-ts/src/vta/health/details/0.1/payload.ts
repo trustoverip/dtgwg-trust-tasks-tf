@@ -7,16 +7,7 @@ import type { Ext } from "../../../../_shared/components.js";
 
 
 /**
- * The kind of deployment the backup was taken from, when the backup records it.
- */
-export type DeploymentEnvironment = "plain" | "hardened" | "tee";
-/**
- * The kind of deployment the restore was applied to — this agent's.
- */
-export type DeploymentEnvironment1 = "plain" | "hardened" | "tee";
-
-/**
- * Asks a Verifiable Trust Agent for its deployment health: version, messaging configuration, seal and storage-encryption state, trusted-execution status, and whether its state derives from a backup restore. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface VTAHealthDetailsPayload {
   /**
@@ -25,17 +16,13 @@ export interface VTAHealthDetailsPayload {
   ext?: Ext;
 }
 /**
- * The agent's report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Failures use trust-task-error, not this shape.
+ * The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.
  */
 export interface VTAHealthDetailsResponsePayload {
   /**
    * The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.
    */
   status: "ok";
-  /**
-   * The agent's software version, as its build reports it.
-   */
-  version: string;
   /**
    * The endpoint of the mediator the agent's messaging routes through. Absent when the agent has no messaging configured.
    */
@@ -57,7 +44,6 @@ export interface VTAHealthDetailsResponsePayload {
    * Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported.
    */
   tspEnabled: boolean;
-  restored?: RestoredFrom;
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
@@ -79,41 +65,6 @@ export interface TeeStatus {
    * The platform's own version string, when it reports one. Informational.
    */
   platformVersion?: string;
-}
-/**
- * Present when the agent's state derives from a backup restore: when, by whom, from which agent and kind of deployment, and what did not come back. Absent when the agent's state was never restored.
- */
-export interface RestoredFrom {
-  /**
-   * When the restored state was applied — the boot at which it replaced the agent's previous state.
-   */
-  appliedAt: string;
-  /**
-   * When the restore was committed and staged for the next boot.
-   */
-  stagedAt: string;
-  /**
-   * The DID of the administrator who committed the restore.
-   */
-  stagedBy: string;
-  /**
-   * The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.
-   */
-  sourceDid?: string;
-  sourceEnvironment?: DeploymentEnvironment;
-  targetEnvironment: DeploymentEnvironment1;
-  /**
-   * Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.
-   *
-   * @maxItems 10000
-   */
-  internalKeysLost?: string[];
-  /**
-   * DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were.
-   *
-   * @maxItems 10000
-   */
-  hostedDidsDetached?: string[];
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
@@ -144,7 +95,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/health/details/0.1",
   "title": "VTA Health — Details — payload",
-  "description": "Asks a Verifiable Trust Agent for its deployment health: version, messaging configuration, seal and storage-encryption state, trusted-execution status, and whether its state derives from a backup restore. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -185,89 +136,14 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "DeploymentEnvironment": {
-      "title": "DeploymentEnvironment",
-      "description": "The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).",
-      "type": "string",
-      "enum": [
-        "plain",
-        "hardened",
-        "tee"
-      ]
-    },
-    "RestoredFrom": {
-      "title": "RestoredFrom",
-      "description": "The backup restore the agent's current state derives from. Present on every response from an agent whose state was restored, for as long as that state persists.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "appliedAt",
-        "stagedAt",
-        "stagedBy",
-        "targetEnvironment"
-      ],
-      "properties": {
-        "appliedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the restored state was applied — the boot at which it replaced the agent's previous state."
-        },
-        "stagedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the restore was committed and staged for the next boot."
-        },
-        "stagedBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The DID of the administrator who committed the restore."
-        },
-        "sourceDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity."
-        },
-        "sourceEnvironment": {
-          "$ref": "#/$defs/DeploymentEnvironment",
-          "description": "The kind of deployment the backup was taken from, when the backup records it."
-        },
-        "targetEnvironment": {
-          "$ref": "#/$defs/DeploymentEnvironment",
-          "description": "The kind of deployment the restore was applied to — this agent's."
-        },
-        "internalKeysLost": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          },
-          "maxItems": 10000,
-          "description": "Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost."
-        },
-        "hostedDidsDetached": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^did:",
-            "maxLength": 2048
-          },
-          "maxItems": 10000,
-          "description": "DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "VTA Health Details — response payload",
-      "description": "The agent's report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Failures use trust-task-error, not this shape.",
+      "description": "The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.",
       "type": "object",
       "additionalProperties": false,
       "required": [
         "status",
-        "version",
         "sealed",
         "storageEncrypted",
         "tspEnabled"
@@ -279,12 +155,6 @@ export const PAYLOAD_SCHEMA = {
             "ok"
           ],
           "description": "The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving."
-        },
-        "version": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The agent's software version, as its build reports it."
         },
         "mediatorUrl": {
           "type": "string",
@@ -313,10 +183,6 @@ export const PAYLOAD_SCHEMA = {
         "tspEnabled": {
           "type": "boolean",
           "description": "Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported."
-        },
-        "restored": {
-          "$ref": "#/$defs/RestoredFrom",
-          "description": "Present when the agent's state derives from a backup restore: when, by whom, from which agent and kind of deployment, and what did not come back. Absent when the agent's state was never restored."
         },
         "ext": {
           "$ref": "#/$defs/Ext",
@@ -373,89 +239,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "DeploymentEnvironment": {
-      "title": "DeploymentEnvironment",
-      "description": "The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).",
-      "type": "string",
-      "enum": [
-        "plain",
-        "hardened",
-        "tee"
-      ]
-    },
-    "RestoredFrom": {
-      "title": "RestoredFrom",
-      "description": "The backup restore the agent's current state derives from. Present on every response from an agent whose state was restored, for as long as that state persists.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "appliedAt",
-        "stagedAt",
-        "stagedBy",
-        "targetEnvironment"
-      ],
-      "properties": {
-        "appliedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the restored state was applied — the boot at which it replaced the agent's previous state."
-        },
-        "stagedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the restore was committed and staged for the next boot."
-        },
-        "stagedBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The DID of the administrator who committed the restore."
-        },
-        "sourceDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity."
-        },
-        "sourceEnvironment": {
-          "$ref": "#/$defs/DeploymentEnvironment",
-          "description": "The kind of deployment the backup was taken from, when the backup records it."
-        },
-        "targetEnvironment": {
-          "$ref": "#/$defs/DeploymentEnvironment",
-          "description": "The kind of deployment the restore was applied to — this agent's."
-        },
-        "internalKeysLost": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          },
-          "maxItems": 10000,
-          "description": "Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost."
-        },
-        "hostedDidsDetached": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^did:",
-            "maxLength": 2048
-          },
-          "maxItems": 10000,
-          "description": "DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "VTA Health Details — response payload",
-      "description": "The agent's report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Failures use trust-task-error, not this shape.",
+      "description": "The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.",
       "type": "object",
       "additionalProperties": false,
       "required": [
         "status",
-        "version",
         "sealed",
         "storageEncrypted",
         "tspEnabled"
@@ -467,12 +258,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "ok"
           ],
           "description": "The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving."
-        },
-        "version": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The agent's software version, as its build reports it."
         },
         "mediatorUrl": {
           "type": "string",
@@ -501,10 +286,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "tspEnabled": {
           "type": "boolean",
           "description": "Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported."
-        },
-        "restored": {
-          "$ref": "#/$defs/RestoredFrom",
-          "description": "Present when the agent's state derives from a backup restore: when, by whom, from which agent and kind of deployment, and what did not come back. Absent when the agent's state was never restored."
         },
         "ext": {
           "$ref": "#/$defs/Ext",

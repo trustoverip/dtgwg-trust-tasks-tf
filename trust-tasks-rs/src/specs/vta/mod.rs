@@ -10,5 +10,6 @@ pub mod health;
 pub mod management;
 pub mod memory;
 pub mod passkey_vms;
+pub mod restore;
 pub mod services;
 pub mod webvh;

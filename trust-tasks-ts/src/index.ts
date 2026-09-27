@@ -525,6 +525,7 @@ export * as VtaPasskeyVmsEnrollChallenge_v0_1 from "./vta/passkey-vms/enroll-cha
 export * as VtaPasskeyVmsEnrollSubmit_v0_1 from "./vta/passkey-vms/enroll-submit/0.1/payload.js";
 export * as VtaPasskeyVmsList_v0_1 from "./vta/passkey-vms/list/0.1/payload.js";
 export * as VtaPasskeyVmsRevoke_v0_1 from "./vta/passkey-vms/revoke/0.1/payload.js";
+export * as VtaRestoreStatus_v0_1 from "./vta/restore/status/0.1/payload.js";
 export * as VtaServicesDisable_v1_0 from "./vta/services/disable/1.0/payload.js";
 export * as VtaServicesDrainCancel_v1_0 from "./vta/services/drain/cancel/1.0/payload.js";
 export * as VtaServicesDrainList_v1_0 from "./vta/services/drain/list/1.0/payload.js";
