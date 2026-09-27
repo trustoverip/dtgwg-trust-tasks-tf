@@ -1,0 +1,6 @@
+[
+  { "note": "Missing domain.", "payload": { "instanceId": "did_webvh_node1_example_com" } },
+  { "note": "Missing instanceId.", "payload": { "domain": "did.example.com" } },
+  { "note": "Empty domain.", "payload": { "instanceId": "did_webvh_node1_example_com", "domain": "" } },
+  { "note": "A fleet-wide purge is did-management/domain/purge, not this task.", "payload": { "instanceId": "did_webvh_node1_example_com", "domain": "did.example.com", "allServers": true } }
+]

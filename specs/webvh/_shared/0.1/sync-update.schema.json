@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/webvh/_shared/0.1/sync-update",
+  "title": "SyncUpdate — shared definition for the webvh/sync/* spec family",
+  "description": "One did:webvh slot's complete current state, as a source replicates it to a replica. Used by webvh/sync/update/0.2 and by each entry of webvh/sync/batch/0.1. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "SyncUpdate": {
+      "title": "SyncUpdate",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mnemonic", "didId", "logContent", "versionCount", "disabled"],
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID)."
+        },
+        "didId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID."
+        },
+        "logContent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The slot's complete did.jsonl — one log entry per line — not a delta."
+        },
+        "witnessContent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means \"unchanged\"."
+        },
+        "versionCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of entries in `logContent`, as the source counts them. A replica MUST refuse an update whose `logContent` does not contain exactly this many entries."
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

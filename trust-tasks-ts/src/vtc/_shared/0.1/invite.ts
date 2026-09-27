@@ -14,4 +14,4 @@ export interface VTCSharedAdminInviteDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { InviteStatus, InviteSummary } from "../../../_shared/components.js";
+export type { InviteStatus, InviteSummary_VtcV0_1 as InviteSummary } from "../../../_shared/components.js";

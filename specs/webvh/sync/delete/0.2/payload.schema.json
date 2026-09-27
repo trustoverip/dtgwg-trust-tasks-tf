@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/webvh/sync/delete/0.2",
+  "title": "WebVH Sync Delete — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic"],
+  "properties": {
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The slot path the source no longer publishes."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH Sync Delete — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mnemonic", "status"],
+      "properties": {
+        "mnemonic": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["deleted", "absent"],
+          "description": "`deleted` — the replica held the slot and has removed it. `absent` — it held nothing for the slot; the delete is idempotent."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

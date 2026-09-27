@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/revoke/0.1",
+  "title": "Auth Passkey Invite Revoke — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["inviteId"],
+  "properties": {
+    "inviteId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "ext": { "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Invite Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inviteId", "revokedAt"],
+      "properties": {
+        "inviteId": { "type": "string" },
+        "revokedAt": { "type": "string", "format": "date-time" },
+        "ext": { "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

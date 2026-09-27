@@ -4,6 +4,7 @@ pub mod assign;
 pub mod create;
 pub mod disable;
 pub mod enable;
+pub mod list;
 pub mod purge;
 pub mod set_default;
 pub mod set_state;

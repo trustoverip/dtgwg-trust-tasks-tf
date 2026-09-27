@@ -1,0 +1,5 @@
+[
+  { "note": "Missing mnemonic.", "payload": {} },
+  { "note": "raw as a string.", "payload": { "mnemonic": "alice", "raw": "yes" } },
+  { "note": "Paging is not offered — the log is returned whole.", "payload": { "mnemonic": "alice", "fromVersion": 3 } }
+]

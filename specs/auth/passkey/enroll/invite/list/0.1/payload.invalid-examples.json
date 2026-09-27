@@ -1,0 +1,4 @@
+[
+  { "note": "includeExpired as a string.", "payload": { "includeExpired": "yes" } },
+  { "note": "Tokens are never re-disclosed, so there is nothing to ask for.", "payload": { "includeTokens": true } }
+]

@@ -1,0 +1,6 @@
+[
+  { "note": "Nothing to change.", "payload": { "inviteId": "inv_01J8Z6Q4M2" } },
+  { "note": "Both expiresAt and extendBy.", "payload": { "inviteId": "inv_01J8Z6Q4M2", "expiresAt": "2026-10-01T00:00:00Z", "extendBy": 3600 } },
+  { "note": "Missing inviteId.", "payload": { "role": "owner" } },
+  { "note": "extendBy zero.", "payload": { "inviteId": "inv_01J8Z6Q4M2", "extendBy": 0 } }
+]

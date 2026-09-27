@@ -1,0 +1,5 @@
+[
+  { "note": "Missing instanceId.", "payload": {} },
+  { "note": "Empty instanceId.", "payload": { "instanceId": "" } },
+  { "note": "Unknown member — the read takes no filter.", "payload": { "instanceId": "did_web_node1_example_com", "refresh": true } }
+]

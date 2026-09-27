@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/identity/list/0.1",
+  "title": "Identity List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Identity List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generations", "rotationGraceSeconds"],
+      "properties": {
+        "generations": {
+          "type": "array",
+          "description": "Every generation the service still honours, newest first. Exactly one is current. Empty when the service holds no rotating identity.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["generationId", "did", "current", "signingKeyId", "keyAgreementKeyId", "transports", "createdAt"],
+            "properties": {
+              "generationId": { "type": "integer", "minimum": 0 },
+              "did": { "type": "string", "minLength": 1 },
+              "current": { "type": "boolean", "description": "True for the generation the DID document currently advertises." },
+              "signingKeyId": { "type": "string", "minLength": 1, "description": "Verification-method id of the generation's signing key, as the DID document names it. Public; never key material." },
+              "keyAgreementKeyId": { "type": "string", "minLength": 1 },
+              "mediatorDid": { "type": "string", "description": "The mediator the generation was reached through. Absent for one reached without a mediator." },
+              "transports": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["tsp", "didcomm"],
+                "properties": { "tsp": { "type": "boolean" }, "didcomm": { "type": "boolean" } }
+              },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "retiredAt": { "type": "string", "format": "date-time", "description": "When the generation stopped being current. Absent on the current one." },
+              "expiresAt": { "type": "string", "format": "date-time", "description": "When the service stops honouring it and drops its key material. Absent on the current one." }
+            }
+          }
+        },
+        "rotationGraceSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How long a generation superseded now would keep being honoured."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

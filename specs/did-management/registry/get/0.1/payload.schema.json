@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/registry/get/0.1",
+  "title": "Registry Get — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId"],
+  "properties": {
+    "instanceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The registry identifier of the instance to read."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Get — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance"],
+      "properties": {
+        "instance": { "$ref": "../../../_shared/0.2/service-instance.schema.json#/$defs/ServiceInstance" },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -3,6 +3,9 @@
 pub mod agent_name;
 pub mod did;
 pub mod domain;
+pub mod identity;
 pub mod me;
 pub mod registry;
+pub mod replica;
 pub mod server;
+pub mod stats;

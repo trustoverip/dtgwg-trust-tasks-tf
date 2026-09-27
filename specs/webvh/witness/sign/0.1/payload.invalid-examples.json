@@ -1,0 +1,6 @@
+[
+  { "note": "Missing logContent — a witness never signs a versionId it has not seen.", "payload": { "witnessId": "w-1", "versionId": "2-QmB" } },
+  { "note": "Missing versionId.", "payload": { "witnessId": "w-1", "logContent": "{}" } },
+  { "note": "Empty witnessId.", "payload": { "witnessId": "", "versionId": "2-QmB", "logContent": "{}" } },
+  { "note": "Unknown member.", "payload": { "witnessId": "w-1", "versionId": "2-QmB", "logContent": "{}", "force": true } }
+]

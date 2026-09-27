@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Empty label.",
+    "payload": {
+      "label": ""
+    }
+  },
+  {
+    "note": "Producer-supplied key material is not accepted \u2014 the witness service generates the key.",
+    "payload": {
+      "privateKeyMultibase": "z3u2..."
+    }
+  },
+  {
+    "note": "Label over 256 characters.",
+    "payload": {
+      "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  }
+]

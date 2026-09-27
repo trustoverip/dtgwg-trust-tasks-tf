@@ -1,0 +1,5 @@
+[
+  { "note": "Missing mnemonic.", "payload": {} },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "" } },
+  { "note": "Unknown member — a delete names the slot and nothing else.", "payload": { "mnemonic": "alice", "versionCount": 3 } }
+]

@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown service type.", "payload": { "serviceType": "mediator" } },
+  { "note": "Unknown status.", "payload": { "status": "down" } },
+  { "note": "Paging is not offered — the registry is a small operator-scoped collection.", "payload": { "limit": 10 } }
+]

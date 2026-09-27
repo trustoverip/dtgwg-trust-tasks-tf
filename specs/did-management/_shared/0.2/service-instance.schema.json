@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/_shared/0.2/service-instance",
+  "title": "ServiceInstance — shared definition for the did-management/registry/* reads",
+  "description": "The control plane's record of one registered service instance, as an administrator reads it. 0.2 adds what an operator needs to judge an instance's health and reachability — its service type, status, the transports it advertises and was last seen on, and the DID methods it can host. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "ServiceInstance": {
+      "title": "ServiceInstance",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "did", "serviceType", "status", "registeredAt"],
+      "properties": {
+        "instanceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts."
+        },
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses."
+        },
+        "serviceType": {
+          "type": "string",
+          "enum": ["server", "witness", "watcher"],
+          "description": "`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Operator-chosen display label. Untrusted free text."
+        },
+        "publicUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "degraded", "unreachable"],
+          "description": "The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window."
+        },
+        "servedDomains": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Hosting domains the instance has acknowledged serving. Empty for an instance that serves none; always present on a `server`."
+        },
+        "enabledMethods": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration."
+        },
+        "advertisedServices": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved."
+        },
+        "servicesCheckedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When `advertisedServices` was last resolved. Absent with it."
+        },
+        "lastInbound": {
+          "$ref": "#/$defs/TransportObservation",
+          "description": "The last document the control plane received from this instance. Absent when it has received none."
+        },
+        "lastOutbound": {
+          "$ref": "#/$defs/TransportObservation",
+          "description": "The last document the control plane delivered to this instance. Absent when it has delivered none."
+        },
+        "lastHealthCheck": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the instance last answered a health probe. Absent when it never has."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "TransportObservation": {
+      "title": "TransportObservation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport", "at"],
+      "properties": {
+        "transport": {
+          "type": "string",
+          "enum": ["tsp", "didcomm", "https"],
+          "description": "The binding the document actually travelled on."
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

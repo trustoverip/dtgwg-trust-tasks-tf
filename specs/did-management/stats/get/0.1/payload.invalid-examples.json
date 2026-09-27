@@ -1,0 +1,5 @@
+[
+  { "note": "domain without mnemonic — there is no per-domain aggregate on this task.", "payload": { "domain": "did.example.com" } },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "" } },
+  { "note": "Unknown member.", "payload": { "mnemonic": "alice", "range": "lastDay" } }
+]

@@ -1,0 +1,6 @@
+[
+  { "note": "Missing disabled — a replica must never guess whether to serve the slot.", "payload": { "mnemonic": "alice", "didId": "did:webvh:QmA:did.example.com:alice", "logContent": "{}", "versionCount": 1 } },
+  { "note": "snake_case members from 0.1's wire drift are not accepted.", "payload": { "mnemonic": "alice", "did_id": "did:webvh:QmA:did.example.com:alice", "log_content": "{}", "version_count": 1, "disabled": false } },
+  { "note": "Empty logContent.", "payload": { "mnemonic": "alice", "didId": "did:webvh:QmA:did.example.com:alice", "logContent": "", "versionCount": 1, "disabled": false } },
+  { "note": "versionCount below 1.", "payload": { "mnemonic": "alice", "didId": "did:webvh:QmA:did.example.com:alice", "logContent": "{}", "versionCount": 0, "disabled": false } }
+]

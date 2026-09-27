@@ -1,0 +1,5 @@
+[
+  { "note": "Missing instanceId.", "payload": {} },
+  { "note": "Empty instanceId.", "payload": { "instanceId": "" } },
+  { "note": "Unknown member.", "payload": { "instanceId": "did_webvh_node1_example_com", "ping": true } }
+]

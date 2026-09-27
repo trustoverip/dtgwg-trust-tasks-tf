@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/server/info/0.1",
+  "title": "Server Info — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Server Info — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serviceDid", "agentNames", "serviceNames"],
+      "properties": {
+        "serviceDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response."
+        },
+        "agentNames": {
+          "type": "boolean",
+          "description": "Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one."
+        },
+        "serviceNames": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none."
+        },
+        "domainPurgeGraceSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

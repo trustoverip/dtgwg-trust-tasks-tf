@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/agent-name/resolve/0.1",
+  "title": "Agent Name Resolve — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["dids"],
+  "properties": {
+    "dids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 2048 },
+      "description": "The DIDs whose served names are wanted."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Agent Name Resolve — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries"],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "description": "One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["did", "names"],
+            "properties": {
+              "did": { "type": "string" },
+              "names": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string" },
+                "description": "Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner."
+              }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+[
+  { "note": "Missing witnessId.", "payload": {} },
+  { "note": "Empty witnessId.", "payload": { "witnessId": "" } },
+  { "note": "Unknown member.", "payload": { "witnessId": "w-1", "force": true } }
+]

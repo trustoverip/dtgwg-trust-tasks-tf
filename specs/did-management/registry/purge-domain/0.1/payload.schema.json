@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/registry/purge-domain/0.1",
+  "title": "Registry Purge Domain — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId", "domain"],
+  "properties": {
+    "instanceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The hosting server whose copy of the domain is purged."
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "The hosting domain whose DIDs the server deletes."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Purge Domain — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "domain", "status"],
+      "properties": {
+        "instanceId": { "type": "string" },
+        "domain": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["queued"],
+          "description": "The purge directive is in the control plane's durable outbox for the server. The server's own acknowledgement settles it; see did-management/replica/domain/purge."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

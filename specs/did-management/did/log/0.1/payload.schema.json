@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/log/0.1",
+  "title": "DID Log — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mnemonic"],
+  "properties": {
+    "mnemonic": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain."
+    },
+    "raw": {
+      "type": "boolean",
+      "description": "When true, the response also carries the stored artifacts verbatim. Absent or false means parsed entries only."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Log — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mnemonic", "method", "entries"],
+      "properties": {
+        "mnemonic": { "type": "string" },
+        "method": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is."
+        },
+        "entries": {
+          "type": "array",
+          "description": "The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["state"],
+            "properties": {
+              "versionId": { "type": "string", "description": "The entry's version identifier. Absent for a method that has none." },
+              "versionTime": { "type": "string", "format": "date-time", "description": "When the entry was made, as the entry states it. Absent for a method that records none." },
+              "state": { "type": "object", "description": "The DID document as of this entry." },
+              "parameters": { "type": "object", "description": "The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none." }
+            }
+          }
+        },
+        "logContent": {
+          "type": "string",
+          "description": "The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true."
+        },
+        "witnessContent": {
+          "type": "string",
+          "description": "The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

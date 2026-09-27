@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
+  "title": "Auth Passkey Invite Update — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["inviteId"],
+  "anyOf": [
+    { "required": ["role"] },
+    { "required": ["expiresAt"] },
+    { "required": ["extendBy"] }
+  ],
+  "not": { "required": ["expiresAt", "extendBy"] },
+  "properties": {
+    "inviteId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The role the invitee will receive. Absent leaves the role unchanged."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy."
+    },
+    "extendBy": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt."
+    },
+    "ext": { "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Passkey Invite Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invite"],
+      "properties": {
+        "invite": { "$ref": "../../../../../_shared/0.1/passkey-invite.schema.json#/$defs/InviteSummary" },
+        "ext": { "$ref": "../../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

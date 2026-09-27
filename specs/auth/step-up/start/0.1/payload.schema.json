@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/start/0.1",
+  "title": "Auth Step-up Start — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sessionId"],
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The relying-party session to elevate."
+    },
+    "targetAcr": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Step-up Start — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approveRequest"],
+      "properties": {
+        "approveRequest": {
+          "type": "object",
+          "description": "A complete, signed auth/step-up/approve-request/0.3 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; it is carried as a document, not unpacked into this payload, so its proof survives.",
+          "required": ["id", "type", "issuer", "recipient", "payload", "proof"],
+          "properties": {
+            "type": { "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.3" }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

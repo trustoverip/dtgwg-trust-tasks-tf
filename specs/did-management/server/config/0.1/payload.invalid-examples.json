@@ -1,0 +1,4 @@
+[
+  { "note": "The read takes no selector — the whole non-secret configuration is returned.", "payload": { "section": "sessions" } },
+  { "note": "Asking for secrets is not a member.", "payload": { "includeSecrets": true } }
+]

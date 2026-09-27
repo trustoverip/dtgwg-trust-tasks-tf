@@ -1,0 +1,4 @@
+[
+  { "note": "The public read takes no selector.", "payload": { "fields": ["serviceDid"] } },
+  { "note": "Hosted DIDs are never listed here.", "payload": { "includeHosted": true } }
+]

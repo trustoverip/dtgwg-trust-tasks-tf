@@ -1,0 +1,5 @@
+[
+  { "note": "Missing entry.", "payload": {} },
+  { "note": "The entry at top level rather than under entry.", "payload": { "name": "did.example.com", "status": "active", "createdAt": "2026-09-01T10:00:00Z" } },
+  { "note": "Entry missing its status.", "payload": { "entry": { "name": "did.example.com", "createdAt": "2026-09-01T10:00:00Z" } } }
+]

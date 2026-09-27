@@ -2850,10 +2850,34 @@ export interface InvitationSummary {
    */
   revokedAt?: string;
 }
+export interface InviteSummary_AuthV0_1 {
+  /**
+   * Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.
+   */
+  inviteId: string;
+  /**
+   * The VID the invite binds a passkey to.
+   */
+  subject: string;
+  /**
+   * What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.
+   */
+  purpose: "session" | "stepUp";
+  /**
+   * The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.
+   */
+  role?: string;
+  createdAt: string;
+  expiresAt: string;
+  /**
+   * True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.
+   */
+  expired: boolean;
+}
 /**
  * One outstanding or historical admin invite. Consumed rows are retained as audit history and cannot be revoked.
  */
-export interface InviteSummary {
+export interface InviteSummary_VtcV0_1 {
   /**
    * Unique invite identifier; the revoke target.
    */
@@ -4474,7 +4498,7 @@ export interface SealedRecord {
    */
   epoch: number;
 }
-export interface ServiceInstance {
+export interface ServiceInstance_DidManagementV0_1 {
   /**
    * Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.
    */
@@ -4490,6 +4514,62 @@ export interface ServiceInstance {
    */
   servedDomains?: string[];
   lastSeen?: string;
+  ext?: Ext;
+}
+export interface ServiceInstance_DidManagementV0_2 {
+  /**
+   * Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.
+   */
+  instanceId: string;
+  /**
+   * The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.
+   */
+  did: string;
+  /**
+   * `server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.
+   */
+  serviceType: "server" | "witness" | "watcher";
+  /**
+   * Operator-chosen display label. Untrusted free text.
+   */
+  label?: string;
+  /**
+   * The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.
+   */
+  publicUrl?: string;
+  /**
+   * The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.
+   */
+  status: "active" | "degraded" | "unreachable";
+  /**
+   * Hosting domains the instance has acknowledged serving. Empty for an instance that serves none; always present on a `server`.
+   */
+  servedDomains?: string[];
+  /**
+   * DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.
+   */
+  enabledMethods?: string[];
+  /**
+   * `service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.
+   */
+  advertisedServices?: string[];
+  /**
+   * When `advertisedServices` was last resolved. Absent with it.
+   */
+  servicesCheckedAt?: string;
+  /**
+   * The last document the control plane received from this instance. Absent when it has received none.
+   */
+  lastInbound?: TransportObservation;
+  /**
+   * The last document the control plane delivered to this instance. Absent when it has delivered none.
+   */
+  lastOutbound?: TransportObservation;
+  /**
+   * When the instance last answered a health probe. Absent when it never has.
+   */
+  lastHealthCheck?: string;
+  registeredAt: string;
   ext?: Ext;
 }
 /**
@@ -4729,6 +4809,33 @@ export interface Sync {
    */
   drift: DriftItem[];
 }
+export interface SyncUpdate {
+  /**
+   * The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).
+   */
+  mnemonic: string;
+  /**
+   * The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID.
+   */
+  didId: string;
+  /**
+   * The slot's complete did.jsonl — one log entry per line — not a delta.
+   */
+  logContent: string;
+  /**
+   * The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means "unchanged".
+   */
+  witnessContent?: string;
+  /**
+   * Number of entries in `logContent`, as the source counts them. A replica MUST refuse an update whose `logContent` does not contain exactly this many entries.
+   */
+  versionCount: number;
+  /**
+   * Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`.
+   */
+  disabled: boolean;
+  ext?: Ext;
+}
 /**
  * An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.
  */
@@ -4774,6 +4881,13 @@ export interface TrafficOutcome {
    * Short human-readable explanation. Not machine-parsed.
    */
   detail?: string;
+}
+export interface TransportObservation {
+  /**
+   * The binding the document actually travelled on.
+   */
+  transport: "tsp" | "didcomm" | "https";
+  at: string;
 }
 export interface TrustRecord {
   entity_id: string;
@@ -5342,6 +5456,25 @@ export interface WebvhServerRecord {
   createdAt: string;
   updatedAt: string;
   ext?: Ext;
+}
+export interface WitnessKey {
+  /**
+   * The witness service's identifier for this identity. Opaque to the requester.
+   */
+  witnessId: string;
+  /**
+   * The witness identity's DID (for example a `did:key`) — the value a did:webvh log names in its `witness` parameter, and the controller of the key that signs its proofs.
+   */
+  did: string;
+  /**
+   * Operator-chosen display label. Untrusted free text. Absent when none was given.
+   */
+  label?: string;
+  createdAt: string;
+  /**
+   * How many witness proofs this identity has signed.
+   */
+  proofsSigned: number;
 }
 /**
  * The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.

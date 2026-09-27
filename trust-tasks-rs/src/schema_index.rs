@@ -89,6 +89,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response" => <crate::specs::auth::passkey::enroll::invite::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/list/0.1" => <crate::specs::auth::passkey::enroll::invite::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/list/0.1#response" => <crate::specs::auth::passkey::enroll::invite::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/revoke/0.1" => <crate::specs::auth::passkey::enroll::invite::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/revoke/0.1#response" => <crate::specs::auth::passkey::enroll::invite::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1" => <crate::specs::auth::passkey::enroll::invite::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1#response" => <crate::specs::auth::passkey::enroll::invite::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1" => <crate::specs::auth::passkey::enroll::redeem::finish::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1#response" => <crate::specs::auth::passkey::enroll::redeem::finish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -192,6 +204,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/step-up/policy/0.2" => <crate::specs::auth::step_up::policy::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.2#response" => <crate::specs::auth::step_up::policy::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/start/0.1" => <crate::specs::auth::step_up::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/start/0.1#response" => <crate::specs::auth::step_up::start::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/whoami/0.1" => <crate::specs::auth::whoami::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
@@ -363,6 +379,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/agent-name/remove/0.1#response" => <crate::specs::did_management::agent_name::remove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/resolve/0.1" => <crate::specs::did_management::agent_name::resolve::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/resolve/0.1#response" => <crate::specs::did_management::agent_name::resolve::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/agent-name/set/0.1" => <crate::specs::did_management::agent_name::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/agent-name/set/0.1#response" => <crate::specs::did_management::agent_name::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -399,6 +419,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/list/0.1#response" => <crate::specs::did_management::did::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/log/0.1" => <crate::specs::did_management::did::log::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/log/0.1#response" => <crate::specs::did_management::did::log::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/problem-report/0.1" => <crate::specs::did_management::did::problem_report::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/publish/0.1" => <crate::specs::did_management::did::publish::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -433,6 +457,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/domain/enable/0.1#response" => <crate::specs::did_management::domain::enable::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/list/0.1" => <crate::specs::did_management::domain::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/list/0.1#response" => <crate::specs::did_management::domain::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/domain/purge/0.1" => <crate::specs::did_management::domain::purge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/domain/purge/0.1#response" => <crate::specs::did_management::domain::purge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -453,6 +481,14 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/domain/update/0.1#response" => <crate::specs::did_management::domain::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/list/0.1" => <crate::specs::did_management::identity::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/list/0.1#response" => <crate::specs::did_management::identity::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/retire/0.1" => <crate::specs::did_management::identity::retire::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/retire/0.1#response" => <crate::specs::did_management::identity::retire::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/me/domains/0.1" => <crate::specs::did_management::me::domains::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/me/domains/0.1#response" => <crate::specs::did_management::me::domains::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -461,13 +497,53 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/registry/admin-register/0.1#response" => <crate::specs::did_management::registry::admin_register::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/check/0.1" => <crate::specs::did_management::registry::check::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/check/0.1#response" => <crate::specs::did_management::registry::check::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/registry/deregister/0.1" => <crate::specs::did_management::registry::deregister::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/registry/deregister/0.1#response" => <crate::specs::did_management::registry::deregister::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/get/0.1" => <crate::specs::did_management::registry::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/get/0.1#response" => <crate::specs::did_management::registry::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/list/0.1" => <crate::specs::did_management::registry::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/list/0.1#response" => <crate::specs::did_management::registry::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/purge-domain/0.1" => <crate::specs::did_management::registry::purge_domain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/purge-domain/0.1#response" => <crate::specs::did_management::registry::purge_domain::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/assign/0.1" => <crate::specs::did_management::replica::domain::assign::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/assign/0.1#response" => <crate::specs::did_management::replica::domain::assign::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/purge/0.1" => <crate::specs::did_management::replica::domain::purge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/purge/0.1#response" => <crate::specs::did_management::replica::domain::purge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/unassign/0.1" => <crate::specs::did_management::replica::domain::unassign::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/unassign/0.1#response" => <crate::specs::did_management::replica::domain::unassign::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/upsert/0.1" => <crate::specs::did_management::replica::domain::upsert::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/upsert/0.1#response" => <crate::specs::did_management::replica::domain::upsert::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/config/0.1" => <crate::specs::did_management::server::config::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/config/0.1#response" => <crate::specs::did_management::server::config::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/health/0.1" => <crate::specs::did_management::server::health::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/health/0.1#response" => <crate::specs::did_management::server::health::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/info/0.1" => <crate::specs::did_management::server::info::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/info/0.1#response" => <crate::specs::did_management::server::info::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/register/0.1" => <crate::specs::did_management::server::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
@@ -476,6 +552,14 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1" => <crate::specs::did_management::server::stats_sync::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1#response" => <crate::specs::did_management::server::stats_sync::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/get/0.1" => <crate::specs::did_management::stats::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/get/0.1#response" => <crate::specs::did_management::stats::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => <crate::specs::did_management::stats::timeseries::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/timeseries/0.1#response" => <crate::specs::did_management::stats::timeseries::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/link/0.1" => <crate::specs::git_ns::account::link::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -2172,17 +2256,45 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/rollback/0.1#response" => <crate::specs::vtc::website::rollback::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/batch/0.1" => <crate::specs::webvh::sync::batch::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/batch/0.1#response" => <crate::specs::webvh::sync::batch::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/delete/0.1" => <crate::specs::webvh::sync::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/delete/0.1#response" => <crate::specs::webvh::sync::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/delete/0.2" => <crate::specs::webvh::sync::delete::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/delete/0.2#response" => <crate::specs::webvh::sync::delete::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/update/0.1" => <crate::specs::webvh::sync::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/update/0.1#response" => <crate::specs::webvh::sync::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/update/0.2" => <crate::specs::webvh::sync::update::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/update/0.2#response" => <crate::specs::webvh::sync::update::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/create/0.1" => <crate::specs::webvh::witness::key::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/create/0.1#response" => <crate::specs::webvh::witness::key::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/delete/0.1" => <crate::specs::webvh::witness::key::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/delete/0.1#response" => <crate::specs::webvh::witness::key::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/list/0.1" => <crate::specs::webvh::witness::key::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/list/0.1#response" => <crate::specs::webvh::witness::key::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/witness/publish/0.1" => <crate::specs::webvh::witness::publish::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/witness/publish/0.1#response" => <crate::specs::webvh::witness::publish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/sign/0.1" => <crate::specs::webvh::witness::sign::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/sign/0.1#response" => <crate::specs::webvh::witness::sign::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "witness")]
         "https://trusttasks.org/spec/witness/session/0.1" => <crate::specs::witness::session::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "witness")]
@@ -2284,6 +2396,24 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::auth::passkey::enroll::invite::v0_2::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::enroll::invite::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::enroll::invite::revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::auth::passkey::enroll::invite::update::v0_1::Payload,
             >())
         }
         #[cfg(feature = "auth")]
@@ -2429,6 +2559,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::auth::step_up::policy::v0_2::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/start/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::step_up::start::v0_1::Payload,
         >()),
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/whoami/0.1" => Some(crate::SpecPolicy::of::<
@@ -2641,6 +2775,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/resolve/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::agent_name::resolve::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/agent-name/set/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::agent_name::set::v0_1::Payload,
@@ -2689,6 +2829,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::did_management::did::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/log/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::did_management::did::log::v0_1::Payload,
         >()),
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/problem-report/0.1" => {
@@ -2745,6 +2889,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::domain::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/domain/purge/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::domain::purge::v0_1::Payload,
@@ -2775,6 +2925,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::identity::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/retire/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::identity::retire::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/me/domains/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::me::domains::v0_1::Payload,
@@ -2787,15 +2949,75 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/check/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::registry::check::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/registry/deregister/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::registry::deregister::v0_1::Payload,
             >())
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/get/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::registry::get::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::registry::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/purge-domain/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::registry::purge_domain::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/assign/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::replica::domain::assign::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/purge/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::replica::domain::purge::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/unassign/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::replica::domain::unassign::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/upsert/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::replica::domain::upsert::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/config/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::server::config::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/health/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::server::health::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/info/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::server::info::v0_1::Payload,
             >())
         }
         #[cfg(feature = "did-management")]
@@ -2808,6 +3030,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::server::stats_sync::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/get/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::stats::get::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::stats::timeseries::v0_1::Payload,
             >())
         }
         #[cfg(feature = "git-ns")]
@@ -4821,16 +5055,48 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::vtc::website::rollback::v0_1::Payload,
         >()),
         #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/batch/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::webvh::sync::batch::v0_1::Payload,
+        >()),
+        #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/delete/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::webvh::sync::delete::v0_1::Payload,
+        >()),
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/delete/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::webvh::sync::delete::v0_2::Payload,
         >()),
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/update/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::webvh::sync::update::v0_1::Payload,
         >()),
         #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/update/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::webvh::sync::update::v0_2::Payload,
+        >()),
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/create/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::webvh::witness::key::create::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/delete/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::webvh::witness::key::delete::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::webvh::witness::key::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/witness/publish/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::webvh::witness::publish::v0_1::Payload,
+        >()),
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/sign/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::webvh::witness::sign::v0_1::Payload,
         >()),
         #[cfg(feature = "witness")]
         "https://trusttasks.org/spec/witness/session/0.1" => Some(crate::SpecPolicy::of::<
@@ -4924,6 +5190,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2" => {
             Some(crate::specs::auth::passkey::enroll::invite::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/list/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::invite::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/revoke/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::invite::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1" => {
+            Some(crate::specs::auth::passkey::enroll::invite::update::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/passkey/enroll/redeem/finish/0.1" => {
@@ -5028,6 +5306,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/step-up/policy/0.2" => {
             Some(crate::specs::auth::step_up::policy::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/step-up/start/0.1" => {
+            Some(crate::specs::auth::step_up::start::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/whoami/0.1" => {
@@ -5214,6 +5496,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::did_management::agent_name::remove::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/agent-name/resolve/0.1" => {
+            Some(crate::specs::did_management::agent_name::resolve::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/agent-name/set/0.1" => {
             Some(crate::specs::did_management::agent_name::set::v0_1::ERROR_CODES)
         }
@@ -5248,6 +5534,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/list/0.1" => {
             Some(crate::specs::did_management::did::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/did/log/0.1" => {
+            Some(crate::specs::did_management::did::log::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/did/problem-report/0.1" => {
@@ -5286,6 +5576,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::did_management::domain::enable::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/domain/list/0.1" => {
+            Some(crate::specs::did_management::domain::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/domain/purge/0.1" => {
             Some(crate::specs::did_management::domain::purge::v0_1::ERROR_CODES)
         }
@@ -5306,6 +5600,14 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::did_management::domain::update::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/list/0.1" => {
+            Some(crate::specs::did_management::identity::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/identity/retire/0.1" => {
+            Some(crate::specs::did_management::identity::retire::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/me/domains/0.1" => {
             Some(crate::specs::did_management::me::domains::v0_1::ERROR_CODES)
         }
@@ -5314,12 +5616,52 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::did_management::registry::admin_register::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/check/0.1" => {
+            Some(crate::specs::did_management::registry::check::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/registry/deregister/0.1" => {
             Some(crate::specs::did_management::registry::deregister::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/get/0.1" => {
+            Some(crate::specs::did_management::registry::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/list/0.1" => {
+            Some(crate::specs::did_management::registry::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/registry/purge-domain/0.1" => {
+            Some(crate::specs::did_management::registry::purge_domain::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/assign/0.1" => {
+            Some(crate::specs::did_management::replica::domain::assign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/purge/0.1" => {
+            Some(crate::specs::did_management::replica::domain::purge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/unassign/0.1" => {
+            Some(crate::specs::did_management::replica::domain::unassign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/replica/domain/upsert/0.1" => {
+            Some(crate::specs::did_management::replica::domain::upsert::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/config/0.1" => {
+            Some(crate::specs::did_management::server::config::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/health/0.1" => {
             Some(crate::specs::did_management::server::health::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/server/info/0.1" => {
+            Some(crate::specs::did_management::server::info::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/register/0.1" => {
@@ -5328,6 +5670,14 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "did-management")]
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1" => {
             Some(crate::specs::did_management::server::stats_sync::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/get/0.1" => {
+            Some(crate::specs::did_management::stats::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => {
+            Some(crate::specs::did_management::stats::timeseries::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/link/0.1" => {
@@ -7048,16 +7398,44 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::vtc::website::rollback::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/batch/0.1" => {
+            Some(crate::specs::webvh::sync::batch::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/delete/0.1" => {
             Some(crate::specs::webvh::sync::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/delete/0.2" => {
+            Some(crate::specs::webvh::sync::delete::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/update/0.1" => {
             Some(crate::specs::webvh::sync::update::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/sync/update/0.2" => {
+            Some(crate::specs::webvh::sync::update::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/create/0.1" => {
+            Some(crate::specs::webvh::witness::key::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/delete/0.1" => {
+            Some(crate::specs::webvh::witness::key::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/key/list/0.1" => {
+            Some(crate::specs::webvh::witness::key::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/witness/publish/0.1" => {
             Some(crate::specs::webvh::witness::publish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "webvh")]
+        "https://trusttasks.org/spec/webvh/witness/sign/0.1" => {
+            Some(crate::specs::webvh::witness::sign::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "witness")]
         "https://trusttasks.org/spec/witness/session/0.1" => {

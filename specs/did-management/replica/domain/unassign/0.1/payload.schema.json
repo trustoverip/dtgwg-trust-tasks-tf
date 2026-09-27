@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/replica/domain/unassign/0.1",
+  "title": "Replica Domain Unassign — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["domain"],
+  "properties": {
+    "domain": { "type": "string", "minLength": 1, "maxLength": 253, "description": "The hosting domain, in canonical form (lowercase, IDNA-folded)." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Replica Domain Unassign — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "status", "purgeAt"], "properties": { "domain": { "type": "string" }, "status": { "type": "string", "enum": ["scheduled"] }, "purgeAt": { "type": "string", "format": "date-time", "description": "When the replica will delete the domain's content unless the domain is re-assigned first." }, "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } }
+    }
+  }
+}

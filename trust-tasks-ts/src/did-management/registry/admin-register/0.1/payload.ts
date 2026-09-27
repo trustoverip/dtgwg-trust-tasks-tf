@@ -3,7 +3,7 @@
  * Source: specs/did-management/registry/admin-register/0.1/payload.schema.json
  */
 
-import type { Ext, ServiceInstance } from "../../../../_shared/components.js";
+import type { Ext, ServiceInstance_DidManagementV0_1 as ServiceInstance } from "../../../../_shared/components.js";
 
 
 export interface RegistryAdminRegisterPayload {

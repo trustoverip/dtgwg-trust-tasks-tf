@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/webvh/_shared/0.1/witness-key",
+  "title": "WitnessKey — shared definition for the webvh/witness/key/* spec family",
+  "description": "One witness identity a witness service holds, as its administrator reads it. Carries no key material. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "WitnessKey": {
+      "title": "WitnessKey",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["witnessId", "did", "createdAt", "proofsSigned"],
+      "properties": {
+        "witnessId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The witness service's identifier for this identity. Opaque to the requester."
+        },
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The witness identity's DID (for example a `did:key`) — the value a did:webvh log names in its `witness` parameter, and the controller of the key that signs its proofs."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Operator-chosen display label. Untrusted free text. Absent when none was given."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "proofsSigned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many witness proofs this identity has signed."
+        }
+      }
+    }
+  }
+}

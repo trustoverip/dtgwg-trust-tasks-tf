@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/identity/retire/0.1",
+  "title": "Identity Retire — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generationId"],
+  "properties": {
+    "generationId": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The superseded generation to stop honouring now."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Identity Retire — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generationId", "droppedAt"],
+      "properties": {
+        "generationId": { "type": "integer", "minimum": 0 },
+        "droppedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the generation's key material was dropped from the running service."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/webvh/witness/sign/0.1",
+  "title": "WebVH Witness Sign — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["witnessId", "versionId", "logContent"],
+  "properties": {
+    "witnessId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The witness identity to sign with, as webvh/witness/key/list reports it."
+    },
+    "versionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The versionId of the log entry to witness. MUST be the last entry of `logContent`."
+    },
+    "logContent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The did.jsonl up to and including the entry to witness, so the witness can verify what it signs."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "WebVH Witness Sign — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["witnessId", "versionId", "proof"],
+      "properties": {
+        "witnessId": { "type": "string", "minLength": 1 },
+        "versionId": { "type": "string", "minLength": 1 },
+        "proof": {
+          "type": "object",
+          "description": "The W3C Data Integrity proof over {versionId}, by the witness identity's key. Carried verbatim into the DID's did-witness.json; further Data Integrity members are permitted.",
+          "additionalProperties": true,
+          "required": ["type", "cryptosuite", "verificationMethod", "proofPurpose", "proofValue"],
+          "properties": {
+            "type": { "const": "DataIntegrityProof" },
+            "cryptosuite": { "type": "string", "minLength": 1 },
+            "verificationMethod": { "type": "string", "minLength": 1 },
+            "proofPurpose": { "type": "string", "minLength": 1 },
+            "proofValue": { "type": "string", "minLength": 1 },
+            "created": { "type": "string", "format": "date-time" }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

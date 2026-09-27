@@ -1,0 +1,5 @@
+[
+  { "note": "Missing dids.", "payload": {} },
+  { "note": "Empty dids.", "payload": { "dids": [] } },
+  { "note": "Duplicate DID.", "payload": { "dids": ["did:webvh:QmA:did.example.com:alice", "did:webvh:QmA:did.example.com:alice"] } }
+]

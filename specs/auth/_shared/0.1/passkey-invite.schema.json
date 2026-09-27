@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/_shared/0.1/passkey-invite",
+  "title": "Auth — shared passkey-invite summary",
+  "description": "What an administrator may read back about a passkey enrolment invite after issuing it. Deliberately omits the invite token, its URL and the claim code: an unredeemed token is a credential to bind a passkey to somebody else's VID, so it is disclosed once, at issuance, and never again.",
+  "$defs": {
+    "InviteSummary": {
+      "$anchor": "inviteSummary",
+      "title": "InviteSummary",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inviteId", "subject", "purpose", "createdAt", "expiresAt", "expired"],
+      "properties": {
+        "inviteId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it."
+        },
+        "subject": { "type": "string", "minLength": 1, "description": "The VID the invite binds a passkey to." },
+        "purpose": {
+          "type": "string",
+          "enum": ["session", "stepUp"],
+          "description": "What the redeemed credential may authenticate, as in auth/passkey/enroll/invite."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp."
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "expired": {
+          "type": "boolean",
+          "description": "True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it."
+        }
+      }
+    }
+  }
+}

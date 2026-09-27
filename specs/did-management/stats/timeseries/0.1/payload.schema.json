@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/stats/timeseries/0.1",
+  "title": "Stats Timeseries — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["range"],
+  "properties": {
+    "range": {
+      "type": "string",
+      "enum": ["lastHour", "lastDay", "lastWeek", "last30Days"],
+      "description": "The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`."
+    },
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series."
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Stats Timeseries — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["range", "bucketSeconds", "points"],
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": ["lastHour", "lastDay", "lastWeek", "last30Days"]
+        },
+        "bucketSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Width of each bucket."
+        },
+        "points": {
+          "type": "array",
+          "description": "One point per bucket in the window, oldest first, including buckets with no activity.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["at", "resolves", "updates"],
+            "properties": {
+              "at": { "type": "string", "format": "date-time", "description": "Start of the bucket." },
+              "resolves": { "type": "integer", "minimum": 0 },
+              "updates": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

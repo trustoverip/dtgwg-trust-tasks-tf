@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/stats/get/0.1",
+  "title": "Stats Get — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "mnemonic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read."
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does)."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "dependentRequired": { "domain": ["mnemonic"] },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Stats Get — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["totalResolves", "totalUpdates"],
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "description": "Echo of the slot read. Absent on the server-wide aggregate."
+        },
+        "totalDids": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Slots the hosting service holds. Present only on the server-wide aggregate."
+        },
+        "totalResolves": { "type": "integer", "minimum": 0 },
+        "totalUpdates": { "type": "integer", "minimum": 0 },
+        "lastResolvedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Absent when the scope has never been resolved."
+        },
+        "lastUpdatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Absent when the scope has never been updated."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

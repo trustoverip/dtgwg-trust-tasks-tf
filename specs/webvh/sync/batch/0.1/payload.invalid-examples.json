@@ -1,0 +1,6 @@
+[
+  { "note": "Missing updates.", "payload": {} },
+  { "note": "Empty updates — a batch carries at least one entry.", "payload": { "updates": [] } },
+  { "note": "Entry missing disabled.", "payload": { "updates": [ { "mnemonic": "alice", "didId": "did:webvh:QmA:did.example.com:alice", "logContent": "{}", "versionCount": 1 } ] } },
+  { "note": "Entry uses 0.1's snake_case members.", "payload": { "updates": [ { "mnemonic": "alice", "did_id": "did:webvh:QmA:did.example.com:alice", "log_content": "{}", "version_count": 1, "disabled": false } ] } }
+]

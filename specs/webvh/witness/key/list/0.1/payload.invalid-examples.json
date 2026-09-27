@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown member — the list takes no filter.", "payload": { "witnessId": "w-1" } },
+  { "note": "Unknown member — no paging.", "payload": { "limit": 10 } },
+  { "note": "Payload must be an object.", "payload": [] }
+]

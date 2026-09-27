@@ -1,0 +1,5 @@
+[
+  { "note": "Missing generationId.", "payload": {} },
+  { "note": "Negative generationId.", "payload": { "generationId": -1 } },
+  { "note": "generationId as a string.", "payload": { "generationId": "3" } }
+]

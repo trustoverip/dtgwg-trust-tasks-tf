@@ -7,6 +7,7 @@ pub mod disable;
 pub mod enable;
 pub mod info;
 pub mod list;
+pub mod log;
 pub mod problem_report;
 pub mod publish;
 pub mod register;

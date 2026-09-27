@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/replica/domain/assign/0.1",
+  "title": "Replica Domain Assign — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["domain"],
+  "properties": {
+    "domain": { "type": "string", "minLength": 1, "maxLength": 253, "description": "The hosting domain, in canonical form (lowercase, IDNA-folded)." },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Replica Domain Assign — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "status"], "properties": { "domain": { "type": "string" }, "status": { "type": "string", "enum": ["applied"] }, "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" } }
+    }
+  }
+}

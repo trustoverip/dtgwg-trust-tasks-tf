@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/registry/check/0.1",
+  "title": "Registry Check — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instanceId"],
+  "properties": {
+    "instanceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The registry identifier of the instance to re-evaluate."
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry Check — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance"],
+      "properties": {
+        "instance": {
+          "$ref": "../../../_shared/0.2/service-instance.schema.json#/$defs/ServiceInstance",
+          "description": "The entry as it stands after the re-evaluation."
+        },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

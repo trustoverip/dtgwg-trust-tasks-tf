@@ -1,0 +1,4 @@
+[
+  { "note": "The read takes no filter.", "payload": { "current": true } },
+  { "note": "Key material is never requestable.", "payload": { "includeKeys": true } }
+]

@@ -5,5 +5,6 @@ pub mod disable;
 pub mod enable;
 pub mod list;
 pub mod remove;
+pub mod resolve;
 pub mod set;
 pub mod update;

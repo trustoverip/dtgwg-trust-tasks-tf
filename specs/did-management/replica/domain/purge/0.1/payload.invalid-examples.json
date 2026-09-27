@@ -1,0 +1,5 @@
+[
+  { "note": "Missing domain.", "payload": {} },
+  { "note": "Empty domain.", "payload": { "domain": "" } },
+  { "note": "The replica acts on its own copy; it takes no instance identifier.", "payload": { "domain": "did.example.com", "instanceId": "did_webvh_node1_example_com" } }
+]

@@ -1,0 +1,5 @@
+[
+  { "note": "Missing range.", "payload": { "mnemonic": "alice" } },
+  { "note": "Range outside the enumeration.", "payload": { "range": "24h" } },
+  { "note": "Empty domain.", "payload": { "range": "lastDay", "domain": "" } }
+]

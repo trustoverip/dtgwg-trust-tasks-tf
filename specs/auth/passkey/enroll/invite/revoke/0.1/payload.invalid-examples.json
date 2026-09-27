@@ -1,0 +1,5 @@
+[
+  { "note": "Missing inviteId.", "payload": {} },
+  { "note": "Revoking by token is not offered — the token is a credential and is not sent back.", "payload": { "token": "a3f9c2e1b7d84c6f9e2a1b3c4d5e6f70" } },
+  { "note": "Empty inviteId.", "payload": { "inviteId": "" } }
+]

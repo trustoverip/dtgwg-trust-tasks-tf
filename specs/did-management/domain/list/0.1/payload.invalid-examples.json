@@ -1,0 +1,4 @@
+[
+  { "note": "Unknown status.", "payload": { "status": "purged" } },
+  { "note": "The caller-scoped view is did-management/me/domains, not a flag here.", "payload": { "mine": true } }
+]

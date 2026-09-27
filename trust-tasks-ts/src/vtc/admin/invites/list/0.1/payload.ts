@@ -3,7 +3,7 @@
  * Source: specs/vtc/admin/invites/list/0.1/payload.schema.json
  */
 
-import type { Ext, InviteStatus, InviteSummary } from "../../../../../_shared/components.js";
+import type { Ext, InviteStatus, InviteSummary_VtcV0_1 as InviteSummary } from "../../../../../_shared/components.js";
 
 
 export interface VTCAdminInvitesListPayload {
