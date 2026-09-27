@@ -446,47 +446,6 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummarySubject {
 ///  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
 ///  "title": "Payload",
 ///  "type": "object",
-///  "oneOf": [
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "expiresAt"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "extendBy"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "role"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "extendBy"
-///        ]
-///      },
-///      "required": [
-///        "expiresAt"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "expiresAt"
-///        ]
-///      },
-///      "required": [
-///        "extendBy"
-///      ]
-///    }
-///  ],
 ///  "required": [
 ///    "inviteId"
 ///  ],
@@ -520,136 +479,37 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummarySubject {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
-#[non_exhaustive]
-pub enum Payload {
-    Variant0(PayloadVariant0),
-    Variant1 {
-        ///The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.
-        #[serde(rename = "expiresAt")]
-        expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        #[serde(rename = "inviteId")]
-        invite_id: PayloadVariant1InviteId,
-    },
-    Variant2 {
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.
-        #[serde(rename = "extendBy")]
-        extend_by: ::std::num::NonZeroU64,
-        #[serde(rename = "inviteId")]
-        invite_id: PayloadVariant2InviteId,
-    },
-}
-impl ::std::convert::From<PayloadVariant0> for Payload {
-    fn from(value: PayloadVariant0) -> Self {
-        Self::Variant0(value)
-    }
-}
-///`PayloadVariant0`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "inviteId"
-///      ],
-///      "properties": {
-///        "expiresAt": {
-///          "description": "The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.",
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "ext": {
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "extendBy": {
-///          "description": "Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.",
-///          "type": "integer",
-///          "minimum": 1.0
-///        },
-///        "inviteId": {
-///          "type": "string",
-///          "maxLength": 128,
-///          "minLength": 1
-///        },
-///        "role": {
-///          "description": "The role the invitee will receive. Absent leaves the role unchanged.",
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "expiresAt"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "extendBy"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "role"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "required": [
-///            "extendBy"
-///          ]
-///        },
-///        "required": [
-///          "expiresAt"
-///        ]
-///      }
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "required": [
-///            "expiresAt"
-///          ]
-///        },
-///        "required": [
-///          "extendBy"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub enum PayloadVariant0 {}
-///`PayloadVariant1InviteId`
+pub struct Payload {
+    ///The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.
+    #[serde(
+        rename = "extendBy",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub extend_by: ::std::option::Option<::std::num::NonZeroU64>,
+    #[serde(rename = "inviteId")]
+    pub invite_id: PayloadInviteId,
+    ///The role the invitee will receive. Absent leaves the role unchanged.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub role: ::std::option::Option<PayloadRole>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
+}
+///`PayloadInviteId`
 ///
 /// <details><summary>JSON schema</summary>
 ///
@@ -663,19 +523,19 @@ pub enum PayloadVariant0 {}
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant1InviteId(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant1InviteId {
+pub struct PayloadInviteId(::std::string::String);
+impl ::std::ops::Deref for PayloadInviteId {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant1InviteId> for ::std::string::String {
-    fn from(value: PayloadVariant1InviteId) -> Self {
+impl ::std::convert::From<PayloadInviteId> for ::std::string::String {
+    fn from(value: PayloadInviteId) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant1InviteId {
+impl ::std::str::FromStr for PayloadInviteId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 128usize {
@@ -687,13 +547,13 @@ impl ::std::str::FromStr for PayloadVariant1InviteId {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant1InviteId {
+impl ::std::convert::TryFrom<&str> for PayloadInviteId {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1InviteId {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadInviteId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -701,7 +561,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1InviteId
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1InviteId {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadInviteId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -709,7 +569,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1InviteId 
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant1InviteId {
+impl<'de> ::serde::Deserialize<'de> for PayloadInviteId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -721,51 +581,48 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1InviteId {
             })
     }
 }
-///`PayloadVariant2InviteId`
+///The role the invitee will receive. Absent leaves the role unchanged.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
+///  "description": "The role the invitee will receive. Absent leaves the role unchanged.",
 ///  "type": "string",
-///  "maxLength": 128,
 ///  "minLength": 1
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant2InviteId(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant2InviteId {
+pub struct PayloadRole(::std::string::String);
+impl ::std::ops::Deref for PayloadRole {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant2InviteId> for ::std::string::String {
-    fn from(value: PayloadVariant2InviteId) -> Self {
+impl ::std::convert::From<PayloadRole> for ::std::string::String {
+    fn from(value: PayloadRole) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant2InviteId {
+impl ::std::str::FromStr for PayloadRole {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 128usize {
-            return Err("longer than 128 characters".into());
-        }
         if value.chars().count() < 1usize {
             return Err("shorter than 1 characters".into());
         }
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant2InviteId {
+impl ::std::convert::TryFrom<&str> for PayloadRole {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2InviteId {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadRole {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -773,7 +630,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2InviteId
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2InviteId {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadRole {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -781,7 +638,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2InviteId 
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant2InviteId {
+impl<'de> ::serde::Deserialize<'de> for PayloadRole {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -962,6 +819,109 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct Payload {
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        extend_by: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        invite_id: ::std::result::Result<super::PayloadInviteId, ::std::string::String>,
+        role:
+            ::std::result::Result<::std::option::Option<super::PayloadRole>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                extend_by: Ok(Default::default()),
+                invite_id: Err("no value supplied for invite_id".to_string()),
+                role: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn extend_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.extend_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for extend_by: {e}"));
+            self
+        }
+        pub fn invite_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadInviteId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.invite_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for invite_id: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadRole>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                extend_by: value.extend_by?,
+                invite_id: value.invite_id?,
+                role: value.role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                extend_by: Ok(value.extend_by),
+                invite_id: Ok(value.invite_id),
+                role: Ok(value.role),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         invite: ::std::result::Result<super::InviteSummary, ::std::string::String>,
@@ -1087,6 +1047,33 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a01\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"issuer\": \"did:webvh:QmAdminScid1:admin.example.com:alice\",\n  \"recipient\": \"did:webvh:QmControlScid2:control.example.com\",\n  \"issuedAt\": \"2026-09-27T09:00:00Z\",\n  \"payload\": { \"inviteId\": \"inv_01J8Z6Q4M2\", \"extendBy\": 86400 }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_2() {
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a03\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"issuer\": \"did:webvh:QmAdminScid1:admin.example.com:alice\",\n  \"recipient\": \"did:webvh:QmControlScid2:control.example.com\",\n  \"issuedAt\": \"2026-09-27T09:01:00Z\",\n  \"payload\": { \"inviteId\": \"inv_01J8Z6Q4M2\", \"role\": \"owner\" }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_3() {
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a04\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"issuer\": \"did:webvh:QmAdminScid1:admin.example.com:alice\",\n  \"recipient\": \"did:webvh:QmControlScid2:control.example.com\",\n  \"issuedAt\": \"2026-09-27T09:02:00Z\",\n  \"payload\": { \"inviteId\": \"inv_01J8Z6Q4M2\", \"expiresAt\": \"2026-10-01T00:00:00Z\" }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_4() {
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a05\",\n  \"type\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"issuer\": \"did:webvh:QmAdminScid1:admin.example.com:alice\",\n  \"recipient\": \"did:webvh:QmControlScid2:control.example.com\",\n  \"issuedAt\": \"2026-09-27T09:03:00Z\",\n  \"payload\": { \"inviteId\": \"inv_01J8Z6Q4M2\", \"role\": \"member\", \"expiresAt\": \"2026-10-01T00:00:00Z\" }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");

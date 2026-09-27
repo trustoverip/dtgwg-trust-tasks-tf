@@ -977,6 +977,9 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     migrate_defs_to_definitions(&mut schema);
     // After the migration, so the pass resolves `#/definitions/...`.
     flatten_unevaluated_compositions(&mut schema);
+    // Only reshapes a `oneOf` that would otherwise defeat typify (a branch
+    // with a compound `not`); a plain discriminated `oneOf` is untouched.
+    desugar_oneof_with_compound_not(&mut schema);
 
     // Round-trip the normalized schema into the schemars representation
     // typify works with.
@@ -2106,6 +2109,94 @@ fn flatten_here(map: &mut serde_json::Map<String, Value>, defs: &Value) {
     map.insert("additionalProperties".into(), Value::Bool(false));
 }
 
+/// Drop a `oneOf` combinator from the schema typify sees when any of its
+/// branches carries a compound `not` (wrapped in `anyOf`/`allOf`, or a
+/// multi-field `required`) instead of a single `{"required": ["x"]}` guard.
+///
+/// ## Why this exists
+///
+/// A spec expressing "exactly one of A, B, C" (with A, B, C themselves
+/// possibly excluding more than one sibling — SPEC.md's mutual-exclusion
+/// idiom, e.g. `auth/passkey/enroll/invite/update`'s `role` /
+/// `expiresAt` / `extendBy`) writes each branch as `{"required": ["a"],
+/// "not": {"anyOf": [{"required": ["b"]}, {"required": ["c"]}]}}`. typify
+/// (0.6) merges a `oneOf` branch's keywords into the untagged enum variant
+/// it synthesizes for that branch, and it handles a bare `"not": {"required":
+/// ["x"]}` directly — property `x` is simply absent from that variant's
+/// fields. Wrap the same exclusion in `anyOf` and typify's merge instead
+/// produces an uninhabited type (`pub enum PayloadVariant0 {}`) for that
+/// branch, so a document that should satisfy it can never deserialize — and,
+/// worse, a property required only by *that* branch (`role`, excluded by
+/// nobody else) gets silently dropped from every *other* branch's variant
+/// too, so a document combining it with another branch's discriminator also
+/// fails to round-trip.
+///
+/// Re-expressing the same constraint as `anyOf` (at least one) plus a
+/// pairwise `not` (no two at once) — `oneOf`'s own JSON Schema definition —
+/// was tried and does not help: typify applies the same broken merge to a
+/// `not` wrapping `anyOf`/`allOf` regardless of which top-level combinator
+/// carries it, so the replacement produces the identical dropped-property
+/// defect one level up.
+///
+/// The combinator is instead removed outright, with **no** replacement, from
+/// only the copy of the schema handed to typify. `generate_one` captures the
+/// wire schema (`SCHEMA_JSON`, what `ValidatedPayload::validate_value` and
+/// every other language's binding validate against — SPEC.md §7.2 item 2)
+/// *before* this pass runs, so the actual mutual-exclusion constraint is
+/// still enforced at runtime; only the Rust type becomes as permissive as
+/// the TypeScript/Go/Dart bindings already are for this same schema (every
+/// affected member optional, no combinator modelled in the type system).
+/// That is a real loss of a compile-time guarantee, but every alternative
+/// tried produces a Rust type that is not merely less precise, but
+/// *outright wrong* — unable to represent, or silently unable to
+/// deserialize, a document the schema declares valid. A plain discriminated
+/// `oneOf` (every branch's `not`, if any, a single `{"required": ["x"]}`)
+/// typify already renders as a clean Rust enum, and is untouched here.
+fn desugar_oneof_with_compound_not(schema: &mut Value) {
+    desugar_oneof_node(schema);
+}
+
+fn desugar_oneof_node(node: &mut Value) {
+    match node {
+        Value::Object(map) => {
+            let drop = matches!(map.get("oneOf"), Some(Value::Array(branches)) if branches.len() >= 2 && branches.iter().any(has_compound_not));
+            if drop {
+                map.remove("oneOf");
+            }
+            for (_, v) in map.iter_mut() {
+                desugar_oneof_node(v);
+            }
+        }
+        Value::Array(items) => {
+            for v in items.iter_mut() {
+                desugar_oneof_node(v);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// A branch's `not` is "simple" — and left to typify's own direct handling —
+/// only when it is exactly `{"required": ["x"]}` for a single field `x`.
+/// Anything else (wrapped in `anyOf`/`allOf`, more than one required field,
+/// or any other shape) is "compound" and triggers dropping the whole
+/// `oneOf` in [`desugar_oneof_with_compound_not`].
+fn has_compound_not(branch: &Value) -> bool {
+    let Some(not) = branch.get("not") else {
+        return false;
+    };
+    let Some(obj) = not.as_object() else {
+        // `not: true` / `not: false` — not a shape this pass understands;
+        // treat conservatively as compound so the `oneOf` is dropped rather
+        // than handed to typify's oneOf-merge heuristics.
+        return true;
+    };
+    if obj.len() != 1 {
+        return true;
+    }
+    !matches!(obj.get("required"), Some(Value::Array(arr)) if arr.len() == 1)
+}
+
 #[cfg(test)]
 mod flatten_tests {
     use super::*;
@@ -2227,6 +2318,103 @@ mod flatten_tests {
             }
         });
         assert_eq!(flattened(input.clone()), input);
+    }
+}
+
+#[cfg(test)]
+mod desugar_oneof_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn desugared(mut schema: Value) -> Value {
+        desugar_oneof_with_compound_not(&mut schema);
+        schema
+    }
+
+    /// The defect's own shape: a role-only branch whose `not` excludes two
+    /// siblings via `anyOf`, alongside two branches with a single-field
+    /// `not` each. The whole `oneOf` is dropped, not just the compound
+    /// branch — `oneOf` is one combinator over the whole array.
+    #[test]
+    fn drops_a_oneof_with_any_compound_not_branch() {
+        let input = json!({
+            "type": "object",
+            "required": ["inviteId"],
+            "oneOf": [
+                {
+                    "required": ["role"],
+                    "not": { "anyOf": [{ "required": ["expiresAt"] }, { "required": ["extendBy"] }] }
+                },
+                { "required": ["expiresAt"], "not": { "required": ["extendBy"] } },
+                { "required": ["extendBy"], "not": { "required": ["expiresAt"] } }
+            ]
+        });
+        let out = desugared(input);
+        assert!(out.get("oneOf").is_none());
+        assert_eq!(out["required"], json!(["inviteId"]));
+    }
+
+    /// A `not` with more than one `required` field (implicit AND, not
+    /// wrapped in `anyOf`) is compound too — only a *single*-field
+    /// `required` is the shape typify handles directly.
+    #[test]
+    fn a_multi_field_required_not_is_compound() {
+        let input = json!({
+            "oneOf": [
+                { "required": ["a"], "not": { "required": ["b", "c"] } },
+                { "required": ["b"] }
+            ]
+        });
+        assert!(desugared(input).get("oneOf").is_none());
+    }
+
+    /// The two-way case every other affected schema in `specs/` uses
+    /// (`auth/revoke-session/0.1`, `vta/app-state/put/1.0`, …): each
+    /// branch's `not` is a single-field `required`, which typify already
+    /// renders as a clean discriminated enum. Left untouched.
+    #[test]
+    fn leaves_a_plain_two_way_oneof_alone() {
+        let input = json!({
+            "oneOf": [
+                { "required": ["sessionId"], "not": { "required": ["all"] } },
+                { "required": ["all"], "not": { "required": ["sessionId"] } }
+            ]
+        });
+        assert_eq!(desugared(input.clone()), input);
+    }
+
+    /// A branch with no `not` at all (e.g. a plain discriminated union) is
+    /// simple by definition and never triggers the drop by itself.
+    #[test]
+    fn a_branch_with_no_not_is_simple() {
+        let input = json!({
+            "oneOf": [
+                { "required": ["kind"], "properties": { "kind": { "const": "a" } } },
+                { "required": ["kind"], "properties": { "kind": { "const": "b" } } }
+            ]
+        });
+        assert_eq!(desugared(input.clone()), input);
+    }
+
+    /// The pass recurses into `$defs`/`definitions` and array members (e.g.
+    /// a nested `allOf`), not just the schema's own top-level `oneOf`.
+    #[test]
+    fn recurses_into_nested_schemas() {
+        let input = json!({
+            "definitions": {
+                "Nested": {
+                    "oneOf": [
+                        {
+                            "required": ["a"],
+                            "not": { "anyOf": [{ "required": ["b"] }] }
+                        },
+                        { "required": ["b"], "not": { "required": ["a"] } }
+                    ]
+                }
+            }
+        });
+        let out = desugared(input);
+        assert!(out["definitions"]["Nested"].get("oneOf").is_none());
     }
 }
 

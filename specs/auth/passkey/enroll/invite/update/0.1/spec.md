@@ -92,6 +92,10 @@ The entitlement is **administrator standing on the auth service, with authority 
 
 ## Request
 
+The payload names at least one of `role`, `expiresAt` and `extendBy` — never none of the three, and never both `expiresAt` and `extendBy` together.
+
+### Extend the expiry
+
 ```json
 {
   "id": "urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a01",
@@ -100,6 +104,45 @@ The entitlement is **administrator standing on the auth service, with authority 
   "recipient": "did:webvh:QmControlScid2:control.example.com",
   "issuedAt": "2026-09-27T09:00:00Z",
   "payload": { "inviteId": "inv_01J8Z6Q4M2", "extendBy": 86400 }
+}
+```
+
+### Change the role only
+
+```json
+{
+  "id": "urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a03",
+  "type": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
+  "issuer": "did:webvh:QmAdminScid1:admin.example.com:alice",
+  "recipient": "did:webvh:QmControlScid2:control.example.com",
+  "issuedAt": "2026-09-27T09:01:00Z",
+  "payload": { "inviteId": "inv_01J8Z6Q4M2", "role": "owner" }
+}
+```
+
+### Set an absolute expiry
+
+```json
+{
+  "id": "urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a04",
+  "type": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
+  "issuer": "did:webvh:QmAdminScid1:admin.example.com:alice",
+  "recipient": "did:webvh:QmControlScid2:control.example.com",
+  "issuedAt": "2026-09-27T09:02:00Z",
+  "payload": { "inviteId": "inv_01J8Z6Q4M2", "expiresAt": "2026-10-01T00:00:00Z" }
+}
+```
+
+### Change the role and set an absolute expiry
+
+```json
+{
+  "id": "urn:uuid:8d3956ca-4a68-49bc-8fb0-9c0d1e2f3a05",
+  "type": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
+  "issuer": "did:webvh:QmAdminScid1:admin.example.com:alice",
+  "recipient": "did:webvh:QmControlScid2:control.example.com",
+  "issuedAt": "2026-09-27T09:03:00Z",
+  "payload": { "inviteId": "inv_01J8Z6Q4M2", "role": "member", "expiresAt": "2026-10-01T00:00:00Z" }
 }
 ```
 

@@ -147,65 +147,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "title": "Payload",
 ///  "description": "Invalidate one named session, every session of the producer, or every session of a named subject the producer may manage. The auth service drops the targeted session(s); any future use of their access or refresh tokens MUST fail. Exactly one of `sessionId`, `all` and `subject` is present.",
 ///  "type": "object",
-///  "oneOf": [
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "all"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "subject"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "sessionId"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "sessionId"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "subject"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "all"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "sessionId"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "all"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "subject"
-///      ]
-///    }
-///  ],
 ///  "properties": {
 ///    "all": {
 ///      "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.",
@@ -237,150 +178,43 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub enum Payload {
-    Variant0(PayloadVariant0),
-    Variant1(PayloadVariant1),
-    Variant2(PayloadVariant2),
+pub struct Payload {
+    ///When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub all: ::std::option::Option<bool>,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub reason: ::std::option::Option<PayloadReason>,
+    ///The session to revoke. Mutually exclusive with `all` and `subject`.
+    #[serde(
+        rename = "sessionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub session_id: ::std::option::Option<PayloadSessionId>,
+    ///Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub subject: ::std::option::Option<PayloadSubject>,
 }
-impl ::std::convert::From<PayloadVariant0> for Payload {
-    fn from(value: PayloadVariant0) -> Self {
-        Self::Variant0(value)
+impl ::std::default::Default for Payload {
+    fn default() -> Self {
+        Self {
+            all: Default::default(),
+            ext: Default::default(),
+            reason: Default::default(),
+            session_id: Default::default(),
+            subject: Default::default(),
+        }
     }
 }
-impl ::std::convert::From<PayloadVariant1> for Payload {
-    fn from(value: PayloadVariant1) -> Self {
-        Self::Variant1(value)
-    }
-}
-impl ::std::convert::From<PayloadVariant2> for Payload {
-    fn from(value: PayloadVariant2) -> Self {
-        Self::Variant2(value)
-    }
-}
-///`PayloadVariant0`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "properties": {
-///        "all": {
-///          "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.",
-///          "type": "boolean"
-///        },
-///        "ext": {
-///          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "reason": {
-///          "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///          "type": "string",
-///          "maxLength": 1024
-///        },
-///        "sessionId": {
-///          "description": "The session to revoke. Mutually exclusive with `all` and `subject`.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "subject": {
-///          "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.",
-///          "type": "string",
-///          "maxLength": 2048,
-///          "pattern": "^did:"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "all"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "subject"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "sessionId"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "anyOf": [
-///            {
-///              "required": [
-///                "sessionId"
-///              ]
-///            },
-///            {
-///              "required": [
-///                "subject"
-///              ]
-///            }
-///          ]
-///        },
-///        "required": [
-///          "all"
-///        ]
-///      }
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "anyOf": [
-///            {
-///              "required": [
-///                "sessionId"
-///              ]
-///            },
-///            {
-///              "required": [
-///                "all"
-///              ]
-///            }
-///          ]
-///        },
-///        "required": [
-///          "subject"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
-#[non_exhaustive]
-pub enum PayloadVariant0 {
-    Variant0 {
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<PayloadVariant0Variant0Reason>,
-        ///The session to revoke. Mutually exclusive with `all` and `subject`.
-        #[serde(rename = "sessionId")]
-        session_id: PayloadVariant0Variant0SessionId,
-    },
-    Variant1(PayloadVariant0Variant1),
-}
-impl ::std::convert::From<PayloadVariant0Variant1> for PayloadVariant0 {
-    fn from(value: PayloadVariant0Variant1) -> Self {
-        Self::Variant1(value)
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
     }
 }
 ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
@@ -397,19 +231,19 @@ impl ::std::convert::From<PayloadVariant0Variant1> for PayloadVariant0 {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant0Variant0Reason(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant0Variant0Reason {
+pub struct PayloadReason(::std::string::String);
+impl ::std::ops::Deref for PayloadReason {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant0Variant0Reason> for ::std::string::String {
-    fn from(value: PayloadVariant0Variant0Reason) -> Self {
+impl ::std::convert::From<PayloadReason> for ::std::string::String {
+    fn from(value: PayloadReason) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant0Variant0Reason {
+impl ::std::str::FromStr for PayloadReason {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 1024usize {
@@ -418,13 +252,13 @@ impl ::std::str::FromStr for PayloadVariant0Variant0Reason {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0Variant0Reason {
+impl ::std::convert::TryFrom<&str> for PayloadReason {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Variant0Reason {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReason {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -432,7 +266,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Variant0
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Variant0Reason {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReason {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -440,7 +274,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Variant0R
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Variant0Reason {
+impl<'de> ::serde::Deserialize<'de> for PayloadReason {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -466,19 +300,19 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Variant0Reason {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant0Variant0SessionId(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant0Variant0SessionId {
+pub struct PayloadSessionId(::std::string::String);
+impl ::std::ops::Deref for PayloadSessionId {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant0Variant0SessionId> for ::std::string::String {
-    fn from(value: PayloadVariant0Variant0SessionId) -> Self {
+impl ::std::convert::From<PayloadSessionId> for ::std::string::String {
+    fn from(value: PayloadSessionId) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant0Variant0SessionId {
+impl ::std::str::FromStr for PayloadSessionId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() < 1usize {
@@ -487,13 +321,13 @@ impl ::std::str::FromStr for PayloadVariant0Variant0SessionId {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0Variant0SessionId {
+impl ::std::convert::TryFrom<&str> for PayloadSessionId {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Variant0SessionId {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadSessionId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -501,7 +335,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Variant0
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Variant0SessionId {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadSessionId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -509,577 +343,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Variant0S
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Variant0SessionId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`PayloadVariant0Variant1`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "sessionId"
-///      ],
-///      "properties": {
-///        "ext": {
-///          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "reason": {
-///          "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///          "type": "string",
-///          "maxLength": 1024
-///        },
-///        "sessionId": {
-///          "description": "The session to revoke. Mutually exclusive with `all` and `subject`.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "subject": false
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "all"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "sessionId"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub enum PayloadVariant0Variant1 {}
-///`PayloadVariant1`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "properties": {
-///        "all": {
-///          "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.",
-///          "type": "boolean"
-///        },
-///        "ext": {
-///          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "reason": {
-///          "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///          "type": "string",
-///          "maxLength": 1024
-///        },
-///        "sessionId": {
-///          "description": "The session to revoke. Mutually exclusive with `all` and `subject`.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "subject": {
-///          "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.",
-///          "type": "string",
-///          "maxLength": 2048,
-///          "pattern": "^did:"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "sessionId"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "subject"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "all"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "anyOf": [
-///            {
-///              "required": [
-///                "all"
-///              ]
-///            },
-///            {
-///              "required": [
-///                "subject"
-///              ]
-///            }
-///          ]
-///        },
-///        "required": [
-///          "sessionId"
-///        ]
-///      }
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "anyOf": [
-///            {
-///              "required": [
-///                "sessionId"
-///              ]
-///            },
-///            {
-///              "required": [
-///                "all"
-///              ]
-///            }
-///          ]
-///        },
-///        "required": [
-///          "subject"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
-#[non_exhaustive]
-pub enum PayloadVariant1 {
-    Variant0(PayloadVariant1Variant0),
-    Variant1 {
-        ///When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.
-        all: bool,
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<PayloadVariant1Variant1Reason>,
-    },
-}
-impl ::std::convert::From<PayloadVariant1Variant0> for PayloadVariant1 {
-    fn from(value: PayloadVariant1Variant0) -> Self {
-        Self::Variant0(value)
-    }
-}
-///`PayloadVariant1Variant0`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "all"
-///      ],
-///      "properties": {
-///        "all": {
-///          "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.",
-///          "type": "boolean"
-///        },
-///        "ext": {
-///          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "reason": {
-///          "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///          "type": "string",
-///          "maxLength": 1024
-///        },
-///        "subject": false
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "sessionId"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "all"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub enum PayloadVariant1Variant0 {}
-///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct PayloadVariant1Variant1Reason(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant1Variant1Reason {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<PayloadVariant1Variant1Reason> for ::std::string::String {
-    fn from(value: PayloadVariant1Variant1Reason) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for PayloadVariant1Variant1Reason {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for PayloadVariant1Variant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1Variant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1Variant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Variant1Reason {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`PayloadVariant2`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "properties": {
-///        "all": {
-///          "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.",
-///          "type": "boolean"
-///        },
-///        "ext": {
-///          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "reason": {
-///          "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///          "type": "string",
-///          "maxLength": 1024
-///        },
-///        "sessionId": {
-///          "description": "The session to revoke. Mutually exclusive with `all` and `subject`.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "subject": {
-///          "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.",
-///          "type": "string",
-///          "maxLength": 2048,
-///          "pattern": "^did:"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "not": {
-///        "anyOf": [
-///          {
-///            "required": [
-///              "sessionId"
-///            ]
-///          },
-///          {
-///            "required": [
-///              "all"
-///            ]
-///          }
-///        ]
-///      },
-///      "required": [
-///        "subject"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "anyOf": [
-///            {
-///              "required": [
-///                "all"
-///              ]
-///            },
-///            {
-///              "required": [
-///                "subject"
-///              ]
-///            }
-///          ]
-///        },
-///        "required": [
-///          "sessionId"
-///        ]
-///      }
-///    },
-///    {
-///      "not": {
-///        "not": {
-///          "anyOf": [
-///            {
-///              "required": [
-///                "sessionId"
-///              ]
-///            },
-///            {
-///              "required": [
-///                "subject"
-///              ]
-///            }
-///          ]
-///        },
-///        "required": [
-///          "all"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
-#[non_exhaustive]
-pub enum PayloadVariant2 {
-    Variant0(PayloadVariant2Variant0),
-    Variant1 {
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<PayloadVariant2Variant1Reason>,
-        ///Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.
-        subject: PayloadVariant2Variant1Subject,
-    },
-}
-impl ::std::convert::From<PayloadVariant2Variant0> for PayloadVariant2 {
-    fn from(value: PayloadVariant2Variant0) -> Self {
-        Self::Variant0(value)
-    }
-}
-///`PayloadVariant2Variant0`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "allOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "subject"
-///      ],
-///      "properties": {
-///        "all": false,
-///        "ext": {
-///          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "reason": {
-///          "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///          "type": "string",
-///          "maxLength": 1024
-///        },
-///        "subject": {
-///          "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.",
-///          "type": "string",
-///          "maxLength": 2048,
-///          "pattern": "^did:"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "sessionId"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "subject"
-///        ]
-///      }
-///    }
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub enum PayloadVariant2Variant0 {}
-///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct PayloadVariant2Variant1Reason(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant2Variant1Reason {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<PayloadVariant2Variant1Reason> for ::std::string::String {
-    fn from(value: PayloadVariant2Variant1Reason) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for PayloadVariant2Variant1Reason {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for PayloadVariant2Variant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2Variant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2Variant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant2Variant1Reason {
+impl<'de> ::serde::Deserialize<'de> for PayloadSessionId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1106,19 +370,19 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant2Variant1Reason {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant2Variant1Subject(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant2Variant1Subject {
+pub struct PayloadSubject(::std::string::String);
+impl ::std::ops::Deref for PayloadSubject {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant2Variant1Subject> for ::std::string::String {
-    fn from(value: PayloadVariant2Variant1Subject) -> Self {
+impl ::std::convert::From<PayloadSubject> for ::std::string::String {
+    fn from(value: PayloadSubject) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant2Variant1Subject {
+impl ::std::str::FromStr for PayloadSubject {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 2048usize {
@@ -1132,13 +396,13 @@ impl ::std::str::FromStr for PayloadVariant2Variant1Subject {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant2Variant1Subject {
+impl ::std::convert::TryFrom<&str> for PayloadSubject {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2Variant1Subject {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadSubject {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -1146,7 +410,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant2Variant1
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2Variant1Subject {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadSubject {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -1154,7 +418,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant2Variant1S
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant2Variant1Subject {
+impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1212,6 +476,109 @@ impl Response {
 }
 /// Types for composing complex structures.
 pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        all: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+        session_id: ::std::result::Result<
+            ::std::option::Option<super::PayloadSessionId>,
+            ::std::string::String,
+        >,
+        subject: ::std::result::Result<
+            ::std::option::Option<super::PayloadSubject>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                all: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                session_id: Ok(Default::default()),
+                subject: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn all<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.all = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for all: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn session_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadSessionId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.session_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for session_id: {e}"));
+            self
+        }
+        pub fn subject<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadSubject>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.subject = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for subject: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                all: value.all?,
+                ext: value.ext?,
+                reason: value.reason?,
+                session_id: value.session_id?,
+                subject: value.subject?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                all: Ok(value.all),
+                ext: Ok(value.ext),
+                reason: Ok(value.reason),
+                session_id: Ok(value.session_id),
+                subject: Ok(value.subject),
+            }
+        }
+    }
     #[derive(Clone, Debug)]
     pub struct Response {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
