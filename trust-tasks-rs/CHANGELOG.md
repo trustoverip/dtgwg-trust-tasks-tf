@@ -31,6 +31,30 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.24.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.5...trust-tasks-rs-v0.24.6) — 2026-09-28
+
+
+### Added
+
+- **vta/contexts/update-did**: 1.1 — clear a context's DID with did: null ([#684](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/684))
+
+* feat(vta/contexts/update-did): 1.1 — clear a context's DID with did: null
+
+  1.0 required a non-empty `did`, and `vta/contexts/update` only ever sets
+  one, so once a context had a DID it could be replaced but never removed.
+  The VTA refuses to delete a DID a context acts as and tells the operator
+  to reassign it — which left no way to retire a context's last DID short
+  of assigning one they did not want.
+
+  1.1 makes `did` nullable: `null` leaves the context with no DID, the
+  same state as one created without, and the record comes back with `did`
+  absent. A string `did` must now match the DID Core §3.1 grammar; 1.0's
+  `minLength: 1` accepted "did:" and "hello" as identities. Both are
+  permitted as a MINOR bump on a draft spec (SPEC §5.2), and a 1.1
+  consumer must still accept 1.0.
+
+
+
 ## [0.24.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.4...trust-tasks-rs-v0.24.5) — 2026-09-28
 
 
