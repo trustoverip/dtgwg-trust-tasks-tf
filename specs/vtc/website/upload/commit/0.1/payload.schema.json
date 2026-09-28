@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/upload/commit/0.1",
+  "title": "VTC Website — Upload — Commit — payload",
+  "description": "Complete an upload. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId"
+  ],
+  "properties": {
+    "uploadId": {
+      "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "WrittenFile": {
+      "title": "WrittenFile",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "etag",
+        "sizeBytes"
+      ],
+      "description": "The file a `file` upload wrote.",
+      "properties": {
+        "path": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/WebsitePath"
+        },
+        "etag": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/WebsiteEtag"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The file's size in bytes."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website — Upload — Commit — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "target",
+        "sha256",
+        "sizeBytes"
+      ],
+      "description": "Exactly one of `file` (for a `file` target) and `stagedUntil` (for a `bundle` target) is present — a rule over two members that this schema does not express.",
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+        },
+        "target": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadTarget"
+        },
+        "sha256": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSha256"
+        },
+        "sizeBytes": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSizeBytes"
+        },
+        "file": {
+          "$ref": "#/$defs/WrittenFile"
+        },
+        "stagedUntil": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "note": "Missing uploadId.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "Response without `aborted`.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968"
+    }
+  }
+]

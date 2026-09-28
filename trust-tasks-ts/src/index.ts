@@ -585,6 +585,7 @@ export * as RelationshipLifecycleShared_v0_1 from "./vtc/_shared/0.1/relationshi
 export * as SchemaRegistryShared_v0_1 from "./vtc/_shared/0.1/schema-registry.js";
 export * as VetterProfileShared_v0_1 from "./vtc/_shared/0.1/vetter-profile.js";
 export * as VettingAutoGrantShared_v0_1 from "./vtc/_shared/0.1/vetting-auto-grant.js";
+export * as WebsiteTransferShared_v0_1 from "./vtc/_shared/0.1/website-transfer.js";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload.js";
 export * as VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
@@ -699,10 +700,16 @@ export * as VtcVettingVettersPcsTokens_v0_1 from "./vtc/vetting/vetters/pcs-toke
 export * as VtcVettingVettersProfile_v0_1 from "./vtc/vetting/vetters/profile/0.1/payload.js";
 export * as VtcVettingVettersResend_v0_1 from "./vtc/vetting/vetters/resend/0.1/payload.js";
 export * as VtcVettingVettersShow_v0_1 from "./vtc/vetting/vetters/show/0.1/payload.js";
+export * as VtcWebsiteDeploy_v0_1 from "./vtc/website/deploy/0.1/payload.js";
 export * as VtcWebsiteFilesDelete_v0_1 from "./vtc/website/files/delete/0.1/payload.js";
 export * as VtcWebsiteFilesList_v0_1 from "./vtc/website/files/list/0.1/payload.js";
+export * as VtcWebsiteFilesShow_v0_1 from "./vtc/website/files/show/0.1/payload.js";
 export * as VtcWebsiteGenerationsList_v0_1 from "./vtc/website/generations/list/0.1/payload.js";
 export * as VtcWebsiteRollback_v0_1 from "./vtc/website/rollback/0.1/payload.js";
+export * as VtcWebsiteUploadAbort_v0_1 from "./vtc/website/upload/abort/0.1/payload.js";
+export * as VtcWebsiteUploadBegin_v0_1 from "./vtc/website/upload/begin/0.1/payload.js";
+export * as VtcWebsiteUploadChunk_v0_1 from "./vtc/website/upload/chunk/0.1/payload.js";
+export * as VtcWebsiteUploadCommit_v0_1 from "./vtc/website/upload/commit/0.1/payload.js";
 export * as SyncUpdateShared_v0_1 from "./webvh/_shared/0.1/sync-update.js";
 export * as WitnessKeyShared_v0_1 from "./webvh/_shared/0.1/witness-key.js";
 export * as WebvhSyncBatch_v0_1 from "./webvh/sync/batch/0.1/payload.js";

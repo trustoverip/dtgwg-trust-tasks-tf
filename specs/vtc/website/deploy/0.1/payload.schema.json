@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/deploy/0.1",
+  "title": "VTC Website — Deploy — payload",
+  "description": "Publish a staged bundle upload. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId"
+  ],
+  "properties": {
+    "uploadId": {
+      "$ref": "../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website — Deploy — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deployMode",
+        "bundleSha256",
+        "bundleSizeBytes",
+        "targetGeneration",
+        "prunedGenerations"
+      ],
+      "properties": {
+        "deployMode": {
+          "type": "string",
+          "enum": [
+            "live",
+            "managed"
+          ],
+          "description": "How the site was replaced."
+        },
+        "bundleSha256": {
+          "$ref": "../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSha256"
+        },
+        "bundleSizeBytes": {
+          "$ref": "../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSizeBytes"
+        },
+        "targetGeneration": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The generation created; 0 in live mode."
+        },
+        "prunedGenerations": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Old generations removed; 0 in live mode."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

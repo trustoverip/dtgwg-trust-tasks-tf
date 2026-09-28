@@ -2374,6 +2374,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1#response" => <crate::specs::vtc::vetting::vetters::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/deploy/0.1" => <crate::specs::vtc::website::deploy::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/deploy/0.1#response" => <crate::specs::vtc::website::deploy::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1" => <crate::specs::vtc::website::files::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1#response" => <crate::specs::vtc::website::files::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2382,6 +2386,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/list/0.1#response" => <crate::specs::vtc::website::files::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/show/0.1" => <crate::specs::vtc::website::files::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/show/0.1#response" => <crate::specs::vtc::website::files::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/generations/list/0.1" => <crate::specs::vtc::website::generations::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/generations/list/0.1#response" => <crate::specs::vtc::website::generations::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2389,6 +2397,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/website/rollback/0.1" => <crate::specs::vtc::website::rollback::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/rollback/0.1#response" => <crate::specs::vtc::website::rollback::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/abort/0.1" => <crate::specs::vtc::website::upload::abort::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/abort/0.1#response" => <crate::specs::vtc::website::upload::abort::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/begin/0.1" => <crate::specs::vtc::website::upload::begin::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/begin/0.1#response" => <crate::specs::vtc::website::upload::begin::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/chunk/0.1" => <crate::specs::vtc::website::upload::chunk::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/chunk/0.1#response" => <crate::specs::vtc::website::upload::chunk::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/commit/0.1" => <crate::specs::vtc::website::upload::commit::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/commit/0.1#response" => <crate::specs::vtc::website::upload::commit::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/batch/0.1" => <crate::specs::webvh::sync::batch::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
@@ -5342,6 +5366,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/deploy/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::website::deploy::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::website::files::delete::v0_1::Payload,
@@ -5350,6 +5378,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::website::files::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::website::files::show::v0_1::Payload,
         >()),
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/generations/list/0.1" => {
@@ -5361,6 +5393,30 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/website/rollback/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::website::rollback::v0_1::Payload,
         >()),
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/abort/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::website::upload::abort::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/begin/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::website::upload::begin::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/chunk/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::website::upload::chunk::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/commit/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::website::upload::commit::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/batch/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::webvh::sync::batch::v0_1::Payload,
@@ -7824,6 +7880,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::vtc::vetting::vetters::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/deploy/0.1" => {
+            Some(crate::specs::vtc::website::deploy::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/files/delete/0.1" => {
             Some(crate::specs::vtc::website::files::delete::v0_1::ERROR_CODES)
         }
@@ -7832,12 +7892,32 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::vtc::website::files::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/show/0.1" => {
+            Some(crate::specs::vtc::website::files::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/generations/list/0.1" => {
             Some(crate::specs::vtc::website::generations::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/website/rollback/0.1" => {
             Some(crate::specs::vtc::website::rollback::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/abort/0.1" => {
+            Some(crate::specs::vtc::website::upload::abort::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/begin/0.1" => {
+            Some(crate::specs::vtc::website::upload::begin::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/chunk/0.1" => {
+            Some(crate::specs::vtc::website::upload::chunk::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/commit/0.1" => {
+            Some(crate::specs::vtc::website::upload::commit::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "webvh")]
         "https://trusttasks.org/spec/webvh/sync/batch/0.1" => {
@@ -7913,6 +7993,12 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         "https://trusttasks.org/spec/vtc/schemas/register/0.1#response" => <crate::specs::vtc::schemas::register::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/schemas/show/0.1#response" => <crate::specs::vtc::schemas::show::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/files/show/0.1#response" => <crate::specs::vtc::website::files::show::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/begin/0.1" => <crate::specs::vtc::website::upload::begin::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/website/upload/chunk/0.1" => <crate::specs::vtc::website::upload::chunk::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         _ => None,
     }
 }

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/website-transfer",
+  "title": "VTC — shared website transfer definitions",
+  "description": "Shared types for the vtc/website/upload/*, vtc/website/deploy and vtc/website/files/show tasks: how bytes of a community's website move as Trust Task documents. Chunking reuses, by reference from each task, the node-neutral chunked-transfer vocabulary of vta/_shared/0.1/backup-transfer (ChunkManifest, ChunkIndex, ChunkData, ExpectedSha256, ExpectedSizeBytes, ExpiresAt), so a producer that implements backup/put-chunk implements these chunks the same way. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "UploadId": {
+      "title": "UploadId",
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given."
+    },
+    "WebsitePath": {
+      "title": "WebsitePath",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^[^\\\\]+$",
+      "description": "A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not."
+    },
+    "WebsiteEtag": {
+      "title": "WebsiteEtag",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes."
+    },
+    "UploadTarget": {
+      "title": "UploadTarget",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "description": "What the uploaded bytes are for, committed before any byte moves. `file`: one file at `path`, written into the site when the upload commits — the single-file write. `bundle`: a gzip-compressed tar of the whole site, staged when the upload commits and published by vtc/website/deploy. `path` is required for a `file` target and forbidden for a `bundle`, and `ifMatch` is allowed only for a `file` — rules over two members that this schema does not express; a community refuses a violation with `malformedRequest`. `ifMatch` is optimistic concurrency: the write commits only if the file's current content hash is this value.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "file",
+            "bundle"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/WebsitePath"
+        },
+        "ifMatch": {
+          "$ref": "#/$defs/WebsiteEtag"
+        }
+      }
+    },
+    "FileData": {
+      "title": "FileData",
+      "type": "string",
+      "maxLength": 349526,
+      "pattern": "^[A-Za-z0-9_-]*$",
+      "description": "A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling."
+    }
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "note": "Standard base64 with padding — chunks are unpadded base64url.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "index": 0,
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "PGh0bWw+PC9odG1sPgo="
+    }
+  },
+  {
+    "note": "No restated digest — a chunk sent to the wrong index would survive until reassembly.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "index": 0,
+      "data": "PGh0bWw-PC9odG1sPgo"
+    }
+  },
+  {
+    "note": "A negative index.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "index": -1,
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "PGh0bWw-PC9odG1sPgo"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `stored` — an idempotent re-send and a first write must be distinguishable.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "index": 1,
+      "remainingCount": 0,
+      "expiresAt": "2026-09-28T11:05:00Z"
+    }
+  }
+]

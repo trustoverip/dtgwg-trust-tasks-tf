@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/upload/begin/0.1",
+  "title": "VTC Website — Upload — Begin — payload",
+  "description": "Open an upload of one website file or a whole-site bundle, committing to its size, SHA-256 and chunk digests. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "target",
+    "expectedSha256",
+    "expectedSizeBytes",
+    "chunks"
+  ],
+  "properties": {
+    "target": {
+      "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadTarget"
+    },
+    "expectedSha256": {
+      "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSha256"
+    },
+    "expectedSizeBytes": {
+      "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpectedSizeBytes"
+    },
+    "chunks": {
+      "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkManifest"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website — Upload — Begin — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "expiresAt"
+      ],
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+        },
+        "expiresAt": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

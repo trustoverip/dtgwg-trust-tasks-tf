@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/files/show/0.1",
+  "title": "VTC Website — Files — Show — payload",
+  "description": "Read a range of one website file. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "path"
+  ],
+  "properties": {
+    "path": {
+      "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/WebsitePath"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Byte offset to read from; 0 when absent."
+    },
+    "length": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 262144,
+      "description": "Bytes to read; 262144 when absent."
+    },
+    "ifMatch": {
+      "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/WebsiteEtag"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website — Files — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "etag",
+        "sizeBytes",
+        "contentType",
+        "offset",
+        "data",
+        "complete"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/WebsitePath"
+        },
+        "etag": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/WebsiteEtag"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The whole file's size."
+        },
+        "contentType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown."
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Echoed."
+        },
+        "data": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/FileData"
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "Whether this range reached the end of the file."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

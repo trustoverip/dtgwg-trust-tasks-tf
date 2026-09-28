@@ -304,6 +304,10 @@ export type FaceReach =
  */
 export type FacetColour = "slate" | "indigo" | "teal" | "moss" | "sand" | "clay" | "rose" | "plum";
 /**
+ * A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.
+ */
+export type FileData = string;
+/**
  * The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
  */
 export type ForgeHost = string;
@@ -758,6 +762,10 @@ export type TrafficStage =
  */
 export type Ulid = string;
 /**
+ * Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given.
+ */
+export type UploadId = string;
+/**
  * The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
  */
 export type ValueType = "string" | "number" | "boolean" | "date" | "object";
@@ -974,6 +982,14 @@ export type Vid = string;
  * How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
  */
 export type Visibility = "open" | "attributed" | "private";
+/**
+ * A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.
+ */
+export type WebsiteEtag = string;
+/**
+ * A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.
+ */
+export type WebsitePath = string;
 /**
  * The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.
  */
@@ -5309,6 +5325,14 @@ export interface TspMessageEnvelope_VaultV0_2 {
    * Base64url-encoded TSP message bytes. Format reference: https://trustoverip.github.io/tswg-tsp-specification/#message-format
    */
   message: string;
+}
+/**
+ * What the uploaded bytes are for, committed before any byte moves. `file`: one file at `path`, written into the site when the upload commits — the single-file write. `bundle`: a gzip-compressed tar of the whole site, staged when the upload commits and published by vtc/website/deploy. `path` is required for a `file` target and forbidden for a `bundle`, and `ifMatch` is allowed only for a `file` — rules over two members that this schema does not express; a community refuses a violation with `malformedRequest`. `ifMatch` is optimistic concurrency: the write commits only if the file's current content hash is this value.
+ */
+export interface UploadTarget {
+  kind: "file" | "bundle";
+  path?: WebsitePath;
+  ifMatch?: WebsiteEtag;
 }
 export interface VaultDeletedEvent_SyncV0_1 {
   kind: "vault.deleted";

@@ -1,0 +1,43 @@
+[
+  {
+    "note": "Missing uploadId.",
+    "payload": {}
+  },
+  {
+    "note": "A caller-supplied digest — the commitment was made at begin and cannot be restated here.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "expectedSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A written file with a non-hex etag.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "target": {
+        "kind": "file",
+        "path": "/a.html"
+      },
+      "sha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "sizeBytes": 10,
+      "file": {
+        "path": "/a.html",
+        "etag": "\"abc\"",
+        "sizeBytes": 10
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the verified hash.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "target": {
+        "kind": "bundle"
+      },
+      "sizeBytes": 10,
+      "stagedUntil": "2026-09-28T11:06:00Z"
+    }
+  }
+]

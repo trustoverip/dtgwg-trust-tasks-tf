@@ -1,0 +1,119 @@
+[
+  {
+    "note": "No manifest — every chunk is checked on arrival against digests committed here.",
+    "payload": {
+      "target": {
+        "kind": "bundle"
+      },
+      "expectedSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "expectedSizeBytes": 300000
+    }
+  },
+  {
+    "note": "A zero-byte transfer.",
+    "payload": {
+      "target": {
+        "kind": "bundle"
+      },
+      "expectedSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "expectedSizeBytes": 0,
+      "chunks": {
+        "chunkSize": 262144,
+        "chunkCount": 2,
+        "chunkDigests": [
+          "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+          "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+        ]
+      }
+    }
+  },
+  {
+    "note": "An upper-case SHA-256 — the committed hash is lowercase hex.",
+    "payload": {
+      "target": {
+        "kind": "bundle"
+      },
+      "expectedSha256": "3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B8A55",
+      "expectedSizeBytes": 300000,
+      "chunks": {
+        "chunkSize": 262144,
+        "chunkCount": 2,
+        "chunkDigests": [
+          "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+          "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A chunk size above the 256 KiB ceiling.",
+    "payload": {
+      "target": {
+        "kind": "bundle"
+      },
+      "expectedSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "expectedSizeBytes": 300000,
+      "chunks": {
+        "chunkSize": 524288,
+        "chunkCount": 2,
+        "chunkDigests": [
+          "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+          "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+        ]
+      }
+    }
+  },
+  {
+    "note": "An unknown target kind.",
+    "payload": {
+      "target": {
+        "kind": "directory",
+        "path": "/events"
+      },
+      "expectedSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "expectedSizeBytes": 300000,
+      "chunks": {
+        "chunkSize": 262144,
+        "chunkCount": 2,
+        "chunkDigests": [
+          "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+          "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A path with a backslash — paths are `/`-separated.",
+    "payload": {
+      "target": {
+        "kind": "file",
+        "path": "events\\index.html"
+      },
+      "expectedSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "expectedSizeBytes": 300000,
+      "chunks": {
+        "chunkSize": 262144,
+        "chunkCount": 2,
+        "chunkDigests": [
+          "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+          "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+        ]
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An upload id that is not a UUID.",
+    "payload": {
+      "uploadId": "upload-1",
+      "expiresAt": "2026-09-28T11:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without an expiry.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968"
+    }
+  }
+]

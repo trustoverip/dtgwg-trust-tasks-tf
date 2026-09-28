@@ -1,0 +1,37 @@
+[
+  {
+    "note": "The bundle inline — bundles move as chunked uploads, never in the deploy document.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "bundle": "H4sIAAAAAAAA"
+    }
+  },
+  {
+    "note": "A deploy mode in the request — the mode is the community's configuration.",
+    "payload": {
+      "uploadId": "8c7b6a59-4837-4261-9f0e-1d2c3b4a5968",
+      "deployMode": "live"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown deploy mode.",
+    "payload": {
+      "deployMode": "blueGreen",
+      "bundleSha256": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "bundleSizeBytes": 1,
+      "targetGeneration": 0,
+      "prunedGenerations": 0
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the bundle's hash.",
+    "payload": {
+      "deployMode": "live",
+      "bundleSizeBytes": 1,
+      "targetGeneration": 0,
+      "prunedGenerations": 0
+    }
+  }
+]

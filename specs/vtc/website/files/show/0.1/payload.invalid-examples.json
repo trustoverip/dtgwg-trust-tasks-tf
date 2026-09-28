@@ -1,0 +1,54 @@
+[
+  {
+    "note": "A range above the 256 KiB ceiling.",
+    "payload": {
+      "path": "/events/index.html",
+      "length": 1048576
+    }
+  },
+  {
+    "note": "A negative offset.",
+    "payload": {
+      "path": "/events/index.html",
+      "offset": -1
+    }
+  },
+  {
+    "note": "A quoted HTTP ETag — the etag is bare lowercase hex.",
+    "payload": {
+      "path": "/events/index.html",
+      "ifMatch": "\"3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55\""
+    }
+  },
+  {
+    "note": "Missing path.",
+    "payload": {
+      "offset": 0
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Padded standard base64 data.",
+    "payload": {
+      "path": "/a.html",
+      "etag": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "sizeBytes": 14,
+      "contentType": "text/html",
+      "offset": 0,
+      "data": "PGh0bWw+PC9odG1sPgo=",
+      "complete": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `complete` — the caller must know whether to ask for the next range.",
+    "payload": {
+      "path": "/a.html",
+      "etag": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55",
+      "sizeBytes": 14,
+      "contentType": "text/html",
+      "offset": 0,
+      "data": "PGh0bWw-PC9odG1sPgo"
+    }
+  }
+]

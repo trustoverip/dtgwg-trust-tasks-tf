@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/upload/chunk/0.1",
+  "title": "VTC Website — Upload — Chunk — payload",
+  "description": "One chunk of an open upload. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId",
+    "index",
+    "digestMultibase",
+    "data"
+  ],
+  "properties": {
+    "uploadId": {
+      "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+    },
+    "index": {
+      "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex"
+    },
+    "digestMultibase": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+    },
+    "data": {
+      "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkData"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website — Upload — Chunk — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "index",
+        "stored",
+        "remainingCount",
+        "expiresAt"
+      ],
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+        },
+        "index": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex"
+        },
+        "stored": {
+          "type": "boolean",
+          "description": "Whether this request is what stored the chunk. False means identical bytes were already staged at this index — a success, and why a chunk can be re-sent safely."
+        },
+        "remainingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4095,
+          "description": "Indices still missing after this write."
+        },
+        "expiresAt": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

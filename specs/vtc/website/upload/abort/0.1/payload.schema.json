@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/upload/abort/0.1",
+  "title": "VTC Website — Upload — Abort — payload",
+  "description": "Cancel an upload. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId"
+  ],
+  "properties": {
+    "uploadId": {
+      "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website — Upload — Abort — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "aborted"
+      ],
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/website-transfer.schema.json#/$defs/UploadId"
+        },
+        "aborted": {
+          "type": "boolean",
+          "description": "Whether this request ended the upload. False means it was already aborted — a success, and why abort can be retried safely."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
