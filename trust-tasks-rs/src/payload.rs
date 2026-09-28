@@ -131,6 +131,32 @@ pub trait Payload: Serialize + DeserializeOwned {
     /// the request `Payload` impl and the response `Response` impl.
     const IS_ISSUED_AT_REQUIRED: bool = false;
 
+    /// The per-type document size bound the originating *Trust Task
+    /// specification* declares for this variant (front matter
+    /// `maxDocumentBytes`), in bytes of the serialized Trust Task document as
+    /// received — the UTF-8 JSON text of the whole document, `proof`
+    /// included, excluding any transport envelope around it.
+    ///
+    /// SPEC.md §12.4 tells a consumer to bound the body it parses at "a
+    /// body-size limit appropriate to the Trust Task specification's
+    /// payload". This is where a specification states that limit, so a
+    /// dispatcher serving many types can enforce one bound per type instead
+    /// of one blanket cap sized for the largest.
+    ///
+    /// The declaration is two-sided: a consumer serving the task **MUST NOT**
+    /// refuse a document within the bound on grounds of size alone, and
+    /// **SHOULD** refuse a larger one with `malformedRequest`, before parsing
+    /// it where its transport lets it learn the `type` first (see
+    /// [`crate::schema_index::max_document_bytes_for`], which answers by type
+    /// URI).
+    ///
+    /// `None` — the default, and the value for every specification that
+    /// declares nothing — leaves the consumer's own transport bound in force.
+    /// The codegen emits an explicit override on the request `Payload` impl
+    /// from `maxDocumentBytes.request`, and on the `Response` impl from
+    /// `maxDocumentBytes.response` when that is declared.
+    const MAX_DOCUMENT_BYTES: Option<usize> = None;
+
     /// Raw text of the `payload.schema.json` describing values of this type,
     /// or `None` where this build has no schema for it.
     ///

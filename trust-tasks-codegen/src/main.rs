@@ -376,6 +376,71 @@ fn read_issued_at_required_flag(spec_md_path: &Path) -> Result<IssuedAtRequired>
     })
 }
 
+/// The per-type document size bound (front matter `maxDocumentBytes`), per
+/// variant. `None` for a variant the specification declares no bound for.
+#[derive(Debug, Clone, Copy, Default)]
+struct MaxDocumentBytes {
+    request: Option<usize>,
+    response: Option<usize>,
+}
+
+/// Scan a `spec.md`'s YAML front matter for `maxDocumentBytes`.
+///
+/// Unlike the proof and `issuedAt` declarations, an absent `response` does
+/// **not** take the request's value: the member bounds what a consumer must
+/// accept as well as what it may refuse, and a response is usually far smaller
+/// than the request that carried bulk content, so inheriting the request's
+/// bound would oblige a producer to accept replies of a size it never asked
+/// for. Absent means "no declared bound", which is the framework default.
+fn read_max_document_bytes(spec_md_path: &Path) -> Result<MaxDocumentBytes> {
+    if !spec_md_path.exists() {
+        return Ok(MaxDocumentBytes::default());
+    }
+    let text = fs::read_to_string(spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+    let mut lines = text.lines();
+    if lines.next().unwrap_or("").trim() != "---" {
+        return Ok(MaxDocumentBytes::default());
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    let Some(decl) = value.get("maxDocumentBytes") else {
+        return Ok(MaxDocumentBytes::default());
+    };
+    let bound = |key: &str| -> Result<Option<usize>> {
+        match decl.get(key) {
+            None => Ok(None),
+            Some(v) => v
+                .as_u64()
+                .and_then(|n| usize::try_from(n).ok())
+                .map(Some)
+                .ok_or_else(|| {
+                    anyhow!(
+                        "{}: maxDocumentBytes.{key} must be a non-negative integer",
+                        spec_md_path.display()
+                    )
+                }),
+        }
+    };
+    let request = bound("request")?;
+    let response = bound("response")?;
+    if request.is_none() && response.is_none() {
+        return Err(anyhow!(
+            "{}: maxDocumentBytes declares neither a `request` nor a `response` bound",
+            spec_md_path.display()
+        ));
+    }
+    Ok(MaxDocumentBytes { request, response })
+}
+
 /// Read whether the party filling the framework `member` (`"issuer"` or
 /// `"recipient"`) is declared `requirement: REQUIRED` in the spec's front
 /// matter. Returns `false` when no party carries that `member`, when its
@@ -1046,6 +1111,15 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
     let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
     let is_issued_at_required = read_issued_at_required_flag(&spec.spec_md_path())?;
+    let max_document_bytes = read_max_document_bytes(&spec.spec_md_path())?;
+    if !has_response && max_document_bytes.response.is_some() {
+        return Err(anyhow!(
+            "{}/{}: maxDocumentBytes declares a `response` bound, but the schema defines no \
+             $defs.Response",
+            spec.slug,
+            spec.version
+        ));
+    }
     // Request `recipient` member tracks the recipient party; the response swaps
     // parties, so its `recipient` member tracks the issuer party (§7.2 item 5).
     let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
@@ -1060,6 +1134,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         is_bearer,
         is_proof_required,
         is_issued_at_required,
+        max_document_bytes,
         recipient_required,
         issuer_required,
         &error_codes,
@@ -1390,6 +1465,7 @@ fn render_module(
     is_bearer: bool,
     is_proof_required: ProofRequired,
     is_issued_at_required: IssuedAtRequired,
+    max_document_bytes: MaxDocumentBytes,
     recipient_required: bool,
     issuer_required: bool,
     error_codes: &[ErrorCodeDecl],
@@ -1441,6 +1517,16 @@ fn render_module(
         quote! {}
     };
 
+    // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit
+    // appropriate to the Trust Task specification's payload", stated per
+    // type). Only a declared variant overrides the trait default `None`.
+    let size_const = |bound: Option<usize>| match bound {
+        Some(n) => quote! { const MAX_DOCUMENT_BYTES: Option<usize> = Some(#n); },
+        None => quote! {},
+    };
+    let req_size_const = size_const(max_document_bytes.request);
+    let resp_size_const = size_const(max_document_bytes.response);
+
     // Per SPEC §7.2 item 5 / §7.3 item 5, a spec whose `recipient` party is
     // REQUIRED overrides Payload::IS_RECIPIENT_REQUIRED. The request's
     // `recipient` is the recipient party; the response swaps the parties, so its
@@ -1482,6 +1568,7 @@ fn render_module(
                 #bearer_const
                 #resp_proof_const
                 #resp_issued_at_const
+                #resp_size_const
                 #resp_recipient_const
                 #resp_schema_const
             }
@@ -1512,6 +1599,7 @@ fn render_module(
             #bearer_const
             #req_proof_const
             #req_issued_at_const
+            #req_size_const
             #req_recipient_const
             const PAYLOAD_SCHEMA: Option<&'static str> = Some(#schema_json);
         }
@@ -1774,6 +1862,10 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
     // One arm per task, keyed on the bare request Type URI: an error code is
     // declared by the specification, not by one of its variants.
     let mut error_code_arms = String::new();
+    // Only the Type URIs whose specification declares a bound: `None` from the
+    // wildcard means "no declared bound", and for a Type URI this build does
+    // not know that is the same answer — the consumer's own transport bound.
+    let mut size_arms = String::new();
     for spec in specs {
         // The error payload is hand-modelled and has no generated module.
         if spec.slug == "trust-task-error" {
@@ -1818,6 +1910,25 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             path,
             spec.version_module(),
         ));
+        let max_document_bytes = read_max_document_bytes(&spec.spec_md_path())?;
+        if max_document_bytes.request.is_some() {
+            size_arms.push_str(&gate);
+            size_arms.push_str(&format!(
+                "        {:?} => <crate::specs::{}::{}::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,\n",
+                spec.type_uri(),
+                path,
+                spec.version_module(),
+            ));
+        }
+        if max_document_bytes.response.is_some() {
+            size_arms.push_str(&gate);
+            size_arms.push_str(&format!(
+                "        {:?} => <crate::specs::{}::{}::Response as crate::Payload>::MAX_DOCUMENT_BYTES,\n",
+                format!("{}#response", spec.type_uri()),
+                path,
+                spec.version_module(),
+            ));
+        }
         // The response side, under the same `#response` URI its `Response`
         // type already declares as `TYPE_URI`. Indexing only requests left a
         // consumer able to validate what it received and not what it sent
@@ -1935,6 +2046,26 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {{
 pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorCode]> {{
     match type_uri {{
 {error_code_arms}        _ => None,
+    }}
+}}
+
+/// The document size bound the specification behind `type_uri` declares
+/// (front matter `maxDocumentBytes`), in bytes of the serialized Trust Task
+/// document, or `None` where none is declared.
+///
+/// Pass a bare Type URI for the request bound, or one suffixed `#response` for
+/// the response bound. The same value is `Payload::MAX_DOCUMENT_BYTES` on the
+/// generated type; this exists for a dispatcher that learns the `type` before
+/// it has parsed the rest of the document — an HTTP `Trust-Task` header, say —
+/// and has to decide how much body to read.
+///
+/// `None` covers both a specification that declares no bound and a Type URI
+/// this build does not know. For a size bound those are the same answer: the
+/// consumer's own transport limit applies (SPEC §12.4).
+pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {{
+    #[allow(clippy::match_single_binding)]
+    match type_uri {{
+{size_arms}        _ => None,
     }}
 }}
 "#

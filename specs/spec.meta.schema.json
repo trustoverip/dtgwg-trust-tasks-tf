@@ -410,6 +410,37 @@
       },
       "description": "Retention class per framework 0.5.0 \u2014 the third descriptive dimension alongside `sideEffects` (integrity) and `exposure` (confidentiality and agency): how long what the recipient receives is expected to live. OPTIONAL and SHOULD-strength, so no existing specification is invalidated by its introduction; unlike `sideEffects` and `exposure` it is deliberately NOT in `required`.\n\nDESCRIPTIVE, NOT PRESCRIPTIVE, on the same terms as the other two: it states what the task's design assumes, never what a data-protection regime obliges a deployment to do, and a specification MUST NOT derive a consent or approval requirement from it. A consumer MUST treat an absent or unrecognized declaration as `durable` \u2014 the conservative reading, and the only one that cannot understate what a recipient is holding by omission."
     },
+    "maxDocumentBytes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rationale"
+      ],
+      "anyOf": [
+        { "required": ["request"] },
+        { "required": ["response"] }
+      ],
+      "properties": {
+        "request": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 16777216,
+          "description": "OPTIONAL, but at least one of `request` and `response` is declared. The largest request document, in bytes of the serialized Trust Task document as received (the UTF-8 JSON text of the whole document, `proof` included, excluding any transport envelope around it), that a consumer serving this task MUST NOT refuse on grounds of size alone."
+        },
+        "response": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 16777216,
+          "description": "The same bound for the success-response document. OPTIONAL: absent declares no bound for that variant, and the receiving party's own transport limit applies, as it does to every specification that declares nothing. The two variants are independent — an absent one never inherits the other's bound."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What content drives the bound, and why it is this number: the largest member the payload can carry and the encoding overhead on it. Where content can exceed the bound, name the chunked transfer that carries it instead."
+        }
+      },
+      "description": "Per-type document size bound. OPTIONAL. SPEC §12.4 already tells a consumer to bound the body it will parse at \"a body-size limit appropriate to the Trust Task specification's payload\", and until this member no specification could say what that was, so each consumer guessed one number for every task it serves — which leaves a task that legitimately carries a large payload (a JSON Schema, a DID log, a chunk of a website) refused by a consumer whose blanket cap was chosen for small ones, and raising the blanket cap to fit the largest task opens every other task to bodies it has no use for.\n\nA declaration is a two-sided interoperability bound, stated per variant: a consumer serving the task MUST NOT refuse a document within the declared bound on grounds of size alone, and SHOULD refuse a larger one with `malformedRequest` (§8.3 defines no dedicated code; the document does not conform to its specification), before parsing it where the transport lets the consumer learn the `type` first. A specification that declares none leaves the consumer's own transport bound (§12.4) in force. Measured over the serialized document rather than the `payload` member because that is what a consumer can count before it parses, and what a transport body cap counts. Emitted as `Payload::MAX_DOCUMENT_BYTES` in the generated Rust bindings (and `schema_index::max_document_bytes_for`), so a dispatcher can enforce the bound per type.\n\nThe ceiling of 16 MiB is deliberate: content larger than one document should carry is moved by a chunked transfer (`backup/put-chunk` is the model), whose chunk task declares a bound of its own. A specification whose payload can carry bulk content SHOULD declare this member; one whose payload is small and fixed-shape need not."
+    },
     "outcomeEvidence": {
       "type": "object",
       "additionalProperties": false,
