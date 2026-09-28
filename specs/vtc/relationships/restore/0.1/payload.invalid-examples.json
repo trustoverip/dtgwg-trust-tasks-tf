@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Missing id.",
+    "payload": {}
+  },
+  {
+    "note": "An id that is not a UUID.",
+    "payload": {
+      "id": "edge-1"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A state object with an unknown member.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "state": {
+        "state": "yes",
+        "restoredBy": "did:example:administrator"
+      }
+    }
+  }
+]

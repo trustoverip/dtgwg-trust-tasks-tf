@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/query/0.1",
+  "title": "VTC Join Requests — Query — payload",
+  "description": "An administrator asks the community to open a credential exchange with a prospective member: to issue a presentation challenge, build the credential-exchange/query for a registered Accepts criterion, and deliver it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "holderDid",
+    "criterionId"
+  ],
+  "properties": {
+    "holderDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "The holder the query is for — the prospective member whose agent will answer it."
+    },
+    "criterionId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "CredentialQuery": {
+      "title": "CredentialQuery",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "dcql_query",
+        "nonce",
+        "purpose"
+      ],
+      "description": "The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.",
+      "properties": {
+        "dcql_query": {
+          "type": "object"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join Requests — Query — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threadId",
+        "holderDid",
+        "query",
+        "delivered"
+      ],
+      "properties": {
+        "threadId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it."
+        },
+        "holderDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "Echoed."
+        },
+        "query": {
+          "$ref": "#/$defs/CredentialQuery"
+        },
+        "delivered": {
+          "type": "boolean",
+          "description": "Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

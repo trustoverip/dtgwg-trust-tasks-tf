@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Missing typeUri.",
+    "payload": {}
+  },
+  {
+    "note": "An empty typeUri.",
+    "payload": {
+      "typeUri": ""
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A summary shape in place of the entry — show returns the entry itself.",
+    "payload": {
+      "schema": {
+        "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+        "kind": "issues",
+        "hasCredentialSchema": true,
+        "createdAt": "2026-09-28T10:00:01Z",
+        "createdByDid": "did:example:administrator"
+      }
+    }
+  }
+]

@@ -1,0 +1,53 @@
+[
+  {
+    "note": "The REST body (a bare array) is not this task's payload.",
+    "payload": [
+      {
+        "type": "name.display",
+        "required": true,
+        "purpose": "So other members know what to call you."
+      },
+      {
+        "type": "address.country",
+        "required": false
+      }
+    ]
+  },
+  {
+    "note": "Missing `requestedAttributes` — asking for nothing is an explicit empty list.",
+    "payload": {}
+  },
+  {
+    "note": "An entry with no claim type.",
+    "payload": {
+      "requestedAttributes": [
+        {
+          "required": true
+        }
+      ]
+    }
+  },
+  {
+    "note": "A purpose longer than 256 characters.",
+    "payload": {
+      "requestedAttributes": [
+        {
+          "type": "name.display",
+          "purpose": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with a value instead of a claim type — a community asks, it never states an answer.",
+    "payload": {
+      "requestedAttributes": [
+        {
+          "type": "name.display",
+          "value": "Alice"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "note": "Missing typeUri.",
+    "payload": {}
+  },
+  {
+    "note": "A bulk selector — deletion names one entry.",
+    "payload": {
+      "kind": "issues"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the deleted typeUri.",
+    "payload": {}
+  }
+]

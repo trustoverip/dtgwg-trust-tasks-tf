@@ -1,0 +1,76 @@
+[
+  {
+    "note": "An unknown lifecycle filter.",
+    "payload": {
+      "lifecycle": "archived"
+    }
+  },
+  {
+    "note": "An owner filter — not offered; the listing is the host's operating view.",
+    "payload": {
+      "ownerDid": "did:example:member"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A room carrying a member list — the host has none to return.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "ownerDid": "did:example:member",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": 1798761600,
+          "retentionDays": 30,
+          "createdAt": 1767225600,
+          "updatedAt": 1790000000,
+          "members": [
+            "did:example:member"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A room without its owner — the owner is visible at every tier.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": 1798761600,
+          "retentionDays": 30,
+          "createdAt": 1767225600,
+          "updatedAt": 1790000000
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown visibility tier.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "ownerDid": "did:example:member",
+          "visibility": "secret",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": 1798761600,
+          "retentionDays": 30,
+          "createdAt": 1767225600,
+          "updatedAt": 1790000000
+        }
+      ]
+    }
+  }
+]

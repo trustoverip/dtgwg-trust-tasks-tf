@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/schemas/show/0.1",
+  "title": "VTC Schemas — Show — payload",
+  "description": "Fetch one registry entry, schema body included. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "typeUri"
+  ],
+  "properties": {
+    "typeUri": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/CredentialTypeUri"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Schemas — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema"
+      ],
+      "properties": {
+        "schema": {
+          "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/SchemaEntry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

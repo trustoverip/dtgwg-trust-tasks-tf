@@ -1,0 +1,24 @@
+[
+  {
+    "note": "signingKeyDid missing — revocation names exactly one key.",
+    "payload": {}
+  },
+  {
+    "note": "A non-did:key value cannot name a delegation.",
+    "payload": { "signingKeyDid": "did:web:laptop.example" }
+  },
+  {
+    "note": "Unknown member `all` — there is no bulk revocation; removing the identity's own standing is how every key is disarmed at once.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "all": true }
+  },
+  {
+    "variant": "response",
+    "note": "Negative remainingActive.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "revokedAt": "2026-09-28T12:00:01Z", "remainingActive": -1 }
+  },
+  {
+    "variant": "response",
+    "note": "Response without revokedAt — the instant the key stopped working is the one thing an operator needs from it.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "remainingActive": 0 }
+  }
+]

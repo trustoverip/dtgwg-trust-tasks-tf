@@ -16,4 +16,4 @@ export interface TrustTasksFrameworkReusableJSONSchemaDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../_shared/components.js".
  */
-export type { Ext, ExtCritical } from "../../_shared/components.js";
+export type { DigestMultibase, Ext, ExtCritical } from "../../_shared/components.js";

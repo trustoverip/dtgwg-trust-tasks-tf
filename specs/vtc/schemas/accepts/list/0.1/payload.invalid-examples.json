@@ -1,0 +1,27 @@
+[
+  {
+    "note": "limit above 50.",
+    "payload": {
+      "limit": 51
+    }
+  },
+  {
+    "note": "An id filter — a single criterion is fetched with vtc/schemas/accepts/show, which can say notFound.",
+    "payload": {
+      "id": "membership"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An item without its query.",
+    "payload": {
+      "items": [
+        {
+          "id": "membership",
+          "createdAt": "2026-09-28T10:00:01Z",
+          "createdByDid": "did:example:administrator"
+        }
+      ]
+    }
+  }
+]

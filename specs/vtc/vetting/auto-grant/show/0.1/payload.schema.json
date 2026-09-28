@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/auto-grant/show/0.1",
+  "title": "VTC Vetting — Auto-Grant — Show — payload",
+  "description": "An empty request. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Auto-Grant — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "autoGrant"
+      ],
+      "properties": {
+        "autoGrant": {
+          "$ref": "../../../../_shared/0.1/vetting-auto-grant.schema.json#/$defs/AutoGrantStatus"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/community-presentation",
+  "title": "VTC — shared community presentation definitions",
+  "description": "Shared types for vtc/community/{branding,requested-attributes,join-discovery}/*: how a community asks to be shown to a prospective applicant, what it asks an applicant to tell it about themselves, and whether it answers its join manifest to a caller it cannot identify. `CommunityBranding` and `RequestedAttribute` are copied member for member from vtc/join-requests/manifest/0.2, which publishes both to applicants; the manifest's own copies are that task's local definitions and re-pinning them here is an editorial follow-up. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "CommunityBranding": {
+      "title": "CommunityBranding",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community's name as it asks to be shown."
+        },
+        "accentColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case."
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048,
+          "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "RequestedAttribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$",
+          "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token."
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing."
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Why the community asks, in words shown to the applicant before they disclose."
+        }
+      },
+      "title": "RequestedAttribute"
+    },
+    "RequestedAttributes": {
+      "title": "RequestedAttributes",
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/RequestedAttribute"
+      },
+      "description": "What the community asks an applicant to tell it about themselves, as claim types — never values. At most 32 entries, and no claim type twice: two answers to one question is a question nobody can answer. Self-asserted by the applicant when answered; a community MUST NOT describe an answer as verified. Empty means the community asks nothing."
+    },
+    "JoinDiscovery": {
+      "title": "JoinDiscovery",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public"
+      ],
+      "description": "Whether this community answers vtc/join-requests/manifest to a caller it cannot identify.",
+      "properties": {
+        "public": {
+          "type": "boolean",
+          "description": "True: the manifest is answered to any caller, identified or not — the setting of every community that never chose, because the manifest is a public read by design (an applicant has to know what is asked of them before they disclose anything). False: the manifest is answered only to a caller the community can identify — one with a verified proof or a transport-authenticated sender. Not secrecy: an identified caller is answered either way. False makes the answer attributable, which is what a closed or invite-only community wants rather than a crawler enumerating its criteria."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

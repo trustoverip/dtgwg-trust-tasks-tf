@@ -1,0 +1,46 @@
+[
+  {
+    "note": "Missing id.",
+    "payload": {
+      "reason": "pause"
+    }
+  },
+  {
+    "note": "The REST `pop` authorization is not carried — the document's own proof is the proof of control.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "pop": {}
+    }
+  },
+  {
+    "note": "A reason longer than 500 characters.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "An empty reason — absent means none was given.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "reason": ""
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A state outside the lifecycle vocabulary.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "state": {
+        "state": "paused"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the resolved state.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa"
+    }
+  }
+]

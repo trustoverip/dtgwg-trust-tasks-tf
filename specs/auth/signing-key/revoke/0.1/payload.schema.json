@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/signing-key/revoke/0.1",
+  "title": "Auth — Signing Key Revoke — payload",
+  "description": "Revoke one signing-key delegation, by its key. The next document the key signs is refused. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["signingKeyDid"],
+  "properties": {
+    "signingKeyDid": { "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid" },
+    "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Signing Key Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signingKeyDid", "revokedAt", "remainingActive"],
+      "properties": {
+        "signingKeyDid": { "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid" },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing."
+        },
+        "remainingActive": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials."
+        },
+        "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

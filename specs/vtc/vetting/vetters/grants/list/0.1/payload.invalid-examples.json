@@ -1,0 +1,111 @@
+[
+  {
+    "note": "limit above 100.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "note": "A member filter — one vetter's standing is vtc/vetting/vetters/show.",
+    "payload": {
+      "memberDid": "did:example:vetter"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown origin.",
+    "payload": {
+      "items": [
+        {
+          "endorsementId": "urn:uuid:3c1f0e52-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+          "memberDid": "did:example:vetter",
+          "credentialId": "urn:uuid:7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d",
+          "validFrom": "2026-03-01T00:00:00Z",
+          "validUntil": "2027-03-01T00:00:00Z",
+          "revoked": false,
+          "live": true,
+          "origin": "imported",
+          "profile": {
+            "listed": true,
+            "displayName": "Sam",
+            "country": "DE",
+            "languages": [
+              "de",
+              "en"
+            ],
+            "methods": [
+              "inPerson",
+              "video"
+            ],
+            "eventCount": 1,
+            "updatedAt": "2026-09-01T12:00:00Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A grant without `live` — the predicate is the community's, never re-derived by the caller.",
+    "payload": {
+      "items": [
+        {
+          "endorsementId": "urn:uuid:3c1f0e52-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+          "memberDid": "did:example:vetter",
+          "credentialId": "urn:uuid:7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d",
+          "validFrom": "2026-03-01T00:00:00Z",
+          "validUntil": "2027-03-01T00:00:00Z",
+          "revoked": false,
+          "origin": "auto",
+          "profile": {
+            "listed": true,
+            "displayName": "Sam",
+            "country": "DE",
+            "languages": [
+              "de",
+              "en"
+            ],
+            "methods": [
+              "inPerson",
+              "video"
+            ],
+            "eventCount": 1,
+            "updatedAt": "2026-09-01T12:00:00Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A profile listing an unknown vetting method.",
+    "payload": {
+      "items": [
+        {
+          "endorsementId": "urn:uuid:3c1f0e52-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+          "memberDid": "did:example:vetter",
+          "credentialId": "urn:uuid:7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d",
+          "validFrom": "2026-03-01T00:00:00Z",
+          "validUntil": "2027-03-01T00:00:00Z",
+          "revoked": false,
+          "live": true,
+          "origin": "auto",
+          "profile": {
+            "listed": true,
+            "displayName": "Sam",
+            "country": "DE",
+            "languages": [
+              "de",
+              "en"
+            ],
+            "methods": [
+              "telepathy"
+            ],
+            "eventCount": 1,
+            "updatedAt": "2026-09-01T12:00:00Z"
+          }
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "note": "limit above 100.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "An unknown kind filter.",
+    "payload": {
+      "kind": "all"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An item carrying credentialSchema — bodies are show's, and a listing that carried them would be unbounded.",
+    "payload": {
+      "items": [
+        {
+          "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+          "kind": "issues",
+          "hasCredentialSchema": true,
+          "credentialSchema": {},
+          "createdAt": "2026-09-28T10:00:01Z",
+          "createdByDid": "did:example:administrator"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An item without hasCredentialSchema.",
+    "payload": {
+      "items": [
+        {
+          "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+          "kind": "issues",
+          "createdAt": "2026-09-28T10:00:01Z",
+          "createdByDid": "did:example:administrator"
+        }
+      ]
+    }
+  }
+]

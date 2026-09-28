@@ -1,0 +1,24 @@
+[
+  {
+    "note": "The REST body shape (`{ public }` at the top level) is not this task's payload.",
+    "payload": {
+      "public": false
+    }
+  },
+  {
+    "note": "Missing `public` — the setting is stated, never defaulted by omission.",
+    "payload": {
+      "joinDiscovery": {}
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Unknown member on the stored setting.",
+    "payload": {
+      "joinDiscovery": {
+        "public": false,
+        "allowList": []
+      }
+    }
+  }
+]

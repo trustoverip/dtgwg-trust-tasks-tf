@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "enabled": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An effective configuration with the default left out — show reports the value in force, defaults filled in.",
+    "payload": {
+      "autoGrant": {
+        "enabled": false,
+        "sweepMinutes": 60
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A sweep interval below five minutes.",
+    "payload": {
+      "autoGrant": {
+        "enabled": true,
+        "sweepMinutes": 1,
+        "validitySeconds": 31536000
+      }
+    }
+  }
+]

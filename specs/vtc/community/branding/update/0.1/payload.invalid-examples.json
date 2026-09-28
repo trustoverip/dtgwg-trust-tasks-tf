@@ -1,0 +1,30 @@
+[
+  {
+    "note": "Missing `branding` — clearing is an explicit empty object, never an omitted member.",
+    "payload": {}
+  },
+  {
+    "note": "The REST body shape (the branding object at the top level) is not this task's payload.",
+    "payload": {
+      "displayName": "Riverside Makers"
+    }
+  },
+  {
+    "note": "displayName longer than 128 characters.",
+    "payload": {
+      "branding": {
+        "displayName": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response carrying an unknown branding member.",
+    "payload": {
+      "branding": {
+        "displayName": "Riverside Makers",
+        "tagline": "Make things"
+      }
+    }
+  }
+]

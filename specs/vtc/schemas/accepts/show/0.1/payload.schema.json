@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/schemas/accepts/show/0.1",
+  "title": "VTC Schemas — Accepts — Show — payload",
+  "description": "Fetch one Accepts criterion by id. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/AcceptsCriterionId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Schemas — Accepts — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterion"
+      ],
+      "properties": {
+        "criterion": {
+          "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/AcceptsCriterion"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

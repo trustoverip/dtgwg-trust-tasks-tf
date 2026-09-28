@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/signing-key/list/0.1",
+  "title": "Auth — Signing Key List — payload",
+  "description": "An identity lists its own signing-key delegations. The payload names no subject: the identity listed is the one the document's proof resolves to, so a caller cannot ask for somebody else's. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Signing Key List — response payload",
+      "description": "Every delegation enrolled for the caller's identity, newest first, revoked ones included.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signingKeys"],
+      "properties": {
+        "signingKeys": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKey" }
+        },
+        "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

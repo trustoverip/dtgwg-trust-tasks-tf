@@ -1,0 +1,55 @@
+[
+  {
+    "note": "An unknown reviewState filter.",
+    "payload": {
+      "reviewState": "reviewed"
+    }
+  },
+  {
+    "note": "limit above 100.",
+    "payload": {
+      "limit": 101
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown withdrawal reason.",
+    "payload": {
+      "items": [
+        {
+          "issuer": "did:example:vetter",
+          "statementId": "urn:uuid:5e4d3c2b-1a09-4f8e-9d7c-6b5a4f3e2d1c",
+          "statementDigestMultibase": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk",
+          "reason": "changedMyMind",
+          "recordedAt": "2026-09-27T16:20:00Z",
+          "reviewState": "needsReview",
+          "affectedJoinRequests": [
+            "0f8e7d6c-5b4a-4938-8271-605f4e3d2c1b"
+          ],
+          "affectedMembers": [
+            "did:example:member"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A notice without affectedMembers — none is an empty list.",
+    "payload": {
+      "items": [
+        {
+          "issuer": "did:example:vetter",
+          "statementId": "urn:uuid:5e4d3c2b-1a09-4f8e-9d7c-6b5a4f3e2d1c",
+          "statementDigestMultibase": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk",
+          "reason": "newInformation",
+          "recordedAt": "2026-09-27T16:20:00Z",
+          "reviewState": "needsReview",
+          "affectedJoinRequests": [
+            "0f8e7d6c-5b4a-4938-8271-605f4e3d2c1b"
+          ]
+        }
+      ]
+    }
+  }
+]

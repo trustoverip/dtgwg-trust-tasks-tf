@@ -1,0 +1,58 @@
+[
+  {
+    "note": "Missing `kind` — every entry is on one half of the registry.",
+    "payload": {
+      "typeUri": "https://riverside.example/credentials/WorkshopSafety"
+    }
+  },
+  {
+    "note": "An unknown kind.",
+    "payload": {
+      "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+      "kind": "trusts"
+    }
+  },
+  {
+    "note": "The REST wire's snake_case key is not this task's payload.",
+    "payload": {
+      "type_uri": "https://riverside.example/credentials/WorkshopSafety",
+      "kind": "issues"
+    }
+  },
+  {
+    "note": "A typeUri longer than 512 bytes — it keys the community's storage.",
+    "payload": {
+      "typeUri": "https://example.org/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "kind": "issues"
+    }
+  },
+  {
+    "note": "credentialSchema that is not an object.",
+    "payload": {
+      "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+      "kind": "issues",
+      "credentialSchema": "https://example.org/schema.json"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Stored entry without createdByDid — every registration is attributable.",
+    "payload": {
+      "schema": {
+        "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+        "kind": "issues",
+        "createdAt": "2026-09-28T10:00:01Z"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with the entry at the top level.",
+    "payload": {
+      "typeUri": "https://riverside.example/credentials/WorkshopSafety",
+      "kind": "issues",
+      "createdAt": "2026-09-28T10:00:01Z",
+      "createdByDid": "did:example:administrator"
+    }
+  }
+]

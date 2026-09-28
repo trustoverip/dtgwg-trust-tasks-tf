@@ -1,0 +1,33 @@
+[
+  {
+    "note": "signingKeyDid is a did:web — a delegated key must be a did:key, whose document cannot be rewritten after enrolment.",
+    "payload": { "signingKeyDid": "did:web:laptop.example", "identityDid": "did:web:alice.example" }
+  },
+  {
+    "note": "identityDid missing — the identity the key acts for is named, never inferred from the key's own signature.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp" }
+  },
+  {
+    "note": "Empty deviceLabel — absent means no label was chosen; an empty string is an invented one.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "identityDid": "did:web:alice.example", "deviceLabel": "" }
+  },
+  {
+    "note": "Unknown member `role` — a delegation confers no role, so a request cannot ask for one.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "identityDid": "did:web:alice.example", "role": "admin" }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `active` — the liveness predicate is the consumer's to compute, so a holder must never have to re-derive it.",
+    "payload": { "signingKey": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "identityDid": "did:web:alice.example", "createdAt": "2026-09-28T10:00:31Z" } }
+  },
+  {
+    "variant": "response",
+    "note": "Response carrying the record at the top level instead of under `signingKey`.",
+    "payload": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "identityDid": "did:web:alice.example", "createdAt": "2026-09-28T10:00:31Z", "active": true }
+  },
+  {
+    "variant": "response",
+    "note": "Unknown member on the stored record — a delegation carries no scopes.",
+    "payload": { "signingKey": { "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "identityDid": "did:web:alice.example", "createdAt": "2026-09-28T10:00:31Z", "active": true, "scopes": ["*"] } }
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/community/branding/show/0.1",
+  "title": "VTC Community — Branding — Show — payload",
+  "description": "An empty request: the community has one such setting. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Community — Branding — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branding"
+      ],
+      "properties": {
+        "branding": {
+          "$ref": "../../../../_shared/0.1/community-presentation.schema.json#/$defs/CommunityBranding"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

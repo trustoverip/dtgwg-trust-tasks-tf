@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/schemas/accepts/register/0.1",
+  "title": "VTC Schemas — Accepts — Register — payload",
+  "description": "Register a named Accepts criterion, or replace the one registered under the same id. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "query"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/AcceptsCriterionId"
+    },
+    "query": {
+      "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/DcqlQuery"
+    },
+    "description": {
+      "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/CriterionDescription"
+    },
+    "vetting": {
+      "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/VettingRequirements"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Schemas — Accepts — Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterion"
+      ],
+      "properties": {
+        "criterion": {
+          "$ref": "../../../../_shared/0.1/schema-registry.schema.json#/$defs/AcceptsCriterion"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

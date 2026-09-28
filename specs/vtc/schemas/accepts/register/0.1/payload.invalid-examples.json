@@ -1,0 +1,86 @@
+[
+  {
+    "note": "Missing query — a criterion is its query.",
+    "payload": {
+      "id": "membership"
+    }
+  },
+  {
+    "note": "An id longer than the 128 characters the manifest publishes.",
+    "payload": {
+      "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "query": {
+        "credentials": [
+          {
+            "id": "membership",
+            "format": "vc+sd-jwt",
+            "meta": {
+              "vct_values": [
+                "https://openvtc.org/credentials/MembershipCredential"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "note": "A query that is not an object.",
+    "payload": {
+      "id": "membership",
+      "query": [
+        "credentials"
+      ]
+    }
+  },
+  {
+    "note": "Vetting requirements without eligibleVetters.",
+    "payload": {
+      "id": "membership",
+      "query": {
+        "credentials": [
+          {
+            "id": "membership",
+            "format": "vc+sd-jwt",
+            "meta": {
+              "vct_values": [
+                "https://openvtc.org/credentials/MembershipCredential"
+              ]
+            }
+          }
+        ]
+      },
+      "vetting": {
+        "version": "0.1",
+        "statementType": "https://riverside.example/endorsements/IdentityVetting",
+        "minStatements": 2,
+        "acceptedMethods": [
+          "inPerson"
+        ]
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Stored criterion without createdAt.",
+    "payload": {
+      "criterion": {
+        "id": "membership",
+        "query": {
+          "credentials": [
+            {
+              "id": "membership",
+              "format": "vc+sd-jwt",
+              "meta": {
+                "vct_values": [
+                  "https://openvtc.org/credentials/MembershipCredential"
+                ]
+              }
+            }
+          ]
+        },
+        "createdByDid": "did:example:administrator"
+      }
+    }
+  }
+]

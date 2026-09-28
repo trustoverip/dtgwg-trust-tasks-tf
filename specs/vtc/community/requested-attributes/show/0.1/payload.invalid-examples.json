@@ -1,0 +1,141 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "type": "name.display"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A bare array — a payload is an object, and the list is its `requestedAttributes` member.",
+    "payload": [
+      {
+        "type": "name.display",
+        "required": true,
+        "purpose": "So other members know what to call you."
+      },
+      {
+        "type": "address.country",
+        "required": false
+      }
+    ]
+  },
+  {
+    "variant": "response",
+    "note": "A claim type that is not a registry token.",
+    "payload": {
+      "requestedAttributes": [
+        {
+          "type": "Display Name"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "More than 32 entries.",
+    "payload": {
+      "requestedAttributes": [
+        {
+          "type": "x:a0"
+        },
+        {
+          "type": "x:a1"
+        },
+        {
+          "type": "x:a2"
+        },
+        {
+          "type": "x:a3"
+        },
+        {
+          "type": "x:a4"
+        },
+        {
+          "type": "x:a5"
+        },
+        {
+          "type": "x:a6"
+        },
+        {
+          "type": "x:a7"
+        },
+        {
+          "type": "x:a8"
+        },
+        {
+          "type": "x:a9"
+        },
+        {
+          "type": "x:a10"
+        },
+        {
+          "type": "x:a11"
+        },
+        {
+          "type": "x:a12"
+        },
+        {
+          "type": "x:a13"
+        },
+        {
+          "type": "x:a14"
+        },
+        {
+          "type": "x:a15"
+        },
+        {
+          "type": "x:a16"
+        },
+        {
+          "type": "x:a17"
+        },
+        {
+          "type": "x:a18"
+        },
+        {
+          "type": "x:a19"
+        },
+        {
+          "type": "x:a20"
+        },
+        {
+          "type": "x:a21"
+        },
+        {
+          "type": "x:a22"
+        },
+        {
+          "type": "x:a23"
+        },
+        {
+          "type": "x:a24"
+        },
+        {
+          "type": "x:a25"
+        },
+        {
+          "type": "x:a26"
+        },
+        {
+          "type": "x:a27"
+        },
+        {
+          "type": "x:a28"
+        },
+        {
+          "type": "x:a29"
+        },
+        {
+          "type": "x:a30"
+        },
+        {
+          "type": "x:a31"
+        },
+        {
+          "type": "x:a32"
+        }
+      ]
+    }
+  }
+]

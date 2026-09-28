@@ -1,0 +1,46 @@
+[
+  {
+    "note": "Missing `enabled` — the switch is stated, never inferred.",
+    "payload": {
+      "sweepMinutes": 60
+    }
+  },
+  {
+    "note": "sweepMinutes above a day.",
+    "payload": {
+      "enabled": true,
+      "sweepMinutes": 2880
+    }
+  },
+  {
+    "note": "validitySeconds below one day.",
+    "payload": {
+      "enabled": true,
+      "validitySeconds": 3600
+    }
+  },
+  {
+    "note": "validitySeconds above two years.",
+    "payload": {
+      "enabled": true,
+      "validitySeconds": 94608000
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A negative sweep count.",
+    "payload": {
+      "autoGrant": {
+        "enabled": true,
+        "sweepMinutes": 60,
+        "validitySeconds": 31536000,
+        "lastSweep": {
+          "ranAt": "2026-09-28T09:00:00Z",
+          "granted": -1,
+          "revoked": 0,
+          "errors": 0
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,31 @@
+[
+  {
+    "note": "Unknown top-level member is rejected — the community has one branding, so there is nothing to select.",
+    "payload": {
+      "communityDid": "did:example:community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `branding` — no branding is `{}`, never an absent member.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "accentColor that is not `#rrggbb`.",
+    "payload": {
+      "branding": {
+        "accentColor": "green"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A logoUrl that is not https — the manifest refuses it, so the stored branding cannot carry it.",
+    "payload": {
+      "branding": {
+        "logoUrl": "http://riverside.example/logo.svg"
+      }
+    }
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/schemas/register/0.1",
+  "title": "VTC Schemas — Register — payload",
+  "description": "Register a credential type in the community's schema registry, or replace the registration of one already there. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "typeUri",
+    "kind"
+  ],
+  "properties": {
+    "typeUri": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/CredentialTypeUri"
+    },
+    "kind": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/SchemaKind"
+    },
+    "dtgType": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/DtgType"
+    },
+    "credentialSchema": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/CredentialSchema"
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/SchemaDescription"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Schemas — Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema"
+      ],
+      "properties": {
+        "schema": {
+          "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/SchemaEntry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

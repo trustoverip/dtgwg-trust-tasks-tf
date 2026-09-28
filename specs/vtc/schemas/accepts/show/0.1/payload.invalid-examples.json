@@ -1,0 +1,28 @@
+[
+  {
+    "note": "Missing id.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "Response with the criterion at the top level.",
+    "payload": {
+      "id": "membership",
+      "query": {
+        "credentials": [
+          {
+            "id": "membership",
+            "format": "vc+sd-jwt",
+            "meta": {
+              "vct_values": [
+                "https://openvtc.org/credentials/MembershipCredential"
+              ]
+            }
+          }
+        ]
+      },
+      "createdAt": "2026-09-28T10:00:01Z",
+      "createdByDid": "did:example:administrator"
+    }
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "public": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the setting — the default is reported as `public: true`, never left absent.",
+    "payload": {
+      "joinDiscovery": {}
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`public` as a string.",
+    "payload": {
+      "joinDiscovery": {
+        "public": "yes"
+      }
+    }
+  }
+]

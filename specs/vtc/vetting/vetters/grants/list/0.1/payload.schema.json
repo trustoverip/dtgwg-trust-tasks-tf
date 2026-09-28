@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/grants/list/0.1",
+  "title": "VTC Vetting — Vetter Grants — List — payload",
+  "description": "An administrator pages through every vetter grant the community has made. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Page size. The community chooses when absent (50 in the reference implementation)."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "GrantOrigin": {
+      "title": "GrantOrigin",
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual"
+      ],
+      "description": "Who issued the grant. `auto`: the automatic-grant sweep (vtc/vetting/auto-grant), on the vetter-eligibility policy's allow — and the only grants that sweep ever revokes. `manual`: an administrator, through vtc/vetting/vetters/grant."
+    },
+    "VetterProfileSummary": {
+      "title": "VetterProfileSummary",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "listed",
+        "languages",
+        "methods",
+        "eventCount",
+        "updatedAt"
+      ],
+      "description": "What an administrator sees of a vetter's self-published profile (vtc/vetting/vetters/profile). Self-asserted by the vetter; a surface rendering it attributes it to them.",
+      "properties": {
+        "listed": {
+          "type": "boolean",
+          "description": "Whether the profile appears in vtc/vetting/vetters/list."
+        },
+        "displayName": {
+          "$ref": "../../../../../_shared/0.1/vetter-profile.schema.json#/$defs/VetterDisplayName"
+        },
+        "country": {
+          "$ref": "../../../../../_shared/0.1/vetter-profile.schema.json#/$defs/CountryCode"
+        },
+        "languages": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "../../../../../_shared/0.1/vetter-profile.schema.json#/$defs/LanguageTag"
+          }
+        },
+        "methods": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod"
+          }
+        },
+        "eventCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many events the profile lists, ended or not."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the profile was last published."
+        }
+      }
+    },
+    "VetterGrant": {
+      "title": "VetterGrant",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endorsementId",
+        "memberDid",
+        "credentialId",
+        "validFrom",
+        "revoked",
+        "live",
+        "origin"
+      ],
+      "description": "One vetter grant.",
+      "properties": {
+        "endorsementId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The grant's record — what vtc/endorsements/revoke withdraws."
+        },
+        "memberDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The member named a vetter."
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The vetter role credential's `id`."
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The credential's `validFrom`."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The credential's `validUntil`. Absent on a grant recorded before the community kept it."
+        },
+        "revoked": {
+          "type": "boolean",
+          "description": "Whether the grant has been revoked."
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it was revoked. Present only when `revoked`."
+        },
+        "live": {
+          "type": "boolean",
+          "description": "Unrevoked, unexpired, and held by a current member — the predicate vtc/vetting/vetters/show reports as `live`."
+        },
+        "origin": {
+          "$ref": "#/$defs/GrantOrigin"
+        },
+        "profile": {
+          "$ref": "#/$defs/VetterProfileSummary"
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Vetter Grants — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/VetterGrant"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more remain; pass it as `cursor`."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

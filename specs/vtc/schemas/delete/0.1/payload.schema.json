@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/schemas/delete/0.1",
+  "title": "VTC Schemas — Delete — payload",
+  "description": "Remove one registry entry. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "typeUri"
+  ],
+  "properties": {
+    "typeUri": {
+      "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/CredentialTypeUri"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Schemas — Delete — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typeUri"
+      ],
+      "properties": {
+        "typeUri": {
+          "$ref": "../../../_shared/0.1/schema-registry.schema.json#/$defs/CredentialTypeUri"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

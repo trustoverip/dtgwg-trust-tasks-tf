@@ -1,0 +1,20 @@
+[
+  {
+    "note": "A subject member — the listed identity is the proven caller, and a field naming one would be a field an attacker can set.",
+    "payload": { "identityDid": "did:web:bob.example" }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "includeRevoked": false }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `signingKeys` — an identity with no keys is answered with an empty array, never an absent member.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A listed key that is not a did:key.",
+    "payload": { "signingKeys": [ { "signingKeyDid": "did:web:laptop.example", "identityDid": "did:web:alice.example", "createdAt": "2026-09-28T10:00:31Z", "active": true } ] }
+  }
+]

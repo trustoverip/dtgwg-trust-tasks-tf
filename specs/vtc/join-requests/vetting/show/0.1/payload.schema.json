@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/vetting/show/0.1",
+  "title": "VTC Join Requests — Vetting — Show — payload",
+  "description": "An administrator reads the vetting facts one join request was decided on. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The join request, as vtc/join-requests/list returns it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "VettingStatementFacts": {
+      "title": "VettingStatementFacts",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified",
+        "eligible",
+        "revoked",
+        "withdrawnNow",
+        "counted",
+        "failures"
+      ],
+      "description": "One identity-vetting statement the applicant's presentation carried, as the community saw it at the decision — plus whether its vetter has withdrawn it since.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The statement's `id`, when it had one."
+        },
+        "issuer": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The vetter who issued it, when it could be read."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Its proof, type, validity window and body verified."
+        },
+        "eligible": {
+          "type": "boolean",
+          "description": "Its issuer was an eligible vetter at the decision."
+        },
+        "revoked": {
+          "type": "boolean",
+          "description": "Withdrawn by its vetter before the decision."
+        },
+        "withdrawnNow": {
+          "type": "boolean",
+          "description": "Withdrawn by its vetter now — after the decision, when `revoked` is false. Read live, not recorded."
+        },
+        "method": {
+          "$ref": "../../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod"
+        },
+        "declaredRelationship": {
+          "$ref": "../../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingRelationship"
+        },
+        "counted": {
+          "type": "boolean",
+          "description": "It counted toward the requirements."
+        },
+        "failures": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": "Why it did not count, as machine codes in the `vetting:*` grammar the join policy reads. Empty when it counted."
+        }
+      }
+    },
+    "VettingFacts": {
+      "title": "VettingFacts",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterionId",
+        "requirementsDigest",
+        "applicantDigestMatches",
+        "statements",
+        "distinctCountedVetters",
+        "byMethod",
+        "commitmentsConsistent",
+        "independenceOk",
+        "invitationRequired",
+        "satisfied",
+        "needs",
+        "recordedAt"
+      ],
+      "description": "What the community established about a request's vetting evidence when it decided — the join policy's vetting input, in lowerCamelCase.",
+      "properties": {
+        "criterionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The Accepts criterion whose requirements were applied."
+        },
+        "requirementsDigest": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "applicantDigestMatches": {
+          "type": "boolean",
+          "description": "The applicant named the same `requirementsDigest` — they applied under the version of the requirements that was applied."
+        },
+        "statements": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/VettingStatementFacts"
+          }
+        },
+        "distinctCountedVetters": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct eligible vetters counted, each once however many DIDs they hold."
+        },
+        "byMethod": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "../../../../../vetting/_shared/0.1/vetting.schema.json#/$defs/VettingMethod"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Counted statements by method."
+        },
+        "commitmentsConsistent": {
+          "type": "boolean",
+          "description": "Every counted statement carries the same identity commitment."
+        },
+        "independenceOk": {
+          "type": "boolean",
+          "description": "No declared-relationship cap was exceeded."
+        },
+        "invitationRequired": {
+          "type": "boolean",
+          "description": "The requirements demanded an invitation."
+        },
+        "satisfied": {
+          "type": "boolean",
+          "description": "Count, method floors, consistency and independence all held."
+        },
+        "needs": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": "What was still missing, in the `vetting:*` grammar. Empty when `satisfied`."
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the facts were recorded."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join Requests — Vetting — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId"
+      ],
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "Echoed."
+        },
+        "vetting": {
+          "$ref": "#/$defs/VettingFacts"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

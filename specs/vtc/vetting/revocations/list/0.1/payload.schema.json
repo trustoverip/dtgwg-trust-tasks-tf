@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/revocations/list/0.1",
+  "title": "VTC Vetting — Revocations — List — payload",
+  "description": "An administrator pages through the vetting-statement withdrawal notices the community has recorded, each with the admissions it touches. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reviewState": {
+      "$ref": "#/$defs/ReviewState"
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Page size. The community chooses when absent (50 in the reference implementation)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ReviewState": {
+      "title": "ReviewState",
+      "type": "string",
+      "enum": [
+        "noAdmission",
+        "needsReview"
+      ],
+      "description": "Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked."
+    },
+    "RevocationNotice": {
+      "title": "RevocationNotice",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "statementId",
+        "statementDigestMultibase",
+        "recordedAt",
+        "reviewState",
+        "affectedJoinRequests",
+        "affectedMembers"
+      ],
+      "description": "One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.",
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The vetter who withdrew the statement."
+        },
+        "statementId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The withdrawn statement's `id`."
+        },
+        "statementDigestMultibase": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "mistake",
+            "newInformation",
+            "keyCompromise",
+            "other"
+          ],
+          "description": "The vetter's reason, when given, as vtc/vetting/revoke-statement defines it."
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community recorded the notice."
+        },
+        "reviewState": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "affectedJoinRequests": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "description": "Approved join requests whose recorded vetting facts counted the statement."
+        },
+        "affectedMembers": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "pattern": "^did:",
+            "maxLength": 2048
+          },
+          "description": "Of those requests' applicants, the ones who are current members."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Revocations — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/RevocationNotice"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more remain; pass it as `cursor`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/vetting-auto-grant",
+  "title": "VTC — shared automatic vetter-grant definitions",
+  "description": "Shared types for vtc/vetting/auto-grant/*: the configuration of the community's automatic vetter-grant sweep and the outcome of its last run. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "SweepMinutes": {
+      "title": "SweepMinutes",
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 1440,
+      "description": "Minutes between sweeps: at most every five minutes, at least once a day."
+    },
+    "GrantValiditySeconds": {
+      "title": "GrantValiditySeconds",
+      "type": "integer",
+      "minimum": 86400,
+      "maximum": 63072000,
+      "description": "Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants."
+    },
+    "AutoGrantSweep": {
+      "title": "AutoGrantSweep",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ranAt",
+        "granted",
+        "revoked",
+        "errors"
+      ],
+      "description": "What one sweep did.",
+      "properties": {
+        "ranAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the sweep finished."
+        },
+        "granted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Grants issued."
+        },
+        "revoked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Automatic grants revoked. The sweep revokes only grants it issued."
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Members the sweep could not decide or act on."
+        }
+      }
+    },
+    "AutoGrantStatus": {
+      "title": "AutoGrantStatus",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "sweepMinutes",
+        "validitySeconds"
+      ],
+      "description": "The effective configuration — defaults filled in — and the last sweep.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the sweep runs."
+        },
+        "sweepMinutes": {
+          "$ref": "#/$defs/SweepMinutes"
+        },
+        "validitySeconds": {
+          "$ref": "#/$defs/GrantValiditySeconds"
+        },
+        "lastSweep": {
+          "$ref": "#/$defs/AutoGrantSweep"
+        }
+      }
+    }
+  }
+}

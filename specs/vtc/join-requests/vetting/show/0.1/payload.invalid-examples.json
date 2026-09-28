@@ -1,0 +1,151 @@
+[
+  {
+    "note": "Missing id.",
+    "payload": {}
+  },
+  {
+    "note": "An id that is not a UUID.",
+    "payload": {
+      "id": "request-7"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A statement with an unknown vetting method.",
+    "payload": {
+      "requestId": "0f8e7d6c-5b4a-4938-8271-605f4e3d2c1b",
+      "vetting": {
+        "criterionId": "membership",
+        "requirementsDigest": "zQmNLei78zWmzUdbeRB3CiUfAizWUrbeeZh5K1rhAQKCh51",
+        "applicantDigestMatches": true,
+        "statements": [
+          {
+            "id": "urn:uuid:5e4d3c2b-1a09-4f8e-9d7c-6b5a4f3e2d1c",
+            "issuer": "did:example:vetter",
+            "verified": true,
+            "eligible": true,
+            "revoked": false,
+            "withdrawnNow": true,
+            "method": "phone",
+            "declaredRelationship": "none",
+            "counted": true,
+            "failures": []
+          }
+        ],
+        "distinctCountedVetters": 1,
+        "byMethod": {
+          "inPerson": 1
+        },
+        "commitmentsConsistent": true,
+        "independenceOk": true,
+        "invitationRequired": false,
+        "satisfied": false,
+        "needs": [
+          "vetting:minStatements"
+        ],
+        "recordedAt": "2026-09-20T14:00:00Z"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Facts without `satisfied` — the verdict over the evidence is part of the record.",
+    "payload": {
+      "requestId": "0f8e7d6c-5b4a-4938-8271-605f4e3d2c1b",
+      "vetting": {
+        "criterionId": "membership",
+        "requirementsDigest": "zQmNLei78zWmzUdbeRB3CiUfAizWUrbeeZh5K1rhAQKCh51",
+        "applicantDigestMatches": true,
+        "statements": [
+          {
+            "id": "urn:uuid:5e4d3c2b-1a09-4f8e-9d7c-6b5a4f3e2d1c",
+            "issuer": "did:example:vetter",
+            "verified": true,
+            "eligible": true,
+            "revoked": false,
+            "withdrawnNow": true,
+            "method": "inPerson",
+            "declaredRelationship": "none",
+            "counted": true,
+            "failures": []
+          },
+          {
+            "id": "urn:uuid:6f5e4d3c-2b1a-4098-8e7d-7c6b5a4f3e2d",
+            "issuer": "did:example:vetter-2",
+            "verified": true,
+            "eligible": false,
+            "revoked": false,
+            "withdrawnNow": false,
+            "method": "video",
+            "counted": false,
+            "failures": [
+              "vetting:ineligibleVetter"
+            ]
+          }
+        ],
+        "distinctCountedVetters": 1,
+        "byMethod": {
+          "inPerson": 1
+        },
+        "commitmentsConsistent": true,
+        "independenceOk": true,
+        "invitationRequired": false,
+        "needs": [
+          "vetting:minStatements"
+        ],
+        "recordedAt": "2026-09-20T14:00:00Z"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "byMethod keyed by something other than a vetting method.",
+    "payload": {
+      "requestId": "0f8e7d6c-5b4a-4938-8271-605f4e3d2c1b",
+      "vetting": {
+        "criterionId": "membership",
+        "requirementsDigest": "zQmNLei78zWmzUdbeRB3CiUfAizWUrbeeZh5K1rhAQKCh51",
+        "applicantDigestMatches": true,
+        "statements": [
+          {
+            "id": "urn:uuid:5e4d3c2b-1a09-4f8e-9d7c-6b5a4f3e2d1c",
+            "issuer": "did:example:vetter",
+            "verified": true,
+            "eligible": true,
+            "revoked": false,
+            "withdrawnNow": true,
+            "method": "inPerson",
+            "declaredRelationship": "none",
+            "counted": true,
+            "failures": []
+          },
+          {
+            "id": "urn:uuid:6f5e4d3c-2b1a-4098-8e7d-7c6b5a4f3e2d",
+            "issuer": "did:example:vetter-2",
+            "verified": true,
+            "eligible": false,
+            "revoked": false,
+            "withdrawnNow": false,
+            "method": "video",
+            "counted": false,
+            "failures": [
+              "vetting:ineligibleVetter"
+            ]
+          }
+        ],
+        "distinctCountedVetters": 1,
+        "byMethod": {
+          "postal": 1
+        },
+        "commitmentsConsistent": true,
+        "independenceOk": true,
+        "invitationRequired": false,
+        "satisfied": false,
+        "needs": [
+          "vetting:minStatements"
+        ],
+        "recordedAt": "2026-09-20T14:00:00Z"
+      }
+    }
+  }
+]

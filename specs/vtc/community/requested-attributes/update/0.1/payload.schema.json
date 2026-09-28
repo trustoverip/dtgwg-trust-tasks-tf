@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/community/requested-attributes/update/0.1",
+  "title": "VTC Community — Requested Attributes — Update — payload",
+  "description": "The whole new value, which replaces the stored one. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "requestedAttributes"
+  ],
+  "properties": {
+    "requestedAttributes": {
+      "$ref": "../../../../_shared/0.1/community-presentation.schema.json#/$defs/RequestedAttributes"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Community — Requested Attributes — Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestedAttributes"
+      ],
+      "properties": {
+        "requestedAttributes": {
+          "$ref": "../../../../_shared/0.1/community-presentation.schema.json#/$defs/RequestedAttributes"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

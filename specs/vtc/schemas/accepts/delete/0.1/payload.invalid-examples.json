@@ -1,0 +1,11 @@
+[
+  {
+    "note": "Missing id.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "Response without the deleted id.",
+    "payload": {}
+  }
+]

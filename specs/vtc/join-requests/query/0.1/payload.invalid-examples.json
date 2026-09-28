@@ -1,0 +1,49 @@
+[
+  {
+    "note": "Missing criterionId — the community sends the query of a registered criterion, never one the caller writes.",
+    "payload": {
+      "holderDid": "did:example:prospect"
+    }
+  },
+  {
+    "note": "A caller-supplied DCQL query — the query is derived from the criterion.",
+    "payload": {
+      "holderDid": "did:example:prospect",
+      "criterionId": "membership",
+      "dcql_query": {}
+    }
+  },
+  {
+    "note": "holderDid that is not a DID.",
+    "payload": {
+      "holderDid": "prospect@example.org",
+      "criterionId": "membership"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `delivered` — the caller has to know whether to relay the query.",
+    "payload": {
+      "threadId": "urn:uuid:9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+      "holderDid": "did:example:prospect",
+      "query": {
+        "dcql_query": {},
+        "nonce": "n",
+        "purpose": "p"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A query without a purpose — credential-exchange/query makes it mandatory.",
+    "payload": {
+      "threadId": "t",
+      "holderDid": "did:example:prospect",
+      "query": {
+        "dcql_query": {},
+        "nonce": "n"
+      },
+      "delivered": false
+    }
+  }
+]

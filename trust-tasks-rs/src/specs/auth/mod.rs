@@ -6,5 +6,6 @@ pub mod passkey;
 pub mod refresh;
 pub mod revoke_session;
 pub mod sessions;
+pub mod signing_key;
 pub mod step_up;
 pub mod whoami;
