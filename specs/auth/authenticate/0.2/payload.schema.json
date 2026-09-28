@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/authenticate/0.2",
+  "title": "Auth — Authenticate",
+  "description": "The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication. 0.2 adds the optional `sessionKey` member, a did:key VID the consumer binds to the created session so later documents in that session can be signed with it instead of the subject's own key.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["challenge", "sessionId"],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges."
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding."
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional capability tags the subject is requesting on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset."
+    },
+    "sessionKey": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "maxLength": 512,
+      "description": "A did:key VID the producer asks the consumer to bind to the session this authenticate document creates. The producer MUST hold the corresponding private key and SHOULD keep it non-extractable (for example, a WebCrypto non-extractable key). Once bound, the consumer MUST accept a framework `proof` made by this key, with `proofPurpose: authentication`, as the subject — for this session only, bounded by the session's `expiresAt` and `acr`, and never where a specification requires an `assertionMethod` attestation (SPEC.md §7.2 item 10; see Security & Privacy). The consumer MAY refuse a key type it does not support with `auth/authenticate:sessionKeyUnsupported`. It sits inside `payload`, so the subject's own `authentication` proof on this document covers it — a party cannot bind a session key without signing for it."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Authenticate — response payload",
+      "description": "Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session", "tokens"],
+      "properties": {
+        "session": {
+          "$ref": "../../_shared/0.2/session.schema.json#/$defs/Session",
+          "description": "The session the consumer has just created or refreshed for this subject. Carries `sessionKey` when the request bound one."
+        },
+        "tokens": {
+          "$ref": "../../_shared/0.1/tokens.schema.json#/$defs/TokenBundle",
+          "description": "Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

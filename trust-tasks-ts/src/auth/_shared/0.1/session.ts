@@ -14,4 +14,4 @@ export interface AuthSharedSessionDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Session } from "../../../_shared/components.js";
+export type { Session_AuthV0_1 as Session } from "../../../_shared/components.js";

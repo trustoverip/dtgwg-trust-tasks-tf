@@ -3,7 +3,7 @@
  * Source: specs/auth/step-up/approve-response/0.5/payload.schema.json
  */
 
-import type { AuthenticatorAssertionResponseLogin, Ext, Session } from "../../../../_shared/components.js";
+import type { AuthenticatorAssertionResponseLogin, Ext, Session_AuthV0_1 as Session } from "../../../../_shared/components.js";
 
 
 /**

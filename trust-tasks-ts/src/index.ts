@@ -29,7 +29,9 @@ export * as PasskeyInviteShared_v0_1 from "./auth/_shared/0.1/passkey-invite.js"
 export * as SessionShared_v0_1 from "./auth/_shared/0.1/session.js";
 export * as TokensShared_v0_1 from "./auth/_shared/0.1/tokens.js";
 export * as WebauthnShared_v0_1 from "./auth/_shared/0.1/webauthn.js";
+export * as SessionShared_v0_2 from "./auth/_shared/0.2/session.js";
 export * as AuthAuthenticate_v0_1 from "./auth/authenticate/0.1/payload.js";
+export * as AuthAuthenticate_v0_2 from "./auth/authenticate/0.2/payload.js";
 export * as AuthChallenge_v0_1 from "./auth/challenge/0.1/payload.js";
 export * as AuthPasskeyAdminList_v0_1 from "./auth/passkey/admin-list/0.1/payload.js";
 export * as AuthPasskeyEnrollFinish_v0_1 from "./auth/passkey/enroll/finish/0.1/payload.js";

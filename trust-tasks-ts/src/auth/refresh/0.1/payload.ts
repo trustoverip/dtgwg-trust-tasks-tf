@@ -3,7 +3,7 @@
  * Source: specs/auth/refresh/0.1/payload.schema.json
  */
 
-import type { Ext, Session, TokenBundle } from "../../../_shared/components.js";
+import type { Ext, Session_AuthV0_1 as Session, TokenBundle } from "../../../_shared/components.js";
 
 
 /**

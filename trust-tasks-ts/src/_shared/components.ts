@@ -4703,7 +4703,7 @@ export interface ServiceState {
 /**
  * A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
  */
-export interface Session {
+export interface Session_AuthV0_1 {
   /**
    * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
    */
@@ -4730,6 +4730,45 @@ export interface Session {
    * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
    */
   acr?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
+}
+/**
+ * A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
+ */
+export interface Session_AuthV0_2 {
+  /**
+   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
+   */
+  id: string;
+  /**
+   * The authenticated party's VID (typically a DID URL).
+   */
+  subject: string;
+  /**
+   * ISO-8601 timestamp when the session was created.
+   */
+  issuedAt: string;
+  /**
+   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.
+   */
+  expiresAt: string;
+  /**
+   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
+   *
+   * @minItems 1
+   */
+  amr?: [string, ...string[]];
+  /**
+   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
+   */
+  acr?: string;
+  /**
+   * The did:key VID bound to this session by auth/authenticate/0.2, when the producer registered one. Present here so introspection (auth/whoami, auth/sessions/list) can show the binding a client already holds; it is descriptive, not an additional grant — the binding, its scope and its lifetime are governed entirely by the auth/authenticate/0.2 specification that established it. Absent when the session was established without a session key, or by a specification version that does not carry one.
+   */
+  sessionKey?: string;
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */

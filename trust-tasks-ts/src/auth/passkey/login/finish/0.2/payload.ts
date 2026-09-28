@@ -3,7 +3,7 @@
  * Source: specs/auth/passkey/login/finish/0.2/payload.schema.json
  */
 
-import type { AuthenticatorAssertionResponseLogin, Ext, Session, TokenBundle } from "../../../../../_shared/components.js";
+import type { AuthenticatorAssertionResponseLogin, Ext, Session_AuthV0_1 as Session, TokenBundle } from "../../../../../_shared/components.js";
 
 
 /**
