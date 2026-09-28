@@ -11,6 +11,36 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.21.10 — 2026-09-28
+
+
+### Added
+
+- **auth**: Authenticate 0.2 binds a session key to the session (#675)
+
+A wallet login signs the auth/challenge/auth/authenticate exchange with the
+  subject's own key, which today means one wallet prompt per console call for
+  the lifetime of the session -- there is no equivalent of the passkey login
+  path's browser-bound key. This adds an optional payload.sessionKey (a
+  did:key VID) to auth/authenticate: the producer generates it fresh per
+  login, ideally as a non-extractable key, and the consumer binds it to the
+  session it creates. Once bound, a proof by that key stands in for the
+  subject for that session only -- bounded by the session's expiry and acr,
+  and never accepted where a spec requires an assertionMethod attestation
+  (auth/step-up/approve-response, task-consent/decision, confirm/response).
+  Consumers that don't support the requested key type MAY refuse with the new
+  auth/authenticate:sessionKeyUnsupported code.
+
+  The shared Session shape gains the same optional sessionKey member, as a new
+  _shared/0.2 component version (auth/whoami and auth/sessions/list still pin
+  0.1 and would need their own version bump to surface it -- out of scope
+  here). wireCompatibleWith was considered and not declared: 0.2 is a strict,
+  non-identical superset of 0.1's wire shape, not the wire-identical case that
+  field is for.
+
+  Regenerated all four bindings (Rust, TS, Go, Dart) and confirmed
+  check-bindings agrees across all of them.
+
 ## 0.21.9 — 2026-09-27
 
 
