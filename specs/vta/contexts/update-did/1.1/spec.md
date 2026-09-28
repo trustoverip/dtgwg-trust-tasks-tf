@@ -168,26 +168,56 @@ and its response is the record with no `did` member.
 
 ## Security & Privacy
 
+The non-migration rule is the whole risk. After this task succeeds, the context
+signs as the new DID — or, cleared, as nothing — while every credential a
+verifier already holds names the old one, so a relying party checking "is this
+the identity I onboarded" will say no, correctly, until it is told otherwise out
+of band. Reassignment and clearing are therefore operations with an audience
+beyond the VTA, and the audit record is the only trace of when the switch
+happened. That is why `proof` is REQUIRED here even though the task is a
+single-field write.
+
 **Clearing.** A context with no DID presents no identity: anything the VTA
 would sign as the context has no issuer to sign as, and a consumer **MUST**
 refuse such an operation rather than fall back to another DID it holds. A
 relying party that onboarded the cleared DID keeps it, exactly as after a
 reassignment.
 
-The non-migration rule is the whole risk. After this task succeeds, the context
-signs as the new DID while every credential a verifier already holds names the
-old one — so a relying party checking "is this the identity I onboarded" will
-say no, correctly, until it is told otherwise out of band.
+### Data carried
 
-Reassignment is therefore an operation with an audience beyond the VTA, and the
-audit record is the only trace of when the switch happened. That is why `proof`
-is REQUIRED here even though the task is a single-field write.
+The request carries a context id and a DID, or `null`. Both are identifiers
+rather than personal data, though a context id is operator-chosen text and may
+name a person or customer (`personal/banking`); producers **SHOULD** choose ids
+that identify the scope rather than whoever it belongs to.
 
-**Free text.** The returned record's `name` is free text, bounded at 256
-characters — a display name, not prose. It was authored by whichever operator
-created or last updated the context, is read by whoever reads this response, and
-is **retained** by the VTA for the life of the context. It is operator-facing
-only and carries no authorization meaning; re-pointing a context's DID does not
-change it, and a caller MUST NOT read the unchanged name as evidence that
-nothing moved.
+The response is the whole `ContextRecord`. Its `name` is free text, bounded at
+256 characters — a display name, not prose. It was authored by whichever
+operator created or last updated the context, is read by whoever reads this
+response, and is operator-facing only, carrying no authorization meaning.
+Re-pointing or clearing a context's DID does not change it, and a caller
+**MUST NOT** read the unchanged name as evidence that nothing moved.
 
+### Correlation
+
+This task exists to change which identifier a context presents, which is a
+correlation event by construction: an observer that saw the context act as the
+previous DID and later as the new one learns, from timing alone, that they are
+likely the same scope. Nothing in this task can hide that. Conversely, clearing
+does not *unlink* anything — every signature and credential made under the
+previous DID still names it, and an observer who already joined the two keeps
+the join.
+
+### Retention
+
+The VTA retains the context record, including `name`, for the life of the
+context, and the audit record of each assignment and clearing for as long as its
+audit log is kept. The audit record is the only evidence of when a context
+stopped acting as a DID, so a consumer **SHOULD NOT** retain it for less time
+than it retains anything signed under that DID.
+
+### Consent/purpose
+
+The DID and context id are carried to identify what is being changed, and the
+audit record exists to attribute the change. Neither is collected for any other
+purpose, and this task implies nothing about the consent of whoever the previous
+DID identified to other parties.
