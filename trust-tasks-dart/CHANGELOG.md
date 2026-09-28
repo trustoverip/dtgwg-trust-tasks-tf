@@ -11,6 +11,60 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.12 — 2026-09-28
+
+
+### Added
+
+- **vtc/website**: Website content moves as a chunked Trust Task transfer (#682)
+
+Replaces the raw-byte REST routes (GET/PUT /website/files/{path}, POST /website/deploy) with Trust Tasks, modelled on backup/* and reusing vta/_shared/0.1/backup-transfer's chunk vocabulary:
+
+  - vtc/website/upload/begin — commits the target (a file at a path, with optional ifMatch, or a whole-site bundle), total size, whole-content SHA-256 and every chunk digest before any byte moves.
+  - vtc/website/upload/chunk — one chunk of up to 256 KiB, checked against the manifest on arrival; idempotent.
+  - vtc/website/upload/commit — reassembles and verifies the SHA-256; writes a file target atomically, or stages a bundle.
+  - vtc/website/upload/abort — discards an open or staged upload.
+  - vtc/website/deploy — publishes a staged bundle (live replace, or a new managed generation with pruning).
+  - vtc/website/files/show — ranged reads of up to 256 KiB with the whole-file etag.
+
+  begin, chunk and files/show declare maxDocumentBytes (256 KiB, 352 KiB, 352 KiB response), so the community's 64 KiB default is not raised for every other task. Shared component vtc/_shared/0.1/website-transfer. Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **vtc**: Trust Tasks for the community's REST-only admin surfaces (#680)
+
+* feat(vtc): Trust Tasks for the community's REST-only admin surfaces
+
+  Specifies, at 0.1, the VTC operations that existed only as REST routes, so each can be served as a sender-bound signed Trust Task over TSP, DIDComm or HTTPS:
+
+  - auth/signing-key/{enroll,list,revoke} — delegated signing keys (the admin console's non-extractable browser key). Enrolment is signed by the key being enrolled (proof of possession) and names the identity it acts for; control of that identity is established by separate authority evidence, which the reference implementation takes as an operation-bound passkey step-up.
+  - vtc/community/{branding,requested-attributes,join-discovery}/{show,update}
+  - vtc/schemas/{register,list,show,delete} and vtc/schemas/accepts/{register,list,show,delete} — register and show declare maxDocumentBytes, since a credential schema exceeds the 64 KiB default.
+  - vtc/vetting/vetters/grants/list, vtc/vetting/auto-grant/{show,update}, vtc/vetting/revocations/list
+  - vtc/relationships/{suspend,restore} — the edge issuer's own proof replaces the REST pop authorization.
+  - vtc/join-requests/vetting/show, and vtc/join-requests/query — its own task rather than credential-exchange/*, because an administrator instructs the verifier, which alone can author the query's challenge.
+  - vtc/rooms/list — under vtc/, not rooms/, because it is authorized by host ACL and rooms invariant I5 forbids that for any rooms/* task.
+
+  Shared components: auth/_shared/0.1/signing-key and vtc/_shared/0.1/{community-presentation,schema-registry,vetting-auto-grant,relationship-lifecycle}. Relationship persona attach/detach stays out, blocked on dtgwg-cred-spec#9. Bindings regenerated for Rust, TypeScript, Go and Dart.
+
+- **spec-meta**: A specification declares its own maximum document size (#679)
+
+Adds an optional front-matter member, maxDocumentBytes { request?, response?, rationale }, stating the largest serialized Trust Task document (proof included, transport envelope excluded) of each variant that a consumer serving the task must not refuse on grounds of size alone, and should refuse beyond with malformedRequest.
+
+  SPEC §12.4 already tells a consumer to bound what it parses at "a body-size limit appropriate to the Trust Task specification's payload", and §7.3 item 19 notes that a transport-layer limit is the wrong place to pick the number; until now no specification could say what it was. A consumer serving many tasks therefore applied one blanket cap sized for the small ones, and a task that legitimately carries a JSON Schema or a chunk of a file was refused. This lets the bound be stated, and enforced, per type.
+
+  - specs/spec.meta.schema.json: the member (at least one variant, 1 KiB to 16 MiB; larger content belongs in a chunked transfer).
+  - trust-tasks-codegen: reads it and emits Payload::MAX_DOCUMENT_BYTES on the request and response impls, plus schema_index::max_document_bytes_for(type_uri) for a dispatcher that learns the type before parsing. An absent variant never inherits the other's bound.
+  - trust-tasks-rs: the trait constant, defaulting to None.
+  - check-bindings: holds Rust's constants to the front matter, re-derived independently.
+  - CONTRIBUTING-SPECS: when and how to declare it.
+
+  Rust only for now, like ERROR_CODES; the TypeScript, Go and Dart generators do not emit it yet. The framework text (a §7.3 item) is proposed in the canonical specification repository; this is the registry's half.
+
+
+
+### Specifications
+
+- **webvh/witness/sign**: Let a witness sign the entry that deactivates a DID (#681)
+
 ## 0.3.11 — 2026-09-28
 
 
