@@ -1,0 +1,49 @@
+[
+  {
+    "note": "`did` is required: clearing is `null`, never an omission.",
+    "payload": {
+      "id": "personal/banking"
+    }
+  },
+  {
+    "note": "An empty string is not a DID, and not a way to say \"none\".",
+    "payload": {
+      "id": "personal/banking",
+      "did": ""
+    }
+  },
+  {
+    "note": "`did:` alone has no method or method-specific id.",
+    "payload": {
+      "id": "personal/banking",
+      "did": "did:"
+    }
+  },
+  {
+    "note": "A method-specific id may not be empty.",
+    "payload": {
+      "id": "personal/banking",
+      "did": "did:web:"
+    }
+  },
+  {
+    "note": "A method name is lowercase.",
+    "payload": {
+      "id": "personal/banking",
+      "did": "did:Web:example.com"
+    }
+  },
+  {
+    "note": "A non-DID string is refused; 1.0 accepted it.",
+    "payload": {
+      "id": "personal/banking",
+      "did": "hello"
+    }
+  },
+  {
+    "note": "`id` is required.",
+    "payload": {
+      "did": null
+    }
+  }
+]

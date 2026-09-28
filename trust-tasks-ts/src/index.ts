@@ -502,6 +502,7 @@ export * as VtaContextsList_v1_0 from "./vta/contexts/list/1.0/payload.js";
 export * as VtaContextsPreviewDelete_v1_0 from "./vta/contexts/preview-delete/1.0/payload.js";
 export * as VtaContextsSecrets_v1_0 from "./vta/contexts/secrets/1.0/payload.js";
 export * as VtaContextsUpdateDid_v1_0 from "./vta/contexts/update-did/1.0/payload.js";
+export * as VtaContextsUpdateDid_v1_1 from "./vta/contexts/update-did/1.1/payload.js";
 export * as VtaContextsUpdate_v1_0 from "./vta/contexts/update/1.0/payload.js";
 export * as VtaCredentialsIssue_v0_1 from "./vta/credentials/issue/0.1/payload.js";
 export * as VtaCredentialsIssue_v0_2 from "./vta/credentials/issue/0.2/payload.js";
