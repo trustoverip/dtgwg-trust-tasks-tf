@@ -1,0 +1,40 @@
+[
+  {
+    "note": "`resource` is not forge-qualified — no forge host segment.",
+    "payload": { "resource": "acme" }
+  },
+  {
+    "note": "`limit` below the declared minimum of 1.",
+    "payload": { "limit": 0 }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `namespace`, which this task filters by `resource`, not by namespace id.",
+    "payload": { "namespace": "ns_01J8Z6Q4M2" }
+  },
+  {
+    "note": "Response variant: `context` carries an unrecognised member — the shape is closed, unlike the projector's own internal representation.",
+    "variant": "response",
+    "payload": {
+      "registryConfigured": true,
+      "published": [
+        {
+          "entity": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+          "action": "git.repo.own",
+          "resource": "github.com/acme/widgets",
+          "context": { "framework": "https://trusttasks.org/spec/git-ns/right/grant/0.3", "repoId": "812736451" },
+          "publishedAt": "2026-09-23T09:50:05Z"
+        }
+      ],
+      "pendingChanges": 0
+    }
+  },
+  {
+    "note": "Response variant: missing required `pendingChanges`.",
+    "variant": "response",
+    "payload": { "registryConfigured": true, "published": [] }
+  }
+]

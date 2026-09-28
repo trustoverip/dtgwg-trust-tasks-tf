@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/account/list/0.1",
+  "title": "Git Namespaces — List Linked Forge Accounts — payload",
+  "description": "A community administrator lists every member's linked forge accounts, community-wide. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "member": {
+      "$ref": "../../../_shared/0.5/git-ns.schema.json#/$defs/Did",
+      "description": "Only this member's linked accounts. Absent: every member."
+    },
+    "forge": {
+      "$ref": "../../../_shared/0.5/git-ns.schema.json#/$defs/ForgeHost",
+      "description": "Only accounts linked on this forge. Absent: every forge."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `member` or `forge` from the request that produced it — start a fresh query instead."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Maximum accounts to return in this page. A VTC clamps to 1..=500 (default 100)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "AccountRow": {
+      "title": "AccountRow",
+      "description": "One member's account on one forge, as linked through git-ns/account/link.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member",
+        "account",
+        "memberCurrent"
+      ],
+      "properties": {
+        "member": {
+          "$ref": "../../../_shared/0.5/git-ns.schema.json#/$defs/Did",
+          "description": "The member the account is linked to."
+        },
+        "account": {
+          "$ref": "../../../_shared/0.5/git-ns.schema.json#/$defs/ForgeAccount",
+          "description": "The linked account. `id` is authoritative; `login` is as the forge last reported it — display only."
+        },
+        "linkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the VTC recorded the link. Absent for a link recorded before this member was tracked."
+        },
+        "memberCurrent": {
+          "type": "boolean",
+          "description": "Whether `member` is still a current member. One whose access lapsed keeps the link — nobody else may link the account — but it projects no forge role, and a forge role it holds cannot be adopted as a right."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — List Linked Forge Accounts — response payload",
+      "description": "The matching links, ordered by member then forge.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accounts"
+      ],
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AccountRow"
+          },
+          "description": "Links matching `member` and `forge`, ordered by `member` then `account.forge`. At most one per member per forge."
+        },
+        "nextCursor": {
+          "type": ["string", "null"],
+          "description": "Continuation token for the next page, or `null` when this is the last."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

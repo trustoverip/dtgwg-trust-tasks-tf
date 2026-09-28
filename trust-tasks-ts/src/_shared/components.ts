@@ -590,6 +590,10 @@ export type RetentionPolicy = "chained" | "fromJoin";
  */
 export type Right = "git.ns.admin" | "git.repo.create" | "git.repo.own" | "git.repo.maintain" | "git.commit.sign";
 /**
+ * Where a right an administrator sees came from. `recorded` — a `git-ns/*` record, governed by the rights model and returned nowhere the subject cannot eventually see it through `git-ns/view`. `roleDerived` — a v0.1 `[hooks.git-trust] grant_on_role` grant: published by the hook relay from the community's own role configuration, never written by any `git-ns/*` task, and not itself a `RightRecord` — it has no `grantedAt`, no `expiresAt` and no `reason`, only a subject, a right and a resource.
+ */
+export type RightOrigin = "recorded" | "roleDerived";
+/**
  * Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.
  */
 export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retired" | "revoked";
@@ -1191,6 +1195,46 @@ export interface AdminAccount {
    * The admin role; one of `admin` or `rootAdmin`.
    */
   accountType: AccountType;
+}
+/**
+ * One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.
+ */
+export interface AdminRightRow {
+  /**
+   * Who holds the right.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource;
+  origin: RightOrigin;
+  /**
+   * Who caused the right (see `RightRecord.grantedBy`). Present exactly when `origin` is `recorded`; a role-derived grant is published by the hook relay from configuration, not by an actor.
+   */
+  grantedBy?: Did_GitNsV0_3;
+  /**
+   * Present exactly when `origin` is `recorded`.
+   */
+  grantedAt?: string;
+  /**
+   * When the right lapses. Absent: no expiry, or `origin` is `roleDerived` (a role-derived grant never expires on its own — it is withdrawn by editing `[hooks.git-trust] grant_on_role`).
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason, restated from the `RightRecord`. Absent when `origin` is `roleDerived`, or the record carries none.
+   */
+  reason?: string;
+  /**
+   * Whether `subject` is a current member of the community. `false` marks a right held by someone who has since left, or by an external signer the community never enrolled.
+   */
+  subjectMember: boolean;
+  /**
+   * Whether `grantedBy` was a member at the time of the grant and has since left. Always `false` when `origin` is `roleDerived`, or when the record's granter was never itself a member (the VTC's own DID, for a right it derives from configuration).
+   */
+  granterDeparted: boolean;
+  /**
+   * Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass.
+   */
+  breakGlass?: BreakGlass;
 }
 /**
  * An agent name bound to a DID. A name is only ever authoritative in the DID→name direction: the DID document's `alsoKnownAs` is what proves the binding, because anyone controlling a domain can point a name at somebody else's DID.

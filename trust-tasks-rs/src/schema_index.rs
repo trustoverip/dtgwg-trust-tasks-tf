@@ -593,9 +593,17 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/link-status/0.1#response" => <crate::specs::git_ns::account::link_status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/list/0.1" => <crate::specs::git_ns::account::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/list/0.1#response" => <crate::specs::git_ns::account::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => <crate::specs::git_ns::account::unlink::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/unlink/0.1#response" => <crate::specs::git_ns::account::unlink::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/activity/list/0.1" => <crate::specs::git_ns::activity::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/activity/list/0.1#response" => <crate::specs::git_ns::activity::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => <crate::specs::git_ns::bridge::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -624,6 +632,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/git-ns/bridge/job/0.4" => <crate::specs::git_ns::bridge::job::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.4#response" => <crate::specs::git_ns::bridge::job::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1" => <crate::specs::git_ns::bridge::job::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1#response" => <crate::specs::git_ns::bridge::job::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1" => <crate::specs::git_ns::bridge::result::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -664,6 +676,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1" => <crate::specs::git_ns::namespace::unbind::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1#response" => <crate::specs::git_ns::namespace::unbind::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/projection/show/0.1" => <crate::specs::git_ns::projection::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/projection/show/0.1#response" => <crate::specs::git_ns::projection::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/repo/adopt/0.1" => <crate::specs::git_ns::repo::adopt::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -722,6 +738,14 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/git-ns/right/grant/0.3" => <crate::specs::git_ns::right::grant::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/grant/0.3#response" => <crate::specs::git_ns::right::grant::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/issued-by-departed/0.1" => <crate::specs::git_ns::right::issued_by_departed::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/issued-by-departed/0.1#response" => <crate::specs::git_ns::right::issued_by_departed::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/list/0.1" => <crate::specs::git_ns::right::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/list/0.1#response" => <crate::specs::git_ns::right::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/ratify/0.1" => <crate::specs::git_ns::right::ratify::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
@@ -3243,8 +3267,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             >())
         }
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::account::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::account::unlink::v0_1::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/activity/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::activity::list::v0_1::Payload,
         >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => Some(crate::SpecPolicy::of::<
@@ -3273,6 +3305,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.4" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::bridge::job::v0_4::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::bridge::job::list::v0_1::Payload,
         >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1" => Some(crate::SpecPolicy::of::<
@@ -3313,6 +3349,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::namespace::unbind::v0_1::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/projection/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::projection::show::v0_1::Payload,
         >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/repo/adopt/0.1" => Some(crate::SpecPolicy::of::<
@@ -3377,6 +3417,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/grant/0.3" => Some(crate::SpecPolicy::of::<
             crate::specs::git_ns::right::grant::v0_3::Payload,
+        >()),
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/issued-by-departed/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::git_ns::right::issued_by_departed::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::git_ns::right::list::v0_1::Payload,
         >()),
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/ratify/0.1" => Some(crate::SpecPolicy::of::<
@@ -6083,8 +6133,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::git_ns::account::link_status::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/account/list/0.1" => {
+            Some(crate::specs::git_ns::account::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/account/unlink/0.1" => {
             Some(crate::specs::git_ns::account::unlink::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/activity/list/0.1" => {
+            Some(crate::specs::git_ns::activity::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/event/0.1" => {
@@ -6113,6 +6171,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/job/0.4" => {
             Some(crate::specs::git_ns::bridge::job::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1" => {
+            Some(crate::specs::git_ns::bridge::job::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/bridge/result/0.1" => {
@@ -6153,6 +6215,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/namespace/unbind/0.1" => {
             Some(crate::specs::git_ns::namespace::unbind::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/projection/show/0.1" => {
+            Some(crate::specs::git_ns::projection::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/repo/adopt/0.1" => {
@@ -6213,6 +6279,14 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/grant/0.3" => {
             Some(crate::specs::git_ns::right::grant::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/issued-by-departed/0.1" => {
+            Some(crate::specs::git_ns::right::issued_by_departed::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "git-ns")]
+        "https://trusttasks.org/spec/git-ns/right/list/0.1" => {
+            Some(crate::specs::git_ns::right::list::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         "https://trusttasks.org/spec/git-ns/right/ratify/0.1" => {

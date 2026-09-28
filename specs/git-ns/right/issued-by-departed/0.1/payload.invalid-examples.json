@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`limit` below the declared minimum of 1.",
+    "payload": { "limit": 0 }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `resource`, which this task does not accept (it is not resource-scoped).",
+    "payload": { "resource": "github.com/acme" }
+  },
+  {
+    "note": "Response variant: missing required `cascadeOnDeparture`.",
+    "variant": "response",
+    "payload": { "granters": [] }
+  },
+  {
+    "note": "Response variant: a DepartedGranter entry with no `rights` array.",
+    "variant": "response",
+    "payload": {
+      "cascadeOnDeparture": false,
+      "granters": [
+        { "granter": "did:webvh:QmGraceScid13:acme-vtc.example:grace" }
+      ]
+    }
+  }
+]

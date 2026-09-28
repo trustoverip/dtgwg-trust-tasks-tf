@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/right/issued-by-departed/0.1",
+  "title": "Git Namespaces — Rights Issued By Departed Members — payload",
+  "description": "A community administrator lists the recorded rights whose granter has since left the community, grouped by granter. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "description": "Opaque continuation token from a previous response's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Maximum granters to return in this page. A VTC clamps to 1..=500 (default 100)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "DepartedGranter": {
+      "title": "DepartedGranter",
+      "description": "The rights one departed member issued while they were still a member.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "granter",
+        "rights"
+      ],
+      "properties": {
+        "granter": {
+          "$ref": "../../../_shared/0.5/git-ns.schema.json#/$defs/Did",
+          "description": "The member who granted these rights and has since left the community."
+        },
+        "rights": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.5/git-ns.schema.json#/$defs/AdminRightRow"
+          },
+          "description": "The rights `granter` issued, still live or awaiting a break-glass ratification. Every row's `origin` is `recorded` and `granterDeparted` is `true` — a role-derived grant has no granter and never appears here."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — Rights Issued By Departed Members — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cascadeOnDeparture",
+        "granters"
+      ],
+      "description": "Rights grouped by their departed granter, ordered by the granter's DID.",
+      "properties": {
+        "cascadeOnDeparture": {
+          "type": "boolean",
+          "description": "The community's active `cascade_on_departure` policy setting. `true` means a departure revokes these rights automatically and this list is normally empty; `false` means they stay, for an administrator to review and act on individually."
+        },
+        "granters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DepartedGranter"
+          },
+          "description": "Departed granters with at least one surviving right they issued, ordered by `granter`."
+        },
+        "nextCursor": {
+          "type": ["string", "null"],
+          "description": "Continuation token for the next page of granters, or `null` when this is the last."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

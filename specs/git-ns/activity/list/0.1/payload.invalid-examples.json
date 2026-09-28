@@ -1,0 +1,41 @@
+[
+  {
+    "note": "`limit` above the declared maximum of 500.",
+    "payload": { "limit": 1000 }
+  },
+  {
+    "note": "`namespace` empty string violates the shared NamespaceId's minLength.",
+    "payload": { "namespace": "" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `resource`, which this task filters by `namespace`, not by an arbitrary resource.",
+    "payload": { "resource": "github.com/acme/widgets" }
+  },
+  {
+    "note": "Response variant: `action` fails the dot-separated identifier pattern (a bare hyphenated word, not camelCase segments).",
+    "variant": "response",
+    "payload": {
+      "items": [
+        { "at": "2026-09-26T08:30:00Z", "action": "git-ns-job-bootstrap", "source": "job" }
+      ]
+    }
+  },
+  {
+    "note": "Response variant: `source` is not one of the two declared values.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        { "at": "2026-09-26T08:30:00Z", "action": "gitNs.job.bootstrap", "source": "queue" }
+      ]
+    }
+  },
+  {
+    "note": "Response variant: missing required `items` member.",
+    "variant": "response",
+    "payload": { "nextCursor": null }
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "note": "`forge` carries a scheme and path, not a bare DNS host.",
+    "payload": { "forge": "https://github.com/acme" }
+  },
+  {
+    "note": "`member` is a DID URL (carries a fragment), not a bare DID.",
+    "payload": { "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK" }
+  },
+  {
+    "note": "`limit` above the declared maximum of 500.",
+    "payload": { "limit": 501 }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `resource`.",
+    "payload": { "resource": "github.com/acme" }
+  },
+  {
+    "note": "Response variant: an AccountRow with no `account` member.",
+    "variant": "response",
+    "payload": {
+      "accounts": [
+        { "member": "did:webvh:QmFrankScid12:acme-vtc.example:frank", "memberCurrent": true }
+      ]
+    }
+  },
+  {
+    "note": "Response variant: missing required `accounts` member.",
+    "variant": "response",
+    "payload": { "nextCursor": null }
+  }
+]
