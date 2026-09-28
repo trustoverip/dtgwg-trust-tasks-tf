@@ -26,14 +26,17 @@ type SigningKey struct {
 	SigningKeyDID SigningKeyDID `json:"signingKeyDid"`
 
 	// The identity the key acts for. Included so a holder need not infer it.
-	IdentityDID string       `json:"identityDid"`
-	DeviceLabel *DeviceLabel `json:"deviceLabel,omitempty"`
+	IdentityDID string          `json:"identityDid"`
+	Scope       SigningKeyScope `json:"scope"`
+	DeviceLabel *DeviceLabel    `json:"deviceLabel,omitempty"`
 
 	// When the delegation was enrolled.
 	CreatedAt string `json:"createdAt"`
 
-	// When the delegation stops authorizing documents. Absent means it lasts until revoked.
-	ExpiresAt *string `json:"expiresAt,omitempty"`
+	// When the delegation stops authorizing documents. Always present: the consumer sets it
+	// at enrolment and caps it at its own maximum lifetime, whatever the producer asked for,
+	// so no delegation outlives the consumer's policy.
+	ExpiresAt string `json:"expiresAt"`
 
 	// When the delegation last authorized a document, as far as the consumer recorded. A
 	// usability signal for choosing which key to revoke, recorded best-effort; its absence
@@ -49,3 +52,16 @@ type SigningKey struct {
 	// holder does not re-implement it and disagree.
 	Active bool `json:"active"`
 }
+
+// SigningKeyScope What a delegated key may be accepted for. `console`: the operations an
+// administration console performs on the identity's behalf, authorized by the identity's
+// own standing. Never an approver's signature on a consent or approval decision, whatever
+// the scope: those require an `assertionMethod` key of the approver's own DID document,
+// which a delegated key never is. A closed enumeration so a consumer cannot be asked for
+// a scope it does not define; a later version adds values.
+type SigningKeyScope string
+
+// Values SigningKeyScope may take, per this specification's schema.
+const (
+	SigningKeyScopeConsole SigningKeyScope = "console"
+)

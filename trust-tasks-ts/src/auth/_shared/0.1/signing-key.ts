@@ -14,4 +14,4 @@ export interface AuthSharedSigningKeyDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { DeviceLabel, SigningKey, SigningKeyDid } from "../../../_shared/components.js";
+export type { DeviceLabel, SigningKey, SigningKeyDid, SigningKeyScope } from "../../../_shared/components.js";

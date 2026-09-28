@@ -304,7 +304,9 @@ impl Response {
 ///  "required": [
 ///    "active",
 ///    "createdAt",
+///    "expiresAt",
 ///    "identityDid",
+///    "scope",
 ///    "signingKeyDid"
 ///  ],
 ///  "properties": {
@@ -321,7 +323,7 @@ impl Response {
 ///      "$ref": "#/definitions/DeviceLabel"
 ///    },
 ///    "expiresAt": {
-///      "description": "When the delegation stops authorizing documents. Absent means it lasts until revoked.",
+///      "description": "When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy.",
 ///      "type": "string",
 ///      "format": "date-time"
 ///    },
@@ -341,6 +343,9 @@ impl Response {
 ///      "description": "When the delegation was revoked. A revoked delegation authorizes nothing and its key cannot be enrolled again.",
 ///      "type": "string",
 ///      "format": "date-time"
+///    },
+///    "scope": {
+///      "$ref": "#/definitions/SigningKeyScope"
 ///    },
 ///    "signingKeyDid": {
 ///      "$ref": "#/definitions/SigningKeyDid"
@@ -365,13 +370,9 @@ pub struct SigningKey {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub device_label: ::std::option::Option<DeviceLabel>,
-    ///When the delegation stops authorizing documents. Absent means it lasts until revoked.
-    #[serde(
-        rename = "expiresAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy.
+    #[serde(rename = "expiresAt")]
+    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///The identity the key acts for. Included so a holder need not infer it.
     #[serde(rename = "identityDid")]
     pub identity_did: SigningKeyIdentityDid,
@@ -389,6 +390,7 @@ pub struct SigningKey {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub scope: SigningKeyScope,
     #[serde(rename = "signingKeyDid")]
     pub signing_key_did: SigningKeyDid,
 }
@@ -558,6 +560,76 @@ impl<'de> ::serde::Deserialize<'de> for SigningKeyIdentityDid {
             })
     }
 }
+///What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "SigningKeyScope",
+///  "description": "What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values.",
+///  "type": "string",
+///  "enum": [
+///    "console"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum SigningKeyScope {
+    #[serde(rename = "console")]
+    Console,
+}
+impl ::std::fmt::Display for SigningKeyScope {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Console => f.write_str("console"),
+        }
+    }
+}
+impl ::std::str::FromStr for SigningKeyScope {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "console" => Ok(Self::Console),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for SigningKeyScope {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for SigningKeyScope {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for SigningKeyScope {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
@@ -654,10 +726,8 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         device_label:
             ::std::result::Result<::std::option::Option<super::DeviceLabel>, ::std::string::String>,
-        expires_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         identity_did: ::std::result::Result<super::SigningKeyIdentityDid, ::std::string::String>,
         last_used_at: ::std::result::Result<
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
@@ -667,6 +737,7 @@ pub mod builder {
             ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
             ::std::string::String,
         >,
+        scope: ::std::result::Result<super::SigningKeyScope, ::std::string::String>,
         signing_key_did: ::std::result::Result<super::SigningKeyDid, ::std::string::String>,
     }
     impl ::std::default::Default for SigningKey {
@@ -675,10 +746,11 @@ pub mod builder {
                 active: Err("no value supplied for active".to_string()),
                 created_at: Err("no value supplied for created_at".to_string()),
                 device_label: Ok(Default::default()),
-                expires_at: Ok(Default::default()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
                 identity_did: Err("no value supplied for identity_did".to_string()),
                 last_used_at: Ok(Default::default()),
                 revoked_at: Ok(Default::default()),
+                scope: Err("no value supplied for scope".to_string()),
                 signing_key_did: Err("no value supplied for signing_key_did".to_string()),
             }
         }
@@ -716,9 +788,7 @@ pub mod builder {
         }
         pub fn expires_at<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
             T::Error: ::std::fmt::Display,
         {
             self.expires_at = value
@@ -760,6 +830,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for revoked_at: {e}"));
             self
         }
+        pub fn scope<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SigningKeyScope>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.scope = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for scope: {e}"));
+            self
+        }
         pub fn signing_key_did<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::SigningKeyDid>,
@@ -784,6 +864,7 @@ pub mod builder {
                 identity_did: value.identity_did?,
                 last_used_at: value.last_used_at?,
                 revoked_at: value.revoked_at?,
+                scope: value.scope?,
                 signing_key_did: value.signing_key_did?,
             })
         }
@@ -798,6 +879,7 @@ pub mod builder {
                 identity_did: Ok(value.identity_did),
                 last_used_at: Ok(value.last_used_at),
                 revoked_at: Ok(value.revoked_at),
+                scope: Ok(value.scope),
                 signing_key_did: Ok(value.signing_key_did),
             }
         }
@@ -808,7 +890,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DeviceLabel\": {\n      \"description\": \"A human-readable name for where the key lives, chosen by the enrolling identity — e.g. `Work laptop — Chrome`. Read by that identity and by administrators deciding which key to revoke; retained with the delegation. Free text authored by the enrolling identity, untrusted, and attributed to it wherever it is rendered. Absent rather than invented when none was chosen: an invented label is indistinguishable from a chosen one to somebody deciding which key to revoke.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"DeviceLabel\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Every delegation enrolled for the caller's identity, newest first, revoked ones included.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signingKeys\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SigningKey\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"signingKeys\"\n      ],\n      \"title\": \"Auth — Signing Key List — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigningKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"Whether the delegation authorizes documents right now: not revoked and not past `expiresAt`. Computed by the consumer with the predicate its verifier applies, so a holder does not re-implement it and disagree.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the delegation was enrolled.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"$ref\": \"#/$defs/DeviceLabel\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the delegation stops authorizing documents. Absent means it lasts until revoked.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"identityDid\": {\n          \"description\": \"The identity the key acts for. Included so a holder need not infer it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When the delegation last authorized a document, as far as the consumer recorded. A usability signal for choosing which key to revoke, recorded best-effort; its absence does not mean the key was never used.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the delegation was revoked. A revoked delegation authorizes nothing and its key cannot be enrolled again.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"signingKeyDid\": {\n          \"$ref\": \"#/$defs/SigningKeyDid\"\n        }\n      },\n      \"required\": [\n        \"signingKeyDid\",\n        \"identityDid\",\n        \"createdAt\",\n        \"active\"\n      ],\n      \"title\": \"SigningKey\",\n      \"type\": \"object\"\n    },\n    \"SigningKeyDid\": {\n      \"description\": \"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\n      \"maxLength\": 256,\n      \"minLength\": 9,\n      \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"SigningKeyDid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/signing-key/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An identity lists its own signing-key delegations. The payload names no subject: the identity listed is the one the document's proof resolves to, so a caller cannot ask for somebody else's. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Auth — Signing Key List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"DeviceLabel\": {\n      \"description\": \"A human-readable name for where the key lives, chosen by the enrolling identity — e.g. `Work laptop — Chrome`. Read by that identity and by administrators deciding which key to revoke; retained with the delegation. Free text authored by the enrolling identity, untrusted, and attributed to it wherever it is rendered. Absent rather than invented when none was chosen: an invented label is indistinguishable from a chosen one to somebody deciding which key to revoke.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"DeviceLabel\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Every delegation enrolled for the caller's identity, newest first, revoked ones included.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signingKeys\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SigningKey\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"signingKeys\"\n      ],\n      \"title\": \"Auth — Signing Key List — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigningKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"Whether the delegation authorizes documents right now: not revoked and not past `expiresAt`. Computed by the consumer with the predicate its verifier applies, so a holder does not re-implement it and disagree.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the delegation was enrolled.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"$ref\": \"#/$defs/DeviceLabel\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"identityDid\": {\n          \"description\": \"The identity the key acts for. Included so a holder need not infer it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When the delegation last authorized a document, as far as the consumer recorded. A usability signal for choosing which key to revoke, recorded best-effort; its absence does not mean the key was never used.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the delegation was revoked. A revoked delegation authorizes nothing and its key cannot be enrolled again.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/SigningKeyScope\"\n        },\n        \"signingKeyDid\": {\n          \"$ref\": \"#/$defs/SigningKeyDid\"\n        }\n      },\n      \"required\": [\n        \"signingKeyDid\",\n        \"identityDid\",\n        \"scope\",\n        \"createdAt\",\n        \"expiresAt\",\n        \"active\"\n      ],\n      \"title\": \"SigningKey\",\n      \"type\": \"object\"\n    },\n    \"SigningKeyDid\": {\n      \"description\": \"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\n      \"maxLength\": 256,\n      \"minLength\": 9,\n      \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"SigningKeyDid\",\n      \"type\": \"string\"\n    },\n    \"SigningKeyScope\": {\n      \"description\": \"What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values.\",\n      \"enum\": [\n        \"console\"\n      ],\n      \"title\": \"SigningKeyScope\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/signing-key/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An identity lists its own signing-key delegations. The payload names no subject: the identity listed is the one the document's proof resolves to, so a caller cannot ask for somebody else's. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Auth — Signing Key List — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -816,7 +898,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DeviceLabel\": {\n      \"description\": \"A human-readable name for where the key lives, chosen by the enrolling identity — e.g. `Work laptop — Chrome`. Read by that identity and by administrators deciding which key to revoke; retained with the delegation. Free text authored by the enrolling identity, untrusted, and attributed to it wherever it is rendered. Absent rather than invented when none was chosen: an invented label is indistinguishable from a chosen one to somebody deciding which key to revoke.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"DeviceLabel\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Every delegation enrolled for the caller's identity, newest first, revoked ones included.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signingKeys\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SigningKey\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"signingKeys\"\n      ],\n      \"title\": \"Auth — Signing Key List — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigningKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"Whether the delegation authorizes documents right now: not revoked and not past `expiresAt`. Computed by the consumer with the predicate its verifier applies, so a holder does not re-implement it and disagree.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the delegation was enrolled.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"$ref\": \"#/$defs/DeviceLabel\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the delegation stops authorizing documents. Absent means it lasts until revoked.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"identityDid\": {\n          \"description\": \"The identity the key acts for. Included so a holder need not infer it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When the delegation last authorized a document, as far as the consumer recorded. A usability signal for choosing which key to revoke, recorded best-effort; its absence does not mean the key was never used.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the delegation was revoked. A revoked delegation authorizes nothing and its key cannot be enrolled again.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"signingKeyDid\": {\n          \"$ref\": \"#/$defs/SigningKeyDid\"\n        }\n      },\n      \"required\": [\n        \"signingKeyDid\",\n        \"identityDid\",\n        \"createdAt\",\n        \"active\"\n      ],\n      \"title\": \"SigningKey\",\n      \"type\": \"object\"\n    },\n    \"SigningKeyDid\": {\n      \"description\": \"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\n      \"maxLength\": 256,\n      \"minLength\": 9,\n      \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"SigningKeyDid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"DeviceLabel\": {\n      \"description\": \"A human-readable name for where the key lives, chosen by the enrolling identity — e.g. `Work laptop — Chrome`. Read by that identity and by administrators deciding which key to revoke; retained with the delegation. Free text authored by the enrolling identity, untrusted, and attributed to it wherever it is rendered. Absent rather than invented when none was chosen: an invented label is indistinguishable from a chosen one to somebody deciding which key to revoke.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"DeviceLabel\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Every delegation enrolled for the caller's identity, newest first, revoked ones included.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"signingKeys\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SigningKey\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"signingKeys\"\n      ],\n      \"title\": \"Auth — Signing Key List — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigningKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.\",\n      \"properties\": {\n        \"active\": {\n          \"description\": \"Whether the delegation authorizes documents right now: not revoked and not past `expiresAt`. Computed by the consumer with the predicate its verifier applies, so a holder does not re-implement it and disagree.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the delegation was enrolled.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"$ref\": \"#/$defs/DeviceLabel\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"identityDid\": {\n          \"description\": \"The identity the key acts for. Included so a holder need not infer it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"lastUsedAt\": {\n          \"description\": \"When the delegation last authorized a document, as far as the consumer recorded. A usability signal for choosing which key to revoke, recorded best-effort; its absence does not mean the key was never used.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the delegation was revoked. A revoked delegation authorizes nothing and its key cannot be enrolled again.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/SigningKeyScope\"\n        },\n        \"signingKeyDid\": {\n          \"$ref\": \"#/$defs/SigningKeyDid\"\n        }\n      },\n      \"required\": [\n        \"signingKeyDid\",\n        \"identityDid\",\n        \"scope\",\n        \"createdAt\",\n        \"expiresAt\",\n        \"active\"\n      ],\n      \"title\": \"SigningKey\",\n      \"type\": \"object\"\n    },\n    \"SigningKeyDid\": {\n      \"description\": \"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\n      \"maxLength\": 256,\n      \"minLength\": 9,\n      \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"SigningKeyDid\",\n      \"type\": \"string\"\n    },\n    \"SigningKeyScope\": {\n      \"description\": \"What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values.\",\n      \"enum\": [\n        \"console\"\n      ],\n      \"title\": \"SigningKeyScope\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -841,7 +923,7 @@ mod conformance {
     }
     #[test]
     fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:8d1b6a3c-2e7f-4c1a-9b8e-3a5d7c9e1f02\",\n  \"type\": \"https://trusttasks.org/spec/auth/signing-key/list/0.1#response\",\n  \"issuer\": \"did:web:community.example\",\n  \"recipient\": \"did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp\",\n  \"issuedAt\": \"2026-09-28T11:00:01Z\",\n  \"threadId\": \"urn:uuid:8d1b6a3c-2e7f-4c1a-9b8e-3a5d7c9e1fff\",\n  \"payload\": {\n    \"signingKeys\": [\n      {\n        \"signingKeyDid\": \"did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp\",\n        \"identityDid\": \"did:web:alice.example\",\n        \"deviceLabel\": \"Work laptop — Chrome\",\n        \"createdAt\": \"2026-09-28T10:00:31Z\",\n        \"lastUsedAt\": \"2026-09-28T10:58:12Z\",\n        \"active\": true\n      },\n      {\n        \"signingKeyDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n        \"identityDid\": \"did:web:alice.example\",\n        \"deviceLabel\": \"Old desktop — Firefox\",\n        \"createdAt\": \"2026-03-02T08:14:00Z\",\n        \"revokedAt\": \"2026-09-20T17:40:00Z\",\n        \"active\": false\n      }\n    ]\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:8d1b6a3c-2e7f-4c1a-9b8e-3a5d7c9e1f02\",\n  \"type\": \"https://trusttasks.org/spec/auth/signing-key/list/0.1#response\",\n  \"issuer\": \"did:web:community.example\",\n  \"recipient\": \"did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp\",\n  \"issuedAt\": \"2026-09-28T11:00:01Z\",\n  \"threadId\": \"urn:uuid:8d1b6a3c-2e7f-4c1a-9b8e-3a5d7c9e1fff\",\n  \"payload\": {\n    \"signingKeys\": [\n      {\n        \"signingKeyDid\": \"did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp\",\n        \"identityDid\": \"did:web:alice.example\",\n        \"scope\": \"console\",\n        \"deviceLabel\": \"Work laptop — Chrome\",\n        \"createdAt\": \"2026-09-28T10:00:31Z\",\n        \"expiresAt\": \"2026-10-28T10:00:31Z\",\n        \"lastUsedAt\": \"2026-09-28T10:58:12Z\",\n        \"active\": true\n      },\n      {\n        \"signingKeyDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n        \"identityDid\": \"did:web:alice.example\",\n        \"scope\": \"console\",\n        \"deviceLabel\": \"Old desktop — Firefox\",\n        \"createdAt\": \"2026-09-02T08:14:00Z\",\n        \"expiresAt\": \"2026-10-02T08:14:00Z\",\n        \"revokedAt\": \"2026-09-20T17:40:00Z\",\n        \"active\": false\n      }\n    ]\n  }\n}\n";
         let doc: crate::TrustTask<super::Response> =
             serde_json::from_str(JSON).expect("deserialize response example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -900,7 +982,11 @@ mod conformance {
             ),
             (
                 "A listed key that is not a did:key.",
-                "{\n  \"signingKeys\": [\n    {\n      \"active\": true,\n      \"createdAt\": \"2026-09-28T10:00:31Z\",\n      \"identityDid\": \"did:web:alice.example\",\n      \"signingKeyDid\": \"did:web:laptop.example\"\n    }\n  ]\n}",
+                "{\n  \"signingKeys\": [\n    {\n      \"active\": true,\n      \"createdAt\": \"2026-09-28T10:00:31Z\",\n      \"expiresAt\": \"2026-10-28T10:00:31Z\",\n      \"identityDid\": \"did:web:alice.example\",\n      \"scope\": \"console\",\n      \"signingKeyDid\": \"did:web:laptop.example\"\n    }\n  ]\n}",
+            ),
+            (
+                "A listed delegation without expiresAt — every delegation has one, and a holder deciding what to revoke needs to see it.",
+                "{\n  \"signingKeys\": [\n    {\n      \"active\": true,\n      \"createdAt\": \"2026-09-28T10:00:31Z\",\n      \"identityDid\": \"did:web:alice.example\",\n      \"scope\": \"console\",\n      \"signingKeyDid\": \"did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp\"\n    }\n  ]\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

@@ -1,11 +1,15 @@
 [
   {
     "note": "A subject member — the listed identity is the proven caller, and a field naming one would be a field an attacker can set.",
-    "payload": { "identityDid": "did:web:bob.example" }
+    "payload": {
+      "identityDid": "did:web:bob.example"
+    }
   },
   {
     "note": "Unknown top-level member is rejected (additionalProperties: false).",
-    "payload": { "includeRevoked": false }
+    "payload": {
+      "includeRevoked": false
+    }
   },
   {
     "variant": "response",
@@ -15,6 +19,32 @@
   {
     "variant": "response",
     "note": "A listed key that is not a did:key.",
-    "payload": { "signingKeys": [ { "signingKeyDid": "did:web:laptop.example", "identityDid": "did:web:alice.example", "createdAt": "2026-09-28T10:00:31Z", "active": true } ] }
+    "payload": {
+      "signingKeys": [
+        {
+          "signingKeyDid": "did:web:laptop.example",
+          "identityDid": "did:web:alice.example",
+          "createdAt": "2026-09-28T10:00:31Z",
+          "active": true,
+          "scope": "console",
+          "expiresAt": "2026-10-28T10:00:31Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A listed delegation without expiresAt — every delegation has one, and a holder deciding what to revoke needs to see it.",
+    "payload": {
+      "signingKeys": [
+        {
+          "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+          "identityDid": "did:web:alice.example",
+          "scope": "console",
+          "createdAt": "2026-09-28T10:00:31Z",
+          "active": true
+        }
+      ]
+    }
   }
 ]

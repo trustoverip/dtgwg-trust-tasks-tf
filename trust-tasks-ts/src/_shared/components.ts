@@ -696,6 +696,10 @@ export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
  */
 export type SigningKeyDid = string;
 /**
+ * What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values.
+ */
+export type SigningKeyScope = "console";
+/**
  * A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
  */
 export type SiteTarget_VaultV0_1 = WebOrigin_VaultV0_1 | Did_VaultV0_1 | IosApp_VaultV0_1 | AndroidApp_VaultV0_1;
@@ -5013,15 +5017,16 @@ export interface SigningKey {
    * The identity the key acts for. Included so a holder need not infer it.
    */
   identityDid: string;
+  scope: SigningKeyScope;
   deviceLabel?: DeviceLabel;
   /**
    * When the delegation was enrolled.
    */
   createdAt: string;
   /**
-   * When the delegation stops authorizing documents. Absent means it lasts until revoked.
+   * When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy.
    */
-  expiresAt?: string;
+  expiresAt: string;
   /**
    * When the delegation last authorized a document, as far as the consumer recorded. A usability signal for choosing which key to revoke, recorded best-effort; its absence does not mean the key was never used.
    */

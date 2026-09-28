@@ -5,9 +5,15 @@
   "description": "A freshly generated key asks to be enrolled as a signing-key delegation of an identity: documents it signs will be authorized by that identity's standing. The document is issued and proved by the key being enrolled, which is the proof that the enrolling party holds it; the identity it will act for is named in the payload and is established by the authority evidence the consumer requires, never by the key's own signature. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["signingKeyDid", "identityDid"],
+  "required": [
+    "signingKeyDid",
+    "identityDid",
+    "scope"
+  ],
   "properties": {
-    "signingKeyDid": { "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid" },
+    "signingKeyDid": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid"
+    },
     "identityDid": {
       "type": "string",
       "pattern": "^did:",
@@ -15,13 +21,20 @@
       "maxLength": 2048,
       "description": "The identity the key will act for — the DID whose standing a document signed by the key is authorized by. Naming it is not claiming it: the consumer establishes that the enrolling party controls this identity from separate authority evidence (Authorization)."
     },
-    "deviceLabel": { "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/DeviceLabel" },
+    "scope": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyScope"
+    },
+    "deviceLabel": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/DeviceLabel"
+    },
     "expiresAt": {
       "type": "string",
       "format": "date-time",
-      "description": "Optional finite lifetime for the delegation. Absent — the expected case for a key in a browser profile — means the delegation lasts until revoked. MUST be in the future when the consumer executes the task."
+      "description": "A requested lifetime for the delegation. The consumer sets the delegation's actual expiry — no later than this, and no later than its own cap — and returns it; absent means the consumer's default lifetime. MUST be in the future when the consumer executes the task."
     },
-    "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
   },
   "$defs": {
     "Response": {
@@ -30,10 +43,16 @@
       "description": "The delegation as stored. From this point a document the key signs is authorized by the identity's standing, read at execution time.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["signingKey"],
+      "required": [
+        "signingKey"
+      ],
       "properties": {
-        "signingKey": { "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKey" },
-        "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+        "signingKey": {
+          "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKey"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
       }
     }
   }

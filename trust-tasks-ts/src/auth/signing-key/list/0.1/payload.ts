@@ -3,7 +3,7 @@
  * Source: specs/auth/signing-key/list/0.1/payload.schema.json
  */
 
-import type { DeviceLabel, Ext, SigningKey, SigningKeyDid } from "../../../../_shared/components.js";
+import type { DeviceLabel, Ext, SigningKey, SigningKeyDid, SigningKeyScope } from "../../../../_shared/components.js";
 
 
 /**
@@ -24,7 +24,7 @@ export interface AuthSigningKeyListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { DeviceLabel, Ext, SigningKey, SigningKeyDid };
+export type { DeviceLabel, Ext, SigningKey, SigningKeyDid, SigningKeyScope };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/signing-key/list/0.1" as const;
@@ -99,7 +99,9 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "signingKeyDid",
         "identityDid",
+        "scope",
         "createdAt",
+        "expiresAt",
         "active"
       ],
       "description": "One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.",
@@ -114,6 +116,9 @@ export const PAYLOAD_SCHEMA = {
           "maxLength": 2048,
           "description": "The identity the key acts for. Included so a holder need not infer it."
         },
+        "scope": {
+          "$ref": "#/$defs/SigningKeyScope"
+        },
         "deviceLabel": {
           "$ref": "#/$defs/DeviceLabel"
         },
@@ -125,7 +130,7 @@ export const PAYLOAD_SCHEMA = {
         "expiresAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the delegation stops authorizing documents. Absent means it lasts until revoked."
+          "description": "When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy."
         },
         "lastUsedAt": {
           "type": "string",
@@ -149,6 +154,14 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "description": "A human-readable name for where the key lives, chosen by the enrolling identity — e.g. `Work laptop — Chrome`. Read by that identity and by administrators deciding which key to revoke; retained with the delegation. Free text authored by the enrolling identity, untrusted, and attributed to it wherever it is rendered. Absent rather than invented when none was chosen: an invented label is indistinguishable from a chosen one to somebody deciding which key to revoke."
+    },
+    "SigningKeyScope": {
+      "title": "SigningKeyScope",
+      "type": "string",
+      "enum": [
+        "console"
+      ],
+      "description": "What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values."
     },
     "SigningKeyDid": {
       "title": "SigningKeyDid",
@@ -205,7 +218,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "required": [
         "signingKeyDid",
         "identityDid",
+        "scope",
         "createdAt",
+        "expiresAt",
         "active"
       ],
       "description": "One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.",
@@ -220,6 +235,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "maxLength": 2048,
           "description": "The identity the key acts for. Included so a holder need not infer it."
         },
+        "scope": {
+          "$ref": "#/$defs/SigningKeyScope"
+        },
         "deviceLabel": {
           "$ref": "#/$defs/DeviceLabel"
         },
@@ -231,7 +249,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "expiresAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the delegation stops authorizing documents. Absent means it lasts until revoked."
+          "description": "When the delegation stops authorizing documents. Always present: the consumer sets it at enrolment and caps it at its own maximum lifetime, whatever the producer asked for, so no delegation outlives the consumer's policy."
         },
         "lastUsedAt": {
           "type": "string",
@@ -255,6 +273,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "description": "A human-readable name for where the key lives, chosen by the enrolling identity — e.g. `Work laptop — Chrome`. Read by that identity and by administrators deciding which key to revoke; retained with the delegation. Free text authored by the enrolling identity, untrusted, and attributed to it wherever it is rendered. Absent rather than invented when none was chosen: an invented label is indistinguishable from a chosen one to somebody deciding which key to revoke."
+    },
+    "SigningKeyScope": {
+      "title": "SigningKeyScope",
+      "type": "string",
+      "enum": [
+        "console"
+      ],
+      "description": "What a delegated key may be accepted for. `console`: the operations an administration console performs on the identity's behalf, authorized by the identity's own standing. Never an approver's signature on a consent or approval decision, whatever the scope: those require an `assertionMethod` key of the approver's own DID document, which a delegated key never is. A closed enumeration so a consumer cannot be asked for a scope it does not define; a later version adds values."
     },
     "SigningKeyDid": {
       "title": "SigningKeyDid",

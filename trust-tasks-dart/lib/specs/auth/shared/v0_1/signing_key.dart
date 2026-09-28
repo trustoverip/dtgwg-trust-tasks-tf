@@ -16,6 +16,24 @@ typedef SigningKeyDid = String;
 /// from a chosen one to somebody deciding which key to revoke.
 typedef DeviceLabel = String;
 
+/// What a delegated key may be accepted for. `console`: the operations an
+/// administration console performs on the identity's behalf, authorized by the
+/// identity's own standing. Never an approver's signature on a consent or approval
+/// decision, whatever the scope: those require an `assertionMethod` key of the
+/// approver's own DID document, which a delegated key never is. A closed enumeration
+/// so a consumer cannot be asked for a scope it does not define; a later version adds
+/// values.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const SigningKeyScope(String value) {
+  static const SigningKeyScope console = SigningKeyScope('console');
+
+  /// Every value this specification's schema permits.
+  static const List<SigningKeyScope> values = <SigningKeyScope>[console];
+}
+
 /// One signing-key delegation, as its holder sees it. A delegation confers nothing of
 /// its own: it names an identity that already holds whatever standing it holds, and a
 /// document signed by the key is authorized by that identity's standing read at
@@ -24,9 +42,10 @@ class SigningKey {
   const SigningKey({
     required this.signingKeyDid,
     required this.identityDid,
+    required this.scope,
     this.deviceLabel,
     required this.createdAt,
-    this.expiresAt,
+    required this.expiresAt,
     this.lastUsedAt,
     this.revokedAt,
     required this.active,
@@ -36,9 +55,10 @@ class SigningKey {
   factory SigningKey.fromJson(Map<String, dynamic> json) => SigningKey(
         signingKeyDid: json['signingKeyDid'] as String,
         identityDid: json['identityDid'] as String,
+        scope: SigningKeyScope(json['scope'] as String),
         deviceLabel: json['deviceLabel'] as String?,
         createdAt: json['createdAt'] as String,
-        expiresAt: json['expiresAt'] as String?,
+        expiresAt: json['expiresAt'] as String,
         lastUsedAt: json['lastUsedAt'] as String?,
         revokedAt: json['revokedAt'] as String?,
         active: json['active'] as bool,
@@ -48,14 +68,16 @@ class SigningKey {
 
   /// The identity the key acts for. Included so a holder need not infer it.
   final String identityDid;
+  final SigningKeyScope scope;
   final DeviceLabel? deviceLabel;
 
   /// When the delegation was enrolled.
   final String createdAt;
 
-  /// When the delegation stops authorizing documents. Absent means it lasts until
-  /// revoked.
-  final String? expiresAt;
+  /// When the delegation stops authorizing documents. Always present: the consumer sets
+  /// it at enrolment and caps it at its own maximum lifetime, whatever the producer
+  /// asked for, so no delegation outlives the consumer's policy.
+  final String expiresAt;
 
   /// When the delegation last authorized a document, as far as the consumer recorded. A
   /// usability signal for choosing which key to revoke, recorded best-effort; its
@@ -75,9 +97,10 @@ class SigningKey {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'signingKeyDid': signingKeyDid,
         'identityDid': identityDid,
+        'scope': scope.value,
         if (deviceLabel != null) 'deviceLabel': deviceLabel!,
         'createdAt': createdAt,
-        if (expiresAt != null) 'expiresAt': expiresAt!,
+        'expiresAt': expiresAt,
         if (lastUsedAt != null) 'lastUsedAt': lastUsedAt!,
         if (revokedAt != null) 'revokedAt': revokedAt!,
         'active': active,

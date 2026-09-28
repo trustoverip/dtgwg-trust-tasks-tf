@@ -66,7 +66,7 @@ A conforming **consumer**:
 
 1. Resolves the proof's signer to an identity — the signer itself, or, for a signer that is an active delegated key, the identity that delegation acts for — and lists the delegations enrolled for **that** identity. It **MUST NOT** list delegations of any other identity, and the payload carries no member that could ask it to.
 2. **MUST** answer `signingKeys: []`, not an error, for an identity with none: an identity that has never enrolled a key is the first state a console renders.
-3. **MUST** include revoked and expired delegations, and **MUST** compute `active` with the same predicate its verifier applies to a signed document.
+3. **MUST** include revoked and expired delegations, **MUST** report each one's `scope` and the `expiresAt` it set at enrolment, and **MUST** compute `active` with the same predicate its verifier applies to a signed document.
 4. **SHOULD** order the list newest first, so a key enrolled a moment ago by somebody else is at the top rather than buried.
 5. **MUST NOT** answer a caller whose signer resolves to no identity it recognises — it refuses with `permissionDenied`.
 
@@ -112,16 +112,20 @@ The consumer answers with the sub-schema reachable via `$anchor: "response"`: `s
       {
         "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
         "identityDid": "did:web:alice.example",
+        "scope": "console",
         "deviceLabel": "Work laptop — Chrome",
         "createdAt": "2026-09-28T10:00:31Z",
+        "expiresAt": "2026-10-28T10:00:31Z",
         "lastUsedAt": "2026-09-28T10:58:12Z",
         "active": true
       },
       {
         "signingKeyDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
         "identityDid": "did:web:alice.example",
+        "scope": "console",
         "deviceLabel": "Old desktop — Firefox",
-        "createdAt": "2026-03-02T08:14:00Z",
+        "createdAt": "2026-09-02T08:14:00Z",
+        "expiresAt": "2026-10-02T08:14:00Z",
         "revokedAt": "2026-09-20T17:40:00Z",
         "active": false
       }

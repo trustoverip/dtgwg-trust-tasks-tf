@@ -71,7 +71,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **consumer**:
 
-1. Resolves the proof's signer to an identity — the signer itself, or the identity an active delegated key acts for. A key **MAY** therefore revoke itself, or a sibling key of the same identity.
+1. Resolves the proof's signer to an identity — the signer itself, or the identity an active delegated key acts for. It **MUST** accept a revocation signed by the owning identity, and **MUST** accept one signed by the delegated key being revoked, so a console can revoke its own key when its user signs out. It **MAY** accept one signed by another active key of the same identity.
 2. **MUST** revoke only a delegation owned by that identity, unless the caller holds the consumer's highest administrative standing (at a community, an unrestricted administrator), which **MAY** revoke any delegation for incident response. A caller with narrower administrative standing **MUST NOT** revoke a peer's delegation: revocation cannot escalate, but it can deny service.
 3. **MUST** answer `notFound` both for a key it holds no delegation for and for a delegation the caller may not revoke.
 4. **MUST** leave a tombstone rather than delete the record, so the key cannot be enrolled again.
@@ -81,7 +81,7 @@ A conforming **consumer**:
 
 ## Authorization
 
-The authority this task presupposes is **ownership of the delegation** — being, or signing for, the identity it acts for — or the consumer's highest administrative standing, for incident response. Verifying the proof establishes which identity asked; the comparison with the delegation's owner is what authorizes ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The final decision is the consumer's.
+The authority this task presupposes is **ownership of the delegation** — being the identity it acts for, or being the delegated key itself — or the consumer's highest administrative standing, for incident response. Verifying the proof establishes which identity asked; the comparison with the delegation's owner is what authorizes ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The final decision is the consumer's.
 
 ## Definitions
 
