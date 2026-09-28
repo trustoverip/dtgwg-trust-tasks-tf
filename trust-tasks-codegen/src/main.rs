@@ -136,6 +136,11 @@ struct SpecExamples {
 /// * `payload` — the deliberately non-conforming payload JSON, which
 ///   is what `rejects_invalid_examples` actually feeds to the
 ///   `Payload` parser and the schema validator.
+/// * `variant` — optional, `"request"` (the default) or `"response"`.
+///   A `"response"` fixture is checked against the spec's `Response`
+///   type and its `$anchor: "response"` sub-schema instead, so a spec
+///   can pin the negative space of its response payload too. Naming
+///   `"response"` in a spec that defines no response is an error.
 ///
 /// Returns an empty Vec when the file does not exist — the test
 /// emission below treats an empty list as "no test to emit", not as a
@@ -173,8 +178,25 @@ fn read_invalid_examples(spec: &Spec) -> Result<Vec<InvalidExample>> {
             .get("payload")
             .cloned()
             .ok_or_else(|| anyhow!("{}[{}].payload is missing", path.display(), i))?;
+        let response = match obj.get("variant") {
+            None => false,
+            Some(Value::String(v)) if v == "request" => false,
+            Some(Value::String(v)) if v == "response" => true,
+            Some(other) => {
+                return Err(anyhow!(
+                    "{}[{}].variant must be \"request\" or \"response\", found {}",
+                    path.display(),
+                    i,
+                    other
+                ));
+            }
+        };
         let payload_json = serde_json::to_string_pretty(&payload)?;
-        out.push(InvalidExample { note, payload_json });
+        out.push(InvalidExample {
+            note,
+            payload_json,
+            response,
+        });
     }
     Ok(out)
 }
@@ -184,6 +206,8 @@ fn read_invalid_examples(spec: &Spec) -> Result<Vec<InvalidExample>> {
 struct InvalidExample {
     note: String,
     payload_json: String,
+    /// `true` for a `"variant": "response"` fixture, checked against `Response`.
+    response: bool,
 }
 
 /// Scan a `spec.md`'s YAML front matter for `bearer: true`. Returns
@@ -1011,6 +1035,14 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     let mut examples = extract_examples(&spec.spec_md_path())?;
     filter_examples_to_this_spec(spec, &mut examples);
     let invalid_examples = read_invalid_examples(spec)?;
+    if !has_response && invalid_examples.iter().any(|ex| ex.response) {
+        return Err(anyhow!(
+            "{}/{}: payload.invalid-examples.json has a \"variant\": \"response\" fixture, \
+             but the schema defines no $defs.Response",
+            spec.slug,
+            spec.version
+        ));
+    }
     let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
     let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
     let is_issued_at_required = read_issued_at_required_flag(&spec.spec_md_path())?;
@@ -1611,10 +1643,15 @@ fn render_conformance_mod(
         Vec::new()
     };
 
-    let invalid_test = if invalid_examples.is_empty() {
+    let request_invalid: Vec<&InvalidExample> =
+        invalid_examples.iter().filter(|ex| !ex.response).collect();
+    let response_invalid: Vec<&InvalidExample> =
+        invalid_examples.iter().filter(|ex| ex.response).collect();
+
+    let invalid_test = if request_invalid.is_empty() {
         quote! {}
     } else {
-        let fixtures: Vec<TokenStream> = invalid_examples
+        let fixtures: Vec<TokenStream> = request_invalid
             .iter()
             .map(|ex| {
                 let note = &ex.note;
@@ -1652,6 +1689,46 @@ fn render_conformance_mod(
         }
     };
 
+    let response_invalid_test = if response_invalid.is_empty() {
+        quote! {}
+    } else {
+        let fixtures: Vec<TokenStream> = response_invalid
+            .iter()
+            .map(|ex| {
+                let note = &ex.note;
+                let payload_json = &ex.payload_json;
+                quote! { (#note, #payload_json) }
+            })
+            .collect();
+        quote! {
+            /// Each `"variant": "response"` fixture in
+            /// `payload.invalid-examples.json` MUST be rejected as a
+            /// response payload by at least one of: serde deserialization
+            /// into `Response`, or JSON-Schema validation against the
+            /// `$anchor: "response"` sub-schema (validate feature).
+            #[cfg(feature = "validate")]
+            #[test]
+            fn rejects_invalid_response_examples() {
+                use crate::validate::ValidatedPayload;
+                let fixtures: &[(&str, &str)] = &[ #(#fixtures),* ];
+                for (i, (note, raw)) in fixtures.iter().enumerate() {
+                    let value: serde_json::Value = match serde_json::from_str(raw) {
+                        Ok(v) => v,
+                        Err(_) => continue,
+                    };
+                    let serde_ok = serde_json::from_value::<super::Response>(value.clone()).is_ok();
+                    let schema_ok = super::Response::validate_value(&value).is_ok();
+                    assert!(
+                        !(serde_ok && schema_ok),
+                        "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+                        i + 1, note, raw
+                    );
+                }
+            }
+        }
+    };
+
     if request_tests.is_empty() && response_tests.is_empty() && invalid_examples.is_empty() {
         return quote! {};
     }
@@ -1667,6 +1744,8 @@ fn render_conformance_mod(
             #(#response_tests)*
 
             #invalid_test
+
+            #response_invalid_test
         }
     }
 }

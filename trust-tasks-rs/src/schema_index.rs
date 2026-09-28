@@ -1365,6 +1365,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/trust-task-discovery/0.1#response" => <crate::specs::trust_task_discovery::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-discovery/0.2" => <crate::specs::trust_task_discovery::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-discovery/0.2#response" => <crate::specs::trust_task_discovery::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/trust-task-discovery/0.3" => <crate::specs::trust_task_discovery::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        "https://trusttasks.org/spec/trust-task-discovery/0.3#response" => <crate::specs::trust_task_discovery::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => <crate::specs::trust_task_next_step::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-ok/0.1" => <crate::specs::trust_task_ok::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vault")]
@@ -3978,6 +3980,9 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/trust-task-discovery/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::trust_task_discovery::v0_2::Payload,
         >()),
+        "https://trusttasks.org/spec/trust-task-discovery/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::trust_task_discovery::v0_3::Payload,
+        >()),
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::trust_task_next_step::v0_1::Payload,
         >()),
@@ -6558,6 +6563,9 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         "https://trusttasks.org/spec/trust-task-discovery/0.2" => {
             Some(crate::specs::trust_task_discovery::v0_2::ERROR_CODES)
+        }
+        "https://trusttasks.org/spec/trust-task-discovery/0.3" => {
+            Some(crate::specs::trust_task_discovery::v0_3::ERROR_CODES)
         }
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => {
             Some(crate::specs::trust_task_next_step::v0_1::ERROR_CODES)

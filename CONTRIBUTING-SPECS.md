@@ -63,6 +63,8 @@ The folder structure mirrors the canonical *Type URI* (per [SPEC.md §6.1](SPEC.
 
 `note` is prose describing the bug class the fixture exemplifies; it is rendered into the generated test's failure message, so write it for the reviewer who will one day see the fixture start *passing*. `payload` is the deliberately non-conforming payload — the `payload` member only, not a whole Trust Task document.
 
+A fixture is checked against the **request** payload unless it says otherwise. Add `"variant": "response"` to check it against the response payload instead — the `Response` type and the `$anchor: "response"` sub-schema — so a spec can pin the negative space of its response too. `trust-tasks-codegen` emits those as a separate `rejects_invalid_response_examples` test, and refuses a `"response"` fixture in a spec that defines no response.
+
 `trust-tasks-codegen` emits a `rejects_invalid_examples` test per spec from this file. That is the only thing in the toolchain that tests your schema's **negative** space: the `## Examples` in your prose prove valid documents validate, and nothing else proves invalid ones do not. A missing `additionalProperties: false`, an `enum` that should be a `pattern`, a `required` you forgot — all of them pass every other check. An absent file is not a failure; it is just an untested schema.
 
 Slugs may be single-segment (`trust-task-discovery`) or hierarchical (`acl/grant`, `acl/change-role`). In either case, the on-disk path matches the slug verbatim: a slug of `acl/grant` means `specs/acl/grant/<version>/`. Use hierarchical slugs to group related specifications under a namespace and keep the top of the `specs/` tree readable.

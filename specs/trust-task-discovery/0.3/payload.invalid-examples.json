@@ -1,0 +1,68 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "acceptanceWindow without clockSkewSeconds — both members are required, so a discoverer never has to guess whether an absent tolerance means zero or the framework's typical sixty seconds.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": ["https://trusttasks.org/spec/acl/grant/0.1"],
+      "acceptanceWindow": { "maxAgeSeconds": 600 }
+    }
+  },
+  {
+    "note": "acceptanceWindow with a zero maxAgeSeconds — a window no document can be accepted in is not a window, and a producer reading it would re-issue without end.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": ["https://trusttasks.org/spec/acl/grant/0.1"],
+      "acceptanceWindow": { "maxAgeSeconds": 0, "clockSkewSeconds": 60 }
+    }
+  },
+  {
+    "note": "Negative clockSkewSeconds — a tolerance is a width, never a shift, and a negative one would narrow the window below maxAgeSeconds without saying so.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": ["https://trusttasks.org/spec/acl/grant/0.1"],
+      "acceptanceWindow": { "maxAgeSeconds": 600, "clockSkewSeconds": -60 }
+    }
+  },
+  {
+    "note": "Fractional seconds — the window is carried in whole seconds; a fractional value is a different unit someone forgot to convert.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": ["https://trusttasks.org/spec/acl/grant/0.1"],
+      "acceptanceWindow": { "maxAgeSeconds": 600.5, "clockSkewSeconds": 60 }
+    }
+  },
+  {
+    "note": "A duration string instead of seconds — the members are integers, not ISO 8601 durations, so a discoverer does arithmetic rather than parsing.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": ["https://trusttasks.org/spec/acl/grant/0.1"],
+      "acceptanceWindow": { "maxAgeSeconds": "PT10M", "clockSkewSeconds": 60 }
+    }
+  },
+  {
+    "note": "Unknown member inside acceptanceWindow — the object is closed, so a misspelt member (maxAge for maxAgeSeconds) is refused rather than read as an absent one.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": ["https://trusttasks.org/spec/acl/grant/0.1"],
+      "acceptanceWindow": { "maxAgeSeconds": 600, "clockSkewSeconds": 60, "maxAge": 600 }
+    }
+  },
+  {
+    "note": "Entry-level acceptanceWindow missing maxAgeSeconds — the per-entry override has the same shape as the response-level member.",
+    "variant": "response",
+    "payload": {
+      "supportedTypes": [
+        {
+          "type": "https://trusttasks.org/spec/acl/grant/0.1",
+          "acceptanceWindow": { "clockSkewSeconds": 60 }
+        }
+      ]
+    }
+  }
+]
