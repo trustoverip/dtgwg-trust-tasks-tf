@@ -1320,7 +1320,7 @@ pub mod error_codes {
     };
     /// `webvh/witness/sign:deactivated`
     ///
-    /// The log deactivates the DID before or at the entry; a deactivated DID is not witnessed.
+    /// An earlier entry of `logContent` already set `parameters.deactivated: true`, and `versionId` names a *later* entry. A witness signs the entry that first deactivates a DID like any other entry, but refuses every entry after it.
     ///
     /// Declared `retryable: false`.
     pub const DEACTIVATED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -1336,6 +1336,24 @@ mod conformance {
     #[test]
     fn request_example_1() {
         const JSON: &str = "{\n  \"id\": \"urn:uuid:1f3e5a70-2b4c-4d6e-8f0a-9b8c7d6e5f01\",\n  \"type\": \"https://trusttasks.org/spec/webvh/witness/sign/0.1\",\n  \"issuer\": \"did:webvh:QmNodeScid3:node1.example.com\",\n  \"recipient\": \"did:webvh:QmWitnessScid6:witness.example.com\",\n  \"issuedAt\": \"2026-09-27T09:30:00Z\",\n  \"payload\": {\n    \"witnessId\": \"w-01J8Z6Q4M2\",\n    \"versionId\": \"2-QmB\",\n    \"logContent\": \"{\\\"versionId\\\":\\\"1-QmA\\\",\\\"versionTime\\\":\\\"2026-09-01T10:00:00Z\\\"}\\n{\\\"versionId\\\":\\\"2-QmB\\\",\\\"versionTime\\\":\\\"2026-09-27T08:59:00Z\\\"}\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_2() {
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:2a4e5a70-2b4c-4d6e-8f0a-9b8c7d6e5f11\",\n  \"type\": \"https://trusttasks.org/spec/webvh/witness/sign/0.1\",\n  \"issuer\": \"did:webvh:QmNodeScid3:node1.example.com\",\n  \"recipient\": \"did:webvh:QmWitnessScid6:witness.example.com\",\n  \"issuedAt\": \"2026-09-27T09:31:00Z\",\n  \"payload\": {\n    \"witnessId\": \"w-01J8Z6Q4M2\",\n    \"versionId\": \"3-QmC\",\n    \"logContent\": \"{\\\"versionId\\\":\\\"1-QmA\\\",\\\"versionTime\\\":\\\"2026-09-01T10:00:00Z\\\"}\\n{\\\"versionId\\\":\\\"2-QmB\\\",\\\"versionTime\\\":\\\"2026-09-27T08:59:00Z\\\"}\\n{\\\"versionId\\\":\\\"3-QmC\\\",\\\"versionTime\\\":\\\"2026-09-27T09:30:55Z\\\",\\\"parameters\\\":{\\\"deactivated\\\":true,\\\"updateKeys\\\":[]}}\"\n  }\n}\n";
+        let doc: crate::TrustTask<super::Payload> =
+            serde_json::from_str(JSON).expect("deserialize request example");
+        let rendered = serde_json::to_value(&doc).expect("re-serialize");
+        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+        assert_eq!(rendered, expected, "request example failed round-trip");
+    }
+    #[test]
+    fn request_example_3() {
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:2a4e5a70-2b4c-4d6e-8f0a-9b8c7d6e5f21\",\n  \"type\": \"https://trusttasks.org/spec/webvh/witness/sign/0.1\",\n  \"issuer\": \"did:webvh:QmNodeScid3:node1.example.com\",\n  \"recipient\": \"did:webvh:QmWitnessScid6:witness.example.com\",\n  \"issuedAt\": \"2026-09-27T09:32:00Z\",\n  \"payload\": {\n    \"witnessId\": \"w-01J8Z6Q4M2\",\n    \"versionId\": \"4-QmD\",\n    \"logContent\": \"{\\\"versionId\\\":\\\"1-QmA\\\",\\\"versionTime\\\":\\\"2026-09-01T10:00:00Z\\\"}\\n{\\\"versionId\\\":\\\"2-QmB\\\",\\\"versionTime\\\":\\\"2026-09-27T08:59:00Z\\\"}\\n{\\\"versionId\\\":\\\"3-QmC\\\",\\\"versionTime\\\":\\\"2026-09-27T09:30:55Z\\\",\\\"parameters\\\":{\\\"deactivated\\\":true,\\\"updateKeys\\\":[]}}\\n{\\\"versionId\\\":\\\"4-QmD\\\",\\\"versionTime\\\":\\\"2026-09-27T09:31:58Z\\\"}\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
