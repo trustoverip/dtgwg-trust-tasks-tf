@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/_shared/0.3/session",
+  "title": "Auth — shared Session definitions",
+  "description": "Reusable JSON Schema fragments that describe an authenticated session, referenced by the auth/* Trust Task specifications. 0.3 adds `actor` (auth/authenticate/0.3 — the delegate that authenticated on the subject's behalf, when the session was established by a proxied login) and `absoluteExpiresAt` (auth/refresh/0.2 — the ceiling a refresh MUST NOT advance `expiresAt` past). 0.1 and 0.2 remain in place for specifications still pinned to them (SPEC.md §6.6 item 3 — a component version bump never changes an already-published specification version underfoot).",
+  "$defs": {
+    "Session": {
+      "$anchor": "session",
+      "title": "Session",
+      "description": "A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "subject", "issuedAt", "expiresAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied."
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The authenticated party's VID (typically a DID URL). For a session established by a proxied login (auth/authenticate/0.3), this is the *principal* being authenticated as — never the delegate that signed the authenticate document; see `actor`."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when the session was created."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after. A consumer honouring `absoluteExpiresAt` MUST NOT advance this value past it, by refresh or any other means."
+        },
+        "amr": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Authentication Methods References per [RFC 8176]. Typical values: \"did\" (challenge-response), \"passkey\" (WebAuthn), \"vta\" (verifiable-trust agent approval). Multi-factor sessions list every method used."
+        },
+        "acr": {
+          "type": "string",
+          "description": "Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \"aal1\" (single-factor DID auth), \"aal2\" (a second possession-or-biometric factor confirmed), and \"aal3\" (hardware-bound second factor)."
+        },
+        "sessionKey": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "maxLength": 512,
+          "description": "The did:key VID bound to this session by auth/authenticate/0.2 or 0.3, when the producer registered one. Present here so introspection (auth/whoami, auth/sessions/list) can show the binding a client already holds; it is descriptive, not an additional grant — the binding, its scope and its lifetime are governed entirely by the auth/authenticate specification version that established it. Absent when the session was established without a session key, or by a specification version that does not carry one."
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The delegate's VID — the party whose `proof` actually authenticated this session — when this session was established by a *proxied* login (auth/authenticate/0.3, `payload.principal` present and distinct from `issuer`). Absent whenever `subject` authenticated with its own key, including every auth/authenticate/0.1 and /0.2 session and an auth/authenticate/0.3 request where `principal` is absent or equals `issuer`. Carrying `actor` separately from `subject` is what lets an audit trail, a revocation, or a response to a compromised delegate name the true acting party without conflating it with the principal it acted for — see auth/authenticate/0.3 Security & Privacy (Correlation)."
+        },
+        "absoluteExpiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The instant beyond which this session's `expiresAt` MUST NOT be advanced, by auth/refresh/0.2 or by any other means — an absolute session lifetime set once at authentication and never moved forward. Consumers that impose no such ceiling beyond the session's own rolling `expiresAt` omit this member; its absence is not itself a claim that the session is unbounded, only that this response does not state a bound. See auth/refresh/0.2 Conformance and Security & Privacy for the enforcement rule."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

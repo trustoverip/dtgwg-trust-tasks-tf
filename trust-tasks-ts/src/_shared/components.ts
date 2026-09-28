@@ -5025,6 +5025,53 @@ export interface Session_AuthV0_2 {
   ext?: Ext;
 }
 /**
+ * A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
+ */
+export interface Session_AuthV0_3 {
+  /**
+   * Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
+   */
+  id: string;
+  /**
+   * The authenticated party's VID (typically a DID URL). For a session established by a proxied login (auth/authenticate/0.3), this is the *principal* being authenticated as — never the delegate that signed the authenticate document; see `actor`.
+   */
+  subject: string;
+  /**
+   * ISO-8601 timestamp when the session was created.
+   */
+  issuedAt: string;
+  /**
+   * ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after. A consumer honouring `absoluteExpiresAt` MUST NOT advance this value past it, by refresh or any other means.
+   */
+  expiresAt: string;
+  /**
+   * Authentication Methods References per [RFC 8176]. Typical values: "did" (challenge-response), "passkey" (WebAuthn), "vta" (verifiable-trust agent approval). Multi-factor sessions list every method used.
+   *
+   * @minItems 1
+   */
+  amr?: [string, ...string[]];
+  /**
+   * Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is "aal1" (single-factor DID auth), "aal2" (a second possession-or-biometric factor confirmed), and "aal3" (hardware-bound second factor).
+   */
+  acr?: string;
+  /**
+   * The did:key VID bound to this session by auth/authenticate/0.2 or 0.3, when the producer registered one. Present here so introspection (auth/whoami, auth/sessions/list) can show the binding a client already holds; it is descriptive, not an additional grant — the binding, its scope and its lifetime are governed entirely by the auth/authenticate specification version that established it. Absent when the session was established without a session key, or by a specification version that does not carry one.
+   */
+  sessionKey?: string;
+  /**
+   * The delegate's VID — the party whose `proof` actually authenticated this session — when this session was established by a *proxied* login (auth/authenticate/0.3, `payload.principal` present and distinct from `issuer`). Absent whenever `subject` authenticated with its own key, including every auth/authenticate/0.1 and /0.2 session and an auth/authenticate/0.3 request where `principal` is absent or equals `issuer`. Carrying `actor` separately from `subject` is what lets an audit trail, a revocation, or a response to a compromised delegate name the true acting party without conflating it with the principal it acted for — see auth/authenticate/0.3 Security & Privacy (Correlation).
+   */
+  actor?: string;
+  /**
+   * The instant beyond which this session's `expiresAt` MUST NOT be advanced, by auth/refresh/0.2 or by any other means — an absolute session lifetime set once at authentication and never moved forward. Consumers that impose no such ceiling beyond the session's own rolling `expiresAt` omit this member; its absence is not itself a claim that the session is unbounded, only that this response does not state a bound. See auth/refresh/0.2 Conformance and Security & Privacy for the enforcement rule.
+   */
+  absoluteExpiresAt?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1.
+   */
+  ext?: Ext;
+}
+/**
  * One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.
  */
 export interface SigningKey {

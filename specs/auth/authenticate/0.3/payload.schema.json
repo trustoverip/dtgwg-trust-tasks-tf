@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/authenticate/0.3",
+  "title": "Auth — Authenticate",
+  "description": "The subject presents a previously-issued challenge along with the framework `proof` that binds the document to a VID. The proof IS the authentication. 0.3 adds an optional proxied form: `principal` names a party the signer authenticates *as*, distinct from `issuer` (the signer, e.g. a VTA acting on the principal's behalf), together with `delegationEvidence` establishing the entitlement. Absent `principal`, or `principal` equal to `issuer`, is the ordinary auth/authenticate/0.2 form unchanged. 0.3 also carries forward the optional `sessionKey` member from 0.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["challenge", "sessionId"],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges."
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding."
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional capability tags being requested on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset."
+    },
+    "principal": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The VID being authenticated as, when it differs from the signer of this document. Present and unequal to `issuer` marks a *proxied* authenticate: `issuer` is a delegate (typically the principal's VTA) presenting its own proof, and `payload.delegationEvidence` MUST also be present, describing what entitles `issuer` to act for `principal`. Omitted, or equal to `issuer`, is the ordinary case: the signer authenticates as itself, exactly as auth/authenticate/0.2. See Authorization and Security & Privacy."
+    },
+    "delegationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "description": "REQUIRED whenever `principal` is present and differs from `issuer`; MUST be omitted otherwise. Describes the evidence that entitles `issuer` to authenticate as `principal`. The framework does not prescribe its shape — see Authorization — but the consumer's policy MUST verify it independently rather than take `issuer`'s claim of entitlement at face value.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Consumer-defined vocabulary naming the evidence class (e.g. \"vtaContext\", \"mandateCredential\"). The framework imposes no syntax; an unrecognized `kind` is refused with `auth/authenticate:delegationNotRecognized`."
+        },
+        "credential": {
+          "type": "object",
+          "description": "The evidence itself, inline — typically a Verifiable Credential or other signed assertion binding `issuer` to `principal`. Opaque to the framework; shape is consumer- or ecosystem-defined by `kind`."
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Alternative to inlining `credential`: an opaque reference (an id, a URL) to evidence the consumer already holds — for example a previously-registered VTA context binding. Consumer-defined; mutually informative with `credential`, not mutually exclusive — a producer MAY supply both."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    },
+    "sessionKey": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "maxLength": 512,
+      "description": "A did:key VID the producer asks the consumer to bind to the session this authenticate document creates. The producer MUST hold the corresponding private key and SHOULD keep it non-extractable (for example, a WebCrypto non-extractable key). Once bound, the consumer MUST accept a framework `proof` made by this key, with `proofPurpose: authentication`, as the session's `subject` — for this session only, bounded by the session's `expiresAt` and `acr`, and never where a specification requires an `assertionMethod` attestation (SPEC.md §7.2 item 10; see Security & Privacy). Behaves identically whether or not this document is a proxied authenticate. The consumer MAY refuse a key type it does not support with `auth/authenticate:sessionKeyUnsupported`."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth Authenticate — response payload",
+      "description": "Issued by the auth service after verifying the proof on the authenticate document (and, for a proxied request, the delegation evidence). Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.3#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session", "tokens"],
+      "properties": {
+        "session": {
+          "$ref": "../../_shared/0.3/session.schema.json#/$defs/Session",
+          "description": "The session the consumer has just created for this subject. `session.subject` is `principal` for a proxied request, `issuer` otherwise; `session.actor` is present and equal to `issuer` only for a proxied request. Carries `sessionKey` when the request bound one."
+        },
+        "tokens": {
+          "$ref": "../../_shared/0.1/tokens.schema.json#/$defs/TokenBundle",
+          "description": "Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

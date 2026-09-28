@@ -69,6 +69,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/authenticate/0.2#response" => <crate::specs::auth::authenticate::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/authenticate/0.3" => <crate::specs::auth::authenticate::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/authenticate/0.3#response" => <crate::specs::auth::authenticate::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/challenge/0.1" => <crate::specs::auth::challenge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/challenge/0.1#response" => <crate::specs::auth::challenge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -160,6 +164,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/refresh/0.1" => <crate::specs::auth::refresh::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/refresh/0.1#response" => <crate::specs::auth::refresh::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/refresh/0.2" => <crate::specs::auth::refresh::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/refresh/0.2#response" => <crate::specs::auth::refresh::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/revoke-session/0.1" => <crate::specs::auth::revoke_session::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
@@ -2533,6 +2541,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::auth::authenticate::v0_2::Payload,
         >()),
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/authenticate/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::authenticate::v0_3::Payload,
+        >()),
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/challenge/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::auth::challenge::v0_1::Payload,
         >()),
@@ -2661,6 +2673,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/refresh/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::auth::refresh::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/refresh/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::refresh::v0_2::Payload,
         >()),
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/revoke-session/0.1" => Some(crate::SpecPolicy::of::<
@@ -5543,6 +5559,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::auth::authenticate::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/authenticate/0.3" => {
+            Some(crate::specs::auth::authenticate::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/challenge/0.1" => {
             Some(crate::specs::auth::challenge::v0_1::ERROR_CODES)
         }
@@ -5633,6 +5653,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/refresh/0.1" => {
             Some(crate::specs::auth::refresh::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        "https://trusttasks.org/spec/auth/refresh/0.2" => {
+            Some(crate::specs::auth::refresh::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         "https://trusttasks.org/spec/auth/revoke-session/0.1" => {
