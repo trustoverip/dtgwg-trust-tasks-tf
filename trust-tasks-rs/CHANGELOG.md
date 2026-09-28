@@ -31,6 +31,60 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.24.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.3...trust-tasks-rs-v0.24.4) — 2026-09-28
+
+
+### Added
+
+- **trust-task-discovery**: Publish 0.3, a responder advertises its acceptance window ([#677](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/677))
+
+A consumer refuses a document whose issuedAt lies outside its acceptance
+  window (SPEC §7.2 item 13), and the framework leaves that window to the
+  consumer's policy. A producer that holds a document before delivering it
+  (store-and-forward, retry, escalation, a queue replayed after a restart)
+  cannot tell a document the consumer will still accept from one it will
+  refuse as expired. So it cannot tell when to issue a new attempt (SPEC
+  §8.4) instead. The only alternative is a constant both ends share.
+
+  - specs/trust-task-discovery/0.3: the response gains an optional
+    acceptanceWindow { maxAgeSeconds, clockSkewSeconds }, in whole seconds.
+    It appears at the response level, and on an expanded supportedTypes
+    entry, where the entry's value takes precedence.
+    - Responder: MUST NOT state a window wider than it applies, and is not
+      bound by what it advertised.
+    - Discoverer: authenticated responses only. SHOULD NOT send after
+      issuedAt + maxAge, and MUST NOT after issuedAt + maxAge + skew. It
+      issues a new attempt instead (fresh id and issuedAt, same thread,
+      new proof), and never re-stamps under the original id (idConflict).
+      It does not issue a new attempt of a consequential task unless a
+      repeat is harmless or recognizable. It never backdates to fit a
+      window, bounds its new attempts, and treats a refusal as the answer.
+    - Absent: the discoverer has learnt nothing. It falls back to the
+      window the task's specification states (item 17) or its own, with
+      the typical skew tolerance of at most 60 s. Absence is never read as
+      "no window".
+    - The response is closed, so a 0.2 discoverer that validates would
+      reject the member. §5.2 makes an added optional member a MINOR
+      increment, hence 0.3 rather than an edit to 0.2.
+    - Response-side invalid examples: a missing member, a zero max age,
+      negative skew, fractional or string values, an unknown member, and
+      a malformed entry-level window.
+  - trust-tasks-codegen: a payload.invalid-examples.json fixture may carry
+    "variant": "response". It is checked against Response and its
+    sub-schema by a separate rejects_invalid_response_examples test. It is
+    refused in a spec with no response. Existing fixtures, and every other
+    generated module, are unchanged.
+  - CONTRIBUTING-SPECS.md documents the variant.
+  - Bindings regenerated (Rust, TS, Go, Dart).
+
+  The framework text (SPEC §10) still names 0.2 as the current version.
+  That is a change to the canonical repository and follows separately.
+
+  Proposed from OpenVTC/verifiable-trust-infrastructure#1799, where both
+  ends currently share a constant window.
+
+
+
 ## [0.24.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.2...trust-tasks-rs-v0.24.3) — 2026-09-28
 
 
