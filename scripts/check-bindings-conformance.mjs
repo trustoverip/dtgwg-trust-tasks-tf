@@ -252,6 +252,18 @@ function rustErrorCodes(src) {
   );
 }
 
+/**
+ * The `MAX_DOCUMENT_BYTES` a generated Rust `impl crate::Payload for <ident>`
+ * declares: a number, `null` when the impl relies on the trait default `None`,
+ * or `undefined` when there is no such impl.
+ */
+function rustMaxDocumentBytes(src, ident) {
+  const block = new RegExp(`impl crate::Payload for ${ident} \\{([\\s\\S]*?)\\n\\}`, "m").exec(src);
+  if (!block) return undefined;
+  const m = /const MAX_DOCUMENT_BYTES: Option<usize> = Some\(\s*([0-9_]+)usize\s*\);/.exec(block[1]);
+  return m ? Number(m[1].replace(/_/g, "")) : null;
+}
+
 /** The fields inside `var <name> = trusttasks.SpecPolicy{ … }`. */
 function goPolicy(src, name) {
   const block = new RegExp(`var ${name} = trusttasks\\.SpecPolicy\\{([\\s\\S]*?)\\n\\}`, "m").exec(src);
@@ -486,6 +498,7 @@ const seenRs = new Set();
 const seenGo = new Set();
 const seenDart = new Set();
 let rustErrorCodesChecked = 0;
+let rustSizeBoundsChecked = 0;
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
 const rustHandWrittenSrc = (function read(dir, acc = []) {
@@ -732,6 +745,30 @@ for (const spec of specs) {
       );
     } else {
       rustErrorCodesChecked += rustCodes.length;
+    }
+
+    // Front matter `maxDocumentBytes`: the per-type document size bound a
+    // dispatcher enforces. Rust-only so far, like ERROR_CODES above, and
+    // re-derived here rather than imported from the generator. An absent
+    // `response` bound is absent — it does not inherit the request's.
+    const declaredSize = meta.maxDocumentBytes || {};
+    for (const [variant, ident, want] of [
+      ["request", "Payload", declaredSize.request ?? null],
+      ["response", "Response", declaredSize.response ?? null],
+    ]) {
+      if (variant === "response" && !hasResponse) continue;
+      const got = rustMaxDocumentBytes(rs.src, ident);
+      if (got === undefined) continue; // missing impl is reported above
+      if (got !== want) {
+        fail(
+          where,
+          `Rust ${ident}::MAX_DOCUMENT_BYTES is ${got === null ? "None" : `Some(${got})`}, but the ` +
+            `front matter declares ${want === null ? "no bound" : want} for the ${variant} ` +
+            `(maxDocumentBytes). A dispatcher enforcing the bound per type would enforce the wrong one.`,
+        );
+      } else if (want !== null) {
+        rustSizeBoundsChecked += 1;
+      }
     }
 
     /* — The four shipped schemas must be the same document — */
@@ -982,5 +1019,6 @@ console.log(
   `Bindings conformance: ${specs.length} specifications checked against ` +
     `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
     `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes ` +
-    `match Rust ERROR_CODES.`,
+    `match Rust ERROR_CODES; ${rustSizeBoundsChecked} declared document size bounds match Rust ` +
+    `MAX_DOCUMENT_BYTES.`,
 );

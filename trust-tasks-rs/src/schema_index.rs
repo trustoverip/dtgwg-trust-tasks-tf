@@ -7544,3 +7544,23 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         _ => None,
     }
 }
+
+/// The document size bound the specification behind `type_uri` declares
+/// (front matter `maxDocumentBytes`), in bytes of the serialized Trust Task
+/// document, or `None` where none is declared.
+///
+/// Pass a bare Type URI for the request bound, or one suffixed `#response` for
+/// the response bound. The same value is `Payload::MAX_DOCUMENT_BYTES` on the
+/// generated type; this exists for a dispatcher that learns the `type` before
+/// it has parsed the rest of the document — an HTTP `Trust-Task` header, say —
+/// and has to decide how much body to read.
+///
+/// `None` covers both a specification that declares no bound and a Type URI
+/// this build does not know. For a size bound those are the same answer: the
+/// consumer's own transport limit applies (SPEC §12.4).
+pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
+    #[allow(clippy::match_single_binding)]
+    match type_uri {
+        _ => None,
+    }
+}

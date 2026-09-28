@@ -159,6 +159,17 @@ Notes:
 
   Item 17 also **SHOULD**s that you state the acceptance window you expect consumers to apply, and **MAY**s requiring `expiresAt` where your task's outcome is meaningless after a fixed interval. Both stay prose in your `## Security & Privacy` section — a window is consumer policy, and a number in front matter would invite consumers to adopt one specification's guess as their own. A spec that is *not* consequential may still declare `REQUIRED` where freshness matters to it; the derived floor is a floor, not a ceiling.
 
+- **`maxDocumentBytes` states how large a document your task needs.** [SPEC §12.4](/SPEC.md#124-parser-hardening) tells a consumer to bound what it parses at "a body-size limit appropriate to the Trust Task specification's payload", and until this member no specification could say what that was — so a consumer serving many tasks picked one cap for all of them, sized for the small ones, and a task that legitimately carries a JSON Schema, a DID log or a chunk of a file was refused. Raising the blanket cap to fit the largest task is the wrong fix: it opens every other task to bodies it has no use for.
+
+  ```yaml
+  maxDocumentBytes:
+    request: 360448      # bytes of the serialized document, proof included
+    response: 65536      # each variant optional, at least one declared
+    rationale: A 256 KiB chunk, base64url-encoded (~342 KiB), plus envelope and proof headroom.
+  ```
+
+  The bound is **two-sided**: a consumer serving the task **MUST NOT** refuse a document within it on grounds of size alone, and **SHOULD** refuse a larger one with `malformedRequest`, before parsing where the transport tells it the `type` first. It is measured over the serialized Trust Task document as received (the JSON text, `proof` included, no transport envelope), because that is what a consumer can count before it parses. Either variant may be declared alone; an absent one does **not** inherit the other's bound. Declare it when your payload can carry bulk content; a small fixed-shape payload need not. The meta-schema caps it at 16 MiB — content larger than that belongs in a chunked transfer (`backup/put-chunk` is the model), whose chunk task declares its own bound. The Rust codegen emits it as `Payload::MAX_DOCUMENT_BYTES` and `schema_index::max_document_bytes_for(type_uri)`, and `check-bindings` holds the two to the front matter; the TypeScript, Go and Dart generators do not emit it yet.
+
 After the closing `---`, write the human-readable specification: Abstract, Status, Conformance, Authorization (see below — required for consequential tasks), Definitions, Examples, and [Security & Privacy](#the--security--privacy-section) (**required**, and linted — see below), plus anything else useful. Use `##` for the top-level sections you want to appear in the on-page sidebar TOC. The website auto-builds the TOC from your `##` headings.
 
 - **Tag the party that fills each framework member** with `member: issuer` or `member: recipient`. A party named only in the `payload` (neither the document issuer nor recipient) omits `member`. This is what makes `requirement: REQUIRED` enforceable: the codegen emits `Payload::IS_RECIPIENT_REQUIRED` from the `member: recipient` party, and every conforming consumer then rejects a document with no in-band `recipient` ([SPEC §7.2 item 5](SPEC.md#72-consumer-requirements)). For a request the `recipient` is the `member: recipient` party; a response swaps parties, so its `recipient` requirement follows the `member: issuer` party.
