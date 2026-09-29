@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/relationships/revoke/0.2",
+  "title": "VTC Relationships Revoke — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "description": "The relationship to revoke." },
+    "pop": {
+      "type": "object",
+      "description": "Proof that the caller controls the key behind the relationship's issuerDid, when the document's own proof signer is neither that issuer nor an administrator — i.e. for an edge published under a pairwise relationship DID. A member publishes an edge under a relationship DID, an identifier scoped to one counterparty, which names nobody; this document's own proof says only that a member sent the request, not that they control the edge's issuing key. Omit `pop` when the document's proof signer equals the relationship's issuerDid, or is an administrator: the document's own proof, or the administrator's standing, already establishes authority.",
+      "additionalProperties": false,
+      "required": ["type", "documentId", "relationship", "proof"],
+      "properties": {
+        "type": {
+          "const": "VrcRevokeAuthorization",
+          "description": "Distinct from vtc/relationships/publish's VrcPublishAuthorization, so a signature made to authorize a publish cannot be replayed here to authorize a revoke."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member."
+        },
+        "relationship": {
+          "type": "string",
+          "description": "The relationship id this authorization applies to. MUST equal the top-level `id`, so an authorization signed for one edge cannot be presented against another."
+        },
+        "proof": {
+          "type": "object",
+          "description": "Data-integrity proof over this object, by a verification method the relationship's issuerDid controls. This is the proof of possession; the members above only bound what it authorizes."
+        }
+      }
+    },
+    "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Relationships Revoke — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

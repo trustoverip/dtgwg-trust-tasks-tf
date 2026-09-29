@@ -1,0 +1,62 @@
+[
+  { "note": "Unknown top-level member is rejected.", "payload": { "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff", "__x__": true } },
+  { "note": "`id` is required.", "payload": {} },
+  {
+    "note": "`pop.type` must be the literal `VrcRevokeAuthorization` — a `VrcPublishAuthorization` (vtc/relationships/publish's authorization) cannot be replayed here.",
+    "payload": {
+      "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+      "pop": {
+        "type": "VrcPublishAuthorization",
+        "documentId": "urn:uuid:7d9f1b3d-5e7a-4c9b-8d1f-3a5c7e9b1d01",
+        "relationship": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "`pop` without `proof` carries no evidence of control.",
+    "payload": {
+      "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+      "pop": {
+        "type": "VrcRevokeAuthorization",
+        "documentId": "urn:uuid:7d9f1b3d-5e7a-4c9b-8d1f-3a5c7e9b1d01",
+        "relationship": "6f9619ff-8b86-d011-b42d-00cf4fc964ff"
+      }
+    }
+  },
+  {
+    "note": "`pop` without `relationship` does not bind the authorization to an edge.",
+    "payload": {
+      "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+      "pop": {
+        "type": "VrcRevokeAuthorization",
+        "documentId": "urn:uuid:7d9f1b3d-5e7a-4c9b-8d1f-3a5c7e9b1d01",
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "`pop` without `documentId` does not bind the authorization to this request.",
+    "payload": {
+      "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+      "pop": {
+        "type": "VrcRevokeAuthorization",
+        "relationship": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "Unknown member inside `pop` is rejected.",
+    "payload": {
+      "id": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+      "pop": {
+        "type": "VrcRevokeAuthorization",
+        "documentId": "urn:uuid:7d9f1b3d-5e7a-4c9b-8d1f-3a5c7e9b1d01",
+        "relationship": "6f9619ff-8b86-d011-b42d-00cf4fc964ff",
+        "proof": {},
+        "__x__": true
+      }
+    }
+  }
+]

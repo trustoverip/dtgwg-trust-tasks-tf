@@ -687,6 +687,7 @@ export * as VtcRelationshipsRequest_v0_1 from "./vtc/relationships/request/0.1/p
 export * as VtcRelationshipsRequest_v0_2 from "./vtc/relationships/request/0.2/payload.js";
 export * as VtcRelationshipsRestore_v0_1 from "./vtc/relationships/restore/0.1/payload.js";
 export * as VtcRelationshipsRevoke_v0_1 from "./vtc/relationships/revoke/0.1/payload.js";
+export * as VtcRelationshipsRevoke_v0_2 from "./vtc/relationships/revoke/0.2/payload.js";
 export * as VtcRelationshipsSuspend_v0_1 from "./vtc/relationships/suspend/0.1/payload.js";
 export * as VtcRoomsList_v0_1 from "./vtc/rooms/list/0.1/payload.js";
 export * as VtcSchemasAcceptsDelete_v0_1 from "./vtc/schemas/accepts/delete/0.1/payload.js";
@@ -710,6 +711,7 @@ export * as VtcVettingVettersPcsRoot_v0_1 from "./vtc/vetting/vetters/pcs-root/0
 export * as VtcVettingVettersPcsTokens_v0_1 from "./vtc/vetting/vetters/pcs-tokens/0.1/payload.js";
 export * as VtcVettingVettersProfile_v0_1 from "./vtc/vetting/vetters/profile/0.1/payload.js";
 export * as VtcVettingVettersResend_v0_1 from "./vtc/vetting/vetters/resend/0.1/payload.js";
+export * as VtcVettingVettersResend_v0_2 from "./vtc/vetting/vetters/resend/0.2/payload.js";
 export * as VtcVettingVettersShow_v0_1 from "./vtc/vetting/vetters/show/0.1/payload.js";
 export * as VtcWebsiteDeploy_v0_1 from "./vtc/website/deploy/0.1/payload.js";
 export * as VtcWebsiteFilesDelete_v0_1 from "./vtc/website/files/delete/0.1/payload.js";

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/resend/0.2",
+  "title": "VTC Vetting — Vetters Resend — payload",
+  "description": "A vetter asks the community to deliver their live vetter role credential again, over credential-exchange/issue, and an administrator may do the same on a named member's behalf. The community issues nothing new and returns the delivered credential's `id` and `validUntil`.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "memberDid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The vetter to resend the live grant for, on an administrator's behalf. Requires the community-administrator capability. Absent: the request concerns the sender's own live grant, exactly as 0.1."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Vetters Resend — response payload",
+      "description": "The credential the community delivered again.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credentialId", "validUntil"],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
+          "description": "The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "That credential's `validUntil`."
+        }
+      }
+    }
+  }
+}
