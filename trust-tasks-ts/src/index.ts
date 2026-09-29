@@ -31,8 +31,10 @@ export * as SigningKeyShared_v0_1 from "./auth/_shared/0.1/signing-key.js";
 export * as TokensShared_v0_1 from "./auth/_shared/0.1/tokens.js";
 export * as WebauthnShared_v0_1 from "./auth/_shared/0.1/webauthn.js";
 export * as SessionShared_v0_2 from "./auth/_shared/0.2/session.js";
+export * as SessionShared_v0_3 from "./auth/_shared/0.3/session.js";
 export * as AuthAuthenticate_v0_1 from "./auth/authenticate/0.1/payload.js";
 export * as AuthAuthenticate_v0_2 from "./auth/authenticate/0.2/payload.js";
+export * as AuthAuthenticate_v0_3 from "./auth/authenticate/0.3/payload.js";
 export * as AuthChallenge_v0_1 from "./auth/challenge/0.1/payload.js";
 export * as AuthPasskeyAdminList_v0_1 from "./auth/passkey/admin-list/0.1/payload.js";
 export * as AuthPasskeyEnrollFinish_v0_1 from "./auth/passkey/enroll/finish/0.1/payload.js";
@@ -56,6 +58,7 @@ export * as AuthPasskeyRevokeFinish_v0_2 from "./auth/passkey/revoke/finish/0.2/
 export * as AuthPasskeyRevokeStart_v0_1 from "./auth/passkey/revoke/start/0.1/payload.js";
 export * as AuthPasskeyRevokeStart_v0_2 from "./auth/passkey/revoke/start/0.2/payload.js";
 export * as AuthRefresh_v0_1 from "./auth/refresh/0.1/payload.js";
+export * as AuthRefresh_v0_2 from "./auth/refresh/0.2/payload.js";
 export * as AuthRevokeSession_v0_1 from "./auth/revoke-session/0.1/payload.js";
 export * as AuthRevokeSession_v0_2 from "./auth/revoke-session/0.2/payload.js";
 export * as AuthSessionsList_v0_1 from "./auth/sessions/list/0.1/payload.js";
