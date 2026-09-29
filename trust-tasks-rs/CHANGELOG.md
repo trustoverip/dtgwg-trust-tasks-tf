@@ -31,6 +31,33 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.24.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.7...trust-tasks-rs-v0.24.8) — 2026-09-29
+
+
+### Added
+
+- **vtc**: Pairwise revoke authorization and admin-resend for vetters ([#689](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/689))
+
+vtc-service kept two REST-only doors because no Trust Task spec expressed
+  them: relationships/revoke's DELETE route accepts a VrcRevokeAuthorization
+  proving control of a pairwise relationship DID, and vetting/vetters/resend
+  kept an admin route for resending another member's grant.
+
+  - vtc/relationships/revoke/0.2 adds an optional pop, a proof of possession
+    by the relationship's issuerDid bound to this document and to the edge,
+    mirroring vtc/relationships/publish/0.2's pop. 0.1 is unchanged and not
+    retired.
+  - vtc/vetting/vetters/resend/0.2 adds an optional memberDid so an
+    administrator can resend a named member's live grant, requiring the
+    community-administrator capability. 0.1 is unchanged and not retired.
+
+  vtc/endorsements/{list,show,revoke} already exist and already match their
+  REST routes; no gap there.
+
+  Regenerated Rust, TypeScript, Go and Dart bindings.
+
+
+
 ## [0.24.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.6...trust-tasks-rs-v0.24.7) — 2026-09-29
 
 

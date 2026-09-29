@@ -11,6 +11,31 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.3.15 — 2026-09-29
+
+
+### Added
+
+- **vtc**: Pairwise revoke authorization and admin-resend for vetters (#689)
+
+vtc-service kept two REST-only doors because no Trust Task spec expressed
+  them: relationships/revoke's DELETE route accepts a VrcRevokeAuthorization
+  proving control of a pairwise relationship DID, and vetting/vetters/resend
+  kept an admin route for resending another member's grant.
+
+  - vtc/relationships/revoke/0.2 adds an optional pop, a proof of possession
+    by the relationship's issuerDid bound to this document and to the edge,
+    mirroring vtc/relationships/publish/0.2's pop. 0.1 is unchanged and not
+    retired.
+  - vtc/vetting/vetters/resend/0.2 adds an optional memberDid so an
+    administrator can resend a named member's live grant, requiring the
+    community-administrator capability. 0.1 is unchanged and not retired.
+
+  vtc/endorsements/{list,show,revoke} already exist and already match their
+  REST routes; no gap there.
+
+  Regenerated Rust, TypeScript, Go and Dart bindings.
+
 ## 0.3.14 — 2026-09-29
 
 
