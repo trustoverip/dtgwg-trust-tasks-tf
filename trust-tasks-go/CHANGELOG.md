@@ -11,6 +11,69 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.3.14 — 2026-09-29
+
+
+### Added
+
+- **git-ns**: Administrator reads as Trust Tasks (#686)
+
+* feat(git-ns): administrator reads as Trust Tasks
+
+  Six VTC git-ns console REST reads had no Trust Task equivalent: the admin
+  console's Repos plugin (rights, jobs, projection, accounts) and activity
+  feed were served only over a bearer admin session, with no signed,
+  transport-agnostic path.
+
+  New specs:
+
+  - git-ns/right/list/0.1 — the whole-community rights picture (recorded and
+    v0.1 role-derived grants), each row's subjectMember/granterDeparted.
+    A new spec rather than a git-ns/view revision: the role-derived rows are
+    not RightRecords (no granter, no grant time) and the administrative
+    membership facts are not member-facing, so folding them into view/0.5's
+    shared RightRecord would widen every other consumer of that component.
+  - git-ns/right/issued-by-departed/0.1 — recorded rights grouped by a
+    departed granter, alongside the community's cascade_on_departure policy.
+  - git-ns/bridge/job/list/0.1 — the bridge job queue, scoped to administered
+    namespaces like git-ns/namespace/list and git-ns/repo/list.
+  - git-ns/projection/show/0.1 — what is published to the Trust Registry,
+    and how many records the next reconciliation pass will change.
+  - git-ns/account/list/0.1 — every member's linked forge account,
+    community-wide, since git-ns/view only returns the caller's own.
+  - git-ns/activity/list/0.1 — rights changes, drift and bridge jobs
+    interleaved into one timeline, scoped like the namespace/repo listings.
+
+  All six declare proof REQUIRED, an Authorization section naming either the
+  community-administrator capability (rights, issued-by-departed,
+  projection, accounts — matching the REST handlers' SuperAdminAuth gate) or
+  namespace-administrator standing (jobs, activity — matching the namespace
+  and repo listings' pattern), and a cursor/limit paged list shape.
+  git-ns/_shared/0.5 adds AdminRightRow and RightOrigin, the row shape right/list
+  and right/issued-by-departed share.
+
+  Regenerated all four bindings (Rust, TypeScript, Go, Dart).
+
+- **auth**: Proxied authenticate and session-key refresh (#687)
+
+## Summary
+
+  webvh#238 kept three REST auth routes because no Trust Task covered them: the VTA-proxied SIOPv2 login (`POST /api/auth/challenge` + `POST /api/auth/`) and the session-key-bound refresh (`POST /api/auth/refresh`). This PR closes both gaps so webvh can delete its last REST auth routes.
+
+  - **`auth/authenticate/0.3`** — adds an optional proxied form. `payload.principal` names the VID being authenticated as when it differs from the document's `issuer`; `payload.delegationEvidence` carries whatever the auth service's own policy requires as evidence that `issuer` (the delegate, e.g. a holder's VTA) may act for `principal`. The resulting `Session.subject` is `principal`; the new `Session.actor` (shared `_shared/0.3` Session schema) records the delegate, so audit and revocation never conflate the two. The ordinary (self-authenticating) form from 0.2 is unchanged, including the `sessionKey` binding.
+  - **`auth/refresh/0.2`** — accepts a `proof` made by the session key bound at login (`auth/authenticate/0.2`/`0.3`), required in addition to the refresh token whenever the located session carries one (`sessionKeyProofRequired` otherwise). Adds an absolute session lifetime rule: refresh MUST NOT advance `Session.expiresAt` past `Session.absoluteExpiresAt`, refusing with `sessionLifetimeExceeded` once reached — the session key is never accepted as approval/step-up authority, only as a binding check layered on the bearer token.
+
+  Both specs add an `## Authorization` section (framework 0.6.0, required for consequential tasks), the four Security & Privacy sub-headings covering delegation abuse, stolen session keys and refresh-token theft with valid/invalid examples, and `## Changes from` sections.
+
+  All four bindings (Rust, TypeScript, Go, Dart) regenerated and cross-checked.
+
+  ## Test plan
+
+  - [x] `npm run validate`
+  - [x] `npm run check-bindings`
+  - [x] `cargo test -p trust-tasks-rs -- specs::auth` (81 passed)
+  - [x] `cargo test -p trust-tasks-rs --features validate -- specs::auth::authenticate::v0_3 specs::auth::refresh::v0_2` (8 passed, including `rejects_invalid_examples`)
+
 ## 0.3.13 — 2026-09-28
 
 
