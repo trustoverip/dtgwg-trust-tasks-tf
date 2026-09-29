@@ -7,7 +7,7 @@ import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, RepoResource } from "../..
 
 
 /**
- * Only jobs in this state. Absent: every state.
+ * The VTC's own queue state for the job, driven by git-ns/bridge/result/0.1 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it.
  */
 export type JobState = "pending" | "accepted" | "succeeded" | "partial" | "failed" | "cancelled";
 /**
@@ -25,10 +25,6 @@ export type JobKind =
   | "inspect"
   | "beginBind"
   | "beginAccountLink";
-/**
- * The VTC's own queue state for the job, driven by git-ns/bridge/result/0.1 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it.
- */
-export type JobState1 = "pending" | "accepted" | "succeeded" | "partial" | "failed" | "cancelled";
 
 /**
  * A namespace's administrators list the bridge jobs queued or run for it — every namespace, for a community administrator — with each job's kind, state and last error. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
@@ -74,7 +70,7 @@ export interface JobRow {
    */
   bridgeDid: Did;
   kind: JobKind;
-  state: JobState1;
+  state: JobState;
   /**
    * The repository the job acts on. Absent for a namespace-wide `inspect` sweep or a job with no repository (`beginBind`, `beginAccountLink`).
    */
@@ -134,8 +130,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "Only jobs in this namespace. Absent: every administered namespace."
     },
     "state": {
-      "$ref": "#/$defs/JobState",
-      "description": "Only jobs in this state. Absent: every state."
+      "$ref": "#/$defs/JobState"
     },
     "cursor": {
       "type": "string",

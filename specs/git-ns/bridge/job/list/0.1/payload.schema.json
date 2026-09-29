@@ -11,8 +11,7 @@
       "description": "Only jobs in this namespace. Absent: every administered namespace."
     },
     "state": {
-      "$ref": "#/$defs/JobState",
-      "description": "Only jobs in this state. Absent: every state."
+      "$ref": "#/$defs/JobState"
     },
     "cursor": {
       "type": "string",
