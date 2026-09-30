@@ -71,29 +71,33 @@ class Endorsement {
         revokedAt: json['revokedAt'] as String?,
       );
 
-  /// Community-scoped identifier for this endorsement row.
+  /// Community-scoped identifier for this row. The name is legacy; it identifies a
+  /// statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role
+  /// credential issued by vtc/vetting/vetters/grant.
   final String endorsementId;
 
-  /// The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+  /// The registered predicate IRI the statement carries as
+  /// `credentialSubject.predicate`; see vtc/endorsement-types/*.
   final String typeUri;
 
-  /// DID of the endorsement's subject (becomes credentialSubject.id).
+  /// DID of the statement's subject (becomes credentialSubject.id).
   final String subjectDid;
 
-  /// The attested claim body, validated against the endorsement type's claimSchema when
-  /// it declares one.
+  /// The attested claim body — the statement's `credentialSubject.object.value` —
+  /// validated against the registered predicate's claimSchema when it declares one.
   final Map<String, dynamic>? claim;
 
-  /// A pointer to the issued VEC — its identifier and lifetime, not its bytes.
-  /// `endorsements/issue` additionally returns the credential itself, because that is
-  /// the one call whose caller has no other way to receive it.
+  /// A pointer to the issued statement credential — its identifier and lifetime, not its
+  /// bytes. `endorsements/issue` additionally returns the credential itself, because
+  /// that is the one call whose caller has no other way to receive it.
   final CredentialReference issued;
 
-  /// The endorsement's slot on the community's shared Revocation status list. Published,
-  /// so a foreign verifier can check revocation without contacting this community.
+  /// The statement's slot on the community's shared Revocation status list, referenced
+  /// by its `credentialStatus`. Published, so a foreign verifier can check revocation
+  /// without contacting this community.
   final int statusListIndex;
 
-  /// When the endorsement was revoked, or null while live.
+  /// When the statement was revoked, or null while live.
   final String? revokedAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.

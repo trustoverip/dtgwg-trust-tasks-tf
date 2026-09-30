@@ -2,7 +2,7 @@
 slug: vtc/endorsements/revoke
 version: "0.1"
 title: VTC Endorsements — Revoke
-summary: Revoke an issued endorsement credential by flipping its published status-list bit; reports alreadyRevoked on re-revocation rather than succeeding silently.
+summary: Revoke a community-issued statement credential, or a vetter role credential, by flipping its published status-list bit; reports alreadyRevoked on re-revocation rather than succeeding silently.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: credentials
@@ -51,6 +51,13 @@ flipping its bit on the community's shared Revocation status list, at the
 `statusListIndex` allocated by `vtc/endorsements/issue`. Because that list is
 published, revocation is visible to foreign verifiers without contacting this
 community.
+
+The credential revoked is a DTG Verifiable Statement Credential issued by
+[`vtc/endorsements/issue`](../../issue/0.1/spec.md), or the vetter role
+credential — a Verifiable Authority Credential — issued by
+[`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md), whose
+record the community keeps under the same `endorsementId`. The member name is
+kept from when both were endorsement credentials.
 
 The response carries the registry-wide
 [`RevocationReceipt`](../../../../credentials/_shared/0.1/credentials.schema.json)

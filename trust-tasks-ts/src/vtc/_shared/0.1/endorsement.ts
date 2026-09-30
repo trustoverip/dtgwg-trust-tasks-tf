@@ -4,7 +4,7 @@
  */
 
 /**
- * Shared type for the vtc/endorsements/* family: one issued Verifiable Endorsement Credential (VEC) row. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered endorsement type and the shared status-list slot that makes the endorsement third-party revocation-checkable.
+ * Shared type for the vtc/endorsements/* family: one community-issued statement row. The credential is a DTG Verifiable Statement Credential (`type` [VerifiableCredential, DTGCredential, StatementCredential], `issuerScope` public) — a Verifiable Endorsement Credential (VEC) when its predicate is `https://registry.trustoverip.org/dtg/vsc/endorses/1`. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered predicate and the shared status-list slot that makes the statement third-party revocation-checkable. The family and member names (`endorsementId`, `typeUri`, `claim`) are kept from when these were `EndorsementCredential`s.
  */
 export interface VTCSharedEndorsementDefinitions {
   [k: string]: unknown | undefined;

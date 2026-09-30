@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/endorsement",
   "title": "VTC — shared endorsement definitions",
-  "description": "Shared type for the vtc/endorsements/* family: one issued Verifiable Endorsement Credential (VEC) row. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered endorsement type and the shared status-list slot that makes the endorsement third-party revocation-checkable.",
+  "description": "Shared type for the vtc/endorsements/* family: one community-issued statement row. The credential is a DTG Verifiable Statement Credential (`type` [VerifiableCredential, DTGCredential, StatementCredential], `issuerScope` public) — a Verifiable Endorsement Credential (VEC) when its predicate is `https://registry.trustoverip.org/dtg/vsc/endorses/1`. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered predicate and the shared status-list slot that makes the statement third-party revocation-checkable. The family and member names (`endorsementId`, `typeUri`, `claim`) are kept from when these were `EndorsementCredential`s.",
   "$defs": {
     "Endorsement": {
       "$anchor": "endorsement",
@@ -20,31 +20,31 @@
         "endorsementId": {
           "type": "string",
           "minLength": 1,
-          "description": "Community-scoped identifier for this endorsement row."
+          "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant."
         },
         "typeUri": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*."
+          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
         },
         "subjectDid": {
           "type": "string",
           "pattern": "^did:",
-          "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+          "description": "DID of the statement's subject (becomes credentialSubject.id)."
         },
         "claim": {
           "type": "object",
-          "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
+          "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one."
         },
         "issued": {
           "$ref": "../../../credentials/_shared/0.1/credentials.schema.json#/$defs/CredentialReference",
-          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
+          "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
           "minimum": 0,
-          "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community."
+          "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community."
         },
         "revokedAt": {
           "type": [
@@ -52,7 +52,7 @@
             "null"
           ],
           "format": "date-time",
-          "description": "When the endorsement was revoked, or null while live."
+          "description": "When the statement was revoked, or null while live."
         }
       }
     }

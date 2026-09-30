@@ -2,7 +2,7 @@
 slug: vtc/endorsements/list
 version: "0.1"
 title: VTC Endorsements — List
-summary: Page through the community's issued endorsement credentials, optionally filtered by type or subject; live and revoked rows both surface.
+summary: Page through the statement credentials the community issued through vtc/endorsements/issue, optionally filtered by predicate or subject; live and revoked rows both surface.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: credentials
@@ -39,7 +39,9 @@ errorCodes:
 
 The **VTC Endorsements — List** Trust Task pages through the community's issued
 [`Endorsement`](../../../_shared/0.1/endorsement.schema.json) rows. Filters:
-`typeUri` (a registered endorsement type), `subjectDid`, and `includeRevoked`.
+`typeUri` (a registered predicate IRI, matched against the statement's
+`credentialSubject.predicate`), `subjectDid`, and `includeRevoked`. Each row
+describes a DTG Verifiable Statement Credential (`StatementCredential`).
 
 Cursor pagination follows the same convention as the rest of the `vtc/*`
 families: an opaque `cursor`, a `limit` clamped to `1..=200` (default 50), and

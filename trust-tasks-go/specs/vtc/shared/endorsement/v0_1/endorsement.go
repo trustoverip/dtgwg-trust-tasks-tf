@@ -7,29 +7,33 @@ import "encoding/json"
 
 // Endorsement Endorsement
 type Endorsement struct {
-	// Community-scoped identifier for this endorsement row.
+	// Community-scoped identifier for this row. The name is legacy; it identifies a
+	// statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role
+	// credential issued by vtc/vetting/vetters/grant.
 	EndorsementID string `json:"endorsementId"`
 
-	// The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+	// The registered predicate IRI the statement carries as `credentialSubject.predicate`;
+	// see vtc/endorsement-types/*.
 	TypeURI string `json:"typeUri"`
 
-	// DID of the endorsement's subject (becomes credentialSubject.id).
+	// DID of the statement's subject (becomes credentialSubject.id).
 	SubjectDID string `json:"subjectDid"`
 
-	// The attested claim body, validated against the endorsement type's claimSchema when it
-	// declares one.
+	// The attested claim body — the statement's `credentialSubject.object.value` — validated
+	// against the registered predicate's claimSchema when it declares one.
 	Claim *map[string]json.RawMessage `json:"claim,omitempty"`
 
-	// A pointer to the issued VEC — its identifier and lifetime, not its bytes.
-	// `endorsements/issue` additionally returns the credential itself, because that is the
-	// one call whose caller has no other way to receive it.
+	// A pointer to the issued statement credential — its identifier and lifetime, not its
+	// bytes. `endorsements/issue` additionally returns the credential itself, because that is
+	// the one call whose caller has no other way to receive it.
 	Issued CredentialReference `json:"issued"`
 
-	// The endorsement's slot on the community's shared Revocation status list. Published, so
-	// a foreign verifier can check revocation without contacting this community.
+	// The statement's slot on the community's shared Revocation status list, referenced by
+	// its `credentialStatus`. Published, so a foreign verifier can check revocation without
+	// contacting this community.
 	StatusListIndex int64 `json:"statusListIndex"`
 
-	// When the endorsement was revoked, or null while live.
+	// When the statement was revoked, or null while live.
 	RevokedAt *string `json:"revokedAt,omitempty"`
 }
 

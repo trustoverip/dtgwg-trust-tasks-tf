@@ -183,20 +183,20 @@ impl CredentialReference {
 ///  ],
 ///  "properties": {
 ///    "claim": {
-///      "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one.",
+///      "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.",
 ///      "type": "object"
 ///    },
 ///    "endorsementId": {
-///      "description": "Community-scoped identifier for this endorsement row.",
+///      "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.",
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
 ///    "issued": {
-///      "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.",
+///      "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.",
 ///      "$ref": "#/definitions/CredentialReference"
 ///    },
 ///    "revokedAt": {
-///      "description": "When the endorsement was revoked, or null while live.",
+///      "description": "When the statement was revoked, or null while live.",
 ///      "type": [
 ///        "string",
 ///        "null"
@@ -204,17 +204,17 @@ impl CredentialReference {
 ///      "format": "date-time"
 ///    },
 ///    "statusListIndex": {
-///      "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.",
+///      "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.",
 ///      "type": "integer",
 ///      "minimum": 0.0
 ///    },
 ///    "subjectDid": {
-///      "description": "DID of the endorsement's subject (becomes credentialSubject.id).",
+///      "description": "DID of the statement's subject (becomes credentialSubject.id).",
 ///      "type": "string",
 ///      "pattern": "^did:"
 ///    },
 ///    "typeUri": {
-///      "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.",
+///      "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.",
 ///      "type": "string",
 ///      "maxLength": 512,
 ///      "minLength": 1
@@ -229,28 +229,28 @@ impl CredentialReference {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Endorsement {
-    ///The attested claim body, validated against the endorsement type's claimSchema when it declares one.
+    ///The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub claim: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    ///Community-scoped identifier for this endorsement row.
+    ///Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.
     #[serde(rename = "endorsementId")]
     pub endorsement_id: EndorsementEndorsementId,
-    ///A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
+    ///A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
     pub issued: CredentialReference,
-    ///When the endorsement was revoked, or null while live.
+    ///When the statement was revoked, or null while live.
     #[serde(
         rename = "revokedAt",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub revoked_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    ///The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.
+    ///The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.
     #[serde(rename = "statusListIndex")]
     pub status_list_index: u64,
-    ///DID of the endorsement's subject (becomes credentialSubject.id).
+    ///DID of the statement's subject (becomes credentialSubject.id).
     #[serde(rename = "subjectDid")]
     pub subject_did: EndorsementSubjectDid,
-    ///The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+    ///The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.
     #[serde(rename = "typeUri")]
     pub type_uri: EndorsementTypeUri,
 }
@@ -259,13 +259,13 @@ impl Endorsement {
         Default::default()
     }
 }
-///Community-scoped identifier for this endorsement row.
+///Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "Community-scoped identifier for this endorsement row.",
+///  "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.",
 ///  "type": "string",
 ///  "minLength": 1
 ///}
@@ -328,13 +328,13 @@ impl<'de> ::serde::Deserialize<'de> for EndorsementEndorsementId {
             })
     }
 }
-///DID of the endorsement's subject (becomes credentialSubject.id).
+///DID of the statement's subject (becomes credentialSubject.id).
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "DID of the endorsement's subject (becomes credentialSubject.id).",
+///  "description": "DID of the statement's subject (becomes credentialSubject.id).",
 ///  "type": "string",
 ///  "pattern": "^did:"
 ///}
@@ -399,13 +399,13 @@ impl<'de> ::serde::Deserialize<'de> for EndorsementSubjectDid {
             })
     }
 }
-///The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+///The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.",
+///  "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.",
 ///  "type": "string",
 ///  "maxLength": 512,
 ///  "minLength": 1
@@ -596,7 +596,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "claim": {
-///      "description": "The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.",
+///      "description": "The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one.",
 ///      "type": "object",
 ///      "minProperties": 1
 ///    },
@@ -604,12 +604,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "subjectDid": {
-///      "description": "DID of the endorsement's subject (becomes credentialSubject.id).",
+///      "description": "DID of the statement's subject (becomes credentialSubject.id).",
 ///      "type": "string",
 ///      "pattern": "^did:"
 ///    },
 ///    "typeUri": {
-///      "description": "A type already registered via vtc/endorsement-types/register; unregistered types are refused.",
+///      "description": "The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.",
 ///      "type": "string",
 ///      "maxLength": 512,
 ///      "minLength": 1
@@ -628,14 +628,14 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.
+    ///The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one.
     pub claim: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///DID of the endorsement's subject (becomes credentialSubject.id).
+    ///DID of the statement's subject (becomes credentialSubject.id).
     #[serde(rename = "subjectDid")]
     pub subject_did: PayloadSubjectDid,
-    ///A type already registered via vtc/endorsement-types/register; unregistered types are refused.
+    ///The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.
     #[serde(rename = "typeUri")]
     pub type_uri: PayloadTypeUri,
     ///Credential lifetime in seconds from issuance. The community MAY cap this.
@@ -651,13 +651,13 @@ impl Payload {
         Default::default()
     }
 }
-///DID of the endorsement's subject (becomes credentialSubject.id).
+///DID of the statement's subject (becomes credentialSubject.id).
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "DID of the endorsement's subject (becomes credentialSubject.id).",
+///  "description": "DID of the statement's subject (becomes credentialSubject.id).",
 ///  "type": "string",
 ///  "pattern": "^did:"
 ///}
@@ -722,13 +722,13 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectDid {
             })
     }
 }
-///A type already registered via vtc/endorsement-types/register; unregistered types are refused.
+///The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "A type already registered via vtc/endorsement-types/register; unregistered types are refused.",
+///  "description": "The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.",
 ///  "type": "string",
 ///  "maxLength": 512,
 ///  "minLength": 1
@@ -809,7 +809,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTypeUri {
 ///  ],
 ///  "properties": {
 ///    "credential": {
-///      "description": "The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.",
+///      "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.",
 ///      "type": "object"
 ///    },
 ///    "endorsement": {
@@ -828,7 +828,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTypeUri {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    ///The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
+    ///The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
     pub credential: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     pub endorsement: Endorsement,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -1234,7 +1234,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.\",\n          \"type\": \"object\"\n        },\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\",\n        \"credential\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claim\": {\n      \"description\": \"The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"subjectDid\": {\n      \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"typeUri\": {\n      \"description\": \"A type already registered via vtc/endorsement-types/register; unregistered types are refused.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"Credential lifetime in seconds from issuance. The community MAY cap this.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subjectDid\",\n    \"typeUri\",\n    \"claim\"\n  ],\n  \"title\": \"VTC Endorsements Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the statement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the statement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.\",\n          \"type\": \"object\"\n        },\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\",\n        \"credential\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claim\": {\n      \"description\": \"The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one.\",\n      \"minProperties\": 1,\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"subjectDid\": {\n      \"description\": \"DID of the statement's subject (becomes credentialSubject.id).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"typeUri\": {\n      \"description\": \"The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"Credential lifetime in seconds from issuance. The community MAY cap this.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subjectDid\",\n    \"typeUri\",\n    \"claim\"\n  ],\n  \"title\": \"VTC Endorsements Issue — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1244,7 +1244,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body, validated against the endorsement type's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this endorsement row.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the endorsement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the endorsement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.\",\n          \"type\": \"object\"\n        },\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\",\n        \"credential\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"CredentialReference\": {\n      \"$anchor\": \"credentialReference\",\n      \"additionalProperties\": false,\n      \"description\": \"A pointer to an issued credential, without the credential itself.\\n\\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\\n\\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When it lapses, or null when it does not.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"issuedAt\": {\n          \"description\": \"When the credential was minted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"CredentialReference\",\n      \"type\": \"object\"\n    },\n    \"Endorsement\": {\n      \"$anchor\": \"endorsement\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claim\": {\n          \"description\": \"The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.\",\n          \"type\": \"object\"\n        },\n        \"endorsementId\": {\n          \"description\": \"Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issued\": {\n          \"$ref\": \"#/$defs/CredentialReference\",\n          \"description\": \"A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the statement was revoked, or null while live.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"statusListIndex\": {\n          \"description\": \"The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID of the statement's subject (becomes credentialSubject.id).\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"typeUri\",\n        \"subjectDid\",\n        \"issued\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"Endorsement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.\",\n          \"type\": \"object\"\n        },\n        \"endorsement\": {\n          \"$ref\": \"#/$defs/Endorsement\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsement\",\n        \"credential\"\n      ],\n      \"title\": \"VTC Endorsements Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -1254,6 +1254,7 @@ impl crate::RequestPayload for Payload {
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::TYPE_NOT_REGISTERED,
+    error_codes::PREDICATE_NOT_ISSUABLE,
     error_codes::CLAIM_SCHEMA_VIOLATION,
     error_codes::CLAIM_TOO_LARGE,
     error_codes::STATUS_LIST_EXHAUSTED,
@@ -1267,16 +1268,25 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 pub mod error_codes {
     /// `vtc/endorsements/issue:typeNotRegistered`
     ///
-    /// `typeUri` is not registered in this community's endorsement-type registry.
+    /// `typeUri` is not a predicate registered in this community's endorsement-type registry.
     ///
     /// Declared `retryable: false`.
     pub const TYPE_NOT_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsements/issue:typeNotRegistered",
         retryable: false,
     };
+    /// `vtc/endorsements/issue:predicateNotIssuable`
+    ///
+    /// `typeUri` is registered, but its predicate's profile does not let the community issue it through this task — it requires `taskContext`, or names an issuer other than the community.
+    ///
+    /// Declared `retryable: false`.
+    pub const PREDICATE_NOT_ISSUABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/endorsements/issue:predicateNotIssuable",
+        retryable: false,
+    };
     /// `vtc/endorsements/issue:claimSchemaViolation`
     ///
-    /// `claim` failed validation against the endorsement type's declared claimSchema.
+    /// `claim` failed validation against the registered predicate's declared claimSchema.
     ///
     /// Declared `retryable: false`.
     pub const CLAIM_SCHEMA_VIOLATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

@@ -101,31 +101,31 @@ export const PAYLOAD_SCHEMA = {
         "endorsementId": {
           "type": "string",
           "minLength": 1,
-          "description": "Community-scoped identifier for this endorsement row."
+          "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant."
         },
         "typeUri": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*."
+          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
         },
         "subjectDid": {
           "type": "string",
           "pattern": "^did:",
-          "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+          "description": "DID of the statement's subject (becomes credentialSubject.id)."
         },
         "claim": {
           "type": "object",
-          "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
+          "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one."
         },
         "issued": {
           "$ref": "#/$defs/CredentialReference",
-          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
+          "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
           "minimum": 0,
-          "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community."
+          "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community."
         },
         "revokedAt": {
           "type": [
@@ -133,7 +133,7 @@ export const PAYLOAD_SCHEMA = {
             "null"
           ],
           "format": "date-time",
-          "description": "When the endorsement was revoked, or null while live."
+          "description": "When the statement was revoked, or null while live."
         }
       }
     },
@@ -223,31 +223,31 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "endorsementId": {
           "type": "string",
           "minLength": 1,
-          "description": "Community-scoped identifier for this endorsement row."
+          "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant."
         },
         "typeUri": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*."
+          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
         },
         "subjectDid": {
           "type": "string",
           "pattern": "^did:",
-          "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+          "description": "DID of the statement's subject (becomes credentialSubject.id)."
         },
         "claim": {
           "type": "object",
-          "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
+          "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one."
         },
         "issued": {
           "$ref": "#/$defs/CredentialReference",
-          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
+          "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
           "minimum": 0,
-          "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community."
+          "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community."
         },
         "revokedAt": {
           "type": [
@@ -255,7 +255,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "null"
           ],
           "format": "date-time",
-          "description": "When the endorsement was revoked, or null while live."
+          "description": "When the statement was revoked, or null while live."
         }
       }
     },
