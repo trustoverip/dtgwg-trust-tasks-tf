@@ -11,6 +11,29 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.4.0 — 2026-09-30
+
+
+### Specifications
+
+- Conform vetting, member and endorsement credentials to DTG VSC/VAC and the predicate registry (#691)
+
+* spec(vetting)!: conform vetting credentials to DTG VSC/VAC and the predicate registry
+
+  The credentials the vetting family defines now follow the latest DTG
+  Credentials Core Specification and the DTG VSC predicate registry. All
+  affected specifications are `draft`, so they change in place (SPEC §5.2).
+
+  Vetting Statement (vetting/session, vtc/vetting/revoke-statement): no longer
+  an `EndorsementCredential`. It is a Verifiable Statement Credential —
+  `type` [VerifiableCredential, DTGCredential, StatementCredential], `@context`
+  [credentials/v2, https://registry.trustoverip.org/dtg/context/v1],
+  `issuerScope` directed or public, `taskContext` and `taskDigestMultibase`
+  both REQUIRED — with `credentialSubject.predicate`
+  https://registry.trustoverip.org/dtg/vsc/vetted/1 and the vetting body in
+  `credentialSubject.object.value`. The body's `type` member is gone; the
+  predicate carries the meaning. The example's statement digest is recomputed.
+
 ## 0.3.16 — 2026-09-30
 
 
