@@ -48,7 +48,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members Personhood — Assert** Trust Task asserts that the member `did` is a person. The member submits a W3C Verifiable Presentation whose `holder` is `did`, whose `proof.challenge` is the `challengeId` from a prior [`vtc/members/personhood/challenge`](../../challenge/0.1/), and which carries at least one credential satisfying the community's active personhood policy. On success the community sets the personhood flag and re-issues the member's membership (`vmc`) and role (`roleVac`) credentials.
+The **VTC Members Personhood — Assert** Trust Task asserts that the member `did` is a person. The member submits a W3C Verifiable Presentation whose `holder` is `did`, whose `proof.challenge` is the `challengeId` from a prior [`vtc/members/personhood/challenge`](../../challenge/0.1/), and which carries at least one credential satisfying the community's active personhood policy. That credential is an identity-verification credential (IDVC) from a provider the community lists in `acceptedIdvps` — any W3C VC meeting its identity-proofing requirements, never a `DTGCredential`. A community that vets its own members in person is its own provider: it issues an `IdentityVerificationCredential` through [`vtc/endorsements/issue`](../../../../endorsements/issue/0.1/spec.md), and the member presents that. On success the community sets the personhood flag and re-issues the member's membership (`vmc`) and role (`roleVac`) credentials.
 
 ## Conformance
 

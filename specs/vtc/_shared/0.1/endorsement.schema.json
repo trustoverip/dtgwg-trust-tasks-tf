@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/endorsement",
   "title": "VTC — shared endorsement definitions",
-  "description": "Shared type for the vtc/endorsements/* family: one community-issued statement row. The credential is a DTG Verifiable Statement Credential (`type` [VerifiableCredential, DTGCredential, StatementCredential], `issuerScope` public) — a Verifiable Endorsement Credential (VEC) when its predicate is `https://registry.trustoverip.org/dtg/vsc/endorses/1`. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered predicate and the shared status-list slot that makes the statement third-party revocation-checkable. The family and member names (`endorsementId`, `typeUri`, `claim`) are kept from when these were `EndorsementCredential`s.",
+  "description": "Shared type for the vtc/endorsements/* family: one community-issued, community-revocable credential row. Usually a statement — `typeUri` says which kind of row it is. The statement credential is a DTG Verifiable Statement Credential (`type` [VerifiableCredential, DTGCredential, StatementCredential], `issuerScope` public) — a Verifiable Endorsement Credential (VEC) when its predicate is `https://registry.trustoverip.org/dtg/vsc/endorses/1`. Embeds the registry-wide credentials/_shared CredentialReference and adds the VTC-specific parts — the registered predicate and the shared status-list slot that makes the statement third-party revocation-checkable. The family and member names (`endorsementId`, `typeUri`, `claim`) are kept from when these were `EndorsementCredential`s.",
   "$defs": {
     "Endorsement": {
       "$anchor": "endorsement",
@@ -26,7 +26,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
+          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's identity-verification credential, a plain W3C VC (not a DTGCredential). The two reserved values are not IRIs, so they never collide with a registered predicate."
         },
         "subjectDid": {
           "type": "string",

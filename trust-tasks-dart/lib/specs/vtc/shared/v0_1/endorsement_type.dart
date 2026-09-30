@@ -21,10 +21,14 @@ class EndorsementType {
         createdByDid: json['createdByDid'] as String?,
       );
 
-  /// The predicate IRI the community accepts, compared as an exact string: a DTG VSC
-  /// predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`)
-  /// or a community-namespace IRI defined in the registry's predicate definition format.
-  /// URIs the implementation reserves for its own use are refused at registration.
+  /// The predicate IRI the community accepts, compared as an exact string. Always an
+  /// absolute IRI: a DTG VSC predicate registry IRI (e.g.
+  /// `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI
+  /// defined in the registry's predicate definition format. The four core predicates —
+  /// endorses/1, witnessed/1, vetted/1 and presented/1 under
+  /// `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts.
+  /// The reserved values `IdentityVerificationCredential` and `role:vetter`, which name
+  /// the other kinds of record vtc/endorsements/* keeps, are never registered.
   final String typeUri;
   final String? description;
 

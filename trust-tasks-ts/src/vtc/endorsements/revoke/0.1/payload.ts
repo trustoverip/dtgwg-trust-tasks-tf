@@ -17,7 +17,7 @@ export interface VTCEndorsementsRevokePayload {
 export interface VTCEndorsementsRevokeResponsePayload {
   endorsementId: string;
   /**
-   * The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC).
+   * The registry-wide revocation receipt for the underlying credential — the statement credential, the identity-verification credential, or a vetter role credential (VAC).
    */
   revocation: RevocationReceipt;
   /**
@@ -92,7 +92,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "revocation": {
           "$ref": "#/$defs/RevocationReceipt",
-          "description": "The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC)."
+          "description": "The registry-wide revocation receipt for the underlying credential — the statement credential, the identity-verification credential, or a vetter role credential (VAC)."
         },
         "statusListIndex": {
           "type": "integer",
@@ -167,7 +167,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "revocation": {
           "$ref": "#/$defs/RevocationReceipt",
-          "description": "The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC)."
+          "description": "The registry-wide revocation receipt for the underlying credential — the statement credential, the identity-verification credential, or a vetter role credential (VAC)."
         },
         "statusListIndex": {
           "type": "integer",

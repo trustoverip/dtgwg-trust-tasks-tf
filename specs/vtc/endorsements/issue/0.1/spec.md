@@ -2,7 +2,7 @@
 slug: vtc/endorsements/issue
 version: "0.1"
 title: VTC Endorsements — Issue
-summary: A community issues a Verifiable Statement Credential under a registered predicate to a subject — a Verifiable Endorsement Credential for the endorses predicate — allocating a published status-list slot so foreign verifiers can check revocation.
+summary: A community issues a statement credential under a registered predicate — or, under the reserved typeUri IdentityVerificationCredential, its identity-verification credential — to a subject, with a published status-list slot for revocation.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: credentials
@@ -132,6 +132,74 @@ The claim members and the status list URL are illustrative. A role is never
 issued here: a role is a decision by the community, carried in a Verifiable
 Authority Credential ([`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)).
 
+### The identity-verification credential
+
+One `typeUri` is not a predicate. The reserved value
+`IdentityVerificationCredential` asks this task for the community's
+**identity-verification credential** (IDVC): the record that an administrator
+verified, typically in person, that the member controls the DID in front of
+them. A community that vets its own members this way acts as its own
+identity-verification provider, lists its own DID in `acceptedIdvps`, and
+accepts the credential as personhood evidence in
+[`vtc/members/personhood/assert`](../../../members/personhood/assert/0.1/spec.md).
+
+The DTG Credentials Core Specification defines an IDVC as any W3C VC that
+satisfies a community's identity-proofing requirements, and says IDVCs are
+**not** `DTGCredential` subtypes. So this is the one credential this task mints
+outside the DTG catalog, and deliberately so:
+
+- `@context` `["https://www.w3.org/ns/credentials/v2"]` alone, and `type`
+  `["VerifiableCredential", "IdentityVerificationCredential"]` — no
+  `DTGCredential`, no DTG context, no `issuerScope`, no `predicate`;
+- `issuer` the community's DID;
+- `credentialSubject.id` = `subjectDid`, with the members of `claim` beside it
+  (how the identity was verified, and by whom). `claim` **MUST NOT** carry
+  `id`: the subject is `subjectDid`, never a value the caller supplies;
+- `validFrom` at issuance and `validUntil` after it;
+- a `credentialStatus` entry for revocation on the community's shared status
+  list, so it is withdrawn with [`vtc/endorsements/revoke`](../../revoke/0.1/spec.md)
+  like any other row;
+- an `id`, reported in `endorsement.issued`.
+
+```json
+{
+  "@context": ["https://www.w3.org/ns/credentials/v2"],
+  "id": "urn:uuid:3d9a7c5e-1f2b-4a6d-8e0c-9b4f2a1d7e01",
+  "type": ["VerifiableCredential", "IdentityVerificationCredential"],
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "validFrom": "2026-09-21T14:00:00Z",
+  "validUntil": "2027-09-21T14:00:00Z",
+  "credentialSubject": {
+    "id": "did:webvh:QmAliceScid1:alice.example",
+    "method": "inPerson",
+    "verifiedBy": "did:webvh:QmDanaScid1:kernel-vtc.example:dana"
+  },
+  "credentialStatus": {
+    "id": "https://kernel-vtc.example/status/revocation/1#4215",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "4215",
+    "statusListCredential": "https://kernel-vtc.example/status/revocation/1"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "verificationMethod": "did:webvh:QmVtcScid:kernel-vtc.example#key-1",
+    "created": "2026-09-21T14:00:00Z",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR"
+  }
+}
+```
+
+The `claim` members shown are illustrative. `IdentityVerificationCredential` is
+reserved: it is never registered through
+[`vtc/endorsement-types/register`](../../../endorsement-types/register/0.1/spec.md),
+which refuses it, and a consumer recognises it before it looks for a
+registered predicate, so a caller cannot reach it through the statement path or
+shadow it with a registration. The row the community records for it carries
+`typeUri` `IdentityVerificationCredential`.
+
 ### Why this is not `vta/credentials/issue`
 
 The minting *mechanism* is shared — and this task reuses it literally, via the
@@ -148,18 +216,24 @@ which is why it is a separate Trust Task rather than a variant of one:
    `vta/credentials/issue` is on the *management* plane, gated by operator
    step-up.
 3. **Governance gating.** `typeUri` MUST already be registered via
-   `vtc/endorsement-types/register`; the VTA task treats `credentialType` as a
+   `vtc/endorsement-types/register`, or be the one reserved value; the VTA task treats `credentialType` as a
    free string.
 
 ## Conformance
 
-Producer: supply `subjectDid`, a registered `typeUri`, and a non-empty `claim`.
+Producer: supply `subjectDid`, a registered predicate IRI or the reserved `IdentityVerificationCredential` as `typeUri`, and a non-empty `claim`.
 
 Consumer:
 
 1. Verify the community-admin **or** issuer capability against the live ACL —
    do not infer it from a cached token role.
-2. Reject an unregistered `typeUri` with `typeNotRegistered`. Reject a
+2. Where `typeUri` is the reserved `IdentityVerificationCredential`, mint the
+   identity-verification credential described above instead of a statement,
+   and reject a `claim` that carries `id` with `claimSchemaViolation`; the
+   rest of this item does not apply. Otherwise reject a `typeUri` that is not
+   a registered predicate — `role:vetter` included, which only
+   [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)
+   issues — with `typeNotRegistered`. Reject a
    registered predicate whose profile requires `taskContext`, or names an
    issuer other than the community, with `predicateNotIssuable` — this task
    carries no task citation, and the community may make only the statements
@@ -169,7 +243,7 @@ Consumer:
    declares a `claimSchema`, validate `claim` against it and reject a failure
    with `claimSchemaViolation`.
 4. Allocate the next free slot on the shared Revocation status list
-   (`statusListExhausted` if none remains), sign the statement credential as
+   (`statusListExhausted` if none remains), sign the credential as
    described above, persist the row, and return the full `Endorsement` and the
    `credential`.
 

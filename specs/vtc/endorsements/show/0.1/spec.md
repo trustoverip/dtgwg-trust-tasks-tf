@@ -41,7 +41,10 @@ The **VTC Endorsements — Show** Trust Task returns one issued
 [`Endorsement`](../../../_shared/0.1/endorsement.schema.json) by
 `endorsementId` — the same shape `vtc/endorsements/list` returns per item,
 including the embedded issuance receipt, the `statusListIndex`, and `revokedAt`
-(null while live).
+(null while live). Its `typeUri` says which kind of credential the row
+records — a statement under a registered predicate, the community's
+`IdentityVerificationCredential`, or a `role:vetter` grant — as
+[`vtc/endorsements/list`](../../list/0.1/spec.md) describes.
 
 ## Conformance
 

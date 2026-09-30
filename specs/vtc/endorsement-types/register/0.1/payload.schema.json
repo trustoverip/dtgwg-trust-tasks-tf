@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["typeUri"],
   "properties": {
-    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The predicate IRI to accept: a DTG VSC predicate registry IRI or a community-namespace IRI." },
+    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The predicate IRI to accept, an absolute IRI: a DTG VSC predicate registry IRI or a community-namespace IRI. The reserved values `IdentityVerificationCredential` and `role:vetter` are refused with `reserved`, and a value that is not an absolute IRI with `invalidUri`." },
     "description": { "type": "string", "maxLength": 1024 },
     "claimSchema": { "type": "object", "description": "Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here)." },
     "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
