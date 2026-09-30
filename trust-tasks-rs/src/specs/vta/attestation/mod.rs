@@ -2,5 +2,6 @@
 
 pub mod config_report;
 pub mod mnemonic_export;
+pub mod mnemonic_status;
 pub mod report;
 pub mod status;
