@@ -398,6 +398,10 @@ export * as RoomsRecordsCurate_v0_1 from "./rooms/records/curate/0.1/payload.js"
 export * as RoomsRecordsGet_v0_1 from "./rooms/records/get/0.1/payload.js";
 export * as RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
 export * as RoomsRecordsPut_v0_1 from "./rooms/records/put/0.1/payload.js";
+export * as SocialRecoveryBuddiesAdd_v0_1 from "./social-recovery/buddies/add/0.1/payload.js";
+export * as SocialRecoveryBuddiesList_v0_1 from "./social-recovery/buddies/list/0.1/payload.js";
+export * as SocialRecoveryBuddiesRemove_v0_1 from "./social-recovery/buddies/remove/0.1/payload.js";
+export * as SocialRecoveryStatusGet_v0_1 from "./social-recovery/status/get/0.1/payload.js";
 export * as SyncEventShared_v0_1 from "./sync/_shared/0.1/sync-event.js";
 export * as SyncEventShared_v0_2 from "./sync/_shared/0.2/sync-event.js";
 export * as SyncEvent_v0_1 from "./sync/event/0.1/payload.js";

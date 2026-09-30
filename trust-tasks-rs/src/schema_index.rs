@@ -1388,6 +1388,14 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/records/put/0.1" => <crate::specs::rooms::records::put::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/put/0.1#response" => <crate::specs::rooms::records::put::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/add/0.1" => <crate::specs::social_recovery::buddies::add::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/list/0.1" => <crate::specs::social_recovery::buddies::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/remove/0.1" => <crate::specs::social_recovery::buddies::remove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/status/get/0.1" => <crate::specs::social_recovery::status::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => <crate::specs::sync::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "sync")]
@@ -4166,6 +4174,30 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/rooms/records/put/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::put::v0_1::Payload,
         >()),
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/add/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::social_recovery::buddies::add::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::social_recovery::buddies::list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/remove/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::social_recovery::buddies::remove::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/status/get/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::social_recovery::status::get::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::sync::event::v0_1::Payload,
@@ -6967,6 +6999,22 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "rooms")]
         "https://trusttasks.org/spec/rooms/records/put/0.1" => {
             Some(crate::specs::rooms::records::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/add/0.1" => {
+            Some(crate::specs::social_recovery::buddies::add::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/list/0.1" => {
+            Some(crate::specs::social_recovery::buddies::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/buddies/remove/0.1" => {
+            Some(crate::specs::social_recovery::buddies::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "social-recovery")]
+        "https://trusttasks.org/spec/social-recovery/status/get/0.1" => {
+            Some(crate::specs::social_recovery::status::get::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "sync")]
         "https://trusttasks.org/spec/sync/event/0.1" => {

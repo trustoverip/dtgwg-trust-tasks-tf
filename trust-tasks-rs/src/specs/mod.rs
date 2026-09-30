@@ -102,6 +102,8 @@ pub mod push;
 pub mod registry;
 #[cfg(feature = "rooms")]
 pub mod rooms;
+#[cfg(feature = "social-recovery")]
+pub mod social_recovery;
 #[cfg(feature = "sync")]
 pub mod sync;
 #[cfg(feature = "task-consent")]
