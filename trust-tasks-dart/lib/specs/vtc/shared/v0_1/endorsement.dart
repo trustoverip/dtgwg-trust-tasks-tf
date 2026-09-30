@@ -76,8 +76,12 @@ class Endorsement {
   /// credential issued by vtc/vetting/vetters/grant.
   final String endorsementId;
 
-  /// The registered predicate IRI the statement carries as
-  /// `credentialSubject.predicate`; see vtc/endorsement-types/*.
+  /// What the row records. A registered predicate IRI: a statement (StatementCredential)
+  /// whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*.
+  /// `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by
+  /// vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's
+  /// identity-verification credential, a plain W3C VC (not a DTGCredential). The two
+  /// reserved values are not IRIs, so they never collide with a registered predicate.
   final String typeUri;
 
   /// DID of the statement's subject (becomes credentialSubject.id).

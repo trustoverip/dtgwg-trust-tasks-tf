@@ -31,13 +31,13 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vtc/endorsement-types/register:reserved
-    meaning: The typeUri is one the implementation reserves for its own use and cannot be registered.
+    meaning: The typeUri is a reserved value — `IdentityVerificationCredential` or `role:vetter` — that names a record kind vtc/endorsements/* keeps for itself, and cannot be registered.
     retryable: false
   - code: vtc/endorsement-types/register:exists
     meaning: This typeUri is already registered.
     retryable: false
   - code: vtc/endorsement-types/register:invalidUri
-    meaning: The typeUri is empty or exceeds 512 bytes.
+    meaning: The typeUri is empty, exceeds 512 bytes, or is not an absolute predicate IRI.
     retryable: false
 ---
 
@@ -47,13 +47,17 @@ The **VTC Endorsement-Types — Register** Trust Task adds a statement predicate
 
 A DTG statement — a Verifiable Statement Credential, `type` `StatementCredential` — carries its meaning in `credentialSubject.predicate`, an absolute IRI. `typeUri` is that IRI: a predicate from the DTG VSC predicate registry, such as `https://registry.trustoverip.org/dtg/vsc/vetted/1` for peer identity vetting, or one in a namespace the community controls, defined in the registry's predicate definition format. The registered set is the community's accept-list. A verifier applying the community's policy **MUST** reject a statement whose predicate is not registered: it fails closed, and never treats an unlisted predicate as a generic statement or accepts one because it resembles a listed one. `claimSchema`, when given, is the schema of the statement's `credentialSubject.object.value`; for a registry predicate it is the object schema the profile publishes.
 
+**The core predicates are seeded.** A community seeds its registry with the four DTG core predicates when it starts — `https://registry.trustoverip.org/dtg/vsc/endorses/1`, `.../witnessed/1`, `.../vetted/1` and `.../presented/1`, before any administrator registers anything, so the statements the registry defines count without a registration step. Registering one of them again is `exists`.
+
+**Only predicate IRIs are registrable.** A `typeUri` that is not an absolute IRI is refused with `invalidUri`. Two values are **reserved** and refused with `reserved`, because they name the record kinds [`vtc/endorsements/*`](../../../endorsements/issue/0.1/spec.md) keeps beside statements: `IdentityVerificationCredential`, which asks `vtc/endorsements/issue` for the community's identity-verification credential, and `role:vetter`, the record of a vetter role credential issued by [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md). Neither is a predicate IRI, so neither can collide with a registered predicate.
+
 Roles are not endorsements. A role such as `vetter` is a decision by the community and is conferred by a Verifiable Authority Credential ([`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)), never registered here. The family keeps its name, and `typeUri` its member name, from when statements were endorsement types.
 
 ## Conformance
 
 Producer: supply `typeUri`; optionally `description` and `claimSchema`. Carry a proof.
 
-Consumer: verify the community-admin capability. Refuse URIs the implementation reserves (`reserved`), duplicates (`exists`), and empty/oversized URIs (`invalidUri`). Otherwise store the predicate and return the full `EndorsementType`.
+Consumer: verify the community-admin capability. Refuse the reserved values `IdentityVerificationCredential` and `role:vetter` (`reserved`); an empty, oversized, or non-IRI `typeUri` (`invalidUri`); and one already registered, the four seeded core predicates included (`exists`). Otherwise store the predicate and return the full `EndorsementType`.
 
 ## Security & Privacy
 

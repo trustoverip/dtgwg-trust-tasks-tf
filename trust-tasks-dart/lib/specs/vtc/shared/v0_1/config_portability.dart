@@ -44,8 +44,9 @@ class PersonhoodGovernance {
   /// DIDs of the identity-verification providers whose credentials this community
   /// accepts as personhood evidence. A community that vets its own members in person
   /// lists its own community DID here — it is acting as its own IDVP, which §IDVC
-  /// permits. An empty list means no list has been published, not that everything is
-  /// accepted.
+  /// permits — and issues the evidence as an `IdentityVerificationCredential` (a plain
+  /// W3C VC, not a DTGCredential) through vtc/endorsements/issue. An empty list means no
+  /// list has been published, not that everything is accepted.
   final List<String>? acceptedIdvps;
 
   /// Where the governance framework these assertions refer to can be read.

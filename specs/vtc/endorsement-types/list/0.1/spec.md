@@ -32,6 +32,8 @@ errorCodes: []
 
 The **VTC Endorsement-Types — List** Trust Task returns the endorsement types the community recognises, as [`EndorsementType`](../../../_shared/0.1/endorsement-type.schema.json) entries, paged by `cursor`/`limit`.
 
+The registry lists predicate IRIs only, and includes the four DTG core predicates — `https://registry.trustoverip.org/dtg/vsc/endorses/1`, `.../witnessed/1`, `.../vetted/1` and `.../presented/1` — which the community seeds when it starts. The reserved values `IdentityVerificationCredential` and `role:vetter` never appear: they are record kinds of `vtc/endorsements/*`, not registrations.
+
 ## Conformance
 
 Producer: optional `cursor`/`limit`.

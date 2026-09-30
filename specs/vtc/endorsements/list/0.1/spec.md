@@ -40,8 +40,15 @@ errorCodes:
 The **VTC Endorsements — List** Trust Task pages through the community's issued
 [`Endorsement`](../../../_shared/0.1/endorsement.schema.json) rows. Filters:
 `typeUri` (a registered predicate IRI, matched against the statement's
-`credentialSubject.predicate`), `subjectDid`, and `includeRevoked`. Each row
-describes a DTG Verifiable Statement Credential (`StatementCredential`).
+`credentialSubject.predicate`), `subjectDid`, and `includeRevoked`. A row's
+`typeUri` says what it records: a registered predicate IRI for a DTG Verifiable
+Statement Credential (`StatementCredential`) issued by
+[`vtc/endorsements/issue`](../../issue/0.1/spec.md); `IdentityVerificationCredential`
+for the community's identity-verification credential, a plain W3C VC issued by
+the same task; or `role:vetter` for a vetter role credential (a Verifiable
+Authority Credential) issued by
+[`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md). The
+`typeUri` filter accepts any of the three.
 
 Cursor pagination follows the same convention as the rest of the `vtc/*`
 families: an opaque `cursor`, a `limit` clamped to `1..=200` (default 50), and

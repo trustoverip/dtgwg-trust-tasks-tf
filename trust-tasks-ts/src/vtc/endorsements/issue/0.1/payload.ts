@@ -12,11 +12,11 @@ export interface VTCEndorsementsIssuePayload {
    */
   subjectDid: string;
   /**
-   * The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.
+   * The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused. The one non-IRI value accepted is the reserved `IdentityVerificationCredential`, which mints the community's identity-verification credential instead of a statement.
    */
   typeUri: string;
   /**
-   * The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one.
+   * The claim body to attest, issued as the statement's `credentialSubject.object.value` — or, for `IdentityVerificationCredential`, as members of `credentialSubject` beside `id`, in which case it MUST NOT itself carry `id`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one.
    */
   claim: {};
   /**
@@ -28,7 +28,7 @@ export interface VTCEndorsementsIssuePayload {
 export interface VTCEndorsementsIssueResponsePayload {
   endorsement: Endorsement;
   /**
-   * The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
+   * The signed credential just minted. For `IdentityVerificationCredential`, a plain W3C VC — `@context` [credentials/v2] only, `type` [VerifiableCredential, IdentityVerificationCredential], not a DTGCredential — issued by the community to `subjectDid` with a revocation `credentialStatus`. Otherwise a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
    */
   credential: {};
   ext?: Ext;
@@ -79,12 +79,12 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 512,
-      "description": "The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused."
+      "description": "The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused. The one non-IRI value accepted is the reserved `IdentityVerificationCredential`, which mints the community's identity-verification credential instead of a statement."
     },
     "claim": {
       "type": "object",
       "minProperties": 1,
-      "description": "The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one."
+      "description": "The claim body to attest, issued as the statement's `credentialSubject.object.value` — or, for `IdentityVerificationCredential`, as members of `credentialSubject` beside `id`, in which case it MUST NOT itself carry `id`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one."
     },
     "validitySeconds": {
       "type": "integer",
@@ -111,7 +111,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "credential": {
           "type": "object",
-          "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
+          "description": "The signed credential just minted. For `IdentityVerificationCredential`, a plain W3C VC — `@context` [credentials/v2] only, `type` [VerifiableCredential, IdentityVerificationCredential], not a DTGCredential — issued by the community to `subjectDid` with a revocation `credentialStatus`. Otherwise a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -150,7 +150,7 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
+          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's identity-verification credential, a plain W3C VC (not a DTGCredential). The two reserved values are not IRIs, so they never collide with a registered predicate."
         },
         "subjectDid": {
           "type": "string",
@@ -238,7 +238,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "credential": {
           "type": "object",
-          "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
+          "description": "The signed credential just minted. For `IdentityVerificationCredential`, a plain W3C VC — `@context` [credentials/v2] only, `type` [VerifiableCredential, IdentityVerificationCredential], not a DTGCredential — issued by the community to `subjectDid` with a revocation `credentialStatus`. Otherwise a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -277,7 +277,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
+          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's identity-verification credential, a plain W3C VC (not a DTGCredential). The two reserved values are not IRIs, so they never collide with a registered predicate."
         },
         "subjectDid": {
           "type": "string",
