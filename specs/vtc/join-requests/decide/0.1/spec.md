@@ -64,8 +64,19 @@ The **VTC Join-Requests — Decide** Trust Task resolves a pending join request 
 This task supersedes the [`vtc/join-requests/approve`](../../approve/0.1/) / [`vtc/join-requests/reject`](../../reject/0.1/) pair. The two payloads were near-identical (`{id}` vs `{id, reason?}`), shared the same admin gate, the same pending-state lifecycle check, and the same proof posture; the decision is one enum field, not two tasks. This mirrors the established enum-variant pattern (`provision/integration`, `auth/passkey/login/start`'s `purpose`).
 
 
-An admitting decision returns the credentials it issued — `vmc`, and `roleVec`
+An admitting decision returns the credentials it issued — `vmc`, and `roleVac`
 where a role was granted — rather than only saying that it admitted.
+
+`roleVac` is a DTG **Verifiable Authority Credential**, not an endorsement:
+granting a role is a decision by the party that governs the community, and the
+DTG Credentials Core Specification carries such a decision only in a VAC. It is
+issued by the community with `issuerScope` `public`, `type`
+`["VerifiableCredential", "DTGCredential", "AuthorityCredential"]`, a
+`validUntil`, and `credentialSubject.authority` equal to
+`{ "scope": <community DID>, "actions": ["role:<name>"] }` — the same shape
+[`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)
+issues for `role:vetter`. The member was called `roleVec` before roles became
+authority credentials.
 
 The alternative is a second round trip whose only purpose is to collect
 something the community already held when it decided: the applicant polls,
@@ -100,7 +111,7 @@ community's account of a refusal, not a transcript of how the community reached
 one, and the 1024-character bound is a hint that it was designed for the former.
 
 The response returns `requestId` and `status`, and on an admitting decision the
-credentials that decision issued — `vmc`, and `roleVec` where a role was granted —
+credentials that decision issued — `vmc`, and `roleVac` where a role was granted —
 inline rather than by a second round trip. Both are absent on a refusal, where
 there is nothing to deliver.
 

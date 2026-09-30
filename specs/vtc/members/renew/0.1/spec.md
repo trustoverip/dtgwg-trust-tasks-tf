@@ -41,13 +41,13 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Renew** Trust Task refreshes the calling member's membership, re-issuing their Verifiable Membership Credential (`vmc`) and role credential (`roleVec`) and reporting the current `personhood` state (and whether it changed). The subject is the authenticated caller; there are no request parameters.
+The **VTC Members — Renew** Trust Task refreshes the calling member's membership, re-issuing their Verifiable Membership Credential (`vmc`) and role credential (`roleVac`) and reporting the current `personhood` state (and whether it changed). The subject is the authenticated caller; there are no request parameters.
 
 ## Conformance
 
 Producer: send with no parameters.
 
-Consumer: verify the caller is a member; if not, return `notMember`. Re-issue the membership and role credentials, and return `{ did, vmc, roleVec, personhood, personhoodChanged }`. The credentials are opaque W3C Verifiable Credentials at this layer.
+Consumer: verify the caller is a member; if not, return `notMember`. Re-issue the membership and role credentials, and return `{ did, vmc, roleVac, personhood, personhoodChanged }`. The credentials are opaque W3C Verifiable Credentials at this layer.
 
 ## Security & Privacy
 

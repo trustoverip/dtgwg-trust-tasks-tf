@@ -43,13 +43,13 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members — Rotate** Trust Task completes a DID rotation opened by [`vtc/members/rotate-challenge`](../../rotate-challenge/0.1/). The member presents the `rotationId`, the old and new DIDs, and a signature over the challenge from **each** key. On success the community repoints the member to `newDid` and re-issues their membership (`vmc`) and role (`roleVec`) credentials to it.
+The **VTC Members — Rotate** Trust Task completes a DID rotation opened by [`vtc/members/rotate-challenge`](../../rotate-challenge/0.1/). The member presents the `rotationId`, the old and new DIDs, and a signature over the challenge from **each** key. On success the community repoints the member to `newDid` and re-issues their membership (`vmc`) and role (`roleVac`) credentials to it.
 
 ## Conformance
 
 Producer: supply `rotationId`, `oldDid`, `newDid`, and both signatures. Carry a proof.
 
-Consumer: look up the `rotationId`; if unknown or expired, return `rotationExpired`. Verify both signatures over the challenge; if either fails, return `signatureInvalid` and change nothing. Otherwise repoint the member to `newDid`, re-issue the credentials, and return `{ newDid, method, vmc, roleVec }`. Audit the rotation.
+Consumer: look up the `rotationId`; if unknown or expired, return `rotationExpired`. Verify both signatures over the challenge; if either fails, return `signatureInvalid` and change nothing. Otherwise repoint the member to `newDid`, re-issue the credentials, and return `{ newDid, method, vmc, roleVac }`. Audit the rotation.
 
 ## Authorization
 

@@ -16,9 +16,9 @@ export interface VTCMembersRenewResponsePayload {
    */
   vmc: {};
   /**
-   * The freshly-issued role Verifiable Endorsement Credential (opaque here).
+   * The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
    */
-  roleVec: {};
+  roleVac: {};
   /**
    * Whether the renewed membership carries a personhood assertion.
    */
@@ -74,7 +74,7 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "did",
         "vmc",
-        "roleVec",
+        "roleVac",
         "personhood",
         "personhoodChanged"
       ],
@@ -87,9 +87,9 @@ export const PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "The freshly-issued W3C Verifiable Membership Credential (opaque here)."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "The freshly-issued role Verifiable Endorsement Credential (opaque here)."
+          "description": "The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
         },
         "personhood": {
           "type": "boolean",
@@ -130,7 +130,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "required": [
         "did",
         "vmc",
-        "roleVec",
+        "roleVac",
         "personhood",
         "personhoodChanged"
       ],
@@ -143,9 +143,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "The freshly-issued W3C Verifiable Membership Credential (opaque here)."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "The freshly-issued role Verifiable Endorsement Credential (opaque here)."
+          "description": "The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
         },
         "personhood": {
           "type": "boolean",

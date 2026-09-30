@@ -12,7 +12,7 @@ class Response {
   const Response({
     required this.did,
     required this.vmc,
-    required this.roleVec,
+    required this.roleVac,
     required this.personhood,
     required this.personhoodChanged,
     this.ext,
@@ -22,7 +22,7 @@ class Response {
   factory Response.fromJson(Map<String, dynamic> json) => Response(
         did: json['did'] as String,
         vmc: json['vmc'] as Map<String, dynamic>,
-        roleVec: json['roleVec'] as Map<String, dynamic>,
+        roleVac: json['roleVac'] as Map<String, dynamic>,
         personhood: json['personhood'] as bool,
         personhoodChanged: json['personhoodChanged'] as bool,
         ext: json['ext'] as Map<String, dynamic>?,
@@ -33,8 +33,11 @@ class Response {
   /// The freshly-issued W3C Verifiable Membership Credential (opaque here).
   final Map<String, dynamic> vmc;
 
-  /// The freshly-issued role Verifiable Endorsement Credential (opaque here).
-  final Map<String, dynamic> roleVec;
+  /// The freshly-issued role credential (opaque here): a Verifiable Authority Credential
+  /// (`type` including `AuthorityCredential`) issued by the community with `issuerScope`
+  /// `public`, whose `credentialSubject.authority` is `{ scope: &lt;community DID&gt;,
+  /// actions: \["role:&lt;name&gt;"\] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
+  final Map<String, dynamic> roleVac;
 
   /// Whether the renewed membership carries a personhood assertion.
   final bool personhood;
@@ -47,7 +50,7 @@ class Response {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'did': did,
         'vmc': vmc,
-        'roleVec': roleVec,
+        'roleVac': roleVac,
         'personhood': personhood,
         'personhoodChanged': personhoodChanged,
         if (ext != null) 'ext': ext!,
@@ -88,11 +91,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/members/renew/0.1","title":"VTC Members Renew — payload","type":"object","additionalProperties":false,"properties":{"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Renew — response payload","type":"object","additionalProperties":false,"required":["did","vmc","roleVec","personhood","personhoodChanged"],"properties":{"did":{"type":"string","minLength":1},"vmc":{"type":"object","description":"The freshly-issued W3C Verifiable Membership Credential (opaque here)."},"roleVec":{"type":"object","description":"The freshly-issued role Verifiable Endorsement Credential (opaque here)."},"personhood":{"type":"boolean","description":"Whether the renewed membership carries a personhood assertion."},"personhoodChanged":{"type":"boolean","description":"Whether the personhood state changed on this renewal."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/members/renew/0.1","title":"VTC Members Renew — payload","type":"object","additionalProperties":false,"properties":{"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Renew — response payload","type":"object","additionalProperties":false,"required":["did","vmc","roleVac","personhood","personhoodChanged"],"properties":{"did":{"type":"string","minLength":1},"vmc":{"type":"object","description":"The freshly-issued W3C Verifiable Membership Credential (opaque here)."},"roleVac":{"type":"object","description":"The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"personhood":{"type":"boolean","description":"Whether the renewed membership carries a personhood assertion."},"personhoodChanged":{"type":"boolean","description":"Whether the personhood state changed on this renewal."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Renew — response payload","type":"object","additionalProperties":false,"required":["did","vmc","roleVec","personhood","personhoodChanged"],"properties":{"did":{"type":"string","minLength":1},"vmc":{"type":"object","description":"The freshly-issued W3C Verifiable Membership Credential (opaque here)."},"roleVec":{"type":"object","description":"The freshly-issued role Verifiable Endorsement Credential (opaque here)."},"personhood":{"type":"boolean","description":"Whether the renewed membership carries a personhood assertion."},"personhoodChanged":{"type":"boolean","description":"Whether the personhood state changed on this renewal."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Renew — response payload","type":"object","additionalProperties":false,"required":["did","vmc","roleVac","personhood","personhoodChanged"],"properties":{"did":{"type":"string","minLength":1},"vmc":{"type":"object","description":"The freshly-issued W3C Verifiable Membership Credential (opaque here)."},"roleVac":{"type":"object","description":"The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"personhood":{"type":"boolean","description":"Whether the renewed membership carries a personhood assertion."},"personhoodChanged":{"type":"boolean","description":"Whether the personhood state changed on this renewal."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

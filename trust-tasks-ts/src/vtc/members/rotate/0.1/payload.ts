@@ -31,9 +31,9 @@ export interface VTCMembersRotateResponsePayload {
    */
   vmc: {};
   /**
-   * Role credential re-issued to the new DID (opaque here).
+   * Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
    */
-  roleVec: {};
+  roleVac: {};
   ext?: Ext;
 }
 
@@ -111,7 +111,7 @@ export const PAYLOAD_SCHEMA = {
         "newDid",
         "method",
         "vmc",
-        "roleVec"
+        "roleVac"
       ],
       "properties": {
         "newDid": {
@@ -129,9 +129,9 @@ export const PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "Membership credential re-issued to the new DID (opaque here)."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "Role credential re-issued to the new DID (opaque here)."
+          "description": "Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -165,7 +165,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "newDid",
         "method",
         "vmc",
-        "roleVec"
+        "roleVac"
       ],
       "properties": {
         "newDid": {
@@ -183,9 +183,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "Membership credential re-issued to the new DID (opaque here)."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "Role credential re-issued to the new DID (opaque here)."
+          "description": "Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

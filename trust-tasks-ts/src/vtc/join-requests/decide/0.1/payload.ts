@@ -37,9 +37,9 @@ export interface VTCJoinRequestsDecideResponsePayload {
    */
   vmc?: {} | null;
   /**
-   * The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role.
+   * The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements.
    */
-  roleVec?: {} | null;
+  roleVac?: {} | null;
   ext?: Ext;
 }
 
@@ -131,12 +131,12 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."
         },
-        "roleVec": {
+        "roleVac": {
           "type": [
             "object",
             "null"
           ],
-          "description": "The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."
+          "description": "The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -191,12 +191,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           ],
           "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."
         },
-        "roleVec": {
+        "roleVac": {
           "type": [
             "object",
             "null"
           ],
-          "description": "The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."
+          "description": "The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

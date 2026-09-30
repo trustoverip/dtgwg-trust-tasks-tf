@@ -2830,31 +2830,31 @@ export interface EncryptionParams {
 }
 export interface Endorsement {
   /**
-   * Community-scoped identifier for this endorsement row.
+   * Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.
    */
   endorsementId: string;
   /**
-   * The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+   * The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.
    */
   typeUri: string;
   /**
-   * DID of the endorsement's subject (becomes credentialSubject.id).
+   * DID of the statement's subject (becomes credentialSubject.id).
    */
   subjectDid: string;
   /**
-   * The attested claim body, validated against the endorsement type's claimSchema when it declares one.
+   * The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
    */
   claim?: {};
   /**
-   * A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
+   * A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
    */
   issued: CredentialReference;
   /**
-   * The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.
+   * The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.
    */
   statusListIndex: number;
   /**
-   * When the endorsement was revoked, or null while live.
+   * When the statement was revoked, or null while live.
    */
   revokedAt?: string | null;
 }
@@ -3462,9 +3462,9 @@ export interface MemberResponse {
    */
   currentVmcId?: string | null;
   /**
-   * Id of the member's current role Verifiable Endorsement Credential, if issued.
+   * Id of the member's current role credential — a community-issued Verifiable Authority Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`.
    */
-  currentRoleVecId?: string | null;
+  currentRoleVacId?: string | null;
   /**
    * Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.
    */
