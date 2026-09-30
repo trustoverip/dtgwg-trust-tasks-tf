@@ -31,6 +31,28 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.24.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.8...trust-tasks-rs-v0.24.9) — 2026-09-30
+
+
+### Added
+
+- **specs**: Trust Tasks for the remaining VTA/VTC REST-only surfaces ([#692](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/692))
+
+Three REST operations had no Trust Task spec: vta/metrics/show/0.1 (the
+  VTA's Prometheus-shaped metrics, admin-only, reusing did-management's
+  shared MetricsSnapshot shape), vta/attestation/mnemonic-status/0.1 (the
+  super-admin check of the one-time mnemonic export window), and
+  vtc/vetting/hidden/publish/0.1 (turning on, or rotating, hidden-vetter
+  admission for a criterion).
+
+  auth/sign-out, community/branding, community/requested-attributes,
+  vetting/vetters (list), vetting/auto-grant and vetting/revocations
+  already have specs matching their REST routes; no gap there.
+
+  Regenerated Rust, TypeScript, Go and Dart bindings.
+
+
+
 ## [0.24.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.7...trust-tasks-rs-v0.24.8) — 2026-09-29
 
 
