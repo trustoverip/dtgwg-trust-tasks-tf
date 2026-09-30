@@ -11,6 +11,26 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.3.16 — 2026-09-30
+
+
+### Added
+
+- **specs**: Trust Tasks for the remaining VTA/VTC REST-only surfaces (#692)
+
+Three REST operations had no Trust Task spec: vta/metrics/show/0.1 (the
+  VTA's Prometheus-shaped metrics, admin-only, reusing did-management's
+  shared MetricsSnapshot shape), vta/attestation/mnemonic-status/0.1 (the
+  super-admin check of the one-time mnemonic export window), and
+  vtc/vetting/hidden/publish/0.1 (turning on, or rotating, hidden-vetter
+  admission for a criterion).
+
+  auth/sign-out, community/branding, community/requested-attributes,
+  vetting/vetters (list), vetting/auto-grant and vetting/revocations
+  already have specs matching their REST routes; no gap there.
+
+  Regenerated Rust, TypeScript, Go and Dart bindings.
+
 ## 0.3.15 — 2026-09-29
 
 
