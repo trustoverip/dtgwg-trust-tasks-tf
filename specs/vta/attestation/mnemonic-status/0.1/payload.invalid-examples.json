@@ -1,0 +1,34 @@
+[
+  {
+    "note": "The read takes no selector. Unknown top-level member is rejected.",
+    "payload": { "vtaId": "did:webvh:QmVtaScid:vta.example" }
+  },
+  {
+    "variant": "response",
+    "note": "All four members are required — a partial status leaves a caller unable to tell an expired window from one that was never active.",
+    "payload": {
+      "windowActive": false,
+      "alreadyExported": false
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`windowRemainingSecs` must be a non-negative integer, not negative.",
+    "payload": {
+      "windowActive": false,
+      "alreadyExported": true,
+      "entropyAvailable": false,
+      "windowRemainingSecs": -1
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`windowRemainingSecs` must be an integer, not a fraction of a second.",
+    "payload": {
+      "windowActive": true,
+      "alreadyExported": false,
+      "entropyAvailable": true,
+      "windowRemainingSecs": 12.5
+    }
+  }
+]

@@ -487,6 +487,7 @@ export * as VtaAppStatePutMany_v1_0 from "./vta/app-state/put-many/1.0/payload.j
 export * as VtaAppStatePut_v1_0 from "./vta/app-state/put/1.0/payload.js";
 export * as VtaAttestationConfigReport_v0_1 from "./vta/attestation/config-report/0.1/payload.js";
 export * as VtaAttestationMnemonicExport_v1_0 from "./vta/attestation/mnemonic-export/1.0/payload.js";
+export * as VtaAttestationMnemonicStatus_v0_1 from "./vta/attestation/mnemonic-status/0.1/payload.js";
 export * as VtaAttestationReport_v0_1 from "./vta/attestation/report/0.1/payload.js";
 export * as VtaAttestationStatus_v0_1 from "./vta/attestation/status/0.1/payload.js";
 export * as VtaBackupAbort_v1_0 from "./vta/backup/abort/1.0/payload.js";
@@ -539,6 +540,7 @@ export * as VtaManagementReloadServices_v1_0 from "./vta/management/reload-servi
 export * as VtaMemoryDelete_v0_1 from "./vta/memory/delete/0.1/payload.js";
 export * as VtaMemoryList_v0_1 from "./vta/memory/list/0.1/payload.js";
 export * as VtaMemoryPut_v0_1 from "./vta/memory/put/0.1/payload.js";
+export * as VtaMetricsShow_v0_1 from "./vta/metrics/show/0.1/payload.js";
 export * as VtaPasskeyVmsEnrollChallenge_v0_1 from "./vta/passkey-vms/enroll-challenge/0.1/payload.js";
 export * as VtaPasskeyVmsEnrollSubmit_v0_1 from "./vta/passkey-vms/enroll-submit/0.1/payload.js";
 export * as VtaPasskeyVmsList_v0_1 from "./vta/passkey-vms/list/0.1/payload.js";
@@ -700,6 +702,7 @@ export * as VtcSchemasRegister_v0_1 from "./vtc/schemas/register/0.1/payload.js"
 export * as VtcSchemasShow_v0_1 from "./vtc/schemas/show/0.1/payload.js";
 export * as VtcVettingAutoGrantShow_v0_1 from "./vtc/vetting/auto-grant/show/0.1/payload.js";
 export * as VtcVettingAutoGrantUpdate_v0_1 from "./vtc/vetting/auto-grant/update/0.1/payload.js";
+export * as VtcVettingHiddenPublish_v0_1 from "./vtc/vetting/hidden/publish/0.1/payload.js";
 export * as VtcVettingPcsChallenge_v0_1 from "./vtc/vetting/pcs-challenge/0.1/payload.js";
 export * as VtcVettingRevocationsList_v0_1 from "./vtc/vetting/revocations/list/0.1/payload.js";
 export * as VtcVettingRevokeStatement_v0_1 from "./vtc/vetting/revoke-statement/0.1/payload.js";
