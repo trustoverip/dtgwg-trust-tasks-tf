@@ -11,6 +11,16 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.4.1 — 2026-09-30
+
+
+### Specifications
+
+- **vtc/endorsements**: IDVC issuance and reserved type values, matching VTI (#695)
+
+Describe what the implementation (OpenVTC/verifiable-trust-infrastructure#1859)
+  does. All affected specs are `draft` and change in place.
+
 ## 0.4.0 — 2026-09-30
 
 

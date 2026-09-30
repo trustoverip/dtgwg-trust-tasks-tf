@@ -31,6 +31,18 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.25.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.25.0...trust-tasks-rs-v0.25.1) — 2026-09-30
+
+
+### Specifications
+
+- **vtc/endorsements**: IDVC issuance and reserved type values, matching VTI ([#695](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/695))
+
+Describe what the implementation (OpenVTC/verifiable-trust-infrastructure#1859)
+  does. All affected specs are `draft` and change in place.
+
+
+
 ## [0.25.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.24.9...trust-tasks-rs-v0.25.0) — 2026-09-30
 
 

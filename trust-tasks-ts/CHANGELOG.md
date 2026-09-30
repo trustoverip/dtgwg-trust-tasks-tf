@@ -11,6 +11,16 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.22.1 — 2026-09-30
+
+
+### Specifications
+
+- **vtc/endorsements**: IDVC issuance and reserved type values, matching VTI (#695)
+
+Describe what the implementation (OpenVTC/verifiable-trust-infrastructure#1859)
+  does. All affected specs are `draft` and change in place.
+
 ## 0.22.0 — 2026-09-30
 
 
