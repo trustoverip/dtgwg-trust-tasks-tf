@@ -32,7 +32,7 @@ export interface VTCMembersCredentialsResponsePayload {
    */
   membershipCredential?: {};
   /**
-   * The role Verifiable Endorsement Credential. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.
+   * The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.
    */
   roleCredential?: {};
   /**
@@ -121,7 +121,7 @@ export const PAYLOAD_SCHEMA = {
         "roleCredential": {
           "type": "object",
           "minProperties": 1,
-          "description": "The role Verifiable Endorsement Credential. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
+          "description": "The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
         },
         "memberVmc": {
           "type": "object",
@@ -189,7 +189,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "roleCredential": {
           "type": "object",
           "minProperties": 1,
-          "description": "The role Verifiable Endorsement Credential. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
+          "description": "The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2."
         },
         "memberVmc": {
           "type": "object",

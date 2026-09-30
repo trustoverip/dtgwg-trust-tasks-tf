@@ -50,9 +50,9 @@ related:
 
 ## Abstract
 
-The **VTC Members — Credentials** Trust Task returns the **credential bodies** a community holds for one member: the community-issued Verifiable Membership Credential, the member-issued reciprocal VMC that completes the edge, and the role Verifiable Endorsement Credential.
+The **VTC Members — Credentials** Trust Task returns the **credential bodies** a community holds for one member: the community-issued Verifiable Membership Credential, the member-issued reciprocal VMC that completes the edge, and the role credential — a Verifiable Authority Credential.
 
-[`vtc/members/show`](../../show/0.1/) already returns the *identifiers* — `currentVmcId`, `currentRoleVecId`, `memberVmcId` — and its schema says outright that the body is not echoed there. So an operator can see *that* a member holds a membership credential and cannot see *what it says*. This task is the read that closes that.
+[`vtc/members/show`](../../show/0.1/) already returns the *identifiers* — `currentVmcId`, `currentRoleVacId`, `memberVmcId` — and its schema says outright that the body is not echoed there. So an operator can see *that* a member holds a membership credential and cannot see *what it says*. This task is the read that closes that.
 
 ## Status of this Document
 
@@ -81,10 +81,12 @@ The response shape there is right; the registry was missing a task. This is the 
 Every credential member is OPTIONAL, and **absent means the community holds no such document** — which is a real answer, not a failure. A member who has been granted membership but never returned the reciprocal credential is exactly the case this task exists to make visible.
 
 - **`membershipCredential`** — the community-issued VMC. The grant.
-- **`roleCredential`** — the role VEC.
+- **`roleCredential`** — the role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }`, the shape [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md) issues.
 - **`memberVmc`** — the member-issued reciprocal VMC. The acknowledgement.
 - **`memberVmcReceivedAt`** — when that acknowledgement arrived. Paired with `memberVmc`; a maintainer **MUST NOT** send one without the other.
 - **`memberVmcBound`** — whether the acknowledgement's `digest` was verified against the grant.
+
+Each VMC is a DTG `MembershipCredential` as the DTG Credentials Core Specification defines it — `type` `["VerifiableCredential", "DTGCredential", "MembershipCredential"]` and `@context` `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]`. The grant is issued by the community with `issuerScope` `public`, the only scope a community can truthfully declare. The acknowledgement is issued by the member, with whatever `issuerScope` the member declared for that identifier, and carries `credentialSubject.digestMultibase` over the grant with its top-level `proof` removed; that digest is what `memberVmcBound` reports on.
 
 Credential bodies are carried as opaque objects. The schema does not describe their internals, matching [`vtc/relationships/list/0.2`](../../../relationships/list/0.2/), which returns `vrcJsonld` the same way: a credential carries a proof over its own bytes, and a schema that constrained the shape would invite a maintainer to normalise it and destroy the signature.
 
@@ -122,6 +124,8 @@ Bodies are returned **verbatim**. A maintainer **MUST NOT** re-serialise, re-ord
 
 ### A complete membership edge
 
+The acknowledgement's `digestMultibase` is the real digest of the grant as printed. Proofs are omitted from the credential bodies for brevity; a real body carries its issuer's proof, returned verbatim.
+
 ```json
 {
   "id": "urn:uuid:00000000-0000-4000-8000-000000000002",
@@ -133,16 +137,35 @@ Bodies are returned **verbatim**. A maintainer **MUST NOT** re-serialise, re-ord
   "payload": {
     "did": "did:example:member",
     "membershipCredential": {
-      "@context": ["https://www.w3.org/ns/credentials/v2"],
-      "type": ["VerifiableCredential", "VerifiableMembershipCredential"],
+      "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
+      "type": ["VerifiableCredential", "DTGCredential", "MembershipCredential"],
       "issuer": "did:web:community.example",
+      "issuerScope": "public",
+      "validFrom": "2026-01-01T00:00:00Z",
       "credentialSubject": { "id": "did:example:member" }
     },
+    "roleCredential": {
+      "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
+      "type": ["VerifiableCredential", "DTGCredential", "AuthorityCredential"],
+      "issuer": "did:web:community.example",
+      "issuerScope": "public",
+      "validFrom": "2026-01-01T00:00:00Z",
+      "validUntil": "2027-01-01T00:00:00Z",
+      "credentialSubject": {
+        "id": "did:example:member",
+        "authority": { "scope": "did:web:community.example", "actions": ["role:moderator"] }
+      }
+    },
     "memberVmc": {
-      "@context": ["https://www.w3.org/ns/credentials/v2"],
-      "type": ["VerifiableCredential", "VerifiableMembershipCredential"],
+      "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
+      "type": ["VerifiableCredential", "DTGCredential", "MembershipCredential"],
       "issuer": "did:example:member",
-      "credentialSubject": { "id": "did:web:community.example" }
+      "issuerScope": "directed",
+      "validFrom": "2026-01-01T00:00:00Z",
+      "credentialSubject": {
+        "id": "did:web:community.example",
+        "digestMultibase": "zQmeQE7CZruz3436MTFqnj2mtbMhP8dfzgRWdiBiJ5bEUPt"
+      }
     },
     "memberVmcReceivedAt": "2026-01-01T00:00:00Z",
     "memberVmcBound": true
@@ -165,9 +188,11 @@ Bodies are returned **verbatim**. A maintainer **MUST NOT** re-serialise, re-ord
   "payload": {
     "did": "did:example:member",
     "membershipCredential": {
-      "@context": ["https://www.w3.org/ns/credentials/v2"],
-      "type": ["VerifiableCredential", "VerifiableMembershipCredential"],
+      "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
+      "type": ["VerifiableCredential", "DTGCredential", "MembershipCredential"],
       "issuer": "did:web:community.example",
+      "issuerScope": "public",
+      "validFrom": "2026-01-01T00:00:00Z",
       "credentialSubject": { "id": "did:example:member" }
     },
     "memberVmcBound": false

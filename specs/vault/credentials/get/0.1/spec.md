@@ -104,13 +104,13 @@ A credential whose `lifecycle` is `archived` or `deleted` **MUST NOT** be return
   "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
   "payload": {
     "credential": {
-      "@context": ["https://www.w3.org/ns/credentials/v2"],
-      "type": ["VerifiableCredential", "MembershipCredential"],
+      "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
+      "type": ["VerifiableCredential", "DTGCredential", "MembershipCredential"],
       "issuer": "did:web:community.example",
+      "issuerScope": "public",
       "validFrom": "2026-01-01T00:00:00Z",
       "credentialSubject": {
-        "id": "did:example:holder",
-        "memberOf": "did:web:community.example"
+        "id": "did:example:holder"
       },
       "proof": {
         "type": "DataIntegrityProof",
