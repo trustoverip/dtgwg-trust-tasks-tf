@@ -9,6 +9,7 @@ pub mod did_templates;
 pub mod health;
 pub mod management;
 pub mod memory;
+pub mod metrics;
 pub mod passkey_vms;
 pub mod restore;
 pub mod services;

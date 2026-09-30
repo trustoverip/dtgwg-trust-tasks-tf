@@ -1,0 +1,83 @@
+[
+  {
+    "note": "criterionId is required — there is no criterion to qualify without it.",
+    "payload": { "dripPerTick": 3 }
+  },
+  {
+    "note": "criterionId must not be empty.",
+    "payload": { "criterionId": "" }
+  },
+  {
+    "note": "livePeriods entries must be YYYY-MM, not a full date.",
+    "payload": { "criterionId": "vet-1", "livePeriods": ["2026-09-01"] }
+  },
+  {
+    "note": "dripPerTick must be at least one — a rate of zero tokens per tick is not a rate.",
+    "payload": { "criterionId": "vet-1", "dripPerTick": 0 }
+  },
+  {
+    "note": "An event's tiers must not be empty — a menu with nothing on it is not a menu.",
+    "payload": {
+      "criterionId": "vet-1",
+      "events": [
+        {
+          "eventId": "summit-2026",
+          "startDate": "2026-10-01",
+          "endDate": "2026-10-03",
+          "tiers": []
+        }
+      ]
+    }
+  },
+  {
+    "note": "An event requires startDate, endDate and at least one tier — a bare eventId names nothing to open.",
+    "payload": {
+      "criterionId": "vet-1",
+      "events": [{ "eventId": "summit-2026" }]
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected — approvedBy belongs inside one event, not at the top level.",
+    "payload": { "criterionId": "vet-1", "approvedBy": "did:example:admin" }
+  },
+  {
+    "variant": "response",
+    "note": "stored, published and requirementsDigest are all required on a response.",
+    "payload": { "criterionId": "vet-1" }
+  },
+  {
+    "variant": "response",
+    "note": "published.events MUST NOT carry approvedBy or graceDays — those are stored-only, dropped from what an applicant reads.",
+    "payload": {
+      "criterionId": "vet-1",
+      "stored": {
+        "suite": "ps-ddh-bls12381",
+        "hvk": "z6MkhelperKey1",
+        "tvk": "z6MktokenKey1",
+        "livePeriods": ["2026-09"],
+        "liveTokenLabels": ["token/2026-09"],
+        "dripPerTick": 3,
+        "events": []
+      },
+      "published": {
+        "suite": "ps-ddh-bls12381",
+        "helperKey": "z6MkhelperKey1",
+        "tokenKey": "z6MktokenKey1",
+        "vetterLabels": ["vetter/2026-09"],
+        "tokenLabels": ["token/2026-09"],
+        "dripPerTick": 3,
+        "events": [
+          {
+            "eventId": "summit-2026",
+            "startDate": "2026-10-01",
+            "endDate": "2026-10-03",
+            "groupFloor": 3,
+            "tiers": [{ "name": "desk", "dripPerTick": 5 }],
+            "approvedBy": "did:example:admin"
+          }
+        ]
+      },
+      "requirementsDigest": "zQmDigest1"
+    }
+  }
+]

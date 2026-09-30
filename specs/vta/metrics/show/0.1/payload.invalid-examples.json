@@ -1,0 +1,34 @@
+[
+  {
+    "note": "The read takes no selector. Unknown top-level member is rejected.",
+    "payload": { "metric": "did_hosting_requests_total" }
+  },
+  {
+    "variant": "response",
+    "note": "`snapshot` is required — the read always answers with a snapshot, never an acknowledgement alone.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "`counters`, `gauges` and `histograms` are always present, even when the VTA exposes none of a kind — omitting one does not mean \"none\", it means the field was dropped.",
+    "payload": {
+      "snapshot": {
+        "takenAt": "2026-09-27T09:00:01Z",
+        "gauges": [],
+        "histograms": []
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A counter's `value` must be a number, not a string.",
+    "payload": {
+      "snapshot": {
+        "takenAt": "2026-09-27T09:00:01Z",
+        "counters": [{ "name": "vta_requests_total", "value": "184213" }],
+        "gauges": [],
+        "histograms": []
+      }
+    }
+  }
+]
