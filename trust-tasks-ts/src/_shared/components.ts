@@ -235,7 +235,7 @@ export type DriftType =
   | "protectionWeakened"
   | "bootstrapMissing";
 /**
- * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`. Absent for a community-defined endorsement type that maps onto the generic `EndorsementCredential`.
+ * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.
  */
 export type DtgType = string;
 /**
@@ -2830,42 +2830,42 @@ export interface EncryptionParams {
 }
 export interface Endorsement {
   /**
-   * Community-scoped identifier for this endorsement row.
+   * Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant.
    */
   endorsementId: string;
   /**
-   * The registered endorsement type this VEC asserts; see vtc/endorsement-types/*.
+   * The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*.
    */
   typeUri: string;
   /**
-   * DID of the endorsement's subject (becomes credentialSubject.id).
+   * DID of the statement's subject (becomes credentialSubject.id).
    */
   subjectDid: string;
   /**
-   * The attested claim body, validated against the endorsement type's claimSchema when it declares one.
+   * The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one.
    */
   claim?: {};
   /**
-   * A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
+   * A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it.
    */
   issued: CredentialReference;
   /**
-   * The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community.
+   * The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community.
    */
   statusListIndex: number;
   /**
-   * When the endorsement was revoked, or null while live.
+   * When the statement was revoked, or null while live.
    */
   revokedAt?: string | null;
 }
 export interface EndorsementType {
   /**
-   * The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
+   * The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.
    */
   typeUri: string;
   description?: string;
   /**
-   * Optional JSON Schema the endorsement's claims must satisfy (opaque here).
+   * Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.
    */
   claimSchema?: {};
   createdAt?: string;
@@ -3462,9 +3462,9 @@ export interface MemberResponse {
    */
   currentVmcId?: string | null;
   /**
-   * Id of the member's current role Verifiable Endorsement Credential, if issued.
+   * Id of the member's current role credential — a community-issued Verifiable Authority Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`.
    */
-  currentRoleVecId?: string | null;
+  currentRoleVacId?: string | null;
   /**
    * Whether the community has asserted that this member is a distinct real person. Read-only here: it is set and cleared by the personhood verbs, and cleared by a renewal-policy downgrade. Load-bearing rather than informational — a community that recognises members of another community may gate on it, so a consumer that cannot read it cannot make that decision.
    */
@@ -5878,7 +5878,7 @@ export interface VettingRequirements {
    */
   version: string;
   /**
-   * The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register.
+   * The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.
    */
   statementType: string;
   /**
@@ -5917,7 +5917,7 @@ export interface VettingRequirements {
    */
   eligibleVetters: {
     /**
-     * The role named in a community-issued `CommunityRole` endorsement credential (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that credential.
+     * The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.
      */
     role: string;
   };

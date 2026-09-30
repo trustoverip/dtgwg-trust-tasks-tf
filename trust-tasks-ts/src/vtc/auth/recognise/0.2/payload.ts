@@ -8,7 +8,7 @@ import type { Ext } from "../../../../_shared/components.js";
 
 export interface VTCAuthRecognisePayload {
   /**
-   * A holder-signed W3C Verifiable Presentation embedding the foreign membership and endorsement credentials in `verifiableCredential`.
+   * A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.
    *
    * The holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.
    */
@@ -71,7 +71,7 @@ export const PAYLOAD_SCHEMA = {
   "properties": {
     "presentation": {
       "type": "object",
-      "description": "A holder-signed W3C Verifiable Presentation embedding the foreign membership and endorsement credentials in `verifiableCredential`.\n\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject."
+      "description": "A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.\n\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject."
     },
     "ext": {
       "$ref": "#/$defs/Ext"

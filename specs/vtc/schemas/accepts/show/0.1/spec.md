@@ -117,7 +117,7 @@ The community answers with the sub-schema reachable via `$anchor: "response"`. A
       },
       "vetting": {
         "version": "0.1",
-        "statementType": "https://riverside.example/endorsements/IdentityVetting",
+        "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
         "minStatements": 2,
         "acceptedMethods": [
           "inPerson",

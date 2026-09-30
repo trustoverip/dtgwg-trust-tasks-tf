@@ -185,7 +185,7 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^[A-Za-z][A-Za-z0-9]*$",
-      "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`. Absent for a community-defined endorsement type that maps onto the generic `EndorsementCredential`."
+      "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register."
     },
     "CredentialTypeUri": {
       "title": "CredentialTypeUri",
@@ -302,7 +302,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 128,
       "pattern": "^[A-Za-z][A-Za-z0-9]*$",
-      "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`. Absent for a community-defined endorsement type that maps onto the generic `EndorsementCredential`."
+      "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register."
     },
     "CredentialTypeUri": {
       "title": "CredentialTypeUri",

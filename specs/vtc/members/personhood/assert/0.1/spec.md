@@ -48,13 +48,13 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Members Personhood — Assert** Trust Task asserts that the member `did` is a person. The member submits a W3C Verifiable Presentation whose `holder` is `did`, whose `proof.challenge` is the `challengeId` from a prior [`vtc/members/personhood/challenge`](../../challenge/0.1/), and which carries at least one credential satisfying the community's active personhood policy. On success the community sets the personhood flag and re-issues the member's membership (`vmc`) and role (`roleVec`) credentials.
+The **VTC Members Personhood — Assert** Trust Task asserts that the member `did` is a person. The member submits a W3C Verifiable Presentation whose `holder` is `did`, whose `proof.challenge` is the `challengeId` from a prior [`vtc/members/personhood/challenge`](../../challenge/0.1/), and which carries at least one credential satisfying the community's active personhood policy. On success the community sets the personhood flag and re-issues the member's membership (`vmc`) and role (`roleVac`) credentials.
 
 ## Conformance
 
 Producer: supply `did` and the `presentation`. The presentation's holder MUST equal `did` and its `proof.challenge` MUST be the paired `challengeId`.
 
-Consumer: resolve the member (`notFound` if absent). Verify the presentation; if the challenge is unknown/expired return `challengeExpired`, and if verification fails, the holder mismatches, or the community's personhood policy is not satisfied, return `presentationInvalid` and change nothing. Otherwise set personhood, re-issue the credentials, and return `{ did, personhood: true, vmc, roleVec }`. Audit the assertion.
+Consumer: resolve the member (`notFound` if absent). Verify the presentation; if the challenge is unknown/expired return `challengeExpired`, and if verification fails, the holder mismatches, or the community's personhood policy is not satisfied, return `presentationInvalid` and change nothing. Otherwise set personhood, re-issue the credentials, and return `{ did, personhood: true, vmc, roleVac }`. Audit the assertion.
 
 ## Authorization
 

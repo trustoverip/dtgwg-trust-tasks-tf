@@ -712,7 +712,7 @@ mod conformance {
     //! in `payload.invalid-examples.json` (validate feature).
     #[test]
     fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1\",\n  \"threadId\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n  \"issuedAt\": \"2026-10-02T11:30:00Z\",\n  \"payload\": {\n    \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\",\n    \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n    \"reason\": \"newInformation\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-10-02T11:30:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n  }\n}\n";
+        const JSON: &str = "{\n  \"id\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/revoke-statement/0.1\",\n  \"threadId\": \"urn:uuid:2a4c6e8f-1b3d-4f5a-9c7e-0d2f4a6b8c01\",\n  \"issuer\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol\",\n  \"recipient\": \"did:webvh:QmVtcScid:kernel-vtc.example\",\n  \"issuedAt\": \"2026-10-02T11:30:00Z\",\n  \"payload\": {\n    \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\",\n    \"statementDigestMultibase\": \"zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8\",\n    \"reason\": \"newInformation\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmCarolScid1:kernel-vtc.example:carol#key-1\",\n    \"created\": \"2026-10-02T11:30:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z63jiSzsVJshBfyZwcr6nUopHo5M1QnBnWJHtwTpdNEFeD7KoX5rezJcGeoY8AVuTSo5Q3uH2KqMoEZk68qqGu3AR\"\n  }\n}\n";
         let doc: crate::TrustTask<super::Payload> =
             serde_json::from_str(JSON).expect("deserialize request example");
         let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -744,7 +744,7 @@ mod conformance {
             ),
             (
                 "Reasons are lowerCamelCase (SPEC §4.10): `newInformation`, not `new-information`.",
-                "{\n  \"reason\": \"new-information\",\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"reason\": \"new-information\",\n  \"statementDigestMultibase\": \"zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
                 "The digest is a multibase multihash, not a bare hex SHA-256 — a verifier must be able to tell which algorithm produced it.",
@@ -752,19 +752,19 @@ mod conformance {
             ),
             (
                 "The notice names the statement; it does not carry it. Sending the whole credential would hand the community the applicant's statement before the applicant chose to submit it.",
-                "{\n  \"statement\": {\n    \"type\": [\n      \"VerifiableCredential\",\n      \"EndorsementCredential\"\n    ]\n  },\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"statement\": {\n    \"credentialSubject\": {\n      \"predicate\": \"https://registry.trustoverip.org/dtg/vsc/vetted/1\"\n    },\n    \"type\": [\n      \"VerifiableCredential\",\n      \"DTGCredential\",\n      \"StatementCredential\"\n    ]\n  },\n  \"statementDigestMultibase\": \"zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
                 "No free-text explanation. A withdrawal reason in prose is a statement about the applicant sent to the community that will decide on them; the closed `reason` set is all this task carries.",
-                "{\n  \"details\": \"I think the applicant used someone else's passport.\",\n  \"reason\": \"other\",\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"details\": \"I think the applicant used someone else's passport.\",\n  \"reason\": \"other\",\n  \"statementDigestMultibase\": \"zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
             (
                 "`statementId` is a URI, not a bare local handle.",
-                "{\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"statement-42\"\n}",
+                "{\n  \"statementDigestMultibase\": \"zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8\",\n  \"statementId\": \"statement-42\"\n}",
             ),
             (
                 "`ext` keys must be reverse-DNS namespaces (SPEC §4.5.1).",
-                "{\n  \"ext\": {\n    \"mine\": {}\n  },\n  \"statementDigestMultibase\": \"zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
+                "{\n  \"ext\": {\n    \"mine\": {}\n  },\n  \"statementDigestMultibase\": \"zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8\",\n  \"statementId\": \"urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601\"\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

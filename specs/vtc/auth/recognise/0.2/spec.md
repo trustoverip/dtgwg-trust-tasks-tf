@@ -2,7 +2,7 @@
 slug: vtc/auth/recognise
 version: "0.2"
 title: VTC Auth — Recognise
-summary: Mint a scoped cross-community session by presenting a foreign community's endorsement + membership credentials; maps the foreign role to a local one via policy.
+summary: Mint a scoped cross-community session by presenting a foreign community's role (authority) and membership credentials; maps the foreign role to a local one via policy.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: governance
@@ -39,7 +39,7 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vtc/auth/recognise:credentialInvalid
-    meaning: The vec or vmc failed proof verification, was expired, or was revoked via credentialStatus.
+    meaning: The role credential (VAC) or membership credential (VMC) failed proof verification, was expired, or was revoked via credentialStatus.
     retryable: false
   - code: vtc/auth/recognise:issuerNotRecognised
     meaning: The foreign issuer DID is not in this community's cross_community_roles policy.
@@ -54,7 +54,12 @@ errorCodes:
 The **VTC Auth — Recognise** Trust Task lets a member of a *foreign* Verifiable
 Trust Community obtain a scoped session in *this* community by presenting a
 **holder-signed Verifiable Presentation** embedding their foreign-issued
-membership and endorsement credentials.
+membership credential and role credential. The role credential is a DTG
+Verifiable Authority Credential (`AuthorityCredential`) issued by the foreign
+community, whose `credentialSubject.authority` is
+`{ "scope": <foreign community DID>, "actions": ["role:<name>"] }`; the foreign
+role is the `<name>` a `role:` action carries. `0.1` called it `vec`, from when
+roles were carried in endorsement credentials.
 
 The community's `cross_community_roles` policy decides whether the foreign
 issuer is recognised and which **local** role the foreign role maps to.

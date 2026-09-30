@@ -67,7 +67,7 @@ export interface VettingRequirements {
    */
   version: string;
   /**
-   * The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register.
+   * The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.
    */
   statementType: string;
   /**
@@ -106,7 +106,7 @@ export interface VettingRequirements {
    */
   eligibleVetters: {
     /**
-     * The role named in a community-issued `CommunityRole` endorsement credential (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that credential.
+     * The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.
      */
     role: string;
   };
@@ -274,7 +274,7 @@ export const PAYLOAD_SCHEMA = {
           "format": "uri",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register."
+          "description": "The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count."
         },
         "minStatements": {
           "type": "integer",
@@ -341,7 +341,7 @@ export const PAYLOAD_SCHEMA = {
               "minLength": 1,
               "maxLength": 128,
               "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "description": "The role named in a community-issued `CommunityRole` endorsement credential (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that credential."
+              "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential."
             }
           },
           "description": "How a vetter's eligibility is established."
@@ -637,7 +637,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "format": "uri",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register."
+          "description": "The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count."
         },
         "minStatements": {
           "type": "integer",
@@ -704,7 +704,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "minLength": 1,
               "maxLength": 128,
               "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-              "description": "The role named in a community-issued `CommunityRole` endorsement credential (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that credential."
+              "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential."
             }
           },
           "description": "How a vetter's eligibility is established."

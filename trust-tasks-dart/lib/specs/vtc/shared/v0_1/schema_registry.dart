@@ -23,9 +23,12 @@ extension type const SchemaKind(String value) {
   static const List<SchemaKind> values = <SchemaKind>[issues, accepts];
 }
 
-/// The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`.
-/// Absent for a community-defined endorsement type that maps onto the generic
-/// `EndorsementCredential`.
+/// The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`,
+/// `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type
+/// outside the DTG catalog. A statement type is identified by its predicate, not by a
+/// subtype: every DTG statement is a `StatementCredential`, and which statements a
+/// community accepts is the set of predicates it registers with
+/// vtc/endorsement-types/register.
 typedef DtgType = String;
 
 /// An administrator's description of the entry, shown in administration surfaces. Free
@@ -272,9 +275,11 @@ class VettingRequirementsEligibleVetters {
         role: json['role'] as String,
       );
 
-  /// The role named in a community-issued `CommunityRole` endorsement credential (see
-  /// `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that
-  /// credential.
+  /// The role a statement's issuer must hold, matched as the action `role:&lt;role&gt;` in a
+  /// Verifiable Authority Credential (`AuthorityCredential`) the community issued to
+  /// that issuer, whose `authority.scope` is the community's DID (see
+  /// `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such
+  /// a credential.
   final String role;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -425,9 +430,12 @@ class VettingRequirements {
   /// Version of this requirements object's shape. `0.1` for the members defined here.
   final String version;
 
-  /// The endorsement type URI a counted vetting statement carries as
-  /// `credentialSubject.endorsement.type`, as registered with the community via
-  /// vtc/endorsement-types/register.
+  /// The predicate IRI a counted vetting statement carries in
+  /// `credentialSubject.predicate` —
+  /// `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's
+  /// identity-vetting predicate, or a predicate in a namespace the community controls —
+  /// registered as one the community accepts via vtc/endorsement-types/register. A
+  /// statement under any other predicate does not count.
   final String statementType;
 
   /// How many counted statements are needed, counting each vetter once however many DIDs

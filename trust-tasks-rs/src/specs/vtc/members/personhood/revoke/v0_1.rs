@@ -271,8 +271,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 ///      "type": "boolean",
 ///      "const": false
 ///    },
-///    "roleVec": {
-///      "description": "Newly-minted role credential; omitted on an idempotent no-op.",
+///    "roleVac": {
+///      "description": "Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.",
 ///      "type": "object"
 ///    },
 ///    "vmc": {
@@ -294,13 +294,13 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///Always false on success.
     pub personhood: bool,
-    ///Newly-minted role credential; omitted on an idempotent no-op.
+    ///Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.
     #[serde(
-        rename = "roleVec",
+        rename = "roleVac",
         default,
         skip_serializing_if = "::serde_json::Map::is_empty"
     )]
-    pub role_vec: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    pub role_vac: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
     pub vmc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -437,7 +437,7 @@ pub mod builder {
         did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         personhood: ::std::result::Result<bool, ::std::string::String>,
-        role_vec: ::std::result::Result<
+        role_vac: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
@@ -452,7 +452,7 @@ pub mod builder {
                 did: Err("no value supplied for did".to_string()),
                 ext: Ok(Default::default()),
                 personhood: Err("no value supplied for personhood".to_string()),
-                role_vec: Ok(Default::default()),
+                role_vac: Ok(Default::default()),
                 vmc: Ok(Default::default()),
             }
         }
@@ -488,16 +488,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for personhood: {e}"));
             self
         }
-        pub fn role_vec<T>(mut self, value: T) -> Self
+        pub fn role_vac<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
                 ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             >,
             T::Error: ::std::fmt::Display,
         {
-            self.role_vec = value
+            self.role_vac = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for role_vec: {e}"));
+                .map_err(|e| format!("error converting supplied value for role_vac: {e}"));
             self
         }
         pub fn vmc<T>(mut self, value: T) -> Self
@@ -520,7 +520,7 @@ pub mod builder {
                 did: value.did?,
                 ext: value.ext?,
                 personhood: value.personhood?,
-                role_vec: value.role_vec?,
+                role_vac: value.role_vac?,
                 vmc: value.vmc?,
             })
         }
@@ -531,7 +531,7 @@ pub mod builder {
                 did: Ok(value.did),
                 ext: Ok(value.ext),
                 personhood: Ok(value.personhood),
-                role_vec: Ok(value.role_vec),
+                role_vac: Ok(value.role_vac),
                 vmc: Ok(value.vmc),
             }
         }
@@ -543,7 +543,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": false,\n          \"description\": \"Always false on success.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVec\": {\n          \"description\": \"Newly-minted role credential; omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\"\n      ],\n      \"title\": \"VTC Members Personhood-Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The member whose personhood is revoked.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Members Personhood-Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": false,\n          \"description\": \"Always false on success.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVac\": {\n          \"description\": \"Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\"\n      ],\n      \"title\": \"VTC Members Personhood-Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/personhood/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The member whose personhood is revoked.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Members Personhood-Revoke — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -553,7 +553,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": false,\n          \"description\": \"Always false on success.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVec\": {\n          \"description\": \"Newly-minted role credential; omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\"\n      ],\n      \"title\": \"VTC Members Personhood-Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": false,\n          \"description\": \"Always false on success.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVac\": {\n          \"description\": \"Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\"\n      ],\n      \"title\": \"VTC Members Personhood-Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

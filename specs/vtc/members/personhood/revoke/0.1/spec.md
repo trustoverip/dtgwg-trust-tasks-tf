@@ -47,7 +47,7 @@ The **VTC Members Personhood — Revoke** Trust Task clears the personhood flag 
 
 Producer: supply `did`. Carry a proof.
 
-Consumer: verify the community-admin capability. Resolve the member (`notFound` if absent). Clear personhood and re-issue the credentials with `personhood: false`, returning `{ did, personhood: false, vmc, roleVec }`; on a no-op omit `vmc`/`roleVec`. Audit the revocation.
+Consumer: verify the community-admin capability. Resolve the member (`notFound` if absent). Clear personhood and re-issue the credentials with `personhood: false`, returning `{ did, personhood: false, vmc, roleVac }`; on a no-op omit `vmc`/`roleVac`. Audit the revocation.
 
 ## Security & Privacy
 

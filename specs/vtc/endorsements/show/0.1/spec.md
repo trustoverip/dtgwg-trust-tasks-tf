@@ -2,7 +2,7 @@
 slug: vtc/endorsements/show
 version: "0.1"
 title: VTC Endorsements — Show
-summary: Fetch one issued endorsement credential by id, including its status-list slot and revocation state.
+summary: Fetch one statement credential the community issued through vtc/endorsements/issue, by id, including its status-list slot and revocation state.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: credentials

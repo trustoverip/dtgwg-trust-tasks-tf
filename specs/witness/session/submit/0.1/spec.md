@@ -72,6 +72,36 @@ domain}`. The witness verifies it and — in the **mandatory** `#response` —
 delivers the **Verifiable Witness Credential** attesting the witnessed
 exchange.
 
+## The credential delivered
+
+A Verifiable Witness Credential is not a credential type of its own. It is a
+DTG **Verifiable Statement Credential** under the predicate
+`https://registry.trustoverip.org/dtg/vsc/witnessed/1`, whose profile the DTG
+VSC predicate registry publishes; the credential envelope belongs to the DTG
+Credentials Core Specification. What this specification fixes is how it relates
+to the session:
+
+- `@context` is `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]`,
+  and `type` is `["VerifiableCredential", "DTGCredential", "StatementCredential"]`.
+- `issuer` is the witness — the session document's `recipient` — and
+  `issuerScope` is `directed` or `public`. The profile's minimum is `directed`:
+  both parties, and the community whose witnessing policy applies, must be able
+  to recognise the witness, so a `pairwise` declaration cannot describe it
+  truthfully.
+- `credentialSubject.predicate` is `https://registry.trustoverip.org/dtg/vsc/witnessed/1`,
+  and `credentialSubject.object.digestMultibase` is the digest, computed as the
+  DTG Credentials Core Specification's Digest Encoding defines, of the
+  relationship credential the submitting party presented in `vp` and the
+  witness observed it issue.
+- `credentialSubject.id` is the **issuer of that credential** — the submitting
+  party, which opened this session. The profile binds each VWC to one direction
+  of the edge, so the two sessions of a witnessed exchange yield two VWCs, each
+  naming its own party.
+- `credentialSubject.witnessContext` is OPTIONAL, with the members the profile
+  defines.
+- `taskContext` and `taskDigestMultibase` cite the session document, as the
+  next section requires.
+
 ## This response is the outcome evidence
 
 The `#response` of this specification is the session's **terminal success

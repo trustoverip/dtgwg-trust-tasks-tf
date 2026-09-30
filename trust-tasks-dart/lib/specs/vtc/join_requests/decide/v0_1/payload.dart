@@ -31,7 +31,7 @@ class Response {
     required this.requestId,
     required this.status,
     this.vmc,
-    this.roleVec,
+    this.roleVac,
     this.ext,
   });
 
@@ -40,7 +40,7 @@ class Response {
         requestId: json['requestId'] as String,
         status: ResponseStatus(json['status'] as String),
         vmc: json['vmc'] as Map<String, dynamic>?,
-        roleVec: json['roleVec'] as Map<String, dynamic>?,
+        roleVac: json['roleVac'] as Map<String, dynamic>?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -56,10 +56,14 @@ class Response {
   /// something the community already had in hand when it decided.
   final Map<String, dynamic>? vmc;
 
-  /// The endorsement credential carrying the role this decision granted, delivered
-  /// inline alongside `vmc` and on the same reasoning. Present only where the decision
-  /// admitted the applicant and granted a role.
-  final Map<String, dynamic>? roleVec;
+  /// The role credential this decision issued: a Verifiable Authority Credential (`type`
+  /// including `AuthorityCredential`) issued by the community with `issuerScope`
+  /// `public`, whose `credentialSubject.authority` is `{ scope: &lt;community DID&gt;,
+  /// actions: \["role:&lt;name&gt;"\] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
+  /// Delivered inline alongside `vmc` and on the same reasoning. Present only where the
+  /// decision admitted the applicant and granted a role. Formerly `roleVec`; roles are
+  /// authority, not endorsements.
+  final Map<String, dynamic>? roleVac;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -67,7 +71,7 @@ class Response {
         'requestId': requestId,
         'status': status.value,
         if (vmc != null) 'vmc': vmc!,
-        if (roleVec != null) 'roleVec': roleVec!,
+        if (roleVac != null) 'roleVac': roleVac!,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -143,11 +147,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/join-requests/decide/0.1","title":"VTC Join-Requests Decide — payload","type":"object","additionalProperties":false,"required":["id","decision"],"properties":{"id":{"type":"string","minLength":1,"description":"The join request being decided."},"decision":{"type":"string","enum":["approved","rejected"],"description":"The operator\'s decision. `approved` admits the applicant as a member; `rejected` refuses them."},"reason":{"type":"string","maxLength":1024,"description":"Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Join-Requests Decide — response payload","description":"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.","type":"object","additionalProperties":false,"required":["requestId","status"],"properties":{"requestId":{"type":"string","minLength":1},"status":{"type":"string","enum":["approved","rejected"],"description":"The request\'s post-decision state; echoes the decision."},"vmc":{"type":["object","null"],"description":"The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\\n\\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."},"roleVec":{"type":["object","null"],"description":"The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/join-requests/decide/0.1","title":"VTC Join-Requests Decide — payload","type":"object","additionalProperties":false,"required":["id","decision"],"properties":{"id":{"type":"string","minLength":1,"description":"The join request being decided."},"decision":{"type":"string","enum":["approved","rejected"],"description":"The operator\'s decision. `approved` admits the applicant as a member; `rejected` refuses them."},"reason":{"type":"string","maxLength":1024,"description":"Optional operator rationale, recorded in the audit trail alongside the decision. Most useful with `rejected`."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Join-Requests Decide — response payload","description":"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.","type":"object","additionalProperties":false,"required":["requestId","status"],"properties":{"requestId":{"type":"string","minLength":1},"status":{"type":"string","enum":["approved","rejected"],"description":"The request\'s post-decision state; echoes the decision."},"vmc":{"type":["object","null"],"description":"The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\\n\\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."},"roleVac":{"type":["object","null"],"description":"The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Join-Requests Decide — response payload","description":"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.","type":"object","additionalProperties":false,"required":["requestId","status"],"properties":{"requestId":{"type":"string","minLength":1},"status":{"type":"string","enum":["approved","rejected"],"description":"The request\'s post-decision state; echoes the decision."},"vmc":{"type":["object","null"],"description":"The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\\n\\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."},"roleVec":{"type":["object","null"],"description":"The endorsement credential carrying the role this decision granted, delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Join-Requests Decide — response payload","description":"The success response to a vtc/join-requests/decide request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/join-requests/decide/0.1#response.","type":"object","additionalProperties":false,"required":["requestId","status"],"properties":{"requestId":{"type":"string","minLength":1},"status":{"type":"string","enum":["approved","rejected"],"description":"The request\'s post-decision state; echoes the decision."},"vmc":{"type":["object","null"],"description":"The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\\n\\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided."},"roleVac":{"type":["object","null"],"description":"The role credential this decision issued: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Delivered inline alongside `vmc` and on the same reasoning. Present only where the decision admitted the applicant and granted a role. Formerly `roleVec`; roles are authority, not endorsements."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

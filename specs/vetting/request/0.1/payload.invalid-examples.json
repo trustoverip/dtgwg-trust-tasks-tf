@@ -7,7 +7,7 @@
     "note": "`joinDid` is required even though it repeats the issuer: it is what a vetter's client checks the document issuer against, so a request relayed under another identity is refused rather than silently re-attributed.",
     "payload": {
       "community": "did:webvh:QmVtcScid:kernel-vtc.example",
-      "requirementsDigest": "zQmYZQN9M169SXXg1sZdpNCDAjoVajkrPLaFhJ6A4mecQfC"
+      "requirementsDigest": "zQmVmw2GuXQsXe1yJf5xwU2TPvhP5mtwpQ5ACLwK76RAiEV"
     }
   },
   {

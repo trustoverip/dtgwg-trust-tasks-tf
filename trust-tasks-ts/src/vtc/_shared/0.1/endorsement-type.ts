@@ -4,7 +4,7 @@
  */
 
 /**
- * Shared type for the vtc/endorsement-types/* family: one operator-registered endorsement type a community recognises.
+ * Shared type for the vtc/endorsement-types/* family: one operator-registered statement predicate a community accepts. Each entry is a predicate IRI a DTG Verifiable Statement Credential (`StatementCredential`) carries in `credentialSubject.predicate` — a DTG VSC predicate registry IRI such as `https://registry.trustoverip.org/dtg/vsc/vetted/1`, or an IRI in a namespace the community controls whose definition follows the registry's predicate definition format. The registered set is the community's accept-list: a verifier applying the community's policy fails closed, rejecting a statement whose predicate is not registered rather than processing it as a generic statement. Roles are not endorsements and are never registered here — a role is conferred by a Verifiable Authority Credential (see vtc/vetting/vetters/grant). The family and field names are kept from when statements were endorsement types.
  */
 export interface VTCSharedEndorsementTypeDefinitions {
   [k: string]: unknown | undefined;

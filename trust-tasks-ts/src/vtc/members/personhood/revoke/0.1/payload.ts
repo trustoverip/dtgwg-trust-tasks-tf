@@ -24,9 +24,9 @@ export interface VTCMembersPersonhoodRevokeResponsePayload {
    */
   vmc?: {};
   /**
-   * Newly-minted role credential; omitted on an idempotent no-op.
+   * Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op.
    */
-  roleVec?: {};
+  roleVac?: {};
   ext?: Ext;
 }
 
@@ -97,9 +97,9 @@ export const PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "Newly-minted role credential; omitted on an idempotent no-op."
+          "description": "Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -147,9 +147,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "Newly-minted membership credential carrying personhood false; omitted on an idempotent no-op."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "Newly-minted role credential; omitted on an idempotent no-op."
+          "description": "Newly-minted role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues. Omitted on an idempotent no-op."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

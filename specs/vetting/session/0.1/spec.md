@@ -90,36 +90,47 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 A session is **its own exchange**, conducted inside the request exchange, and two rules follow. They mirror [`witness/session`](../../../witness/session/0.1/spec.md) for the same reasons.
 
-1. **This document's `id` names the session.** Per [SPEC §4.9.1](/SPEC.md#491-naming-an-exchange-from-outside-the-framework), a citation naming an exchange as evidence names the innermost exchange that attests the event, by the `id` of the document that opened it. The vetting happened in *this* exchange, not in the request exchange, whose documents say only that a vetter agreed to meet. A Vetting Statement issued for this session **MUST** carry this document's `id` as `taskContext`, and **SHOULD** carry this document's *task digest* ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)) as `taskDigestMultibase`, so the citation is bound to this document rather than to anything that reuses its `id`.
+1. **This document's `id` names the session.** Per [SPEC §4.9.1](/SPEC.md#491-naming-an-exchange-from-outside-the-framework), a citation naming an exchange as evidence names the innermost exchange that attests the event, by the `id` of the document that opened it. The vetting happened in *this* exchange, not in the request exchange, whose documents say only that a vetter agreed to meet. A Vetting Statement issued for this session **MUST** carry this document's `id` as `taskContext`, and **MUST** carry this document's *task digest* ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)) as `taskDigestMultibase`, so the citation is bound to this document rather than to anything that reuses its `id`. The `vetted` predicate's profile requires both.
 2. **Every document of the session carries `parentThreadId`.** A producer **MUST** set `parentThreadId` ([SPEC §4.9.2](/SPEC.md#492-the-parentthreadid-member)) to the request exchange's `threadId` on every document of this exchange, error responses included. A consumer **MUST NOT** reject a document solely for its absence.
 
-The statement is a DTG `EndorsementCredential` whose `credentialSubject.endorsement` is the identity-vetting body defined in [`vetting/_shared/0.1/identity-vetting`](../../_shared/0.1/identity-vetting.schema.json). Its credential envelope belongs to DTG credentials. What this specification fixes is how the statement relates to the session. Its `issuer` is the session's `issuer`, and `credentialSubject.id` is the card's `publisher`. `endorsement.community` is the session's `domain` and `endorsement.method` its `method`. `endorsement.identityCommitment` is copied from the card, and `endorsement.cardDigestMultibase` is the card digest defined below. The statement **MUST** carry an `id`, which is what a vetter later names to withdraw it.
+The statement is a DTG **Verifiable Statement Credential** (VSC) under the predicate `https://registry.trustoverip.org/dtg/vsc/vetted/1`, whose profile is published in the DTG VSC predicate registry. It is not an endorsement: the vetter records a check it carried out, not a favourable view of the applicant, and the predicate — not a type string — carries that meaning. Its credential envelope belongs to the DTG Credentials Core Specification. What this specification fixes is how the statement relates to the session:
 
-The statement below is the one Carol issues for the session in this document's examples. Its `taskDigestMultibase` and `cardDigestMultibase` are the real values for the documents as printed.
+- `@context` is `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]`, and `type` is `["VerifiableCredential", "DTGCredential", "StatementCredential"]`.
+- `issuer` is the session's `issuer`, and `issuerScope` is `directed` or `public`. The profile's minimum is `directed`: the vetter's member DID must be recognisable to the community that weighs the statement, so a `pairwise` declaration cannot describe it truthfully, and a community **MUST NOT** count a statement that declares one.
+- `taskContext` and `taskDigestMultibase` cite this document, as rule 1 above requires.
+- `credentialSubject.id` is the card's `publisher`, and `credentialSubject.predicate` is `https://registry.trustoverip.org/dtg/vsc/vetted/1`.
+- `credentialSubject.object.value` is the body defined in [`vetting/_shared/0.1/identity-vetting`](../../_shared/0.1/identity-vetting.schema.json), whose members are exactly those of the predicate's object schema. `community` is the session's `domain` and `method` its `method`. `documentClasses` lists the documentation the vetter relied on, and is empty or absent where it relied on none. `identityCommitment` is copied from the card, and `cardDigestMultibase` is the card digest defined below.
+
+The statement **MUST** carry an `id`, which is what a vetter later names to withdraw it.
+
+The statement below is the one Carol issues for the session in this document's examples. Its `taskDigestMultibase` and `cardDigestMultibase` are the real values for the documents as printed; its `proofValue` is illustrative.
 
 ```json
 {
-  "@context": ["https://www.w3.org/ns/credentials/v2", "https://firstperson.network/credentials/dtg/v1"],
+  "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
   "id": "urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601",
-  "type": ["VerifiableCredential", "DTGCredential", "EndorsementCredential"],
+  "type": ["VerifiableCredential", "DTGCredential", "StatementCredential"],
   "issuer": "did:webvh:QmCarolScid1:kernel-vtc.example:carol",
+  "issuerScope": "directed",
   "validFrom": "2026-09-17T15:09:00Z",
   "validUntil": "2027-01-15T15:09:00Z",
   "taskContext": "urn:uuid:9a7e4c21-5b3d-4e8f-a1c2-3d4e5f6a7b01",
   "taskDigestMultibase": "zQmWAWEtpUqE3xd3LUpZ8GryGrZMCqH1A5D7bZcayvEfJTK",
   "credentialSubject": {
     "id": "did:webvh:QmAliceScid1:alice.example",
-    "endorsement": {
-      "type": "https://firstperson.network/endorsements/identity-vetting/0.1",
-      "community": "did:webvh:QmVtcScid:kernel-vtc.example",
-      "method": "video",
-      "documentClasses": ["passport"],
-      "claimsVerified": ["name.legal"],
-      "livenessConfirmed": true,
-      "identityCommitment": "zQmT7GFcSjCY7YwuK5RP3TNNF8wp7fnCfMMYjMeatbbWo7b",
-      "cardDigestMultibase": "zQmYn4rU7vALWT8K9nC4vD8EcSZXFh8ZrCBDFUXgXo2pcH5",
-      "declaredRelationship": "communityColleague",
-      "attestationTextDigest": "zQmappH2ogZX2jVEmxitPLHKtA82EmxJjkPWo3szBErmNFj"
+    "predicate": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
+    "object": {
+      "value": {
+        "community": "did:webvh:QmVtcScid:kernel-vtc.example",
+        "method": "video",
+        "documentClasses": ["passport"],
+        "claimsVerified": ["name.legal"],
+        "livenessConfirmed": true,
+        "identityCommitment": "zQmT7GFcSjCY7YwuK5RP3TNNF8wp7fnCfMMYjMeatbbWo7b",
+        "cardDigestMultibase": "zQmYn4rU7vALWT8K9nC4vD8EcSZXFh8ZrCBDFUXgXo2pcH5",
+        "declaredRelationship": "communityColleague",
+        "attestationTextDigest": "zQmappH2ogZX2jVEmxitPLHKtA82EmxJjkPWo3szBErmNFj"
+      }
     }
   },
   "proof": {

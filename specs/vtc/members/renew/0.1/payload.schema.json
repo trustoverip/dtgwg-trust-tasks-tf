@@ -11,11 +11,11 @@
       "title": "VTC Members Renew — response payload",
       "type": "object",
       "additionalProperties": false,
-      "required": ["did", "vmc", "roleVec", "personhood", "personhoodChanged"],
+      "required": ["did", "vmc", "roleVac", "personhood", "personhoodChanged"],
       "properties": {
         "did": { "type": "string", "minLength": 1 },
         "vmc": { "type": "object", "description": "The freshly-issued W3C Verifiable Membership Credential (opaque here)." },
-        "roleVec": { "type": "object", "description": "The freshly-issued role Verifiable Endorsement Credential (opaque here)." },
+        "roleVac": { "type": "object", "description": "The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues." },
         "personhood": { "type": "boolean", "description": "Whether the renewed membership carries a personhood assertion." },
         "personhoodChanged": { "type": "boolean", "description": "Whether the personhood state changed on this renewal." },
         "ext": { "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }

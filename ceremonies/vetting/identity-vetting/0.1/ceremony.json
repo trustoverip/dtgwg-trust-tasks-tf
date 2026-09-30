@@ -50,7 +50,7 @@
       "type": "https://trusttasks.org/spec/credential-exchange/issue/0.1",
       "issuer": "vetter",
       "recipient": "applicant",
-      "description": "Delivers the Vetting Statement: an EndorsementCredential whose identity-vetting endorsement cites the session by taskContext. One of the two ways the enactment ends.",
+      "description": "Delivers the Vetting Statement: a StatementCredential under the predicate https://registry.trustoverip.org/dtg/vsc/vetted/1 that cites the session by taskContext and taskDigestMultibase. One of the two ways the enactment ends.",
       "optional": true,
       "prev": ["session"],
       "terminal": true,

@@ -78,7 +78,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming **vetter** (`issuer`):
 
-1. Sends the notice from the DID that issued the statement, to the community named in the statement's `endorsement.community`.
+1. Sends the notice from the DID that issued the statement, to the community named in the statement's `credentialSubject.object.value.community`.
 2. Sets `statementDigestMultibase` over the statement exactly as it issued it, `proof` included.
 3. **SHOULD** tell the applicant that it withdrew the statement. Whether it also tells the applicant why is its own choice; this task does not carry the reason to the applicant.
 4. **SHOULD** mark the statement withdrawn in its own records, so that it neither re-sends nor relies on it.
@@ -105,7 +105,7 @@ A vetter needs no justification, and the community does not weigh one. The `reas
 
 ## Definitions
 
-**Vetting Statement** — the `EndorsementCredential` a vetter issues after a [`vetting/session`](../../../../vetting/session/0.1/spec.md), carrying an identity-vetting endorsement. It has an `id`.
+**Vetting Statement** — the Verifiable Statement Credential (`StatementCredential`) a vetter issues after a [`vetting/session`](../../../../vetting/session/0.1/spec.md), under the predicate `https://registry.trustoverip.org/dtg/vsc/vetted/1`. It has an `id`.
 
 **Notice** — a request under this task. It names a statement; it never carries one.
 
@@ -129,7 +129,7 @@ The digest is the real value for the statement shown in [`vetting/session`](../.
   "issuedAt": "2026-10-02T11:30:00Z",
   "payload": {
     "statementId": "urn:uuid:7e5d3c1b-9f8a-4b6c-a2d1-e0f9a8b7c601",
-    "statementDigestMultibase": "zQmYimQAvAKzznkjph8xTTpuLhf21jAiUPMy7qdBp7qsU7Z",
+    "statementDigestMultibase": "zQmbbYmkMsiznb5v6ZKZyjtmcpxGf6Ka6QhAX9A6hALcoM8",
     "reason": "newInformation"
   },
   "proof": {

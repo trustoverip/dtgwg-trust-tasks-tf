@@ -48,7 +48,7 @@
         "newDid",
         "method",
         "vmc",
-        "roleVec"
+        "roleVac"
       ],
       "properties": {
         "newDid": {
@@ -66,9 +66,9 @@
           "type": "object",
           "description": "Membership credential re-issued to the new DID (opaque here)."
         },
-        "roleVec": {
+        "roleVac": {
           "type": "object",
-          "description": "Role credential re-issued to the new DID (opaque here)."
+          "description": "Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
         },
         "ext": {
           "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"

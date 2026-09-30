@@ -41,8 +41,9 @@ type MemberResponse struct {
 	// Id of the member's current Verifiable Membership Credential, if issued.
 	CurrentVmcID *string `json:"currentVmcId,omitempty"`
 
-	// Id of the member's current role Verifiable Endorsement Credential, if issued.
-	CurrentRoleVecID *string `json:"currentRoleVecId,omitempty"`
+	// Id of the member's current role credential — a community-issued Verifiable Authority
+	// Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`.
+	CurrentRoleVacID *string `json:"currentRoleVacId,omitempty"`
 
 	// Whether the community has asserted that this member is a distinct real person.
 	// Read-only here: it is set and cleared by the personhood verbs, and cleared by a

@@ -127,7 +127,7 @@ Each descriptor carries `id`, `types` and `status`; `issuerDid`, `purpose`, `val
     "credentials": [
       {
         "id": "cred-7f3a91c2",
-        "types": ["VerifiableCredential", "MembershipCredential"],
+        "types": ["VerifiableCredential", "DTGCredential", "MembershipCredential"],
         "issuerDid": "did:web:community.example",
         "purpose": "membership",
         "status": "valid",

@@ -54,7 +54,7 @@ errorCodes:
           type: string
           maxLength: 512
   - code: vtc/schemas/accepts/register:unregisteredStatementType
-    meaning: "`vetting.statementType` is not a registered endorsement type. Register it with vtc/endorsement-types/register first."
+    meaning: "`vetting.statementType` is not a predicate the community has registered. Register it with vtc/endorsement-types/register first."
     retryable: false
   - code: vtc/schemas/accepts/register:invalidVetting
     meaning: "`vetting` breaks a rule its schema cannot state — a method floor naming a method not in `acceptedMethods`, floors summing past `minStatements`, or similar — so no applicant could satisfy it."
@@ -91,7 +91,7 @@ A conforming **community** (`recipient`):
 
 1. **MUST** refuse a caller without administrator standing with `permissionDenied`.
 2. **MUST** trim surrounding whitespace from `id`, and **MUST** refuse, with `malformedRequest`, one that is empty after trimming.
-3. **MUST** refuse, in this order: `invalidQuery` for a query that does not parse as DCQL; `unregisteredType` for a query referencing a type not in the schema registry; `unregisteredStatementType` for `vetting.statementType` not registered as an endorsement type; `invalidVetting` for vetting requirements no applicant could satisfy; `notPublishable` for a criterion the join manifest could not publish. Nothing is stored unless every check passes.
+3. **MUST** refuse, in this order: `invalidQuery` for a query that does not parse as DCQL; `unregisteredType` for a query referencing a type not in the schema registry; `unregisteredStatementType` for a `vetting.statementType` predicate not registered through vtc/endorsement-types/register; `invalidVetting` for vetting requirements no applicant could satisfy; `notPublishable` for a criterion the join manifest could not publish. Nothing is stored unless every check passes.
 4. **MUST** replace any existing criterion with the same `id`, recording the caller and the execution time.
 5. **MUST** audit the registration, naming the criterion id and the administrator, and answer with the criterion it stored.
 
@@ -138,7 +138,7 @@ A community administrator (`issuer`) sends the criterion to the community (`reci
     "description": "Show a membership credential from a partner community, and be vetted by two members.",
     "vetting": {
       "version": "0.1",
-      "statementType": "https://riverside.example/endorsements/IdentityVetting",
+      "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
       "minStatements": 2,
       "acceptedMethods": [
         "inPerson",
@@ -185,7 +185,7 @@ The community answers with the sub-schema reachable via `$anchor: "response"`: t
       "description": "Show a membership credential from a partner community, and be vetted by two members.",
       "vetting": {
         "version": "0.1",
-        "statementType": "https://riverside.example/endorsements/IdentityVetting",
+        "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
         "minStatements": 2,
         "acceptedMethods": [
           "inPerson",

@@ -42,7 +42,7 @@ pub mod error {
 ///  ],
 ///  "properties": {
 ///    "claimSchema": {
-///      "description": "Optional JSON Schema the endorsement's claims must satisfy (opaque here).",
+///      "description": "Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.",
 ///      "type": "object"
 ///    },
 ///    "createdAt": {
@@ -58,7 +58,7 @@ pub mod error {
 ///      "maxLength": 1024
 ///    },
 ///    "typeUri": {
-///      "description": "The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.",
+///      "description": "The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.",
 ///      "type": "string",
 ///      "maxLength": 512,
 ///      "minLength": 1
@@ -73,7 +73,7 @@ pub mod error {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct EndorsementType {
-    ///Optional JSON Schema the endorsement's claims must satisfy (opaque here).
+    ///Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.
     #[serde(
         rename = "claimSchema",
         default,
@@ -95,7 +95,7 @@ pub struct EndorsementType {
     pub created_by_did: ::std::option::Option<::std::string::String>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<EndorsementTypeDescription>,
-    ///The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
+    ///The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.
     #[serde(rename = "typeUri")]
     pub type_uri: EndorsementTypeTypeUri,
 }
@@ -172,13 +172,13 @@ impl<'de> ::serde::Deserialize<'de> for EndorsementTypeDescription {
             })
     }
 }
-///The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
+///The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "description": "The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.",
+///  "description": "The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.",
 ///  "type": "string",
 ///  "maxLength": 512,
 ///  "minLength": 1
@@ -367,7 +367,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "claimSchema": {
-///      "description": "Optional JSON Schema the endorsement's claims must satisfy (opaque here).",
+///      "description": "Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here).",
 ///      "type": "object"
 ///    },
 ///    "description": {
@@ -378,6 +378,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "typeUri": {
+///      "description": "The predicate IRI to accept: a DTG VSC predicate registry IRI or a community-namespace IRI.",
 ///      "type": "string",
 ///      "maxLength": 512,
 ///      "minLength": 1
@@ -391,7 +392,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Payload {
-    ///Optional JSON Schema the endorsement's claims must satisfy (opaque here).
+    ///Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here).
     #[serde(
         rename = "claimSchema",
         default,
@@ -402,6 +403,7 @@ pub struct Payload {
     pub description: ::std::option::Option<PayloadDescription>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///The predicate IRI to accept: a DTG VSC predicate registry IRI or a community-namespace IRI.
     #[serde(rename = "typeUri")]
     pub type_uri: PayloadTypeUri,
 }
@@ -478,12 +480,13 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDescription {
             })
     }
 }
-///`PayloadTypeUri`
+///The predicate IRI to accept: a DTG VSC predicate registry IRI or a community-namespace IRI.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
+///  "description": "The predicate IRI to accept: a DTG VSC predicate registry IRI or a community-namespace IRI.",
 ///  "type": "string",
 ///  "maxLength": 512,
 ///  "minLength": 1
@@ -849,7 +852,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema the endorsement's claims must satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsement-types/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claimSchema\": {\n      \"description\": \"Optional JSON Schema the endorsement's claims must satisfy (opaque here).\",\n      \"type\": \"object\"\n    },\n    \"description\": {\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"typeUri\": {\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"typeUri\"\n  ],\n  \"title\": \"VTC Endorsement-Types Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsement-types/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claimSchema\": {\n      \"description\": \"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here).\",\n      \"type\": \"object\"\n    },\n    \"description\": {\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"typeUri\": {\n      \"description\": \"The predicate IRI to accept: a DTG VSC predicate registry IRI or a community-namespace IRI.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"typeUri\"\n  ],\n  \"title\": \"VTC Endorsement-Types Register — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -859,7 +862,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema the endorsement's claims must satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -881,7 +884,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 pub mod error_codes {
     /// `vtc/endorsement-types/register:reserved`
     ///
-    /// The typeUri is a workspace-reserved URI (e.g. CommunityRole) and cannot be registered.
+    /// The typeUri is one the implementation reserves for its own use and cannot be registered.
     ///
     /// Declared `retryable: false`.
     pub const RESERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -890,7 +893,7 @@ pub mod error_codes {
     };
     /// `vtc/endorsement-types/register:exists`
     ///
-    /// An endorsement type with this typeUri is already registered.
+    /// This typeUri is already registered.
     ///
     /// Declared `retryable: false`.
     pub const EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

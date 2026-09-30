@@ -38,7 +38,7 @@ class MemberResponse {
     required this.departurePreference,
     this.statusListIndex,
     this.currentVmcId,
-    this.currentRoleVecId,
+    this.currentRoleVacId,
     this.personhood,
     this.personhoodAssertedAt,
     this.joinedViaInvitation,
@@ -58,7 +58,7 @@ class MemberResponse {
             json['departurePreference'] as String),
         statusListIndex: json['statusListIndex'] as int?,
         currentVmcId: json['currentVmcId'] as String?,
-        currentRoleVecId: json['currentRoleVecId'] as String?,
+        currentRoleVacId: json['currentRoleVacId'] as String?,
         personhood: json['personhood'] as bool?,
         personhoodAssertedAt: json['personhoodAssertedAt'] as String?,
         joinedViaInvitation: json['joinedViaInvitation'] as bool?,
@@ -89,8 +89,10 @@ class MemberResponse {
   /// Id of the member's current Verifiable Membership Credential, if issued.
   final String? currentVmcId;
 
-  /// Id of the member's current role Verifiable Endorsement Credential, if issued.
-  final String? currentRoleVecId;
+  /// Id of the member's current role credential — a community-issued Verifiable
+  /// Authority Credential conferring `role:&lt;name&gt;` — if issued. Formerly
+  /// `currentRoleVecId`.
+  final String? currentRoleVacId;
 
   /// Whether the community has asserted that this member is a distinct real person.
   /// Read-only here: it is set and cleared by the personhood verbs, and cleared by a
@@ -132,7 +134,7 @@ class MemberResponse {
         'departurePreference': departurePreference.value,
         if (statusListIndex != null) 'statusListIndex': statusListIndex!,
         if (currentVmcId != null) 'currentVmcId': currentVmcId!,
-        if (currentRoleVecId != null) 'currentRoleVecId': currentRoleVecId!,
+        if (currentRoleVacId != null) 'currentRoleVacId': currentRoleVacId!,
         if (personhood != null) 'personhood': personhood!,
         if (personhoodAssertedAt != null)
           'personhoodAssertedAt': personhoodAssertedAt!,

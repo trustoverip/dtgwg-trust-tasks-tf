@@ -8,15 +8,15 @@ import type { CredentialId, CredentialReference, Endorsement, Ext } from "../../
 
 export interface VTCEndorsementsIssuePayload {
   /**
-   * DID of the endorsement's subject (becomes credentialSubject.id).
+   * DID of the statement's subject (becomes credentialSubject.id).
    */
   subjectDid: string;
   /**
-   * A type already registered via vtc/endorsement-types/register; unregistered types are refused.
+   * The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused.
    */
   typeUri: string;
   /**
-   * The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one.
+   * The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one.
    */
   claim: {};
   /**
@@ -28,7 +28,7 @@ export interface VTCEndorsementsIssuePayload {
 export interface VTCEndorsementsIssueResponsePayload {
   endorsement: Endorsement;
   /**
-   * The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
+   * The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead.
    */
   credential: {};
   ext?: Ext;
@@ -73,18 +73,18 @@ export const PAYLOAD_SCHEMA = {
     "subjectDid": {
       "type": "string",
       "pattern": "^did:",
-      "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+      "description": "DID of the statement's subject (becomes credentialSubject.id)."
     },
     "typeUri": {
       "type": "string",
       "minLength": 1,
       "maxLength": 512,
-      "description": "A type already registered via vtc/endorsement-types/register; unregistered types are refused."
+      "description": "The predicate IRI the statement carries as `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/endorses/1` for a favourable claim with community-defined content, or another predicate the community registered. It MUST already be registered via vtc/endorsement-types/register; unregistered predicates are refused."
     },
     "claim": {
       "type": "object",
       "minProperties": 1,
-      "description": "The claim body to attest. Capped at 8 KiB serialised, and validated against the type's claimSchema when it declares one."
+      "description": "The claim body to attest, issued as the statement's `credentialSubject.object.value`. Capped at 8 KiB serialised, and validated against the registered predicate's claimSchema when it declares one."
     },
     "validitySeconds": {
       "type": "integer",
@@ -111,7 +111,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "credential": {
           "type": "object",
-          "description": "The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
+          "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -144,31 +144,31 @@ export const PAYLOAD_SCHEMA = {
         "endorsementId": {
           "type": "string",
           "minLength": 1,
-          "description": "Community-scoped identifier for this endorsement row."
+          "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant."
         },
         "typeUri": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*."
+          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
         },
         "subjectDid": {
           "type": "string",
           "pattern": "^did:",
-          "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+          "description": "DID of the statement's subject (becomes credentialSubject.id)."
         },
         "claim": {
           "type": "object",
-          "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
+          "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one."
         },
         "issued": {
           "$ref": "#/$defs/CredentialReference",
-          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
+          "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
           "minimum": 0,
-          "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community."
+          "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community."
         },
         "revokedAt": {
           "type": [
@@ -176,7 +176,7 @@ export const PAYLOAD_SCHEMA = {
             "null"
           ],
           "format": "date-time",
-          "description": "When the endorsement was revoked, or null while live."
+          "description": "When the statement was revoked, or null while live."
         }
       }
     },
@@ -238,7 +238,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "credential": {
           "type": "object",
-          "description": "The signed VEC just minted. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
+          "description": "The signed statement just minted: a DTG Verifiable Statement Credential (`StatementCredential`) issued by the community with `issuerScope` public, `credentialSubject.predicate` = `typeUri` and `credentialSubject.object.value` = `claim`. Present only here: handing back the credential is the point of an issue call, and the issuer is the only party that can. Reads carry `endorsement.issued` — the reference — instead."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -271,31 +271,31 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "endorsementId": {
           "type": "string",
           "minLength": 1,
-          "description": "Community-scoped identifier for this endorsement row."
+          "description": "Community-scoped identifier for this row. The name is legacy; it identifies a statement, and vtc/endorsements/revoke also takes the `endorsementId` of a role credential issued by vtc/vetting/vetters/grant."
         },
         "typeUri": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "The registered endorsement type this VEC asserts; see vtc/endorsement-types/*."
+          "description": "The registered predicate IRI the statement carries as `credentialSubject.predicate`; see vtc/endorsement-types/*."
         },
         "subjectDid": {
           "type": "string",
           "pattern": "^did:",
-          "description": "DID of the endorsement's subject (becomes credentialSubject.id)."
+          "description": "DID of the statement's subject (becomes credentialSubject.id)."
         },
         "claim": {
           "type": "object",
-          "description": "The attested claim body, validated against the endorsement type's claimSchema when it declares one."
+          "description": "The attested claim body — the statement's `credentialSubject.object.value` — validated against the registered predicate's claimSchema when it declares one."
         },
         "issued": {
           "$ref": "#/$defs/CredentialReference",
-          "description": "A pointer to the issued VEC — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
+          "description": "A pointer to the issued statement credential — its identifier and lifetime, not its bytes. `endorsements/issue` additionally returns the credential itself, because that is the one call whose caller has no other way to receive it."
         },
         "statusListIndex": {
           "type": "integer",
           "minimum": 0,
-          "description": "The endorsement's slot on the community's shared Revocation status list. Published, so a foreign verifier can check revocation without contacting this community."
+          "description": "The statement's slot on the community's shared Revocation status list, referenced by its `credentialStatus`. Published, so a foreign verifier can check revocation without contacting this community."
         },
         "revokedAt": {
           "type": [
@@ -303,7 +303,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "null"
           ],
           "format": "date-time",
-          "description": "When the endorsement was revoked, or null while live."
+          "description": "When the statement was revoked, or null while live."
         }
       }
     },

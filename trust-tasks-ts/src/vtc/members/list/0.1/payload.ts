@@ -194,12 +194,12 @@ export const PAYLOAD_SCHEMA = {
           ],
           "description": "Id of the member's current Verifiable Membership Credential, if issued."
         },
-        "currentRoleVecId": {
+        "currentRoleVacId": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+          "description": "Id of the member's current role credential — a community-issued Verifiable Authority Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`."
         },
         "personhood": {
           "type": "boolean",
@@ -355,12 +355,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           ],
           "description": "Id of the member's current Verifiable Membership Credential, if issued."
         },
-        "currentRoleVecId": {
+        "currentRoleVacId": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Id of the member's current role Verifiable Endorsement Credential, if issued."
+          "description": "Id of the member's current role credential — a community-issued Verifiable Authority Credential conferring `role:<name>` — if issued. Formerly `currentRoleVecId`."
         },
         "personhood": {
           "type": "boolean",

@@ -264,7 +264,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 ///  "required": [
 ///    "did",
 ///    "personhood",
-///    "roleVec",
+///    "roleVac",
 ///    "vmc"
 ///  ],
 ///  "properties": {
@@ -280,8 +280,8 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 ///      "type": "boolean",
 ///      "const": true
 ///    },
-///    "roleVec": {
-///      "description": "Re-issued role credential (opaque here).",
+///    "roleVac": {
+///      "description": "Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.",
 ///      "type": "object"
 ///    },
 ///    "vmc": {
@@ -303,9 +303,9 @@ pub struct Response {
     pub ext: ::std::option::Option<Ext>,
     ///Always true on success — the flag flipped or stayed asserted.
     pub personhood: bool,
-    ///Re-issued role credential (opaque here).
-    #[serde(rename = "roleVec")]
-    pub role_vec: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.
+    #[serde(rename = "roleVac")]
+    pub role_vac: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     ///Re-issued membership credential carrying the asserted personhood (opaque here).
     pub vmc: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
 }
@@ -460,7 +460,7 @@ pub mod builder {
         did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         personhood: ::std::result::Result<bool, ::std::string::String>,
-        role_vec: ::std::result::Result<
+        role_vac: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
@@ -475,7 +475,7 @@ pub mod builder {
                 did: Err("no value supplied for did".to_string()),
                 ext: Ok(Default::default()),
                 personhood: Err("no value supplied for personhood".to_string()),
-                role_vec: Err("no value supplied for role_vec".to_string()),
+                role_vac: Err("no value supplied for role_vac".to_string()),
                 vmc: Err("no value supplied for vmc".to_string()),
             }
         }
@@ -511,16 +511,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for personhood: {e}"));
             self
         }
-        pub fn role_vec<T>(mut self, value: T) -> Self
+        pub fn role_vac<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<
                 ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             >,
             T::Error: ::std::fmt::Display,
         {
-            self.role_vec = value
+            self.role_vac = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for role_vec: {e}"));
+                .map_err(|e| format!("error converting supplied value for role_vac: {e}"));
             self
         }
         pub fn vmc<T>(mut self, value: T) -> Self
@@ -543,7 +543,7 @@ pub mod builder {
                 did: value.did?,
                 ext: value.ext?,
                 personhood: value.personhood?,
-                role_vec: value.role_vec?,
+                role_vac: value.role_vac?,
                 vmc: value.vmc?,
             })
         }
@@ -554,7 +554,7 @@ pub mod builder {
                 did: Ok(value.did),
                 ext: Ok(value.ext),
                 personhood: Ok(value.personhood),
-                role_vec: Ok(value.role_vec),
+                role_vac: Ok(value.role_vac),
                 vmc: Ok(value.vmc),
             }
         }
@@ -566,7 +566,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": true,\n          \"description\": \"Always true on success — the flag flipped or stayed asserted.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVec\": {\n          \"description\": \"Re-issued role credential (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Re-issued membership credential carrying the asserted personhood (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\",\n        \"vmc\",\n        \"roleVec\"\n      ],\n      \"title\": \"VTC Members Personhood-Assert — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/personhood/assert/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The member asserting personhood; MUST equal the presentation's holder.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"presentation\": {\n      \"description\": \"A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"presentation\"\n  ],\n  \"title\": \"VTC Members Personhood-Assert — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": true,\n          \"description\": \"Always true on success — the flag flipped or stayed asserted.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVac\": {\n          \"description\": \"Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Re-issued membership credential carrying the asserted personhood (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\",\n        \"vmc\",\n        \"roleVac\"\n      ],\n      \"title\": \"VTC Members Personhood-Assert — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/personhood/assert/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The member asserting personhood; MUST equal the presentation's holder.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"presentation\": {\n      \"description\": \"A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"presentation\"\n  ],\n  \"title\": \"VTC Members Personhood-Assert — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -576,7 +576,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": true,\n          \"description\": \"Always true on success — the flag flipped or stayed asserted.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVec\": {\n          \"description\": \"Re-issued role credential (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Re-issued membership credential carrying the asserted personhood (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\",\n        \"vmc\",\n        \"roleVec\"\n      ],\n      \"title\": \"VTC Members Personhood-Assert — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": true,\n          \"description\": \"Always true on success — the flag flipped or stayed asserted.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVac\": {\n          \"description\": \"Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Re-issued membership credential carrying the asserted personhood (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\",\n        \"vmc\",\n        \"roleVac\"\n      ],\n      \"title\": \"VTC Members Personhood-Assert — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
