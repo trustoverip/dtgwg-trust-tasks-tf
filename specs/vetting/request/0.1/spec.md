@@ -98,13 +98,13 @@ A conforming **vetter** (`recipient`):
    - `@context` begins with `https://www.w3.org/ns/credentials/v2`, and `type` includes `VerifiablePresentation`;
    - `holder` is the vetter's DID — the response's `issuer`;
    - `nonce` is the `id` of the request document it answers, and `domain` is that request's `joinDid`;
-   - `verifiableCredential` includes the community's `CommunityRole` endorsement credential naming the vetter, whose `role` is the manifest's `eligibleVetters.role` — the credential [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md) issues;
+   - `verifiableCredential` includes the community's vetter role credential naming the vetter — the Verifiable Authority Credential [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md) issues, whose `authority.scope` is `community` and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role`;
    - `proof` is a Data Integrity proof by `holder`, with `proofPurpose` `authentication`, over the presentation including `nonce` and `domain`.
 
    The applicant chose the nonce and is named by the domain, so the presentation is fresh to this request and bound to this applicant. One the vetter made while it still held the role cannot be replayed after it lost it, or shown to a different applicant.
 6. Otherwise returns a `trust-task-error` carrying one of this specification's codes. A refusal is never a `#response`.
 
-A conforming **applicant**, on receiving `eligibilityVp`, **SHOULD** verify it. The `proof` verifies under an `authentication` key of `holder`, and `holder` is the response's `issuer`. `nonce` is the `id` of the request it sent, and `domain` is its own `joinDid`. The `CommunityRole` credential is issued by `community` and names `holder` as its subject. Its `endorsement.communityDid` is `community` and its `endorsement.role` is the manifest's `eligibleVetters.role`. It is within its validity period, and its `credentialStatus` does not show it revoked. The check is **advisory**: the community is authoritative, evaluates eligibility again when it decides, and does not count a statement from a vetter that was not eligible. An applicant that cannot complete the check — a status list it cannot reach, say — **MAY** go ahead with the vetter, accepting that risk.
+A conforming **applicant**, on receiving `eligibilityVp`, **SHOULD** verify it. The `proof` verifies under an `authentication` key of `holder`, and `holder` is the response's `issuer`. `nonce` is the `id` of the request it sent, and `domain` is its own `joinDid`. The role credential's `type` includes `AuthorityCredential`; it is issued by `community`, declares `issuerScope` `public`, and names `holder` as `credentialSubject.id`. It carries no `authority.parent` — the community issued it directly, rather than someone attenuating theirs. Its `authority.scope` is `community`, and its `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role`, compared as an exact, case-sensitive string. It is within its validity period, and its `credentialStatus` does not show it revoked. The presentation's `proof` is what shows that `holder` controls the credential's subject, which a VAC always requires of the party presenting it. The check is **advisory**: the community is authoritative, evaluates eligibility again when it decides, and does not count a statement from a vetter that was not eligible. An applicant that cannot complete the check — a status list it cannot reach, say — **MAY** go ahead with the vetter, accepting that risk.
 
 ## Authorization
 
@@ -112,7 +112,7 @@ A conforming **applicant**, on receiving `eligibilityVp`, **SHOULD** verify it. 
 
 What a request needs is authority to be **heard**, not authority to be vetted. It comes from the vetter: possession of a ticket the vetter issued, an introduction the vetter accepts, or the vetter's own policy of taking requests without either. A ticket is a bearer secret. Holding one says nothing about who the applicant is — that is the proof and the `joinDid` equality — and entitles the holder to nothing beyond having the request considered. Whether to vet anyone remains the vetter's decision, and `vetting/request:declined` needs no reason.
 
-What the response asserts is the vetter's eligibility, and that authority is the **community's**: the `CommunityRole` endorsement credential the community issued to the vetter through [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md), which the community can revoke. `eligibilityVp` presents that evidence; it does not create it. A vetter that accepts without being eligible has done nothing a conforming applicant need rely on, because its statements will not count.
+What the response asserts is the vetter's eligibility, and that authority is the **community's**: the Verifiable Authority Credential conferring `role:vetter` that the community issued to the vetter through [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md), which the community can revoke. `eligibilityVp` presents that evidence; it does not create it. A vetter that accepts without being eligible has done nothing a conforming applicant need rely on, because its statements will not count.
 
 Per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, verifying either document's `proof` establishes who sent it, never that they may do what it asks.
 
@@ -148,7 +148,7 @@ The applicant sends the request to the vetter. See the top-level schema in [`pay
   "issuedAt": "2026-09-14T09:00:00Z",
   "payload": {
     "community": "did:webvh:QmVtcScid:kernel-vtc.example",
-    "requirementsDigest": "zQmYZQN9M169SXXg1sZdpNCDAjoVajkrPLaFhJ6A4mecQfC",
+    "requirementsDigest": "zQmVmw2GuXQsXe1yJf5xwU2TPvhP5mtwpQ5ACLwK76RAiEV",
     "joinDid": "did:webvh:QmAliceScid1:alice.example",
     "ticket": { "code": "K7QF-2M9X" },
     "preferredMethod": "video",
@@ -173,7 +173,7 @@ The vetter, now responding, accepts the request, per the sub-schema reachable vi
 
 ### Accepted, with proof of eligibility
 
-The presentation carries Carol's vetter role credential — the one issued in the [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md) example — bound to Alice's request and join DID.
+The presentation carries Carol's vetter role credential, a Verifiable Authority Credential — the one issued in the [`vtc/vetting/vetters/grant`](../../../vtc/vetting/vetters/grant/0.1/spec.md) example — bound to Alice's request and join DID.
 
 ```json
 {
@@ -199,23 +199,26 @@ The presentation carries Carol's vetter role credential — the one issued in th
         {
           "@context": [
             "https://www.w3.org/ns/credentials/v2",
-            "https://firstperson.network/credentials/dtg/v1"
+            "https://registry.trustoverip.org/dtg/context/v1"
           ],
           "id": "urn:uuid:5c7e9a1b-3d5f-4b7c-9e1a-2c4e6a8b0d01",
           "type": [
             "VerifiableCredential",
             "DTGCredential",
-            "EndorsementCredential"
+            "AuthorityCredential"
           ],
           "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+          "issuerScope": "public",
           "validFrom": "2026-09-13T10:00:01Z",
           "validUntil": "2027-09-13T10:00:01Z",
           "credentialSubject": {
             "id": "did:webvh:QmCarolScid1:kernel-vtc.example:carol",
-            "endorsement": {
-              "type": "CommunityRole",
-              "role": "vetter",
-              "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example"
+            "authority": {
+              "scope": "did:webvh:QmVtcScid:kernel-vtc.example",
+              "actions": [
+                "role:vetter"
+              ],
+              "maxAttenuation": 0
             }
           },
           "credentialStatus": {

@@ -2,7 +2,7 @@
 slug: vtc/vetting/vetters/grant
 version: "0.1"
 title: VTC Vetting — Grant Vetter Role
-summary: A community administrator makes a member a vetter. The community issues the member a revocable CommunityRole endorsement credential for the vetter role, and a member who already holds a live grant gets it back unchanged.
+summary: A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential conferring the role:vetter action at the community, and a member who already holds a live grant gets it back unchanged.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: governance
@@ -11,7 +11,8 @@ keywords:
   - vetting
   - vetter
   - role
-  - endorsement
+  - authority-credential
+  - vac
 authors:
   - Glenn Gore (https://github.com/stormer78)
 parties:
@@ -31,7 +32,7 @@ issuedAtRequirement:
   rationale: A grant replayed after the member's vetter role was revoked would make them a vetter again. Placing the instruction in a window is what lets the community refuse the replay rather than re-grant.
 sideEffects:
   level: mutating
-  rationale: "Issues a role credential attributable to the community and consumes a slot on its revocation status list. Recoverable: the grant is revoked with vtc/endorsements/revoke."
+  rationale: "Issues an authority credential attributable to the community and consumes a slot on its revocation status list. Recoverable: the grant is revoked with vtc/endorsements/revoke."
 exposure:
   discloses: metadata
   ingests: metadata
@@ -39,7 +40,7 @@ exposure:
   rationale: "The request carries one member DID and a validity period. The response returns identifiers and validity dates for the grant — not the credential, which is delivered to the member alone over credential-exchange/issue."
 retention:
   class: durable
-  rationale: "The community keeps the endorsement record and its status-list slot for the life of the credential and beyond it: whether a vetter held the role when they issued a statement is checked when an application is decided, and again in any later review of the members that vetter vetted."
+  rationale: "The community keeps the grant's record and its status-list slot for the life of the credential and beyond it: whether a vetter held the role when they issued a statement is checked when an application is decided, and again in any later review of the members that vetter vetted."
 errorCodes:
   - code: vtc/vetting/vetters/grant:notMember
     meaning: "`memberDid` is not an active member of this community. Only members can be vetters."
@@ -57,9 +58,9 @@ related:
 
 ## Abstract
 
-A community that admits people on peer identity vetting counts statements only from the members it has made **vetters**. Eligibility is a credential: the community issues the member a **role credential**. That is an `EndorsementCredential` whose `credentialSubject.endorsement` is `{ "type": "CommunityRole", "role": "vetter", "communityDid": … }`, and it carries a revocation status entry. The vetter presents it to applicants in [`vetting/request`](../../../../../vetting/request/0.1/spec.md), so an applicant can check eligibility before arranging a session. The community checks it again when it decides, against its own records.
+A community that admits people on peer identity vetting counts statements only from the members it has made **vetters**. Eligibility is a credential: the community issues the member a **role credential**. That is a DTG **Verifiable Authority Credential** (VAC) — `type` `AuthorityCredential` — issued by the community, whose `credentialSubject.authority` is `{ "scope": <community DID>, "actions": ["role:vetter"] }`, and it carries a revocation status entry. It is not an endorsement. An endorsement is a statement *about* a member that a verifier weighs for itself; making someone a vetter is a decision by the party that governs the community, and the DTG Credentials Core Specification carries such a decision only in a VAC. The action reuses the `role:<name>` convention the community already uses for invitation `scopes`. The vetter presents it to applicants in [`vetting/request`](../../../../../vetting/request/0.1/spec.md), so an applicant can check eligibility before arranging a session. The community checks it again when it decides, against its own records.
 
-This task is how an administrator grants that role. The credential is revoked with [`vtc/endorsements/revoke`](../../../../endorsements/revoke/0.1/spec.md), and removing a member revokes it too. A community's manifest names the role it counts as `vetting.eligibleVetters.role`.
+This task is how an administrator grants that role. The credential is revoked with [`vtc/endorsements/revoke`](../../../../endorsements/revoke/0.1/spec.md), which flips its status-list bit, and removing a member revokes it too. A community's manifest names the role it counts as `vetting.eligibleVetters.role`, matched as the action `role:<role>`.
 
 A vetter who has lost the credential asks for it again with [`vtc/vetting/vetters/resend`](../../resend/0.1/spec.md). A vetter who wants applicants to find them publishes a profile with [`vtc/vetting/vetters/profile`](../../profile/0.1/spec.md), which [`vtc/vetting/vetters/list`](../../list/0.1/spec.md) returns. A grant alone lists nobody.
 
@@ -78,14 +79,15 @@ A conforming **community** (`recipient`):
 1. Applies the [SPEC §7.2](/SPEC.md#72-consumer-requirements) pipeline, and refuses a sender without the community-administrator capability with the framework's `permissionDenied`.
 2. Refuses a `memberDid` that is not an active member with `vtc/vetting/vetters/grant:notMember`.
 3. Where the member already holds a **live grant** — a vetter role credential issued by this community that is neither expired nor revoked — **MUST** return that grant's `endorsementId`, `credentialId`, `validFrom` and `validUntil` unchanged, issue nothing, and ignore `validitySeconds`. Repeated execution is therefore safe and intended ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11): a second grant is indistinguishable from the first.
-4. Otherwise **MUST** issue a role credential and record it as an endorsement. The credential is an `EndorsementCredential` with:
-   - `issuer` set to the community DID and `credentialSubject.id` set to `memberDid`;
-   - `credentialSubject.endorsement` exactly `{ "type": "CommunityRole", "role": "vetter", "communityDid": <community DID> }`;
+4. Otherwise **MUST** issue a role credential and record it, with its status-list slot, under an `endorsementId` [`vtc/endorsements/revoke`](../../../../endorsements/revoke/0.1/spec.md) accepts. The credential is a Verifiable Authority Credential with:
+   - `@context` `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]` and `type` `["VerifiableCredential", "DTGCredential", "AuthorityCredential"]`;
+   - `issuer` set to the community DID, with `issuerScope` `public`, and `credentialSubject.id` set to `memberDid`;
+   - `credentialSubject.authority` exactly `{ "scope": <community DID>, "actions": ["role:vetter"], "maxAttenuation": 0 }`. `maxAttenuation` `0` keeps the grant unattenuable: who may vet is the community's to decide personally, and a statement counts only from the member the community named;
    - a `credentialStatus` entry for revocation on the community's published status list;
-   - `validFrom` at issuance, and `validUntil` equal to `validFrom` plus `validitySeconds`, or 365 days where it is absent;
+   - `validFrom` at issuance, and `validUntil` equal to `validFrom` plus `validitySeconds`, or 365 days where it is absent. A VAC always carries `validUntil`;
    - an `id`, returned as `credentialId`.
 
-   `CommunityRole` is the community's reserved endorsement type. It is not registered through `vtc/endorsement-types/register`, which refuses it.
+   The role is an action in the community's own authority vocabulary, not an endorsement type, so nothing is registered through `vtc/endorsement-types/register` for it.
 5. **MUST** deliver the credential to the member over [`credential-exchange/issue/0.1`](../../../../../credential-exchange/issue/0.1/spec.md). A failed delivery does not undo the grant. The community **MAY** deliver the same credential again when the grant is repeated, and delivers it again when the member asks with [`vtc/vetting/vetters/resend`](../../resend/0.1/spec.md).
 6. **MUST** treat a grant as ended once its credential is revoked through [`vtc/endorsements/revoke/0.1`](../../../../endorsements/revoke/0.1/spec.md) with `endorsementId`, or expires. When a member is removed or leaves, the community **MUST** revoke every live vetter grant that member holds. When a grant is revoked, the community **MUST** delete the member's [vetter profile](../../profile/0.1/spec.md).
 
@@ -99,7 +101,9 @@ What the grant confers is narrow. Its holder's vetting statements are eligible t
 
 ## Definitions
 
-**Vetter role credential** — the `EndorsementCredential` this task issues, whose endorsement is `{ type: "CommunityRole", role: "vetter", communityDid }`.
+**Vetter role credential** — the Verifiable Authority Credential this task issues: `type` `AuthorityCredential`, issued by the community, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:vetter"], maxAttenuation: 0 }`.
+
+**`role:<name>` action** — how a community role is written in a VAC's `actions`, the same convention invitation `scopes` use. Actions are compared as exact, case-sensitive strings, and one never implies another.
 
 **Live grant** — a vetter role credential issued by this community to the member that has not expired and has not been revoked.
 
@@ -169,18 +173,19 @@ Carol receives this over `credential-exchange/issue/0.1`. It is the credential s
 
 ```json
 {
-  "@context": ["https://www.w3.org/ns/credentials/v2", "https://firstperson.network/credentials/dtg/v1"],
+  "@context": ["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"],
   "id": "urn:uuid:5c7e9a1b-3d5f-4b7c-9e1a-2c4e6a8b0d01",
-  "type": ["VerifiableCredential", "DTGCredential", "EndorsementCredential"],
+  "type": ["VerifiableCredential", "DTGCredential", "AuthorityCredential"],
   "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuerScope": "public",
   "validFrom": "2026-09-13T10:00:01Z",
   "validUntil": "2027-09-13T10:00:01Z",
   "credentialSubject": {
     "id": "did:webvh:QmCarolScid1:kernel-vtc.example:carol",
-    "endorsement": {
-      "type": "CommunityRole",
-      "role": "vetter",
-      "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example"
+    "authority": {
+      "scope": "did:webvh:QmVtcScid:kernel-vtc.example",
+      "actions": ["role:vetter"],
+      "maxAttenuation": 0
     }
   },
   "credentialStatus": {
@@ -205,19 +210,19 @@ Carol receives this over `credential-exchange/issue/0.1`. It is the credential s
 
 ### Data carried
 
-The request names one member and a validity period. The response returns identifiers and dates, never the credential. The credential goes to the member alone, over `credential-exchange/issue/0.1`, so a grant does not copy role material to whichever administrator or tool issued it. The credential itself says only that the member holds the `vetter` role in this community. It carries no claim about the member beyond that, and no reason for the grant.
+The request names one member and a validity period. The response returns identifiers and dates, never the credential. The credential goes to the member alone, over `credential-exchange/issue/0.1`, so a grant does not copy role material to whichever administrator or tool issued it. The credential itself says only that the member may act in the `vetter` role in this community. It carries no claim about the member beyond that, and no reason for the grant.
 
 ### Correlation
 
-The community declares `identifierScope: public`. The role credential is worth something only because an applicant who has never met the community can verify that its issuer is the community named in the manifest and in the credential's `communityDid`. A pairwise community identifier would make the credential unverifiable to exactly the applicants it is shown to.
+The community declares `identifierScope: public`, and the credential declares `issuerScope: public` for the same reason. The role credential is worth something only because an applicant who has never met the community can verify that its issuer is the community named in the manifest and in the credential's `authority.scope`. A pairwise community identifier would make the credential unverifiable to exactly the applicants it is shown to.
 
 The administrator declares `identifierScope: pairwise`, because only this community needs to recognise it, against its own access control.
 
-The credential links the vetter's member DID to the vetter role in this community, for every applicant the vetter presents it to. That is its purpose: vetters are reached one applicant at a time, and each applicant needs to check eligibility before investing in a session. The status list is shared across the community's endorsements, so checking revocation does not reveal which vetter is being checked.
+The credential links the vetter's member DID to the vetter role in this community, for every applicant the vetter presents it to. That is its purpose: vetters are reached one applicant at a time, and each applicant needs to check eligibility before investing in a session. The status list is shared across the credentials the community issues, so checking revocation does not reveal which vetter is being checked.
 
 ### Retention
 
-Durable. The community keeps the endorsement record, the status-list slot, and the audit record of who granted the role and when. Whether a statement counts depends on its issuer having held the role when it was issued. A later review of the members a vetter vetted depends on that history too. Deleting it would leave the community unable to explain decisions it already made. The member keeps the credential for as long as it is valid; once it is expired or revoked it has no remaining use.
+Durable. The community keeps the grant's record, the status-list slot, and the audit record of who granted the role and when. Whether a statement counts depends on its issuer having held the role when it was issued. A later review of the members a vetter vetted depends on that history too. Deleting it would leave the community unable to explain decisions it already made. The member keeps the credential for as long as it is valid; once it is expired or revoked it has no remaining use.
 
 ### Consent/purpose
 

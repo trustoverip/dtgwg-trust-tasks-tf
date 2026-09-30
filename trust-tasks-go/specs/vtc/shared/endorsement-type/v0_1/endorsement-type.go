@@ -7,12 +7,15 @@ import "encoding/json"
 
 // EndorsementType EndorsementType
 type EndorsementType struct {
-	// The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g.
-	// CommunityRole) are refused at registration.
+	// The predicate IRI the community accepts, compared as an exact string: a DTG VSC
+	// predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a
+	// community-namespace IRI defined in the registry's predicate definition format. URIs the
+	// implementation reserves for its own use are refused at registration.
 	TypeURI     string  `json:"typeUri"`
 	Description *string `json:"description,omitempty"`
 
-	// Optional JSON Schema the endorsement's claims must satisfy (opaque here).
+	// Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy
+	// (opaque here) — for a registry predicate, the object schema its profile publishes.
 	ClaimSchema *map[string]json.RawMessage `json:"claimSchema,omitempty"`
 	CreatedAt   *string                     `json:"createdAt,omitempty"`
 

@@ -49,29 +49,6 @@ typedef VettingDocumentation = String;
 /// query.
 typedef ClaimType = String;
 
-/// A cryptographic digest as a multibase-encoded multihash — the encoding the W3C
-/// Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one
-/// `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash
-/// algorithm in-band, so the value is self-describing and the wire format survives an
-/// algorithm change without a schema revision; multibase does the same for the base
-/// encoding, so a verifier never infers base58 from base64url by context. A bare hex
-/// string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract
-/// and is non-conforming here. This definition constrains the *encoding only*. What
-/// the digest is computed over is stated by each referencing field, because it differs
-/// legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS)
-/// canonicalization, while a digest over an opaque artifact is taken over its bytes. A
-/// field whose input is a JSON document and which does not name a canonicalization is
-/// not reproducible. Restricted to the two multibase headers W3C Controlled
-/// Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u`
-/// (base64url-no-pad). CID permits others but states that "interoperability is not
-/// guaranteed between implementations using such values", and a registry whose purpose
-/// is interoperability should not mint digests a conforming verifier may be unable to
-/// read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I
-/// and l, and an earlier permissive pattern let three published examples carry digests
-/// that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with
-/// `did:key` and `did:webvh`.
-typedef DigestMultibase = String;
-
 /// The vetter's own declaration of how they relate to the applicant. Declared, not
 /// verified: it exists so community policy can cap how much evidence comes from people
 /// close to the applicant, and a false declaration is the vetter's attributable act.
@@ -99,10 +76,9 @@ extension type const VettingRelationship(String value) {
   ];
 }
 
-/// IdentityVettingEndorsement
-class IdentityVettingEndorsement {
-  const IdentityVettingEndorsement({
-    required this.type,
+/// VettedObjectValue
+class VettedObjectValue {
+  const VettedObjectValue({
     required this.community,
     required this.method,
     this.documentClasses,
@@ -115,9 +91,8 @@ class IdentityVettingEndorsement {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory IdentityVettingEndorsement.fromJson(Map<String, dynamic> json) =>
-      IdentityVettingEndorsement(
-        type: json['type'] as String,
+  factory VettedObjectValue.fromJson(Map<String, dynamic> json) =>
+      VettedObjectValue(
         community: json['community'] as String,
         method: VettingMethod(json['method'] as String),
         documentClasses: json['documentClasses'] == null
@@ -136,13 +111,9 @@ class IdentityVettingEndorsement {
         attestationTextDigest: json['attestationTextDigest'] as String?,
       );
 
-  /// The registered endorsement type URI, equal to the community's
-  /// `vetting.statementType` (e.g.
-  /// `https://firstperson.network/endorsements/identity-vetting/0.1`).
-  final String type;
-
-  /// The one community this statement is for — the vetting session's `domain`. Another
-  /// community does not count it without an explicit recognition policy of its own.
+  /// The one community this statement is for — the vetting session's `domain`. A
+  /// statement counts for that community only; another community does not count it
+  /// without an explicit recognition policy of its own.
   final String community;
 
   /// The session's method.
@@ -150,7 +121,8 @@ class IdentityVettingEndorsement {
 
   /// The documentation the vetter relied on, from their own accepted list. Empty, or
   /// absent, where they relied on none — expected with `priorAcquaintance`. `none` is
-  /// never listed: 'no document' is the empty list.
+  /// never listed: 'no document' is the empty list. Never a document number, image or
+  /// portrait.
   final List<VettingDocumentation>? documentClasses;
 
   /// The claim types on the card the vetter marked as verified. Types only — never
@@ -158,31 +130,32 @@ class IdentityVettingEndorsement {
   final List<ClaimType> claimsVerified;
 
   /// True only where the vetter and the applicant read each other the same session match
-  /// code, establishing that the person the vetter checked controls the applicant's DID
-  /// in this session.
+  /// code, establishing that the person the vetter checked controls
+  /// `credentialSubject.id` in this session.
   final bool livenessConfirmed;
 
-  /// The card's `identityCommitment`, copied verbatim. Equal across every statement of
-  /// one application; the salt that opens it is never in the statement.
-  final DigestMultibase identityCommitment;
+  /// The card's `identityCommitment`, copied verbatim: a salted commitment to the
+  /// identity claims the applicant presented, multibase base58btc. Equal across every
+  /// statement of one application; the salt that opens it is never in the statement.
+  final String identityCommitment;
 
   /// Digest over the RFC 8785 canonicalization of the Vetting Card exactly as the vetter
-  /// received it, `proof` included. Lets the applicant confirm the statement is about
-  /// the card they sent, and lets a dispute establish which card a statement rests on,
-  /// without the community ever holding the card.
-  final DigestMultibase cardDigestMultibase;
+  /// received it, `proof` included, multibase base58btc. Lets the applicant confirm the
+  /// statement is about the card they sent, and lets a dispute establish which card a
+  /// statement rests on, without the community ever holding the card.
+  final String cardDigestMultibase;
 
   /// The vetter's own declaration of how they relate to the applicant.
   final VettingRelationship declaredRelationship;
 
   /// RECOMMENDED. Digest over the UTF-8 bytes of the attestation text the vetter was
-  /// shown and signed, as published under the community's governance framework — so
-  /// which wording a vetter agreed to is provable after that wording changes.
-  final DigestMultibase? attestationTextDigest;
+  /// shown and signed, as published under the community's governance framework,
+  /// multibase base58btc — so which wording a vetter agreed to is provable after that
+  /// wording changes. Absent where the community shows no attestation text.
+  final String? attestationTextDigest;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'type': type,
         'community': community,
         'method': method.value,
         if (documentClasses != null) 'documentClasses': documentClasses!,

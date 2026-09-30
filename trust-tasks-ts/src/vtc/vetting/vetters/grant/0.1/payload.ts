@@ -7,7 +7,7 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 
 /**
- * A community administrator makes a member a vetter. The community issues the member a revocable `CommunityRole` endorsement credential for the `vetter` role, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.
+ * A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential (`AuthorityCredential`) whose `authority` is the action `role:vetter` at the community's DID, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.
  */
 export interface VTCVettingVettersGrantPayload {
   /**
@@ -25,11 +25,11 @@ export interface VTCVettingVettersGrantPayload {
  */
 export interface VTCVettingVettersGrantResponsePayload {
   /**
-   * The community's endorsement record for this grant — the identifier vtc/endorsements/revoke takes.
+   * The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.
    */
   endorsementId: string;
   /**
-   * The `id` of the role credential, a URI.
+   * The `id` of the role credential (the Verifiable Authority Credential), a URI.
    */
   credentialId: string;
   /**
@@ -71,7 +71,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1",
   "title": "VTC Vetting — Vetters Grant — payload",
-  "description": "A community administrator makes a member a vetter. The community issues the member a revocable `CommunityRole` endorsement credential for the `vetter` role, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.",
+  "description": "A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential (`AuthorityCredential`) whose `authority` is the action `role:vetter` at the community's DID, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -111,14 +111,14 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "description": "The community's endorsement record for this grant — the identifier vtc/endorsements/revoke takes."
+          "description": "The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential."
         },
         "credentialId": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The `id` of the role credential, a URI."
+          "description": "The `id` of the role credential (the Verifiable Authority Credential), a URI."
         },
         "validFrom": {
           "type": "string",
@@ -170,14 +170,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "description": "The community's endorsement record for this grant — the identifier vtc/endorsements/revoke takes."
+          "description": "The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential."
         },
         "credentialId": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The `id` of the role credential, a URI."
+          "description": "The `id` of the role credential (the Verifiable Authority Credential), a URI."
         },
         "validFrom": {
           "type": "string",

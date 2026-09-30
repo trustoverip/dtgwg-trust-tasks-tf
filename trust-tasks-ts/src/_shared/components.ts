@@ -235,7 +235,7 @@ export type DriftType =
   | "protectionWeakened"
   | "bootstrapMissing";
 /**
- * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`. Absent for a community-defined endorsement type that maps onto the generic `EndorsementCredential`.
+ * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.
  */
 export type DtgType = string;
 /**
@@ -2860,12 +2860,12 @@ export interface Endorsement {
 }
 export interface EndorsementType {
   /**
-   * The endorsement type's URI. Community-scoped; workspace-reserved URIs (e.g. CommunityRole) are refused at registration.
+   * The predicate IRI the community accepts, compared as an exact string: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. URIs the implementation reserves for its own use are refused at registration.
    */
   typeUri: string;
   description?: string;
   /**
-   * Optional JSON Schema the endorsement's claims must satisfy (opaque here).
+   * Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.
    */
   claimSchema?: {};
   createdAt?: string;
@@ -5878,7 +5878,7 @@ export interface VettingRequirements {
    */
   version: string;
   /**
-   * The endorsement type URI a counted vetting statement carries as `credentialSubject.endorsement.type`, as registered with the community via vtc/endorsement-types/register.
+   * The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.
    */
   statementType: string;
   /**
@@ -5917,7 +5917,7 @@ export interface VettingRequirements {
    */
   eligibleVetters: {
     /**
-     * The role named in a community-issued `CommunityRole` endorsement credential (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that credential.
+     * The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.
      */
     role: string;
   };

@@ -60,7 +60,7 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 ### Changes from 0.1
 
-`0.1` could say *which credentials* an applicant must present, because that is what a presentation-definition expresses. It could not say what a community that admits people on **peer identity vetting** needs: statements from *distinct* eligible vetters, *at least one* of them in person, *none* from family. A presentation-definition can ask for "credentials of type `EndorsementCredential`". It cannot count issuers, cap relationships, or require that the issuer holds a role. `0.2` adds those as an optional `vetting` object beside the presentation-definition, not inside it.
+`0.1` could say *which credentials* an applicant must present, because that is what a presentation-definition expresses. It could not say what a community that admits people on **peer identity vetting** needs: statements from *distinct* eligible vetters, *at least one* of them in person, *none* from family. A presentation-definition can ask for "credentials of type `StatementCredential` whose predicate is the vetting predicate". It cannot count issuers, cap relationships, or require that the issuer holds a role. `0.2` adds those as an optional `vetting` object beside the presentation-definition, not inside it.
 
 Because vetting takes days or weeks, an applicant starts under one version of the requirements and may finish under another. `0.2` therefore adds `requirementsDigest`, which names one version of a criterion so the applicant, the vetters and the community can all refer to the same one.
 
@@ -110,7 +110,7 @@ This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes 
 | Member | Meaning |
 |---|---|
 | `version` | Version of this object's shape — `0.1` for the members below |
-| `statementType` | The endorsement type URI a counted statement carries, registered via [`vtc/endorsement-types/register`](../../../endorsement-types/register/0.1/spec.md) |
+| `statementType` | The predicate IRI a counted statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1` for peer identity vetting — registered as one the community accepts via [`vtc/endorsement-types/register`](../../../endorsement-types/register/0.1/spec.md) |
 | `minStatements` | Statements needed, counting each vetter once however many DIDs they hold |
 | `minByMethod` | Per-method floors within `minStatements`, keyed by method |
 | `acceptedMethods` | Methods whose statements count at all: `inPerson`, `video`, `priorAcquaintance` |
@@ -118,7 +118,7 @@ This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes 
 | `requiredClaims` | Claim types the Vetting Card must carry and a counted statement must list as verified; the identity commitment is computed over these |
 | `optionalClaims` | Claim types an applicant may add; never affect counting |
 | `maxStatementAge` | A statement older than this at decision time does not count |
-| `eligibleVetters.role` | The role named in a community-issued `CommunityRole` endorsement credential (see [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)) that a statement's issuer must hold for it to count |
+| `eligibleVetters.role` | The role a statement's issuer must hold for it to count, matched as the action `role:<role>` in a Verifiable Authority Credential the community issued to that issuer, whose `authority.scope` is the community (see [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)) |
 | `independence` | Caps per declared vetter–applicant relationship (`none`, `communityColleague`, `sameEmployer`, `family`, `otherPersonal`); whether all statements must carry the same identity commitment |
 | `invitation` | Whether an invitation credential must (`required`) or may (`optional`) accompany the statements, or plays no part (`none`) |
 | `decisionSla` | How long after submission the community undertakes to decide |
@@ -195,13 +195,19 @@ The first criterion needs two vetting statements, at least one in person, none f
               "id": "vetting",
               "format": "ldp_vc",
               "multiple": true,
-              "meta": { "type_values": [["EndorsementCredential"]] }
+              "meta": { "type_values": [["StatementCredential"]] },
+              "claims": [
+                {
+                  "path": ["credentialSubject", "predicate"],
+                  "values": ["https://registry.trustoverip.org/dtg/vsc/vetted/1"]
+                }
+              ]
             }
           ]
         },
         "vetting": {
           "version": "0.1",
-          "statementType": "https://firstperson.network/endorsements/identity-vetting/0.1",
+          "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
           "minStatements": 2,
           "minByMethod": { "inPerson": 1 },
           "acceptedMethods": ["inPerson", "video", "priorAcquaintance"],
@@ -218,7 +224,7 @@ The first criterion needs two vetting statements, at least one in person, none f
           "requirementsGrace": "P30D",
           "governanceFrameworkUrl": "https://kernel-vtc.example/governance#vetting"
         },
-        "requirementsDigest": "zQmYZQN9M169SXXg1sZdpNCDAjoVajkrPLaFhJ6A4mecQfC"
+        "requirementsDigest": "zQmVmw2GuXQsXe1yJf5xwU2TPvhP5mtwpQ5ACLwK76RAiEV"
       },
       {
         "id": "invited",
@@ -266,16 +272,27 @@ The keys are truncated examples, not usable values. The `requirementsDigest` sho
               "meta": {
                 "type_values": [
                   [
-                    "EndorsementCredential"
+                    "StatementCredential"
                   ]
                 ]
-              }
+              },
+              "claims": [
+                {
+                  "path": [
+                    "credentialSubject",
+                    "predicate"
+                  ],
+                  "values": [
+                    "https://registry.trustoverip.org/dtg/vsc/vetted/1"
+                  ]
+                }
+              ]
             }
           ]
         },
         "vetting": {
           "version": "0.1",
-          "statementType": "https://firstperson.network/endorsements/identity-vetting/0.1",
+          "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
           "minStatements": 2,
           "minByMethod": {
             "inPerson": 1
@@ -313,7 +330,7 @@ The keys are truncated examples, not usable values. The `requirementsDigest` sho
           ],
           "governanceFrameworkUrl": "https://kernel-vtc.example/governance#vetting"
         },
-        "requirementsDigest": "zQmQUdMbmzC6HZtWwSkrqt88djK9oC9b7sabrNuxnDZ63Vd"
+        "requirementsDigest": "zQmNToGPzirqx3aK1Wn6YQS2Nz4KGNxT5h8gtuCDLoMXMrC"
       }
     ]
   }

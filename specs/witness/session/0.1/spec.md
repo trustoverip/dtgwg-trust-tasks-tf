@@ -69,7 +69,10 @@ related:
 ## Abstract
 
 **Witnessing**: a third party observes a relationship exchange and later
-attests, in a Verifiable Witness Credential, that it did. This specification
+attests, in a Verifiable Witness Credential, that it did. A VWC is a DTG
+Verifiable Statement Credential (`StatementCredential`) under the predicate
+`https://registry.trustoverip.org/dtg/vsc/witnessed/1`; its shape is fixed in
+[`witness/session/submit`](../../session/submit/0.1/spec.md). This specification
 opens one participating party's session with that witness. The witness's
 `#response` issues the **session challenge** the party binds its presentation
 to under [`witness/session/submit`](../../session/submit/0.1/spec.md).

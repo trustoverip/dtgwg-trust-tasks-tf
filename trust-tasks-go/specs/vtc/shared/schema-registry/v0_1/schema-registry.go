@@ -24,8 +24,11 @@ const (
 )
 
 // DtgType The DTG credential catalog type the entry binds to, e.g.
-// `MembershipCredential`. Absent for a community-defined endorsement type that maps onto
-// the generic `EndorsementCredential`.
+// `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a
+// community-defined type outside the DTG catalog. A statement type is identified by its
+// predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which
+// statements a community accepts is the set of predicates it registers with
+// vtc/endorsement-types/register.
 type DtgType = string
 
 // SchemaDescription An administrator's description of the entry, shown in administration
@@ -116,8 +119,10 @@ type CriterionDescription = string
 
 // VettingRequirementsEligibleVetters How a vetter's eligibility is established.
 type VettingRequirementsEligibleVetters struct {
-	// The role named in a community-issued `CommunityRole` endorsement credential (see
-	// `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds that
+	// The role a statement's issuer must hold, matched as the action `role:<role>` in a
+	// Verifiable Authority Credential (`AuthorityCredential`) the community issued to that
+	// issuer, whose `authority.scope` is the community's DID (see
+	// `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a
 	// credential.
 	Role string `json:"role"`
 }
@@ -162,9 +167,11 @@ type VettingRequirements struct {
 	// Version of this requirements object's shape. `0.1` for the members defined here.
 	Version string `json:"version"`
 
-	// The endorsement type URI a counted vetting statement carries as
-	// `credentialSubject.endorsement.type`, as registered with the community via
-	// vtc/endorsement-types/register.
+	// The predicate IRI a counted vetting statement carries in `credentialSubject.predicate`
+	// — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's
+	// identity-vetting predicate, or a predicate in a namespace the community controls —
+	// registered as one the community accepts via vtc/endorsement-types/register. A statement
+	// under any other predicate does not count.
 	StatementType string `json:"statementType"`
 
 	// How many counted statements are needed, counting each vetter once however many DIDs

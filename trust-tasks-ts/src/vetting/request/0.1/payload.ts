@@ -157,7 +157,7 @@ export interface EligibilityPresentation {
    */
   holder: string;
   /**
-   * Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.
+   * Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.
    *
    * @minItems 1
    */
@@ -386,7 +386,7 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "type": "object"
           },
-          "description": "Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential."
+          "description": "Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential."
         },
         "nonce": {
           "type": "string",
@@ -628,7 +628,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "type": "object"
           },
-          "description": "Credentials presented (opaque here). MUST include the community-issued `CommunityRole` endorsement credential naming `holder`, whose `endorsement.role` is the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential."
+          "description": "Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential."
         },
         "nonce": {
           "type": "string",
