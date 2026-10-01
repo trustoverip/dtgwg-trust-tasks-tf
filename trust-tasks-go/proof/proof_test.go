@@ -12,9 +12,18 @@ import (
 )
 
 // A clock after the fixtures' created (2026-09) so proofs are not "in the
-// future".
+// future". It never runs behind the real clock either: the sign-then-verify
+// tests stamp proof.created with time.Now(), and a fixed instant would put
+// every fresh proof in the future once real time passed it (which it did on
+// 2026-10-01).
 func laterClock() func() time.Time {
-	return func() time.Time { return time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC) }
+	floor := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	return func() time.Time {
+		if now := time.Now().UTC(); now.After(floor) {
+			return now
+		}
+		return floor
+	}
 }
 
 func seededSigner(t *testing.T, curve Curve, seed byte) *Signer {

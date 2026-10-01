@@ -15,7 +15,10 @@ const fixture = JSON.parse(
 ) as TrustTaskDocument<unknown>;
 
 // A clock after the fixture's `created` (2026-09) so it is not "in the future".
-const now = () => Date.parse("2026-10-01T00:00:00Z");
+// It never runs behind the real clock either: the sign-then-verify tests stamp
+// `created` with the current time, and a fixed instant would put every fresh
+// proof in the future once real time passed it (which it did on 2026-10-01).
+const now = () => Math.max(Date.parse("2026-10-01T00:00:00Z"), Date.now());
 const verifier = new DataIntegrityProofVerifier({ now });
 
 function seededSigner(curve: Curve, seed: number) {
