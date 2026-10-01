@@ -154,12 +154,45 @@ Minting a portable DID on a hosting server, with three successor keys committed:
 
 ## Security & Privacy
 
+### Data carried
+
+The request carries control members (the context, the hosting server or URL,
+path, portability, pre-rotation count, template choice and variables) and no key
+material: the VTA generates the keys. The response carries the new DID, the key
+ids the VTA holds for it, and, for a serverless DID, the log's first entry. The
+DID document and log entry are public by construction, since they are what
+resolvers fetch. A producer **MUST NOT** put secrets in `label` or
+`templateVars`, which are recorded for audit and may be rendered into the
+published document.
+
 `preRotationCount: 0` disables pre-rotation, and the cost is asymmetric: with
 no successor committed in advance, a party who steals the current signing key
 can rotate to a key of their own as convincingly as the owner can. There is no
 recovery path afterwards, only a dispute. Choose a non-zero count unless
 something else provides that guarantee.
 
-A serverless DID exists in the VTA and nowhere else until the caller publishes
-the returned `logEntry`. Until then it does not resolve, and anything issued
-under it cannot be verified by a third party.
+### Correlation
+
+Everything in the published document is visible to every resolver, including
+its service endpoints, which name the transports and mediators the identity is
+reached through. A caller **SHOULD NOT** add services or template variables that
+reveal more about the deployment than its counterparties need. The hosting
+server learns the DID and its path; a serverless DID discloses nothing to a
+hosting server, but is only as reachable as wherever the caller serves it.
+
+### Retention
+
+The DID's log is permanent once published: an entry cannot be retracted, only
+superseded by a later one or the DID deactivated. A serverless DID exists in the
+VTA and nowhere else until the caller publishes the returned `logEntry`. Until
+then it does not resolve, and anything issued under it cannot be verified by a
+third party; `serverless: true` says so in the response. The VTA's audit record
+keeps who created the DID, in which context.
+
+### Consent/purpose
+
+The request is made for one purpose, minting an identity in the named context,
+and the keys it creates belong to that context. A consent surface showing this
+task to a person **SHOULD** say whether the DID will be published through a
+hosting server or must be served by the caller, since only the first is
+resolvable when the task completes.
