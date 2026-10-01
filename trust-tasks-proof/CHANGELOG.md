@@ -6,6 +6,38 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.26.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.25.4...trust-tasks-proof-v0.26.0) — 2026-10-01
+
+
+### Chore
+
+- **proof**: Affinidi-data-integrity 0.8 in trust-tasks-proof ([#705](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/705))
+
+* chore(proof)!: affinidi-data-integrity 0.8 in trust-tasks-proof
+
+  affinidi-data-integrity 0.7.14 moved its public affinidi-bbs dependency
+  from 0.3 to 0.4 as a patch release; 0.8.0 re-releases the same code under
+  the version that change needed. trust-tasks-proof now depends on
+  affinidi-data-integrity 0.8 (the `affinidi` feature, on by default).
+
+  This is breaking for trust-tasks-proof's dependents: the crate re-exports
+  data-integrity types in its public API (`AffinidiSigner` is
+  `affinidi_data_integrity::signer::Signer`, `AffinidiDidKeyResolver` is
+  `affinidi_data_integrity::DidKeyResolver`, plus `SignOptions` and
+  `CryptoSuite`, and `Verifier::with_options` takes data-integrity's
+  `VerifyOptions`). Code that implements or passes those types must be
+  built against affinidi-data-integrity 0.8 as well. No source change was
+  needed here; the 0.8 API is identical to 0.7.14.
+
+  Part of the cascade onto affinidi-data-integrity 0.8: the
+  affinidi-tdk-rs crates (messaging-sdk, mediator) move onto this release
+  next. Until affinidi-did-resolver-cache-sdk 0.8.41 (didwebvh-rs 0.8)
+  publishes, the lockfile still carries affinidi-data-integrity 0.7.14
+  through didwebvh-rs 0.7 and the affinidi-tdk 0.17 dev graph of
+  trust-tasks-didcomm.
+
+
+
 ## [0.25.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.25.3...trust-tasks-proof-v0.25.4) — 2026-10-01
 
 
