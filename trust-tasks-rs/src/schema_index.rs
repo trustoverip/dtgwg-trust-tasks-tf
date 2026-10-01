@@ -2246,6 +2246,8 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1#response" => <crate::specs::vtc::members::solicit_vmc::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/step-up-passkey-notice/0.1" => <crate::specs::vtc::members::step_up_passkey_notice::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/members/update/0.1" => <crate::specs::vtc::members::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/members/update/0.1#response" => <crate::specs::vtc::members::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -5238,6 +5240,12 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::vtc::members::solicit_vmc::v0_1::Payload,
         >()),
         #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/step-up-passkey-notice/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::members::step_up_passkey_notice::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/members/update/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::members::update::v0_1::Payload,
         >()),
@@ -7872,6 +7880,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/members/solicit-vmc/0.1" => {
             Some(crate::specs::vtc::members::solicit_vmc::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        "https://trusttasks.org/spec/vtc/members/step-up-passkey-notice/0.1" => {
+            Some(crate::specs::vtc::members::step_up_passkey_notice::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         "https://trusttasks.org/spec/vtc/members/update/0.1" => {

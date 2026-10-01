@@ -1,0 +1,31 @@
+[
+  {
+    "note": "`event` is one of `enrolled` or `revoked`, not the raw task name.",
+    "payload": {
+      "event": "enroll",
+      "did": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "credentialId": "c3RlcHVwLWNyZWQtY2Fyb2w",
+      "by": "did:webvh:QmDanaScid8:acme-vtc.example:dana",
+      "at": "2026-09-25T02:10:31Z"
+    }
+  },
+  {
+    "note": "`by` is REQUIRED even when the member acted on their own credential — the recipient compares it to `did` to tell self-service from an administrator, and cannot if it is missing.",
+    "payload": {
+      "event": "revoked",
+      "did": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "credentialId": "c3RlcHVwLWNyZWQtY2Fyb2w",
+      "at": "2026-09-25T02:10:31Z"
+    }
+  },
+  {
+    "note": "`credentialId` MUST NOT be empty — an empty id identifies nothing for the member to recognise.",
+    "payload": {
+      "event": "enrolled",
+      "did": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "credentialId": "",
+      "by": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "at": "2026-09-25T02:10:31Z"
+    }
+  }
+]

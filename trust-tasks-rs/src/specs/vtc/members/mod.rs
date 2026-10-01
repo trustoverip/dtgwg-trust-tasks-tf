@@ -15,5 +15,6 @@ pub mod self_remove;
 pub mod self_remove_receipt;
 pub mod show;
 pub mod solicit_vmc;
+pub mod step_up_passkey_notice;
 pub mod update;
 pub mod vmc;

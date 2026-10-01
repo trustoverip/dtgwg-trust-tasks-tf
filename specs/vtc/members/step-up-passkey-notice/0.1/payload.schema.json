@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/step-up-passkey-notice/0.1",
+  "title": "VTC Members — Step-up Passkey Notice — payload",
+  "description": "The VTC tells a member that a step-up passkey was enrolled for them or revoked from them, naming who acted and when. Unsolicited: the member did not ask, and may be offline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event", "did", "credentialId", "by", "at"],
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": ["enrolled", "revoked"],
+      "description": "`enrolled` — a step-up passkey (auth/passkey/enroll/invite or auth/passkey/enroll/finish, purpose stepUp) is now bound to the member. `revoked` — one was unbound (auth/passkey/revoke/finish)."
+    },
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The member's own DID — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice, detached from its transport, still names its subject."
+    },
+    "credentialId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Durable identifier of the step-up credential, as auth/passkey/revoke/start and auth/passkey/admin-list carry it: opaque, non-secret metadata, never key material. Lets the member recognise or distinguish a credential without disclosing anything that would help an attacker."
+    },
+    "by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Who acted: the member themselves (equal to `did`) when they enrolled or revoked it on their own session, or an administrator's DID when they invited the enrollment or revoked for the member. A `by` other than `did` is the signal this task exists to carry — act on someone else's behalf is exactly the account-takeover shape a silent change would hide."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the event took effect at the VTC — not when the notice was sent, which differs whenever the member was offline."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "The acting administrator's stated reason, verbatim, when one was given. Absent rather than empty when none was: a community that chose not to explain is itself information. Never populated for a member acting on their own credential — they already know why."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  }
+}
