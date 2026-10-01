@@ -13,8 +13,8 @@ type EndorsementType struct {
 	// defined in the registry's predicate definition format. The four core predicates —
 	// endorses/1, witnessed/1, vetted/1 and presented/1 under
 	// `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The
-	// reserved values `IdentityVerificationCredential` and `role:vetter`, which name the
-	// other kinds of record vtc/endorsements/* keeps, are never registered.
+	// reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/*
+	// keeps beside statements, is never registered.
 	TypeURI     string  `json:"typeUri"`
 	Description *string `json:"description,omitempty"`
 

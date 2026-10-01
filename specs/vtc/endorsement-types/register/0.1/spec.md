@@ -31,7 +31,7 @@ exposure:
   actsAsSubject: false
 errorCodes:
   - code: vtc/endorsement-types/register:reserved
-    meaning: The typeUri is a reserved value — `IdentityVerificationCredential` or `role:vetter` — that names a record kind vtc/endorsements/* keeps for itself, and cannot be registered.
+    meaning: The typeUri is the reserved value `role:vetter`, which names a record kind vtc/endorsements/* keeps for itself, and cannot be registered.
     retryable: false
   - code: vtc/endorsement-types/register:exists
     meaning: This typeUri is already registered.
@@ -49,7 +49,7 @@ A DTG statement — a Verifiable Statement Credential, `type` `StatementCredenti
 
 **The core predicates are seeded.** A community seeds its registry with the four DTG core predicates when it starts — `https://registry.trustoverip.org/dtg/vsc/endorses/1`, `.../witnessed/1`, `.../vetted/1` and `.../presented/1`, before any administrator registers anything, so the statements the registry defines count without a registration step. Registering one of them again is `exists`.
 
-**Only predicate IRIs are registrable.** A `typeUri` that is not an absolute IRI is refused with `invalidUri`. Two values are **reserved** and refused with `reserved`, because they name the record kinds [`vtc/endorsements/*`](../../../endorsements/issue/0.1/spec.md) keeps beside statements: `IdentityVerificationCredential`, which asks `vtc/endorsements/issue` for the community's identity-verification credential, and `role:vetter`, the record of a vetter role credential issued by [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md). Neither is a predicate IRI, so neither can collide with a registered predicate.
+**Only predicate IRIs are registrable.** A `typeUri` that is not an absolute IRI is refused with `invalidUri`. One value is **reserved** and refused with `reserved`, because it names the one record kind [`vtc/endorsements/*`](../../../endorsements/issue/0.1/spec.md) keeps beside statements: `role:vetter`, the record of a vetter role credential issued by [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md). It is not a predicate IRI, so it cannot collide with a registered predicate. A community's own identity checks need no reserved value: they are statements under `https://registry.trustoverip.org/dtg/vsc/vetted/1`, a seeded core predicate.
 
 Roles are not endorsements. A role such as `vetter` is a decision by the community and is conferred by a Verifiable Authority Credential ([`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)), never registered here. The family keeps its name, and `typeUri` its member name, from when statements were endorsement types.
 
@@ -57,7 +57,7 @@ Roles are not endorsements. A role such as `vetter` is a decision by the communi
 
 Producer: supply `typeUri`; optionally `description` and `claimSchema`. Carry a proof.
 
-Consumer: verify the community-admin capability. Refuse the reserved values `IdentityVerificationCredential` and `role:vetter` (`reserved`); an empty, oversized, or non-IRI `typeUri` (`invalidUri`); and one already registered, the four seeded core predicates included (`exists`). Otherwise store the predicate and return the full `EndorsementType`.
+Consumer: verify the community-admin capability. Refuse the reserved value `role:vetter` (`reserved`); an empty, oversized, or non-IRI `typeUri` (`invalidUri`); and one already registered, the four seeded core predicates included (`exists`). Otherwise store the predicate and return the full `EndorsementType`.
 
 ## Security & Privacy
 

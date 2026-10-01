@@ -52,10 +52,10 @@ flipping its bit on the community's shared Revocation status list, at the
 published, revocation is visible to foreign verifiers without contacting this
 community.
 
-The credential revoked is a DTG Verifiable Statement Credential or an
-identity-verification credential (`IdentityVerificationCredential`, a plain W3C
-VC) issued by [`vtc/endorsements/issue`](../../issue/0.1/spec.md), or the vetter
-role credential — a Verifiable Authority Credential — issued by
+The credential revoked is a DTG Verifiable Statement Credential issued by
+[`vtc/endorsements/issue`](../../issue/0.1/spec.md) — a `vetted/1` statement
+recording the community's own identity check included — or the vetter role
+credential — a Verifiable Authority Credential — issued by
 [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md), whose
 record the community keeps under the same `endorsementId`. The member name is
 kept from when both were endorsement credentials.

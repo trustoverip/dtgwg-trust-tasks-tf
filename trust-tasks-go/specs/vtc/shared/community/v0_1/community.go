@@ -79,11 +79,14 @@ type PersonhoodGovernance struct {
 	SingleMembership *bool `json:"singleMembership,omitempty"`
 
 	// DIDs of the identity-verification providers whose credentials this community accepts as
-	// personhood evidence. A community that vets its own members in person lists its own
-	// community DID here — it is acting as its own IDVP, which §IDVC permits — and issues the
-	// evidence as an `IdentityVerificationCredential` (a plain W3C VC, not a DTGCredential)
-	// through vtc/endorsements/issue. An empty list means no list has been published, not
-	// that everything is accepted.
+	// personhood evidence: any W3C VC from a listed provider that meets the community's
+	// identity-proofing requirements. A community that checks its members' identity in person
+	// does not act as a provider to do so: it records each check as a `vetted/1` statement
+	// (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through
+	// vtc/endorsements/issue, which its personhood policy may accept beside these
+	// credentials. Either is evidence only — personhood is the community's decision, recorded
+	// on the member's VMC. An empty list means no list has been published, not that
+	// everything is accepted.
 	AcceptedIdvps *[]string `json:"acceptedIdvps,omitempty"`
 
 	// Where the governance framework these assertions refer to can be read.

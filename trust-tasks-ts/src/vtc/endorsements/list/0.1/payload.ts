@@ -8,7 +8,7 @@ import type { CredentialId, CredentialReference, Endorsement, Ext } from "../../
 
 export interface VTCEndorsementsListPayload {
   /**
-   * Filter to rows of this kind: a registered predicate IRI (statements whose `credentialSubject.predicate` it is), `IdentityVerificationCredential`, or `role:vetter`.
+   * Filter to rows of this kind: a registered predicate IRI (statements whose `credentialSubject.predicate` it is), or `role:vetter`.
    */
   typeUri?: string;
   /**
@@ -77,7 +77,7 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 512,
-      "description": "Filter to rows of this kind: a registered predicate IRI (statements whose `credentialSubject.predicate` it is), `IdentityVerificationCredential`, or `role:vetter`."
+      "description": "Filter to rows of this kind: a registered predicate IRI (statements whose `credentialSubject.predicate` it is), or `role:vetter`."
     },
     "subjectDid": {
       "type": "string",
@@ -169,7 +169,7 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's identity-verification credential, a plain W3C VC (not a DTGCredential). The two reserved values are not IRIs, so they never collide with a registered predicate."
+          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. The reserved value is not an IRI, so it never collides with a registered predicate. A community's own identity check is a statement like any other, under `https://registry.trustoverip.org/dtg/vsc/vetted/1`."
         },
         "subjectDid": {
           "type": "string",
@@ -308,7 +308,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's identity-verification credential, a plain W3C VC (not a DTGCredential). The two reserved values are not IRIs, so they never collide with a registered predicate."
+          "description": "What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. The reserved value is not an IRI, so it never collides with a registered predicate. A community's own identity check is a statement like any other, under `https://registry.trustoverip.org/dtg/vsc/vetted/1`."
         },
         "subjectDid": {
           "type": "string",
