@@ -11,6 +11,19 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.22.2 — 2026-10-01
+
+
+### Specifications
+
+- **vtc/endorsements**: Community identity checks are vetted/1 statements (#697)
+
+Reverse the reserved IdentityVerificationCredential design of #695. The
+  registry's vetted/1 (trustoverip/dtgwg-vsc-registry#24) now admits the
+  community itself as issuer, so a community records its own identity checks as
+  a vetted/1 statement rather than minting a separate credential type. All
+  affected specs are `draft` and change in place.
+
 ## 0.22.1 — 2026-09-30
 
 
