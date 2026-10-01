@@ -31,6 +31,21 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.25.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.25.1...trust-tasks-rs-v0.25.2) — 2026-10-01
+
+
+### Specifications
+
+- **vtc/endorsements**: Community identity checks are vetted/1 statements ([#697](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/697))
+
+Reverse the reserved IdentityVerificationCredential design of #695. The
+  registry's vetted/1 (trustoverip/dtgwg-vsc-registry#24) now admits the
+  community itself as issuer, so a community records its own identity checks as
+  a vetted/1 statement rather than minting a separate credential type. All
+  affected specs are `draft` and change in place.
+
+
+
 ## [0.25.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.25.0...trust-tasks-rs-v0.25.1) — 2026-09-30
 
 

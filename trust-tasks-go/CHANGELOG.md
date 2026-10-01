@@ -11,6 +11,19 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.4.2 — 2026-10-01
+
+
+### Specifications
+
+- **vtc/endorsements**: Community identity checks are vetted/1 statements (#697)
+
+Reverse the reserved IdentityVerificationCredential design of #695. The
+  registry's vetted/1 (trustoverip/dtgwg-vsc-registry#24) now admits the
+  community itself as issuer, so a community records its own identity checks as
+  a vetted/1 statement rather than minting a separate credential type. All
+  affected specs are `draft` and change in place.
+
 ## 0.4.1 — 2026-09-30
 
 
