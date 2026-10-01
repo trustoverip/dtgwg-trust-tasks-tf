@@ -11,6 +11,20 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.22.3 — 2026-10-01
+
+
+### Specifications
+
+- **vtc/members**: Step-up passkey notice tells a member who enrolled or revoked one for them (#700)
+
+Models vtc/members/step-up-passkey-notice/0.1 on git-ns/right/break-glass-notice: a
+  one-way, unsolicited notice with no reply. Covers auth/passkey/enroll/invite and
+  auth/passkey/revoke/finish acting on a member's stepUp credential, naming the
+  event, the credential id, who acted, and when, with an optional admin reason -
+  so an administrator (or an attacker using that standing) enrolling or revoking a
+  step-up passkey for a member is never silent.
+
 ## 0.22.2 — 2026-10-01
 
 
