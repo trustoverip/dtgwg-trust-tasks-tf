@@ -43,12 +43,12 @@ The **VTC Endorsements — List** Trust Task pages through the community's issue
 `credentialSubject.predicate`), `subjectDid`, and `includeRevoked`. A row's
 `typeUri` says what it records: a registered predicate IRI for a DTG Verifiable
 Statement Credential (`StatementCredential`) issued by
-[`vtc/endorsements/issue`](../../issue/0.1/spec.md); `IdentityVerificationCredential`
-for the community's identity-verification credential, a plain W3C VC issued by
-the same task; or `role:vetter` for a vetter role credential (a Verifiable
-Authority Credential) issued by
+[`vtc/endorsements/issue`](../../issue/0.1/spec.md) — the community's own
+identity checks among them, under
+`https://registry.trustoverip.org/dtg/vsc/vetted/1` — or `role:vetter` for a
+vetter role credential (a Verifiable Authority Credential) issued by
 [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md). The
-`typeUri` filter accepts any of the three.
+`typeUri` filter accepts either.
 
 Cursor pagination follows the same convention as the rest of the `vtc/*`
 families: an opaque `cursor`, a `limit` clamped to `1..=200` (default 50), and

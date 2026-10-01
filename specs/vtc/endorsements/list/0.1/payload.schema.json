@@ -5,7 +5,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "Filter to rows of this kind: a registered predicate IRI (statements whose `credentialSubject.predicate` it is), `IdentityVerificationCredential`, or `role:vetter`." },
+    "typeUri": { "type": "string", "minLength": 1, "maxLength": 512, "description": "Filter to rows of this kind: a registered predicate IRI (statements whose `credentialSubject.predicate` it is), or `role:vetter`." },
     "subjectDid": { "type": "string", "pattern": "^did:", "description": "Filter to endorsements about this subject." },
     "includeRevoked": { "type": "boolean", "description": "Include revoked rows. Defaults to true — both live and revoked rows surface; consumers filter on revokedAt." },
     "cursor": { "type": "string", "description": "Opaque continuation token from a previous page's nextCursor." },

@@ -2834,7 +2834,7 @@ export interface Endorsement {
    */
   endorsementId: string;
   /**
-   * What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. `IdentityVerificationCredential`: the community's identity-verification credential, a plain W3C VC (not a DTGCredential). The two reserved values are not IRIs, so they never collide with a registered predicate.
+   * What the row records. A registered predicate IRI: a statement (StatementCredential) whose `credentialSubject.predicate` it is — see vtc/endorsement-types/*. `role:vetter`: a vetter role credential (Verifiable Authority Credential) issued by vtc/vetting/vetters/grant. The reserved value is not an IRI, so it never collides with a registered predicate. A community's own identity check is a statement like any other, under `https://registry.trustoverip.org/dtg/vsc/vetted/1`.
    */
   typeUri: string;
   /**
@@ -2860,7 +2860,7 @@ export interface Endorsement {
 }
 export interface EndorsementType {
   /**
-   * The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved values `IdentityVerificationCredential` and `role:vetter`, which name the other kinds of record vtc/endorsements/* keeps, are never registered.
+   * The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.
    */
   typeUri: string;
   description?: string;
@@ -3834,7 +3834,7 @@ export interface PersonhoodGovernance {
    */
   singleMembership?: boolean;
   /**
-   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence. A community that vets its own members in person lists its own community DID here — it is acting as its own IDVP, which §IDVC permits — and issues the evidence as an `IdentityVerificationCredential` (a plain W3C VC, not a DTGCredential) through vtc/endorsements/issue. An empty list means no list has been published, not that everything is accepted.
+   * DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.
    */
   acceptedIdvps?: string[];
   /**
