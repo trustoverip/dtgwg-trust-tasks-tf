@@ -100,9 +100,32 @@ dependencies = [
 
 [[package]]
 name = "affinidi-data-integrity"
-version = "0.7.11"
+version = "0.7.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8fb570864d6902ae4eab7e9fa440b7fd510950819058f8592a01cafc02276a5"
+checksum = "b10420c88a645329cb8df2272b7420af3894a18c233769f4fec4f32220e78efb"
+dependencies = [
+ "affinidi-crypto",
+ "affinidi-did-common",
+ "affinidi-rdf-encoding",
+ "affinidi-secrets-resolver",
+ "async-trait",
+ "chrono",
+ "ed25519-dalek",
+ "multibase",
+ "serde",
+ "serde_json",
+ "serde_json_canonicalizer",
+ "sha2 0.11.0",
+ "thiserror",
+ "tracing",
+ "zeroize",
+]
+
+[[package]]
+name = "affinidi-data-integrity"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad2d289fc4df366539b3a6eba73c9eb37abb4d5342fa6773105af3ae895bfaba"
 dependencies = [
  "affinidi-crypto",
  "affinidi-did-common",
@@ -322,7 +345,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6aca5f75b1f2e393cc117a3fc145a3fd779b88e4401f03d54dba77ef5b2171b0"
 dependencies = [
  "affinidi-crypto",
- "affinidi-data-integrity",
+ "affinidi-data-integrity 0.7.14",
  "affinidi-did-common",
  "affinidi-did-resolver-cache-sdk",
  "affinidi-encoding",
@@ -583,7 +606,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0bc305bf3256630a0c63234cb8080ca16864c8e2d46afb901da2876aa5057b4"
 dependencies = [
  "affinidi-crypto",
- "affinidi-data-integrity",
+ "affinidi-data-integrity 0.7.14",
  "affinidi-did-authentication",
  "affinidi-did-common",
  "affinidi-did-resolver-cache-sdk",
@@ -607,7 +630,7 @@ version = "0.6.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6235d6d0506aed283966e11bbe4bf1e6cda94e0188aa09db15d9be95d3aa61f"
 dependencies = [
- "affinidi-data-integrity",
+ "affinidi-data-integrity 0.7.14",
  "affinidi-did-authentication",
  "affinidi-did-common",
  "affinidi-did-resolver-cache-sdk",
@@ -1698,7 +1721,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aa08dc5af02f6bc159c10271195f467a894b3b4fe67da9796009ee2da785043"
 dependencies = [
- "affinidi-data-integrity",
+ "affinidi-data-integrity 0.7.14",
  "affinidi-did-common",
  "affinidi-secrets-resolver",
  "ahash",
@@ -5199,7 +5222,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aac140286713c51b460ba3c9f24b3cb4a82c6caa893ee86eb72b947324b4ce33"
 dependencies = [
  "affinidi-crypto",
- "affinidi-data-integrity",
+ "affinidi-data-integrity 0.7.14",
  "affinidi-did-common",
  "affinidi-did-resolver-cache-sdk",
  "affinidi-encoding",
@@ -5215,7 +5238,7 @@ name = "trust-tasks-proof"
 version = "0.25.4"
 dependencies = [
  "affinidi-crypto",
- "affinidi-data-integrity",
+ "affinidi-data-integrity 0.8.0",
  "affinidi-did-common",
  "affinidi-did-resolver-cache-sdk",
  "affinidi-encoding",
