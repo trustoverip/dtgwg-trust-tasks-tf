@@ -11,6 +11,31 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.4.4 — 2026-10-01
+
+
+### Added
+
+- **vta/webvh/dids/create**: 1.1 states `serverless` in the response (#702)
+
+* feat(vta/webvh/dids/create): 1.1 states `serverless` in the response
+
+  A serverless DID exists only in the VTA until the caller serves its first log
+  entry. In 1.0 the response says so only by leaving out `serverId`. A client
+  that missed the absence went on to resolve a DID nobody serves, and failed later
+  with an error naming the DID rather than the cause (Keyring VTI-20: a persona
+  minted on a VTA with no hosting server registered got through whoami, contexts,
+  mint and key borrow before failing).
+
+  1.1's response REQUIRES `serverless`. It is true exactly when the request named
+  no `serverId`, and then the response carries `logEntry` and no `serverId`. A
+  producer reads it rather than inferring it. 1.1 is a new version rather than an
+  edit to 1.0 because 1.0's response refuses unknown members; both stay draft
+  (SPEC §5.2 permits the required member as a MINOR at draft). The request schema
+  is unchanged.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
 ## 0.4.3 — 2026-10-01
 
 
