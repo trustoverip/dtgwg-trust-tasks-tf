@@ -670,6 +670,7 @@ export * as VtcMembersSelfRemoveReceipt_v0_1 from "./vtc/members/self-remove-rec
 export * as VtcMembersSelfRemove_v0_1 from "./vtc/members/self-remove/0.1/payload.js";
 export * as VtcMembersShow_v0_1 from "./vtc/members/show/0.1/payload.js";
 export * as VtcMembersSolicitVmc_v0_1 from "./vtc/members/solicit-vmc/0.1/payload.js";
+export * as VtcMembersStepUpPasskeyNotice_v0_1 from "./vtc/members/step-up-passkey-notice/0.1/payload.js";
 export * as VtcMembersUpdate_v0_1 from "./vtc/members/update/0.1/payload.js";
 export * as VtcMembersVmc_v0_1 from "./vtc/members/vmc/0.1/payload.js";
 export * as VtcPoliciesTest_v0_1 from "./vtc/policies/test/0.1/payload.js";
