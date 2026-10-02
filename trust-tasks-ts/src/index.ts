@@ -685,6 +685,7 @@ export * as VtcJoinRequestsSupplement_v0_1 from "./vtc/join-requests/supplement/
 export * as VtcJoinRequestsVettingShow_v0_1 from "./vtc/join-requests/vetting/show/0.1/payload.js";
 export * as VtcJoinRequestsWithdraw_v0_1 from "./vtc/join-requests/withdraw/0.1/payload.js";
 export * as VtcMembersAdminRemove_v0_1 from "./vtc/members/admin-remove/0.1/payload.js";
+export * as VtcMembersAuthorityReducedNotice_v0_1 from "./vtc/members/authority-reduced-notice/0.1/payload.js";
 export * as VtcMembersCredentials_v0_1 from "./vtc/members/credentials/0.1/payload.js";
 export * as VtcMembersList_v0_1 from "./vtc/members/list/0.1/payload.js";
 export * as VtcMembersPersonhoodAssert_v0_1 from "./vtc/members/personhood/assert/0.1/payload.js";

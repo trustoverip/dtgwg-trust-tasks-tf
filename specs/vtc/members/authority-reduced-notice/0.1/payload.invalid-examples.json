@@ -1,0 +1,18 @@
+[
+  {
+    "note": "agreement is required: a notice that does not say whether anyone else agreed loses the one fact that distinguishes a reviewed reduction from an unreviewed one.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "demoted", "previousRole": "community-admin", "resultingRole": "member", "decidedAt": "2026-10-02T09:00:00Z", "decidedBy": "did:key:z6MkAdmin" }
+  },
+  {
+    "note": "code is a closed set; `removed` is vtc/members/removal-notice, not this task.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "removed", "previousRole": "community-admin", "agreement": "consented", "decidedAt": "2026-10-02T09:00:00Z", "decidedBy": "did:key:z6MkAdmin" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "revoked", "previousRole": "community-admin", "agreement": "unopposed", "decidedAt": "2026-10-02T09:00:00Z", "decidedBy": "did:key:z6MkAdmin", "severity": "critical" }
+  },
+  {
+    "note": "agreement is a closed set.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "narrowed", "previousRole": "repo-manager", "resultingRole": "repo-manager", "agreement": "unknown", "decidedAt": "2026-10-02T09:00:00Z", "decidedBy": "did:key:z6MkAdmin" }
+  }
+]
