@@ -374,8 +374,8 @@ dependencies = [
  "tower-http 0.7.1",
  "tracing",
  "tracing-subscriber",
- "trust-tasks-proof 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "trust-tasks-rs 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "trust-tasks-proof",
+ "trust-tasks-rs",
  "url",
  "uuid",
 ]
@@ -463,8 +463,8 @@ dependencies = [
  "tokio",
  "tokio-tungstenite 0.30.0",
  "tracing",
- "trust-tasks-proof 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "trust-tasks-rs 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "trust-tasks-proof",
+ "trust-tasks-rs",
  "uuid",
 ]
 
@@ -5083,8 +5083,8 @@ dependencies = [
  "trust-tasks-didcomm",
  "trust-tasks-didcomm-v1",
  "trust-tasks-https",
- "trust-tasks-proof 0.26.0",
- "trust-tasks-rs 0.26.0",
+ "trust-tasks-proof",
+ "trust-tasks-rs",
  "trust-tasks-tsp",
  "uuid",
 ]
@@ -5098,7 +5098,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.26.0",
+ "trust-tasks-rs",
  "uuid",
 ]
 
@@ -5151,7 +5151,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.26.0",
+ "trust-tasks-rs",
  "uuid",
 ]
 
@@ -5167,7 +5167,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.26.0",
+ "trust-tasks-rs",
  "uuid",
 ]
 
@@ -5186,8 +5186,8 @@ dependencies = [
  "thiserror",
  "tokio",
  "tower",
- "trust-tasks-proof 0.26.0",
- "trust-tasks-rs 0.26.0",
+ "trust-tasks-proof",
+ "trust-tasks-rs",
  "uuid",
 ]
 
@@ -5208,25 +5208,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.26.0",
-]
-
-[[package]]
-name = "trust-tasks-proof"
-version = "0.26.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c90e3443a643c028202d32b73c1136c253bd9610689055b2665d7e45dd1f544"
-dependencies = [
- "affinidi-crypto",
- "affinidi-data-integrity",
- "affinidi-did-common",
- "affinidi-did-resolver-cache-sdk",
- "affinidi-encoding",
- "async-trait",
- "serde",
- "serde_json",
- "thiserror",
- "trust-tasks-rs 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "trust-tasks-rs",
 ]
 
 [[package]]
@@ -5246,21 +5228,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "trust-tasks-rs"
-version = "0.26.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff5e5cf6e5bd8fab9b2d8214d0ba7e934bce5c4b7921174614ac0e9a6997af1c"
-dependencies = [
- "async-trait",
- "chrono",
- "regress",
- "serde",
- "serde_json",
- "serde_with",
- "thiserror",
-]
-
-[[package]]
 name = "trust-tasks-tsp"
 version = "0.26.0"
 dependencies = [
@@ -5271,7 +5238,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.26.0",
+ "trust-tasks-rs",
 ]
 
 [[package]]
