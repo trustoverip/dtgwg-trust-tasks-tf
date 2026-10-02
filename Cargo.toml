@@ -18,3 +18,15 @@ edition = "2021"
 rust-version = "1.95"
 license = "Apache-2.0"
 repository = "https://github.com/trustoverip/dtgwg-trust-tasks-tf"
+
+# trust-tasks-didcomm's mediator integration test dev-depends on the affinidi
+# messaging stack (test-mediator 0.16, messaging-sdk 0.32), which itself depends
+# on trust-tasks-rs / trust-tasks-proof 0.26 from crates.io. Without this patch
+# the dev graph builds a second copy of each beside the workspace's own — and
+# trust-tasks-rs is the generated, all-specs crate, so two concurrent builds of it
+# exhausted the CI runner (clippy and test killed with exit 143, #708). Patching
+# them to the workspace paths keeps one copy. `cargo publish` ignores [patch], so
+# what ships is unaffected.
+[patch.crates-io]
+trust-tasks-rs = { path = "trust-tasks-rs" }
+trust-tasks-proof = { path = "trust-tasks-proof" }
