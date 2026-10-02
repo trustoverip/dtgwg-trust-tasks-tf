@@ -2829,8 +2829,8 @@ mod conformance {
         use crate::validate::ValidatedPayload;
         let fixtures: &[(&str, &str)] = &[
             (
-                "An item without its query.",
-                "{\n  \"items\": [\n    {\n      \"admission\": \"automatic\",\n      \"createdAt\": \"2026-09-28T10:00:01Z\",\n      \"createdByDid\": \"did:example:administrator\",\n      \"id\": \"membership\"\n    }\n  ]\n}",
+                "An item without its admission — every criterion states how a submission meeting it is decided.",
+                "{\n  \"items\": [\n    {\n      \"createdAt\": \"2026-09-28T10:00:01Z\",\n      \"createdByDid\": \"did:example:administrator\",\n      \"id\": \"membership\"\n    }\n  ]\n}",
             ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {

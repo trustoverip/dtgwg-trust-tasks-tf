@@ -13,14 +13,13 @@
   },
   {
     "variant": "response",
-    "note": "An item without its query.",
+    "note": "An item without its admission — every criterion states how a submission meeting it is decided.",
     "payload": {
       "items": [
         {
           "id": "membership",
           "createdAt": "2026-09-28T10:00:01Z",
-          "createdByDid": "did:example:administrator",
-          "admission": "automatic"
+          "createdByDid": "did:example:administrator"
         }
       ]
     }
