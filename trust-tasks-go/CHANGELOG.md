@@ -11,6 +11,82 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.4.5 — 2026-10-02
+
+
+### Added
+
+- **vtc/join-requests**: A criterion states its admission, so any join policy is expressible (Keyring VTI-13) (#710)
+
+* feat(vtc/join-requests): a criterion states its admission, so any join policy is expressible (Keyring VTI-13)
+
+  A community's join criteria could not express its join policy. A criterion
+  was a DCQL query (presentation-definition) with optional vetting, so it could
+  not say:
+  - that nothing is required: DCQL asks for at least one credential, so an
+    open community had to delete every criterion;
+  - that a submission meeting it is reviewed rather than admitted;
+  - that an invitation is required, outside `vetting`;
+  - whose credentials count.
+  And submit decided against an unseen "active join policy", so an applicant
+  could not tell an automatic path from a queue.
+
+  A criterion is now one way into the community: what it requires and how a
+  submission meeting it is decided.
+  - vtc/_shared/0.2 schema-registry: AcceptsCriterion gains `admission`
+    (REQUIRED: automatic | review), `credentialIssuers` (community | recognised
+    | any, with `query`) and `invitationRequired`. `query` becomes OPTIONAL.
+  - vtc/schemas/accepts/register, show, list 0.2: adopt it.
+    register/0.2 adds `unsupportedRequirement`.
+  - vtc/join-requests/manifest/0.3: `admission`, `credentialIssuers` and
+    `invitationRequired` on Criterion; `presentationDefinition` OPTIONAL;
+    `requirementsDigest` REQUIRED on every criterion. Criteria are listed in the
+    order the community decides by. An empty list means no applications are
+    accepted.
+  - vtc/join-requests/submit/0.3: `criterion` names the criterion by digest. A
+    submission naming none is decided under the first criterion it meets.
+    Deciding is stated normatively. Not meeting a criterion never admits;
+    `review` refers and never admits by itself; `automatic` admits unless the
+    community refuses or refers on recorded grounds outside its criteria.
+    Nothing outside a criterion admits anyone. New codes `criterionUnknown` and
+    `notAccepting`.
+
+  The specifications state no default criterion and prefer none. Open
+  admission, review only (where invitations and trusted credentials admit no
+  one), invitation only, credential-gated, vetted, and any combination or set
+  of alternatives are expressed the same way, and each community's
+  administrators choose. Earlier versions are unchanged.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+
+
+### Specifications
+
+- **vtc/join-requests/status**: An approved applicant can ask for its credentials again (#709)
+
+* spec(vtc/join-requests/status): an approved applicant can ask for its credentials again
+
+  An approved join is not finished until the membership credential reaches the
+  applicant, and nothing in the family could say it had not, or ask for it again.
+  In the field a persona was approved, listed as a member, and stayed Pending in
+  its client: the credential push was lost, and a poll answering `approved` sent
+  nothing.
+
+  status/0.1 (draft, in place):
+  - request `resendCredentials`: ask for the already-issued credentials again.
+  - response `credentialsDelivered` (on `approved`): whether the community holds
+    the applicant's acknowledgement.
+  - response `credentialResend` (`queued` | `notNeeded` | `rateLimited`) and
+    `retryAfter`. Absent after the flag means the consumer does not support it.
+  - A re-delivery MUST send what was issued and MUST NOT issue anew; it goes to
+    the request's applicant only, and the consumer rate-limits it.
+  - `sideEffects` moves from `none` to `mutating`, so the task declares
+    `issuedAtRequirement: REQUIRED` and carries an `## Authorization` section:
+    ownership of the request.
+
+  All four bindings regenerated.
+
 ## 0.4.4 — 2026-10-01
 
 
