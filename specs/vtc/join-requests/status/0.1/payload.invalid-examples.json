@@ -1,4 +1,5 @@
 [
   { "note": "Unknown top-level member is rejected.", "payload": { "requestId": "r1", "__x__": true } },
-  { "note": "`requestId`, when supplied, must be a string — an applicant may omit it, but not send a number.", "payload": { "requestId": 1 } }
+  { "note": "`requestId`, when supplied, must be a string — an applicant may omit it, but not send a number.", "payload": { "requestId": 1 } },
+  { "note": "`resendCredentials` is a flag, not a string — a `\"true\"` must not be read as a request for delivery.", "payload": { "requestId": "r1", "resendCredentials": "true" } }
 ]

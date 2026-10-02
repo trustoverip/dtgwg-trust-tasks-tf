@@ -2,7 +2,7 @@
 slug: vtc/join-requests/status
 version: "0.1"
 title: VTC Join-Requests — Status
-summary: An applicant polls the state of their pending join request, learning what more is needed if deferred.
+summary: An applicant polls the state of their pending join request, learning what more is needed if deferred, and may ask for an approved request's credentials to be sent again.
 status: draft
 targetFrameworkVersion: "0.5.0"
 category: governance
@@ -25,9 +25,12 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: The poller must prove they are the applicant that owns the request; the document proof's signer is checked against the request's applicant. This replaces the pre-migration REST signature.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A poll carrying `resendCredentials` asks the community to deliver credentials again. Without a date, a captured poll replayed later would trigger a delivery nobody asked for at that time; the window is what lets the consumer refuse it.
 sideEffects:
-  level: none
-  rationale: "Reads the request's current state; persists nothing."
+  level: mutating
+  rationale: "A plain poll reads the request's current state and persists nothing. With `resendCredentials`, it queues a re-delivery of credentials the community already issued for an approved request, and records that it did so for its rate limit. Nothing is issued, and the request's state is unchanged."
 subjectPath: /requestId
 exposure:
   discloses: metadata
@@ -36,7 +39,7 @@ exposure:
   rationale: "The request carries at most `requestId`, an identifier the community minted, and often not even that — the id-less form is resolved from the proof signer. Nothing about the applicant travels inbound that the community did not already hold."
 retention:
   class: transient
-  rationale: A poll reads the request's current state and persists nothing. The refusal members it returns (`code`, `reason`, `decidedAt`) are already durable on the community's own row; this task only reads them out, and does not extend their life.
+  rationale: A poll reads the request's current state, and a re-delivery request records only when it was last honoured, for the rate limit. The refusal members it returns (`code`, `reason`, `decidedAt`) are already durable on the community's own row; this task only reads them out, and does not extend their life.
 errorCodes:
   - code: vtc/join-requests/status:notFound
     meaning: No join request with the supplied requestId exists, or it does not belong to the proof signer.
@@ -49,6 +52,8 @@ The **VTC Join-Requests — Status** Trust Task lets an applicant poll their own
 
 `requestId` is **optional**. An applicant whose first reply was lost never received an id, and a poll resolved from their own authenticated DID is the only form available to them — a refusal they cannot ask about is a refusal they cannot act on. A consumer that is given the id MUST prefer it over inferring the request from the caller.
 
+An approved request is not finished until its membership credential reaches the applicant. On an `approved` response, `credentialsDelivered` says whether the community holds the applicant's acknowledgement that it arrived. An applicant still waiting may set `resendCredentials`, and the community answers in `credentialResend` whether it queued a re-delivery. A re-delivery sends again the credentials the community already issued for this request; it never issues new ones.
+
 The three refusal members are the applicant's half of a rejection. `code` is stable and safe to branch on; `reason` carries the decider's words when there were any; `decidedAt` is when the decision was taken, not when this poll was produced — on an admin refusal the two diverge by however long the applicant takes to ask.
 
 ## Conformance
@@ -59,13 +64,30 @@ Consumer: resolve the request — from `requestId` when supplied, otherwise from
 
 A consumer MUST NOT return the refusal members for any status other than `rejected`: they say a decision was taken, and emitting them beside a `pending` status would tell an applicant their request had been refused when it had not.
 
+**Credential delivery.** On an `approved` response, a consumer SHOULD return `credentialsDelivered`: `true` once it holds the applicant's acknowledgement that the membership credential arrived, `false` otherwise. It MUST NOT return `credentialsDelivered` or `credentialResend` for any other status.
+
+A producer MAY set `resendCredentials: true` when the response it last saw was `approved` with `credentialsDelivered: false`, and it has waited a reasonable interval without the credential arriving. A producer MUST NOT set it on every poll; it is a request for action, and the consumer rate-limits it.
+
+A consumer that honours `resendCredentials`, for an `approved` request, answers `credentialResend`:
+
+- `queued` — it has queued a re-delivery to the request's applicant. It MUST send the credentials it already issued for this request and MUST NOT issue new ones; re-issuing would mint a second credential for the same membership.
+- `notNeeded` — it already holds the applicant's acknowledgement, so `credentialsDelivered` is `true`.
+- `rateLimited` — it honoured a re-delivery for this request too recently. It SHOULD return `retryAfter`, the earliest time it will honour another.
+
+A consumer MUST send a re-delivery only to the request's applicant, never to a party named in the payload. It SHOULD bound how often it honours the flag per request and how many times in total, and back off between them. An `approved` response carrying no `credentialResend` after `resendCredentials` was set means the consumer does not support re-delivery; the applicant then has to ask the community's administrators.
+
+## Authorization
+
+The authority this task assumes is **ownership of the request**: being the applicant who submitted it. The `proof` does not grant it; it identifies the signer so the consumer can compare them against the request's applicant, and an unknown request and somebody else's are both `notFound`. That ownership is all a poll needs to read its own request's state. It is also all `resendCredentials` needs, because the re-delivery sends the applicant credentials the community already decided to issue them, to them alone: it confers nothing they do not already hold a decision for.
+
 ## Security & Privacy
 
 ### Data carried
 
 Almost nothing goes out and something quite specific comes back. The request is
-at most `requestId`; in the id-less form it is empty, and the community resolves
-the request from the proof signer's own DID. Nothing about the applicant travels
+at most `requestId` and the `resendCredentials` flag; in the id-less form it is
+empty apart from the flag, and the community resolves the request from the proof
+signer's own DID. Nothing about the applicant travels
 inbound that the community did not mint or already hold.
 
 The response is the applicant's half of a decision. `status` is a five-value
@@ -116,8 +138,10 @@ a decision — but it is a signal about the applicant's own request.
 
 ### Retention
 
-Transient. A poll reads current state and writes nothing; the values it returns
-were already durable on the community's row from
+Transient. A plain poll reads current state and writes nothing. A honoured
+`resendCredentials` records when it was honoured, for the rate limit, beside the
+request it concerns. The values a poll returns were already durable on the
+community's row from
 [`submit`](../../submit/0.2/spec.md) and [`decide`](../../decide/0.1/spec.md).
 
 The asymmetry worth naming is that the applicant is the one party in this family
@@ -143,6 +167,13 @@ tells the applicant which specific claim their presentation failed on. That is
 information about the community's policy, disclosed to the party who has the
 strongest legitimate claim to it, and a community uncomfortable with that
 **MAY** answer at the granularity of `code` alone.
+
+`resendCredentials` is a third, narrow purpose: getting the applicant credentials
+the community already decided to issue them, when the first delivery did not
+arrive. It cannot widen the decision, because it sends only what was issued, and
+only to the applicant. A replayed poll could trigger a re-delivery, which is why
+this task requires `issuedAt`; a consumer SHOULD accept a poll only within a few
+minutes of its `issuedAt`.
 
 Whether an applicant is notified rather than made to poll, and how long a
 community leaves a decision undelivered, are consumer policy questions on which
