@@ -11,6 +11,54 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.22.7 — 2026-10-02
+
+
+### Added
+
+- **vtc**: Administrator action list, approver-device step-up, and role-based authority (#714)
+
+* feat(vtc): administrator action list, approver-device step-up, and role-based authority
+
+  Wire shapes for role-based administration at a community, the N-of-M
+  approval action list, and an approver device as a re-authentication factor.
+  Requirements: trustoverip/dtgwg-vti-spec#51 (VTI-APV-016 - 021,
+  VTI-ACL-035 - 037, VTI-VTC-022 - 023). Design:
+  OpenVTC/verifiable-trust-infrastructure docs/05-design-notes/
+  vtc-{action-list,approver-step-up,admin-roles}.md.
+
+  Action list (new family vtc/admin/actions):
+  - _shared/0.1 Action (category approval|acknowledge|queue, status, threshold,
+    approvals, summary rendered from the digested payload via JSON Pointers,
+    templateDigest, per-approver challenge).
+  - list/0.1 (views waitingForMe|requestedByMe|history|all, counts for the
+    console badge), show/0.1, cancel/0.1, acknowledge/0.1.
+  - A parked operation is answered with the existing trust-task-next-step/0.1
+    (continuation proceed, expects vtc/admin/actions/show/0.1).
+  - task-consent/decision/0.2: optional evidence (webauthn | approverSigned)
+    and actionId; the document proof stays the approver's own.
+
+  Approver step-up (new family auth/step-up/approver):
+  - attest/0.1, the approver's signed statement (purpose stepUp|decision|enrol),
+    carried embedded.
+  - invite/0.1, redeem/start/0.1, redeem/finish/0.1, enroll/0.1 (self-service
+    from an existing factor, subject's own signature), list/0.1, revoke/0.1,
+    _shared/0.1 Approver.
+  - auth/step-up/approve-request/0.4 (accepts, approvers) and
+    approve-response/0.6 (approverSigned evidence).
+  - vtc/install/claim/{start,finish}/0.3: claim under an existing DID with an
+    approver instead of a passkey.
+
+  Roles and capabilities:
+  - acl/_shared/0.2 AclEntry with explicit act, keys and capabilities
+    (VTI-ACL-006 - 008, -020), optional approve and approveCapabilities,
+    resource-qualified capability grants (VTI-ACL-035), delegatedBy.
+  - acl/{grant,update,show,list,revoke,change-role}/0.2 on AclEntry 0.2.
+  - New family vtc/roles: _shared/0.1 RoleDefinition (a role is a ceiling),
+    define/0.1, list/0.1, show/0.1, delete/0.1.
+
+  All four bindings regenerated (Rust, TS, Go, Dart); check-bindings agrees.
+
 ## 0.22.6 — 2026-10-02
 
 
