@@ -56,13 +56,27 @@ git_release_enable = true
 # Label the Release PR so it is obvious in the queue and easy to filter.
 pr_labels = ["release"]
 
-# NOT SET, on purpose:
+# Don't compile each tarball at publish time — rust.yml's `package-workspace`
+# job has already compiled every one of them, on the Release PR, before this
+# could run.
 #
-#   publish_no_verify — `cargo publish` compiles the packaged tarball, which is
-#   the check that catches generated code `include_str!`-ing a path outside the
-#   crate root (the file gets excluded from the tarball and the verify build
-#   fails). rust.yml's `package` job exercises that for trust-tasks-rs; the
-#   publish-time verify is what covers the other eight.
+# The verify build is the check that catches a packaged crate that cannot
+# compile on its own: generated code `include_str!`-ing a path outside the
+# crate root, which the tarball then excludes. It is worth keeping and was
+# worth moving. At publish time it cost ~2.5 minutes a crate — each dependent
+# rebuilt the registry copy of trust-tasks-rs — so a release spent ~17 of its
+# ~18 minutes compiling. Worse, it ran *between* uploads, so a failure there
+# was discovered with some crates already on crates.io, and crates.io uploads
+# cannot be undone (the 0.17.0 release half-published exactly that way, for a
+# different reason). On the Release PR the same failure blocks the merge
+# instead, with nothing uploaded.
+#
+# `package-workspace` uses `cargo package --workspace`, which verifies each
+# crate against its unpublished siblings through a local registry overlay —
+# the only way to compile a lockstep release before any of it is published.
+publish_no_verify = true
+
+# NOT SET, on purpose:
 #
 #   release_always — left at its default (true) so a hand-fixed version, or a
 #   re-run after a half-published release, still gets picked up. Publication is

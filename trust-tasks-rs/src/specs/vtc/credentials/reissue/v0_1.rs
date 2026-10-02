@@ -1171,27 +1171,3 @@ pub mod error_codes {
         retryable: true,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:4d5e6f70-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vtc/credentials/reissue/0.1\",\n  \"issuer\": \"did:key:z6MkCommunityAdmin\",\n  \"recipient\": \"did:webvh:QmVtcScid:vtc.example\",\n  \"issuedAt\": \"2026-09-25T11:05:00Z\",\n  \"payload\": {\n    \"cause\": {\n      \"verificationMethod\": \"did:webvh:QmVtcScid:vtc.example#z6MkNewAttestation\",\n      \"rotationId\": \"rot-0004\"\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-09-25T11:05:00Z\",\n    \"verificationMethod\": \"did:key:z6MkCommunityAdmin#z6MkCommunityAdmin\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:4d5e6f70-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response\",\n  \"issuer\": \"did:webvh:QmVtcScid:vtc.example\",\n  \"recipient\": \"did:key:z6MkCommunityAdmin\",\n  \"issuedAt\": \"2026-09-25T11:05:01Z\",\n  \"threadId\": \"urn:uuid:4d5e6f70-0000-4000-8000-000000000001\",\n  \"payload\": {\n    \"jobId\": \"reissue-rot-0004\",\n    \"state\": \"statusListsDone\",\n    \"dryRun\": false,\n    \"statusLists\": { \"total\": 3, \"done\": 3, \"failed\": 0 },\n    \"artefacts\": { \"total\": 412, \"done\": 57, \"failed\": 0, \"undeliverable\": 4 },\n    \"signedWith\": [\"did:webvh:QmVtcScid:vtc.example#z6MkReplacement\"]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

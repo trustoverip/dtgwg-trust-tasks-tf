@@ -1268,36 +1268,3 @@ pub mod error_codes {
         retryable: true,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"8c1f2d90-4a7b-4c19-9f3e-2b6d5c8a71e4\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1\",\n  \"issuer\": \"did:web:operator.example\",\n  \"recipient\": \"did:web:agent.example\",\n  \"issuedAt\": \"2026-08-14T09:00:00Z\",\n  \"payload\": {\n    \"serverId\": \"primary-host\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"b6a4e3f1-2c58-4d0a-8e17-3f9c2a5b6d70\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1#response\",\n  \"threadId\": \"8c1f2d90-4a7b-4c19-9f3e-2b6d5c8a71e4\",\n  \"issuer\": \"did:web:agent.example\",\n  \"recipient\": \"did:web:operator.example\",\n  \"issuedAt\": \"2026-08-14T09:00:03Z\",\n  \"payload\": {\n    \"serverId\": \"primary-host\",\n    \"hostOnly\": [\n      {\n        \"slotId\": \"attract-case\",\n        \"did\": \"did:webvh:QmZ4rT9xK2mN8vB5cD1sA7wE3fH6jL0pQ:did.example.com:attract-case\",\n        \"domain\": \"did.example.com\",\n        \"disabled\": false\n      },\n      {\n        \"slotId\": \"quiet-harbour\",\n        \"disabled\": false\n      }\n    ],\n    \"agentOnly\": [\n      {\n        \"did\": \"did:webvh:QmY8nP3bV6xC1kM4hS9dF2gJ5tR7wL0zQ:did.example.com:never-landed\",\n        \"slotId\": \"never-landed\",\n        \"contextId\": \"production\"\n      }\n    ],\n    \"inBoth\": 14\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-    #[test]
-    fn response_example_2() {
-        const JSON: &str = "{\n  \"id\": \"c7b5f4a2-3d69-4e1b-9f28-4a0d3b6c7e81\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/servers/reconcile/0.1#response\",\n  \"threadId\": \"8c1f2d90-4a7b-4c19-9f3e-2b6d5c8a71e4\",\n  \"issuer\": \"did:web:agent.example\",\n  \"recipient\": \"did:web:operator.example\",\n  \"issuedAt\": \"2026-08-14T09:04:03Z\",\n  \"payload\": {\n    \"serverId\": \"primary-host\",\n    \"hostOnly\": [],\n    \"agentOnly\": [],\n    \"inBoth\": 15\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

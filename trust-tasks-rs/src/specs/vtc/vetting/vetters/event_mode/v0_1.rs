@@ -1208,36 +1208,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1#request\",\n  \"issuer\": \"did:example:vetter\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-10-01T09:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"eventId\": \"kernel-summit-2026\",\n    \"tier\": \"desk\",\n    \"window\": {\n      \"startDate\": \"2026-10-12\",\n      \"endDate\": \"2026-10-14\"\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1#response\",\n  \"issuer\": \"did:example:community\",\n  \"recipient\": \"did:example:vetter\",\n  \"issuedAt\": \"2026-10-01T09:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"eventId\": \"kernel-summit-2026\",\n    \"state\": \"pending\",\n    \"tier\": \"desk\",\n    \"window\": {\n      \"startDate\": \"2026-10-12\",\n      \"endDate\": \"2026-10-14\"\n    },\n    \"groupSize\": 2,\n    \"groupFloor\": 3\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-    #[test]
-    fn response_example_2() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000003\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1#response\",\n  \"issuer\": \"did:example:community\",\n  \"recipient\": \"did:example:vetter\",\n  \"issuedAt\": \"2026-10-03T11:20:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000fe\",\n  \"payload\": {\n    \"eventId\": \"kernel-summit-2026\",\n    \"state\": \"approved\",\n    \"tier\": \"desk\",\n    \"window\": {\n      \"startDate\": \"2026-10-12\",\n      \"endDate\": \"2026-10-14\"\n    },\n    \"groupSize\": 5,\n    \"groupFloor\": 3,\n    \"label\": \"token/event/kernel-summit-2026\",\n    \"dripPerTick\": 20,\n    \"closesAfter\": \"2026-10-28\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

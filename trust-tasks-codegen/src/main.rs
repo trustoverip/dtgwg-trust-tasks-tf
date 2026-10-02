@@ -56,6 +56,37 @@ fn is_reserved_family(family: &str) -> bool {
     false
 }
 
+/// The spec families the crate's own unit tests (`#[cfg(test)]` modules in
+/// the hand-written `src/*.rs`) use. Every other gated family is compiled out
+/// of the unit-test build — see [`unit_test_gate`]. Add a family here before a
+/// unit test can name it; until then the test fails to compile with an
+/// unresolved `crate::specs::<family>`, which says what to do.
+const UNIT_TEST_FAMILIES: &[&str] = &["acl"];
+
+/// The extra attribute line that leaves `family` out of the crate's unit-test
+/// build, or `""` for a family the unit tests use.
+///
+/// `cargo test` compiles the library twice — once as the library that
+/// integration tests and dependents link, once more with `cfg(test)` as the
+/// unit-test harness — and the generated tree is nearly all of the crate (one
+/// module per specification, ~46 MB). The second copy was the largest single
+/// cost of a CI run, and its memory peak beside the first is what pushed the
+/// test job past the hosted runner's 16 GB. The unit tests only need
+/// `UNIT_TEST_FAMILIES`; everything that tests the generated tree as a whole
+/// (the `conformance` and `schema_index` integration tests, the dependents'
+/// suites) links the full, ordinary library build, which this does not touch.
+///
+/// A separate `#[cfg]` rather than `all(feature = …, not(test))`, so the
+/// `#[cfg(feature = "…")]` line `tests/spec_feature_manifest.rs` reads is
+/// unchanged.
+fn unit_test_gate(family: &str) -> &'static str {
+    if UNIT_TEST_FAMILIES.contains(&family) {
+        ""
+    } else {
+        "#[cfg(not(test))]\n"
+    }
+}
+
 /// The Cargo feature name for a gated family: the family's directory name,
 /// verbatim. Cargo permits `-` in feature names, so `credential-exchange`
 /// needs no mangling and the feature a consumer types matches the path
@@ -732,12 +763,13 @@ fn main() -> Result<()> {
     // Every spec generated. Now it is safe to wipe, so removals propagate.
     clean_generated_tree(&out_root)?;
 
-    for (path, contents) in &modules {
-        if let Some(parent) = path.parent() {
+    for module in &modules {
+        if let Some(parent) = module.path.parent() {
             fs::create_dir_all(parent)?;
         }
-        fs::write(path, contents)?;
+        fs::write(&module.path, &module.contents)?;
     }
+    write_conformance_tree(&specs, &modules, &repo_root)?;
 
     // Every gated family, in the order the feature table and the `mod.rs`
     // declarations both use. Derived from what is on disk, never listed by
@@ -1004,7 +1036,7 @@ fn indent_safe_descriptions(value: &mut Value) {
 
 /// downstream `cargo fmt` error about an unresolvable module — pointing
 /// nowhere near the file at fault.
-fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
+fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
     let mut schema: Value = serde_json::from_str(&fs::read_to_string(&spec.schema_path)?)
         .with_context(|| format!("parse {}", spec.schema_path.display()))?;
 
@@ -1129,8 +1161,6 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
         spec,
         body,
         has_response,
-        &examples,
-        &invalid_examples,
         is_bearer,
         is_proof_required,
         is_issued_at_required,
@@ -1151,14 +1181,38 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<(PathBuf, String)> {
     apply_non_exhaustive(&mut parsed);
     let formatted = prettyplease::unparse(&parsed);
 
+    let conformance = render_conformance_file(spec, &examples, &invalid_examples, has_response)
+        .map(|tokens| {
+            syn::parse2::<syn::File>(tokens.clone())
+                .map(|file| prettyplease::unparse(&file))
+                .with_context(|| {
+                    format!(
+                        "failed to parse generated conformance tests for {}/{}:\n{}",
+                        spec.slug, spec.version, tokens
+                    )
+                })
+        })
+        .transpose()?;
+
     let mut path = out_root.to_path_buf();
     for seg in spec.module_segments() {
         path = path.join(seg);
     }
-    Ok((
-        path.join(format!("{}.rs", spec.version_module())),
-        formatted,
-    ))
+    Ok(GeneratedSpec {
+        path: path.join(format!("{}.rs", spec.version_module())),
+        contents: formatted,
+        conformance,
+    })
+}
+
+/// One spec's generated output: its payload module under `src/specs`, and —
+/// when it has any examples to test — its conformance tests, which are written
+/// under `tests/conformance` rather than into the module. See
+/// [`write_conformance_tree`] for why.
+struct GeneratedSpec {
+    path: PathBuf,
+    contents: String,
+    conformance: Option<String>,
 }
 
 /// Mark every generated payload type `#[non_exhaustive]`.
@@ -1460,8 +1514,6 @@ fn render_module(
     spec: &Spec,
     body: TokenStream,
     has_response: bool,
-    examples: &SpecExamples,
-    invalid_examples: &[InvalidExample],
     is_bearer: bool,
     is_proof_required: ProofRequired,
     is_issued_at_required: IssuedAtRequired,
@@ -1581,7 +1633,6 @@ fn render_module(
         quote! {}
     };
 
-    let conformance_mod = render_conformance_mod(examples, invalid_examples, has_response);
     let error_codes_items = render_error_codes(error_codes);
 
     quote! {
@@ -1607,8 +1658,6 @@ fn render_module(
         #response_payload_impl
 
         #error_codes_items
-
-        #conformance_mod
     }
 }
 
@@ -1671,20 +1720,25 @@ fn render_error_codes(error_codes: &[ErrorCodeDecl]) -> TokenStream {
     }
 }
 
-/// Emit `#[cfg(test)] mod conformance` with one test per harvested example.
-/// Each test deserializes the JSON into a `TrustTask<Payload>` (or `Response`)
-/// and asserts the wire form round-trips.
+/// Emit one spec's file of the `conformance` integration test, with one test
+/// per harvested example, or `None` when the spec has nothing to test. Each test
+/// deserializes the JSON into a `TrustTask<Payload>` (or `Response`) and
+/// asserts the wire form round-trips.
+///
+/// The tests name the module by its public path, `trust_tasks_rs::specs::…`,
+/// because they are compiled outside the crate — see [`write_conformance_tree`].
 ///
 /// When `invalid_examples` is non-empty AND the crate is built with the
 /// `validate` feature, an additional `rejects_invalid_examples` test is
 /// emitted that asserts each fixture either fails serde deserialization
 /// (as a `Payload`) or fails JSON-Schema validation under
 /// `ValidatedPayload::validate_value`.
-fn render_conformance_mod(
+fn render_conformance_file(
+    spec: &Spec,
     examples: &SpecExamples,
     invalid_examples: &[InvalidExample],
     has_response: bool,
-) -> TokenStream {
+) -> Option<TokenStream> {
     let request_tests: Vec<TokenStream> = examples
         .request
         .iter()
@@ -1695,7 +1749,7 @@ fn render_conformance_mod(
                 #[test]
                 fn #fn_name() {
                     const JSON: &str = #json;
-                    let doc: crate::TrustTask<super::Payload> =
+                    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
                         serde_json::from_str(JSON).expect("deserialize request example");
                     let rendered = serde_json::to_value(&doc).expect("re-serialize");
                     let expected: serde_json::Value =
@@ -1717,7 +1771,7 @@ fn render_conformance_mod(
                     #[test]
                     fn #fn_name() {
                         const JSON: &str = #json;
-                        let doc: crate::TrustTask<super::Response> =
+                        let doc: trust_tasks_rs::TrustTask<spec::Response> =
                             serde_json::from_str(JSON).expect("deserialize response example");
                         let rendered = serde_json::to_value(&doc).expect("re-serialize");
                         let expected: serde_json::Value =
@@ -1756,7 +1810,7 @@ fn render_conformance_mod(
             #[cfg(feature = "validate")]
             #[test]
             fn rejects_invalid_examples() {
-                use crate::validate::ValidatedPayload;
+                use trust_tasks_rs::validate::ValidatedPayload;
                 let fixtures: &[(&str, &str)] = &[ #(#fixtures),* ];
                 for (i, (note, raw)) in fixtures.iter().enumerate() {
                     let value: serde_json::Value = match serde_json::from_str(raw) {
@@ -1764,8 +1818,8 @@ fn render_conformance_mod(
                         // Parse-level rejection — fine, the fixture is invalid wire JSON.
                         Err(_) => continue,
                     };
-                    let serde_ok = serde_json::from_value::<super::Payload>(value.clone()).is_ok();
-                    let schema_ok = super::Payload::validate_value(&value).is_ok();
+                    let serde_ok = serde_json::from_value::<spec::Payload>(value.clone()).is_ok();
+                    let schema_ok = spec::Payload::validate_value(&value).is_ok();
                     assert!(
                         !(serde_ok && schema_ok),
                         "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
@@ -1797,15 +1851,15 @@ fn render_conformance_mod(
             #[cfg(feature = "validate")]
             #[test]
             fn rejects_invalid_response_examples() {
-                use crate::validate::ValidatedPayload;
+                use trust_tasks_rs::validate::ValidatedPayload;
                 let fixtures: &[(&str, &str)] = &[ #(#fixtures),* ];
                 for (i, (note, raw)) in fixtures.iter().enumerate() {
                     let value: serde_json::Value = match serde_json::from_str(raw) {
                         Ok(v) => v,
                         Err(_) => continue,
                     };
-                    let serde_ok = serde_json::from_value::<super::Response>(value.clone()).is_ok();
-                    let schema_ok = super::Response::validate_value(&value).is_ok();
+                    let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+                    let schema_ok = spec::Response::validate_value(&value).is_ok();
                     assert!(
                         !(serde_ok && schema_ok),
                         "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
@@ -1818,24 +1872,36 @@ fn render_conformance_mod(
     };
 
     if request_tests.is_empty() && response_tests.is_empty() && invalid_examples.is_empty() {
-        return quote! {};
+        return None;
     }
 
-    quote! {
-        #[cfg(test)]
-        mod conformance {
-            //! Round-trip tests harvested from the spec's `spec.md`,
-            //! plus a `rejects_invalid_examples` test for any fixtures
-            //! in `payload.invalid-examples.json` (validate feature).
+    let module_path: syn::Path = syn::parse_str(&format!(
+        "trust_tasks_rs::specs::{}::{}",
+        spec.module_segments().join("::"),
+        spec.version_module()
+    ))
+    .expect("module segments are Rust identifiers");
+    let slug_doc = format!(" `{}/{}`", spec.slug, spec.version);
 
-            #(#request_tests)*
-            #(#response_tests)*
+    Some(quote! {
+        //! Generated by `trust-tasks-codegen` — do not edit by hand.
+        //!
+        //! Round-trip tests harvested from the spec's `spec.md`, plus a
+        //! `rejects_invalid_examples` test for any fixtures in
+        //! `payload.invalid-examples.json` (validate feature), for
+        #![doc = #slug_doc]
 
-            #invalid_test
+        // Unused when every test here is behind the `validate` feature.
+        #[allow(unused_imports)]
+        use #module_path as spec;
 
-            #response_invalid_test
-        }
-    }
+        #(#request_tests)*
+        #(#response_tests)*
+
+        #invalid_test
+
+        #response_invalid_test
+    })
 }
 
 #[derive(Default)]
@@ -1885,8 +1951,12 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             String::new()
         } else {
             format!(
-                "        #[cfg(feature = {:?})]\n",
-                feature_name(spec.family())
+                "        #[cfg(feature = {:?})]\n{}",
+                feature_name(spec.family()),
+                match unit_test_gate(spec.family()) {
+                    "" => String::new(),
+                    gate => format!("        {gate}"),
+                }
             )
         };
         arms.push_str(&gate);
@@ -2076,6 +2146,94 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {{
     Ok(())
 }
 
+/// Write the `conformance` integration test: `tests/conformance/main.rs`
+/// declaring one module per specification that has examples, and each
+/// specification's tests at `tests/conformance/<slug segments>/<version>.rs`.
+///
+/// These used to be a `#[cfg(test)] mod conformance` inside each generated
+/// module, which made them unit tests — and a unit test needs the `cfg(test)`
+/// build of the whole library, a second compilation of the entire generated
+/// tree. As an integration test they link the ordinary library build that the
+/// dependents already need. They only ever used public items.
+///
+/// The directory is wholly generated, so it is removed and rewritten, which is
+/// how a removed specification's tests go with it.
+fn write_conformance_tree(
+    specs: &[Spec],
+    modules: &[GeneratedSpec],
+    repo_root: &Path,
+) -> Result<()> {
+    let dir = repo_root.join("trust-tasks-rs/tests/conformance");
+    if fs::symlink_metadata(&dir).is_ok_and(|m| m.file_type().is_symlink()) {
+        return Err(anyhow!(
+            "{} is a symlink; refusing to clean it",
+            dir.display()
+        ));
+    }
+    if dir.exists() {
+        fs::remove_dir_all(&dir)?;
+    }
+
+    let mut root = ModNode::default();
+    let mut gates: BTreeMap<String, String> = BTreeMap::new();
+    for (spec, module) in specs.iter().zip(modules) {
+        let Some(tests) = &module.conformance else {
+            continue;
+        };
+        let segments = spec.module_segments();
+        let mut path = dir.clone();
+        for seg in &segments {
+            path = path.join(seg);
+        }
+        fs::create_dir_all(&path)?;
+        fs::write(path.join(format!("{}.rs", spec.version_module())), tests)?;
+
+        if !is_reserved_family(spec.family()) {
+            gates.insert(segments[0].clone(), spec.family().to_string());
+        }
+        let mut cursor = &mut root;
+        for seg in segments {
+            cursor = cursor.children.entry(seg).or_default();
+        }
+        cursor.leaves.push(spec.version_module());
+    }
+
+    // Inline modules contribute their names to the path a nested `mod x;` is
+    // looked up at, so one file can declare the whole tree.
+    fn render(node: &ModNode, gates: &BTreeMap<String, String>, depth: usize, out: &mut String) {
+        let indent = "    ".repeat(depth);
+        let mut names: Vec<&String> = node.children.keys().chain(node.leaves.iter()).collect();
+        names.sort();
+        for name in names {
+            if let Some(family) = gates.get(name) {
+                out.push_str(&format!(
+                    "{indent}#[cfg(feature = {:?})]\n",
+                    feature_name(family)
+                ));
+            }
+            match node.children.get(name) {
+                Some(child) => {
+                    out.push_str(&format!("{indent}mod {name} {{\n"));
+                    render(child, &BTreeMap::new(), depth + 1, out);
+                    out.push_str(&format!("{indent}}}\n"));
+                }
+                None => out.push_str(&format!("{indent}mod {name};\n")),
+            }
+        }
+    }
+    let mut body = String::from(
+        "//! Generated by `trust-tasks-codegen` — do not edit by hand.\n\
+         //!\n\
+         //! The round-trip tests harvested from every specification's examples. One\n\
+         //! integration test rather than a `#[cfg(test)]` module per specification, so\n\
+         //! they link the ordinary library build instead of a second, unit-test\n\
+         //! compilation of the whole generated tree.\n\n",
+    );
+    render(&root, &gates, 0, &mut body);
+    fs::write(dir.join("main.rs"), body)?;
+    Ok(())
+}
+
 /// Write `mod.rs` files at every level of the generated tree.
 ///
 /// The root `mod.rs` is the only level that carries `#[cfg(feature = …)]`:
@@ -2112,8 +2270,9 @@ fn write_node(
 ) -> Result<()> {
     let decl = |name: &String| match gates.get(name) {
         Some(family) => format!(
-            "#[cfg(feature = {:?})]\npub mod {name};",
-            feature_name(family)
+            "#[cfg(feature = {:?})]\n{}pub mod {name};",
+            feature_name(family),
+            unit_test_gate(family)
         ),
         None => format!("pub mod {name};"),
     };

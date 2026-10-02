@@ -1649,27 +1649,3 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:3b1f7c2e-6a4d-4b8e-9f10-2c5d7e8a9b01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/stats/show/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:00:00Z\",\n  \"payload\": {},\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4xQ...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:3b1f7c2e-6a4d-4b8e-9f10-2c5d7e8a9b02\",\n  \"type\": \"https://trusttasks.org/spec/messaging/stats/show/0.1#response\",\n  \"threadId\": \"urn:uuid:3b1f7c2e-6a4d-4b8e-9f10-2c5d7e8a9b01\",\n  \"issuer\": \"did:web:mediator.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-09-21T10:00:00Z\",\n  \"payload\": {\n    \"version\": \"0.21.0\",\n    \"startedAt\": \"2026-09-19T08:12:40Z\",\n    \"uptimeSeconds\": 179240,\n    \"connections\": { \"websocketActive\": 412, \"websocketMax\": 10000 },\n    \"totals\": {\n      \"receivedCount\": 1843201,\n      \"receivedBytes\": 2210937411,\n      \"sentCount\": 1839977,\n      \"sentBytes\": 2205114093,\n      \"deletedCount\": 1838410,\n      \"deletedBytes\": 2203001877,\n      \"websocketOpened\": 22817,\n      \"websocketClosed\": 22405,\n      \"sessionsCreated\": 30112,\n      \"sessionsAuthenticated\": 29870,\n      \"invitationsCreated\": 214,\n      \"invitationsClaimed\": 198\n    },\n    \"forwarding\": { \"queueLength\": 3, \"queueLimit\": 50000, \"circuitBreaker\": \"closed\" },\n    \"queues\": {\n      \"surveyedAt\": \"2026-09-21T09:59:12Z\",\n      \"accounts\": 1288,\n      \"truncated\": false,\n      \"receive\": { \"count\": 1904, \"bytes\": 3912455, \"saturation\": 0.41 },\n      \"send\": { \"count\": 2311, \"bytes\": 4402918, \"saturation\": 0.93 }\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

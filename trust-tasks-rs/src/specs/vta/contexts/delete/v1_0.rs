@@ -514,27 +514,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"92a3b4c5-d6e7-4f08-192a-3b4c5d6e7f08\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/delete/1.0\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T10:00:00Z\",\n  \"payload\": { \"id\": \"personal/banking\", \"force\": false },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-19T10:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z7QRs...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"b4c5d6e7-f081-492a-3b4c-5d6e7f081920\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/delete/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkAdmin\",\n  \"issuedAt\": \"2026-08-19T10:01:01Z\",\n  \"threadId\": \"c5d6e7f0-8192-4a3b-4c5d-6e7f08192a3b\",\n  \"payload\": { \"id\": \"personal/banking\", \"deleted\": true }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

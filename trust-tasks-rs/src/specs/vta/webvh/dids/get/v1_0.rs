@@ -797,27 +797,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"1a2b3c4d-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/get/1.0\",\n  \"issuer\": \"did:key:z6MkOperator\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T11:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmScidAbCdEfGh:example.com:alice\",\n    \"includeLog\": true\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"2b3c4d5e-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/get/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkOperator\",\n  \"issuedAt\": \"2026-08-19T11:00:01Z\",\n  \"threadId\": \"1a2b3c4d-0000-4000-8000-000000000001\",\n  \"payload\": {\n    \"record\": {\n      \"did\": \"did:webvh:QmScidAbCdEfGh:example.com:alice\",\n      \"serverId\": \"prod\",\n      \"mnemonic\": \"alice\",\n      \"scid\": \"QmScidAbCdEfGh\",\n      \"contextId\": \"personal\",\n      \"portable\": true,\n      \"logEntryCount\": 4,\n      \"preRotationCount\": 3,\n      \"nextFragmentId\": 5,\n      \"createdAt\": \"2026-08-19T11:00:01Z\",\n      \"updatedAt\": \"2026-08-19T12:30:00Z\"\n    },\n    \"log\": \"{\\\"versionId\\\":\\\"1-QmScid…\\\"}\\n{\\\"versionId\\\":\\\"2-…\\\"}\\n\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

@@ -1213,27 +1213,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/persona/world/list/1.0#request\",\n  \"issuer\": \"did:example:holder\",\n  \"recipient\": \"did:example:agent\",\n  \"issuedAt\": \"2026-01-01T00:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"limit\": 100\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/persona/world/list/1.0#response\",\n  \"issuer\": \"did:example:agent\",\n  \"recipient\": \"did:example:holder\",\n  \"issuedAt\": \"2026-01-01T00:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"worlds\": [\n      {\n        \"worldId\": \"01J8XR3QK9V0000000000000C4\",\n        \"name\": \"Work\",\n        \"colour\": \"teal\",\n        \"icon\": \"💼\",\n        \"faceIds\": [\"01J8XR3QK9V0000000000000A1\"],\n        \"attributeIds\": [\"01J8XR3QK9V0000000000000B7\"],\n        \"version\": 4,\n        \"createdAt\": \"2026-01-01T00:00:01Z\",\n        \"updatedAt\": \"2026-01-01T00:00:01Z\"\n      },\n      {\n        \"worldId\": \"01J8XR3QK9V0000000000000C5\",\n        \"name\": \"Home\",\n        \"colour\": \"moss\",\n        \"faceIds\": [],\n        \"attributeIds\": [\"01J8XR3QK9V0000000000000B7\"],\n        \"version\": 5,\n        \"updatedAt\": \"2026-01-01T00:00:02Z\"\n      }\n    ]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

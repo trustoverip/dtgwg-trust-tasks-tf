@@ -4343,27 +4343,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:7c2d0e11-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0\",\n  \"issuer\": \"did:key:z6MkSuperAdmin\",\n  \"recipient\": \"did:webvh:QmVtaScid:vta.example\",\n  \"issuedAt\": \"2026-09-25T10:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmVtcScid:vtc.example\",\n    \"role\": \"attestation\",\n    \"keyType\": \"mldsa44\",\n    \"expectedVersionId\": \"7-QmEntrySeven\",\n    \"dryRun\": true,\n    \"reason\": \"Sign credentials with an ML-DSA-44 proof alongside Ed25519\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-09-25T10:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkSuperAdmin#z6MkSuperAdmin\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:7c2d0e11-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0#response\",\n  \"issuer\": \"did:webvh:QmVtaScid:vta.example\",\n  \"recipient\": \"did:key:z6MkSuperAdmin\",\n  \"issuedAt\": \"2026-09-25T10:00:01Z\",\n  \"threadId\": \"urn:uuid:7c2d0e11-0000-4000-8000-000000000001\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmVtcScid:vtc.example\",\n    \"outcome\": \"preview\",\n    \"preview\": {\n      \"previewId\": \"pv_4f9c1e0a2b7d4c8e9a1f\",\n      \"baseVersionId\": \"7-QmEntrySeven\",\n      \"expiresAt\": \"2026-09-25T10:30:00Z\",\n      \"updateKeyRotates\": true,\n      \"changes\": [\n        { \"op\": \"addKey\", \"role\": \"attestation\", \"verificationMethod\": \"did:webvh:QmVtcScid:vtc.example#z2SyPqAttestation\", \"keyType\": \"mldsa44\", \"publicKeyMultibase\": \"z2SyPqAttestation\", \"relationships\": [\"assertionMethod\"] },\n        { \"op\": \"rotateUpdateKey\", \"role\": \"update\" }\n      ],\n      \"document\": { \"id\": \"did:webvh:QmVtcScid:vtc.example\", \"keyRoles\": { \"attestation\": [\"#z6MkNewAttestation\", \"#z2SyPqAttestation\"], \"operational\": [\"#z6MkOperational\"], \"messaging\": [\"#z6LSMessaging\"] } },\n      \"warnings\": [\"algorithmNotInAcceptedSet\"]\n    },\n    \"keys\": [\n      { \"role\": \"attestation\", \"keyType\": \"mldsa44\", \"verificationMethod\": \"did:webvh:QmVtcScid:vtc.example#z2SyPqAttestation\", \"publicKeyMultibase\": \"z2SyPqAttestation\", \"relationships\": [\"assertionMethod\"], \"state\": \"pending\" }\n    ]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

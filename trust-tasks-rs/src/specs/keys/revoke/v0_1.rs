@@ -663,27 +663,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"a4b5c6d7-e8f9-4015-1223-344556677889\",\n  \"type\": \"https://trusttasks.org/spec/keys/revoke/0.1\",\n  \"issuer\": \"did:web:operator.example\",\n  \"recipient\": \"did:web:custodian.example\",\n  \"issuedAt\": \"2026-07-31T09:40:00Z\",\n  \"payload\": {\n    \"keyId\": \"app-signing-key-2026\",\n    \"reason\": \"superseded by the 2027 signer\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"b5c6d7e8-f901-4126-2334-455667788990\",\n  \"type\": \"https://trusttasks.org/spec/keys/revoke/0.1#response\",\n  \"threadId\": \"a4b5c6d7-e8f9-4015-1223-344556677889\",\n  \"issuer\": \"did:web:custodian.example\",\n  \"recipient\": \"did:web:operator.example\",\n  \"issuedAt\": \"2026-07-31T09:40:01Z\",\n  \"payload\": {\n    \"keyId\": \"app-signing-key-2026\",\n    \"status\": \"revoked\",\n    \"updatedAt\": \"2026-07-31T09:40:01Z\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

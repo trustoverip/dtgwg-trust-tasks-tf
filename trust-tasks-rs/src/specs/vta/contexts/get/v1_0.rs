@@ -841,27 +841,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"b41e6f80-2c3d-4a5b-8e9f-0a1b2c3d4e5f\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/get/1.0\",\n  \"issuer\": \"did:key:z6MkOperator\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T09:10:00Z\",\n  \"payload\": { \"id\": \"personal/banking\" }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"c52f7091-3d4e-4b6c-9f0a-1b2c3d4e5f60\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/get/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkOperator\",\n  \"issuedAt\": \"2026-08-19T09:10:01Z\",\n  \"threadId\": \"b41e6f80-2c3d-4a5b-8e9f-0a1b2c3d4e5f\",\n  \"payload\": {\n    \"id\": \"personal/banking\",\n    \"name\": \"Banking\",\n    \"parent\": \"personal\",\n    \"basePath\": \"personal/banking\",\n    \"createdAt\": \"2026-03-11T08:30:00Z\",\n    \"updatedAt\": \"2026-03-11T08:30:00Z\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

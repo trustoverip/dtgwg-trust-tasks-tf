@@ -419,27 +419,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"5b1d2c8a-0e44-4f21-9c10-3a7e2b6d4f90\",\n  \"type\": \"https://trusttasks.org/spec/vta/memory/put/0.1\",\n  \"issuer\": \"did:key:z6MkFinanceAgent\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-24T12:00:00Z\",\n  \"payload\": {\n    \"contextId\": \"finance\",\n    \"key\": \"invoice-contact\",\n    \"value\": \"billing@acme.example — prefers PDF\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"a2c9...\",\n  \"type\": \"https://trusttasks.org/spec/vta/memory/put/0.1#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkFinanceAgent\",\n  \"issuedAt\": \"2026-06-24T12:00:01Z\",\n  \"threadId\": \"5b1d2c8a-0e44-4f21-9c10-3a7e2b6d4f90\",\n  \"payload\": { \"key\": \"invoice-contact\" }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

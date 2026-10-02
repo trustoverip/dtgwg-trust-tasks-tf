@@ -564,27 +564,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"60718293-a4b5-76c7-d8e9-f0a1b2c3d4e5\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-16T09:15:00Z\",\n  \"payload\": {\n    \"contextId\": \"primary\",\n    \"name\": \"messaging-bridge\",\n    \"vars\": {\n      \"MEDIATOR_DID\": \"did:web:mediator.example\"\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-06-16T09:15:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"71829304-b5c6-77d8-e9f0-a1b2c3d4e5f6\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0#response\",\n  \"threadId\": \"60718293-a4b5-76c7-d8e9-f0a1b2c3d4e5\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-06-16T09:15:01Z\",\n  \"payload\": {\n    \"document\": {\n      \"id\": \"did:web:vta.example:templates:messaging-bridge\",\n      \"verificationMethod\": [\n        {\n          \"id\": \"did:web:vta.example:templates:messaging-bridge#z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH\",\n          \"type\": \"Multikey\",\n          \"controller\": \"did:web:vta.example:templates:messaging-bridge\",\n          \"publicKeyMultibase\": \"z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH\"\n        }\n      ],\n      \"service\": [\n        {\n          \"id\": \"did:web:vta.example:templates:messaging-bridge#didcomm\",\n          \"type\": \"DIDCommMessaging\",\n          \"serviceEndpoint\": { \"uri\": \"did:web:mediator.example\", \"accept\": [\"didcomm/v2\"] }\n        }\n      ]\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

@@ -59,52 +59,76 @@
 #[cfg(feature = "acl")]
 pub mod acl;
 #[cfg(feature = "audit")]
+#[cfg(not(test))]
 pub mod audit;
 #[cfg(feature = "auth")]
+#[cfg(not(test))]
 pub mod auth;
 #[cfg(feature = "backup")]
+#[cfg(not(test))]
 pub mod backup;
 #[cfg(feature = "chat")]
+#[cfg(not(test))]
 pub mod chat;
 #[cfg(feature = "config")]
+#[cfg(not(test))]
 pub mod config;
 #[cfg(feature = "confirm")]
+#[cfg(not(test))]
 pub mod confirm;
 #[cfg(feature = "consent")]
+#[cfg(not(test))]
 pub mod consent;
 #[cfg(feature = "credential-exchange")]
+#[cfg(not(test))]
 pub mod credential_exchange;
 #[cfg(feature = "device")]
+#[cfg(not(test))]
 pub mod device;
 #[cfg(feature = "did-management")]
+#[cfg(not(test))]
 pub mod did_management;
 #[cfg(feature = "git-ns")]
+#[cfg(not(test))]
 pub mod git_ns;
 #[cfg(feature = "git-trust")]
+#[cfg(not(test))]
 pub mod git_trust;
 #[cfg(feature = "governance")]
+#[cfg(not(test))]
 pub mod governance;
 #[cfg(feature = "keys")]
+#[cfg(not(test))]
 pub mod keys;
 #[cfg(feature = "messaging")]
+#[cfg(not(test))]
 pub mod messaging;
 #[cfg(feature = "persona")]
+#[cfg(not(test))]
 pub mod persona;
 #[cfg(feature = "policy")]
+#[cfg(not(test))]
 pub mod policy;
 #[cfg(feature = "process-attestation")]
+#[cfg(not(test))]
 pub mod process_attestation;
 #[cfg(feature = "provision")]
+#[cfg(not(test))]
 pub mod provision;
 #[cfg(feature = "push")]
+#[cfg(not(test))]
 pub mod push;
 #[cfg(feature = "registry")]
+#[cfg(not(test))]
 pub mod registry;
 #[cfg(feature = "rooms")]
+#[cfg(not(test))]
 pub mod rooms;
 #[cfg(feature = "sync")]
+#[cfg(not(test))]
 pub mod sync;
 #[cfg(feature = "task-consent")]
+#[cfg(not(test))]
 pub mod task_consent;
 pub mod trust_ceremony_receipt;
 pub mod trust_task_control;
@@ -112,17 +136,24 @@ pub mod trust_task_discovery;
 pub mod trust_task_next_step;
 pub mod trust_task_ok;
 #[cfg(feature = "vault")]
+#[cfg(not(test))]
 pub mod vault;
 #[cfg(feature = "vetting")]
+#[cfg(not(test))]
 pub mod vetting;
 #[cfg(feature = "vrc")]
+#[cfg(not(test))]
 pub mod vrc;
 #[cfg(feature = "vta")]
+#[cfg(not(test))]
 pub mod vta;
 #[cfg(feature = "vtc")]
+#[cfg(not(test))]
 pub mod vtc;
 #[cfg(feature = "webvh")]
+#[cfg(not(test))]
 pub mod webvh;
 #[cfg(feature = "witness")]
+#[cfg(not(test))]
 pub mod witness;
 // trust-tasks-codegen:end
