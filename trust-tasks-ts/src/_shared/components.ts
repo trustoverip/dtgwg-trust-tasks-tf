@@ -21,6 +21,10 @@ export type AcceptsCriterionId = string;
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
 /**
+ * Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.
+ */
+export type ActionId = string;
+/**
  * How the community decides a submission that meets the criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who admits or rejects it; meeting the criterion never admits by itself. Which a criterion uses is the community's policy; this definition prefers neither.
  */
 export type Admission = "automatic" | "review";
@@ -37,6 +41,18 @@ export type Admission = "automatic" | "review";
  */
 export type AnchorCadence = "never" | "renewal" | "manual";
 /**
+ * An explicit statement of the capabilities a subject may approve. Exactly one of `ceiling` (the role's full approve ceiling), `none`, or `listed` with a NON-EMPTY list of CapabilityRef.
+ */
+export type ApproveCapabilityScope = CapabilityScopeCeiling | CapabilityScopeNone | ApproveCapabilityScopeListed;
+/**
+ * A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.
+ */
+export type ApproverDid = string;
+/**
+ * A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.
+ */
+export type ApproverLabel = string;
+/**
  * The kind of privileged change recorded in the audit log.
  */
 export type AuditAction =
@@ -51,6 +67,10 @@ export type AuditAction =
   | "adminAdd"
   | "adminStrip";
 /**
+ * An explicit authority scope — used for both the act scope and the approve scope of an entry. Exactly one of three shapes, discriminated by `scope`: `all`, `none`, or `contexts` with a NON-EMPTY list. The empty list is not a fourth shape: it is invalid, so a serializer that drops or empties the list produces a document that fails validation rather than one that silently means something else.
+ */
+export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
+/**
  * The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.
  */
 export type BundleDescriptor = StreamDescriptor | ChunkedDescriptor;
@@ -62,6 +82,14 @@ export type BundleId = string;
  * A calendar date, `YYYY-MM-DD` (RFC 3339 full-date), with no time or zone. Compared as a UTC date.
  */
 export type CalendarDate = string;
+/**
+ * An explicit statement of the capabilities an entry holds. Exactly one of three shapes, discriminated by `scope`: `ceiling` (the role's full ceiling), `none`, or `listed` with a NON-EMPTY list of CapabilityGrant. The empty list is invalid, not a fourth shape.
+ */
+export type CapabilityScope = CapabilityScopeCeiling | CapabilityScopeNone | CapabilityScopeListed;
+/**
+ * Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.
+ */
+export type Capability_AclV0_2 = string;
 /**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
@@ -132,6 +160,10 @@ export type ConsumerKind_DeviceV0_1 = Companion_DeviceV0_1 | Service_DeviceV0_1;
  * Discriminator: is this consumer a user-driven Companion or a headless Service?
  */
 export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
+/**
+ * Opaque identifier of one of the maintainer's contexts, compared by the maintainer's own ancestry predicate. Its grammar is the maintainer's.
+ */
+export type ContextPath = string;
 /**
  * An ISO 3166-1 alpha-2 country code, upper case, e.g. `DE`.
  */
@@ -263,6 +295,10 @@ export type Effect_ConsentV0_1 = "allow" | "deny";
  */
 export type ElevatedRight = "git.ns.admin" | "git.repo.create" | "git.repo.own";
 /**
+ * The anchor the binding rested on, recorded so an incident review can see how each factor came to exist. `install`: claimed with the community's install token (vtc/install/claim/finish/0.3). `invite`: redeemed from an administrator's invite (auth/step-up/approver/redeem/finish/0.1). `selfService`: added by the subject behind a factor they already held (auth/step-up/approver/enroll/0.1). `offline`: redeemed from an invite minted by the operator with host access while the service was stopped — an `invite`-shaped redemption whose issuer was the host rather than an administrator.
+ */
+export type EnrolledVia = "install" | "invite" | "selfService" | "offline";
+/**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
 export type ExpectedSha256 = string;
@@ -371,6 +407,10 @@ export type KeyRoleChangeOutcome = "preview" | "applied" | "pendingApproval";
  * Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.
  */
 export type KeyRoleProjection = "public" | "custody";
+/**
+ * An explicit key scope. Exactly one of three shapes, discriminated by `scope`: `all`, `none`, or `listed` with a NON-EMPTY list of key identifiers. The empty list is invalid, not a fourth shape.
+ */
+export type KeyScope = KeyScopeAll | KeyScopeNone | KeyScopeListed;
 /**
  * Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
  */
@@ -594,6 +634,10 @@ export type RequestedAttributes = RequestedAttribute[];
  */
 export type Resource = string;
 /**
+ * Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.
+ */
+export type ResourceQualifier = string;
+/**
  * Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.
  */
 export type RetentionPolicy = "chained" | "fromJoin";
@@ -609,6 +653,10 @@ export type RightOrigin = "recorded" | "roleDerived";
  * Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.
  */
 export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retired" | "revoked";
+/**
+ * A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.
+ */
+export type RoleName = string;
 /**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
  */
@@ -1154,7 +1202,7 @@ export interface AclChangedEvent_SyncV0_2 {
   subject: string;
   change: "granted" | "revoked" | "roleChanged" | "swapped" | "deviceDisabled" | "deviceWiped";
 }
-export interface AclEntry {
+export interface AclEntry_AclV0_1 {
   /**
    * VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
    */
@@ -1222,6 +1270,172 @@ export interface AclEntry {
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.
    */
+  ext?: Ext;
+}
+/**
+ * One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).
+ *
+ * The act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer "may this subject do X"; `approve` + `approveCapabilities` answer "may this subject ratify someone else doing X". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.
+ */
+export interface AclEntry_AclV0_2 {
+  /**
+   * VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
+   */
+  subject: string;
+  /**
+   * Opaque role identifier interpreted by the ACL maintainer. A role is a CEILING, never a grant: it bounds the capabilities the entry may hold and never adds to them. A consumer that does not recognise the role MUST treat the entry as conferring no authority and MUST NOT fall back to a default role. Act scope and role are independent members; a consumer MUST NOT compute either from the other.
+   */
+  role: string;
+  /**
+   * REQUIRED explicit act scope: where this subject may make a change itself. Exactly one of `{"scope": "all"}` (unrestricted — every context the maintainer has), `{"scope": "none"}` (may act nowhere), or `{"scope": "contexts", "contexts": [...]}` with at least one context path (the named contexts and, where the maintainer's contexts are hierarchical, their descendants). There is no default and no implicit form: an entry without `act`, or with an empty `contexts` list, is malformed and MUST be refused, never read as `all` and never read as `none`. A maintainer that has no contexts (for example a community node that narrows authority with resource qualifiers instead) states `all` or `none` only. Replaces 0.1's `scopes`.
+   */
+  act: AuthorityScope;
+  /**
+   * OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{"scope": "none"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`.
+   */
+  approve?: AuthorityScope;
+  /**
+   * REQUIRED explicit capability scope: which capabilities this entry holds. Exactly one of `{"scope": "ceiling"}` (the role's full ceiling, unnarrowed), `{"scope": "none"}` (no capabilities), or `{"scope": "listed", "grants": [...]}` with at least one CapabilityGrant. For `listed`, the EFFECTIVE set is (the role's ceiling ∩ the non-additive grants) ∪ the additive grants; it can only narrow the ceiling, except through an explicit additive grant, which only an unrestricted granter may make. There is no implicit form: an entry without `capabilities`, or with an empty `grants` list, is malformed and MUST be refused. A non-additive grant outside the role's ceiling is refused when written, never accepted with the capability silently dropped; a capability the consumer does not recognise is never treated as granted. Producers SHOULD NOT list the same (capability, resource) pair twice; a consumer MAY refuse a list that does.
+   */
+  capabilities: CapabilityScope;
+  /**
+   * OPTIONAL explicit approvable-capability scope: which capabilities this subject may APPROVE an action needing — independent of what it may do itself, so an approver can ratify a capability it does not hold (the least-privilege approver). One of `{"scope": "ceiling"}` (the role's full approve ceiling; at a maintainer whose roles define no capability-level approve ceiling, any action within `approve`), `{"scope": "none"}`, or `{"scope": "listed", "grants": [...]}` with at least one CapabilityRef (intersected with the role's approve ceiling where one is defined). ABSENT MEANS NONE: the subject may approve no capability, because absence derives no authority. Bounded by `approve`: where `approve` is absent or `{"scope": "none"}` this member confers nothing whatever it states. A subject MUST NOT confer approvable capabilities it cannot itself approve.
+   */
+  approveCapabilities?: ApproveCapabilityScope;
+  /**
+   * VID of the granter whose authority this entry was delegated from and is bounded by. The entry MUST NOT hold authority the granter did not hold when it was written, and MUST NOT retain authority the granter has since lost, so a maintainer re-evaluates it when the granter's own entry narrows or is removed. Distinct from `createdBy`, which records who wrote the entry: the two differ where an entry is written on a granter's behalf (for example after an N-of-M approval, or by an offline operator). Set by the maintainer from the granter it authorized; absent on an entry that derives from no granter's authority (the first administrator, an operator-written recovery entry).
+   */
+  delegatedBy?: string;
+  /**
+   * REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{"scope": "all"}` (every key the entry's act scope reaches), `{"scope": "none"}` (no keys), or `{"scope": "listed", "keys": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{"scope": "none"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key.
+   */
+  keys: KeyScope;
+  /**
+   * Optional human-readable label. Confers nothing.
+   */
+  label?: string;
+  createdAt?: string;
+  /**
+   * VID of the party that originally wrote this entry.
+   */
+  createdBy?: string;
+  updatedAt?: string;
+  /**
+   * VID of the party that last modified this entry.
+   */
+  updatedBy?: string;
+  /**
+   * Optional time after which the entry confers no authority. Evaluated at every authorization decision, not only when a session is established.
+   */
+  expiresAt?: string;
+  /**
+   * Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry). Carried forward from 0.1 unchanged.
+   */
+  stepUp?: {
+    /**
+     * VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
+     */
+    approver?: string;
+    /**
+     * Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
+     */
+    require?: "self" | "delegated";
+  };
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
+   */
+  ext?: Ext;
+}
+/**
+ * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
+ */
+export interface Action {
+  actionId: ActionId;
+  /**
+   * `approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one.
+   */
+  category: "approval" | "acknowledge" | "queue";
+  /**
+   * The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.
+   */
+  kind: string;
+  /**
+   * The Type URI of the parked operation — the Trust Task the community will execute when the action completes. Together with `payload` it is exactly what will run.
+   */
+  typeUri: string;
+  /**
+   * VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one.
+   */
+  requester: string;
+  /**
+   * `open` — awaiting decisions. `completed` — the threshold was met and the operation executed (or, for `acknowledge`, every administrator acknowledged). `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met but the re-check at execution refused it, or execution itself failed; the operation did not take effect.
+   */
+  status: "open" | "completed" | "declined" | "expired" | "cancelled" | "failed";
+  /**
+   * When the operation was parked.
+   */
+  createdAt: string;
+  /**
+   * When an open action lapses. Absent for an `acknowledge` or `queue` action that does not expire; ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days).
+   */
+  expiresAt?: string;
+  /**
+   * When the action left `open`. Present exactly when `status` is not `open`.
+   */
+  closedAt?: string;
+  /**
+   * Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met but the execution-time re-check refused.
+   */
+  closedReason?:
+    | "thresholdMet"
+    | "declined"
+    | "expired"
+    | "cancelledByRequester"
+    | "invalidated"
+    | "failedRecheck"
+    | "acknowledged";
+  /**
+   * The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator).
+   */
+  threshold?: number;
+  /**
+   * The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed.
+   */
+  approvals: {
+    /**
+     * VID of the approver or acknowledger, as proven by the decision's own proof.
+     */
+    subject: string;
+    /**
+     * When the decision was recorded.
+     */
+    at: string;
+  }[];
+  /**
+   * How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set.
+   */
+  approversRemaining?: number;
+  summary: Summary;
+  /**
+   * The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.
+   */
+  payload: {};
+  /**
+   * Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.
+   */
+  payloadDigest: DigestMultibase;
+  /**
+   * Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.
+   */
+  challenge?: string;
+  /**
+   * The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.
+   */
+  callerRole: "approver" | "requester" | "acknowledger" | "observer";
+  /**
+   * How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.
+   */
+  requesterOpenActions?: number;
   ext?: Ext;
 }
 /**
@@ -1337,6 +1551,38 @@ export interface AppStateRecord {
   deletedAt?: string;
 }
 /**
+ * Exactly the listed capabilities, intersected with the role's approve ceiling where the maintainer's roles define one.
+ */
+export interface ApproveCapabilityScopeListed {
+  scope: "listed";
+  /**
+   * Non-empty list of approvable capabilities. An empty array is invalid.
+   *
+   * @minItems 1
+   */
+  grants: [CapabilityRef, ...CapabilityRef[]];
+}
+/**
+ * One step-up approver binding, as its subject or an administrator sees it. The binding confers nothing of its own: it is read only when the relying party checks the evidence of a step-up asked of `subject`.
+ */
+export interface Approver {
+  approverDid: ApproverDid;
+  /**
+   * The one subject DID this approver is bound to. An approver DID is bound to at most one subject at a relying party.
+   */
+  subject: string;
+  label?: ApproverLabel;
+  /**
+   * When the binding was written.
+   */
+  enrolledAt: string;
+  enrolledVia: EnrolledVia;
+  /**
+   * When a statement by this approver last satisfied a step-up. Absent when it never has.
+   */
+  lastUsedAt?: string;
+}
+/**
  * Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.
  */
 export interface ApproverBinding {
@@ -1405,6 +1651,10 @@ export interface AttachmentRef_VaultV0_3 {
    */
   contentType?: string;
 }
+/**
+ * A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.
+ */
+export interface AttestStatement {}
 /**
  * One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.
  */
@@ -1604,6 +1854,30 @@ export interface AuthorityPresentation {
   subjectBinding?: string;
 }
 /**
+ * Unrestricted: every context the maintainer holds, present and future. On the act axis this is a super-administrator (or, at a maintainer without contexts, an entry whose authority is not narrowed by location).
+ */
+export interface AuthorityScopeAll {
+  scope: "all";
+}
+/**
+ * The named contexts and, where the maintainer's contexts are hierarchical, every descendant of them — and nowhere else. `contexts` MUST carry at least one path.
+ */
+export interface AuthorityScopeContexts {
+  scope: "contexts";
+  /**
+   * Non-empty set of context paths. An empty array is invalid (it is neither `all` nor `none`).
+   *
+   * @minItems 1
+   */
+  contexts: [ContextPath, ...ContextPath[]];
+}
+/**
+ * No authority on this axis. Stated, not implied: `none` is how an entry says it may not act (a least-privilege approver) or may not approve.
+ */
+export interface AuthorityScopeNone {
+  scope: "none";
+}
+/**
  * The effective configuration — defaults filled in — and the last sweep.
  */
 export interface AutoGrantStatus {
@@ -1722,6 +1996,20 @@ export interface BreakGlass {
   ratifiedAt?: string;
 }
 /**
+ * A capability held by an entry, optionally qualified by a resource, optionally marked additive. A qualified grant confers nothing without a live entry for the same subject, and is bounded as delegated authority is.
+ */
+export interface CapabilityGrant {
+  capability: Capability_AclV0_2;
+  /**
+   * Optional qualifier. Absent covers every resource of the capability's kind.
+   */
+  resource?: ResourceQualifier;
+  /**
+   * `true` declares an ADDITIVE grant: a capability no role implies, granted to this entry beside its role rather than through it, and therefore not intersected with the role's ceiling. Granting one requires unrestricted act authority (`act: {scope: all}`) of the granter, and an entry never acquires one by virtue of its role. Absent or `false` → an ordinary grant, intersected with the role's ceiling, and refused when written if it lies outside it. A consumer MUST refuse `additive: true` on a capability the role's ceiling already includes, so that the flag cannot be used to make an ordinary capability survive a later role change.
+   */
+  additive?: boolean;
+}
+/**
  * The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.
  */
 export interface CapabilityManifest {
@@ -1796,6 +2084,40 @@ export interface CapabilityManifest {
    */
   configSchema?: string;
   ext?: Ext;
+}
+/**
+ * A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.
+ */
+export interface CapabilityRef {
+  capability: Capability_AclV0_2;
+  /**
+   * Optional qualifier. Absent covers every resource of the capability's kind.
+   */
+  resource?: ResourceQualifier;
+}
+/**
+ * The role's full ceiling on this axis, unnarrowed: what the role admits, the entry holds (or, for approvable capabilities, may approve). Stated, not implied — it is the explicit spelling of "no narrowing".
+ */
+export interface CapabilityScopeCeiling {
+  scope: "ceiling";
+}
+/**
+ * Exactly the listed grants: (role ceiling ∩ non-additive grants) ∪ additive grants.
+ */
+export interface CapabilityScopeListed {
+  scope: "listed";
+  /**
+   * Non-empty list of capability grants. An empty array is invalid (it is neither `ceiling` nor `none`).
+   *
+   * @minItems 1
+   */
+  grants: [CapabilityGrant, ...CapabilityGrant[]];
+}
+/**
+ * No capabilities on this axis.
+ */
+export interface CapabilityScopeNone {
+  scope: "none";
 }
 /**
  * The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.
@@ -2983,6 +3305,25 @@ export interface Ext {
   [k: string]: unknown | undefined;
 }
 /**
+ * One displayed value, with where it comes from and how to render it.
+ */
+export interface Field {
+  /**
+   * RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.
+   */
+  pointer: string;
+  /**
+   * How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.
+   */
+  format: "did" | "capabilityList" | "duration" | "datetime" | "text";
+  /**
+   * The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted.
+   */
+  value: {
+    [k: string]: unknown | undefined;
+  };
+}
+/**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
  */
 export interface ForgeAccount {
@@ -3407,6 +3748,30 @@ export interface KeyRoleApprovalState {
    * When the preview, and every approval bound to it, stops being usable.
    */
   expiresAt: string;
+}
+/**
+ * Every key the entry's act scope reaches.
+ */
+export interface KeyScopeAll {
+  scope: "all";
+}
+/**
+ * Exactly the listed keys, intersected with the entry's act scope.
+ */
+export interface KeyScopeListed {
+  scope: "listed";
+  /**
+   * Non-empty set of key identifiers. An empty array is invalid (it is neither `all` nor `none`).
+   *
+   * @minItems 1
+   */
+  keys: [string, ...string[]];
+}
+/**
+ * No keys.
+ */
+export interface KeyScopeNone {
+  scope: "none";
 }
 /**
  * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
@@ -4664,6 +5029,57 @@ export interface RightRecord_GitNsV0_4 {
   breakGlass?: BreakGlass;
 }
 /**
+ * One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.
+ *
+ * A ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.
+ *
+ * NO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be "everything"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.
+ *
+ * BUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):
+ * - `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.
+ * - `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.
+ * - `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.
+ * - `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.
+ * - `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.
+ * - `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.
+ * - `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.
+ *
+ * CUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.
+ */
+export interface RoleDefinition {
+  name: RoleName;
+  /**
+   * `true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.
+   */
+  builtIn: boolean;
+  /**
+   * Optional human-readable description. Confers nothing.
+   */
+  description?: string;
+  /**
+   * The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.
+   */
+  ceiling: CapabilityRef[];
+  /**
+   * The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.
+   */
+  approveScope: CapabilityRef[];
+  createdAt?: string;
+  /**
+   * VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.
+   */
+  createdBy?: string;
+  updatedAt?: string;
+  /**
+   * VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.
+   */
+  updatedBy?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.
+   */
+  ext?: Ext;
+}
+/**
  * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.
  */
 export interface RoleKey {
@@ -5319,6 +5735,29 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.
+ */
+export interface Summary {
+  /**
+   * One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.
+   */
+  title: string;
+  /**
+   * One or two sentences from the template saying what executing the operation will do.
+   */
+  effect?: string;
+  /**
+   * Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.
+   */
+  fields: {
+    [k: string]: Field | undefined;
+  };
+  /**
+   * Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.
+   */
+  templateDigest: DigestMultibase;
 }
 /**
  * How the forge compares with the VTC's projection for one repository.

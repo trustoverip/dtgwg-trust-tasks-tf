@@ -1,0 +1,41 @@
+[
+  {
+    "note": "claimCode missing — in 0.3 the claim binds a step-up factor, which rests on two channels.",
+    "payload": {
+      "token": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbCJ9.c2lnbmF0dXJl"
+    }
+  },
+  {
+    "note": "A 0.2-shaped request — `installToken` and `claimSecret` are renamed in 0.3 and are now unknown members.",
+    "payload": {
+      "installToken": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbCJ9.c2lnbmF0dXJl",
+      "claimSecret": "R7WN-4KQ2-XHPM"
+    }
+  },
+  {
+    "note": "An adminDid in the request — the DID comes from the install token the operator minted, never from the claimant.",
+    "payload": {
+      "token": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbCJ9.c2lnbmF0dXJl",
+      "claimCode": "R7WN-4KQ2-XHPM",
+      "adminDid": "did:webvh:QmMalloryScid9:evil.example:mallory"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without challenge — the approver's statement has nothing to be made over.",
+    "payload": {
+      "claimId": "clm_1f2e3d4c5b6a79880a1b2c3d4e5f6a7b",
+      "adminDid": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "audience": "did:webvh:QmVtcScid7:acme-vtc.example",
+      "expiresAt": "2026-10-01T09:05:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A 0.2-shaped response — WebAuthn creation options belong to the passkey claim, not this one.",
+    "payload": {
+      "registrationId": "8d1f2e3c-4b5a-6978-8a9b-0c1d2e3f4a5b",
+      "options": {}
+    }
+  }
+]

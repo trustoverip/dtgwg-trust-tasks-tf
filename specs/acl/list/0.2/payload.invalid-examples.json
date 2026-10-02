@@ -1,0 +1,127 @@
+[
+  {
+    "note": "A context filter without a direction is refused — there is no safe default direction, and a revocation sweep asked in the wrong one returns the entries that are NOT being revoked.",
+    "payload": {
+      "context": "ctx/payments"
+    }
+  },
+  {
+    "note": "A resource filter without a direction is refused for the same reason.",
+    "payload": {
+      "capability": "git.repo.manage",
+      "resource": "git-ns:github.com/acme"
+    }
+  },
+  {
+    "note": "A direction without a context or resource to apply it to is refused.",
+    "payload": {
+      "direction": "subtree"
+    }
+  },
+  {
+    "note": "Unrecognised direction value — and 0.1's kebab-case `acting-in` is not a 0.2 value (re-cased to `actingIn`).",
+    "payload": {
+      "context": "ctx/payments",
+      "direction": "acting-in"
+    }
+  },
+  {
+    "note": "0.1's `scope` filter does not exist in 0.2; it is `context` + `direction`.",
+    "payload": {
+      "scope": "ctx/payments",
+      "direction": "subtree"
+    }
+  },
+  {
+    "note": "Capability filter must match the capability identifier grammar.",
+    "payload": {
+      "capability": "Vtc Roles Assign"
+    }
+  },
+  {
+    "note": "pageSize above the spec-imposed maximum of 1000.",
+    "payload": {
+      "pageSize": 5000
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "ext": {
+        "noNamespace": {}
+      }
+    }
+  },
+  {
+    "note": "Response entries must carry an explicit act scope; an empty contexts list is not one.",
+    "variant": "response",
+    "payload": {
+      "entries": [
+        {
+          "subject": "did:web:alice.example",
+          "role": "admin",
+          "act": {
+            "scope": "contexts",
+            "contexts": []
+          },
+          "keys": {
+            "scope": "all"
+          },
+          "capabilities": {
+            "scope": "ceiling"
+          }
+        }
+      ],
+      "truncated": false
+    }
+  },
+  {
+    "note": "Response entries must state `capabilities`; empty listed grants is not a capability scope.",
+    "variant": "response",
+    "payload": {
+      "entries": [
+        {
+          "subject": "did:web:alice.example",
+          "role": "admin",
+          "act": {
+            "scope": "all"
+          },
+          "keys": {
+            "scope": "all"
+          },
+          "capabilities": {
+            "scope": "listed",
+            "grants": []
+          }
+        }
+      ],
+      "truncated": false
+    }
+  },
+  {
+    "note": "Response entries must state `keys`.",
+    "variant": "response",
+    "payload": {
+      "entries": [
+        {
+          "subject": "did:web:alice.example",
+          "role": "admin",
+          "act": {
+            "scope": "all"
+          },
+          "capabilities": {
+            "scope": "ceiling"
+          }
+        }
+      ],
+      "truncated": false
+    }
+  },
+  {
+    "note": "`truncated` is REQUIRED so a consumer never mistakes a page for the complete set.",
+    "variant": "response",
+    "payload": {
+      "entries": []
+    }
+  }
+]

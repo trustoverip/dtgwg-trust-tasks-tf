@@ -1,0 +1,52 @@
+[
+  {
+    "note": "approverDid missing — an enrolment always names the one approver it binds.",
+    "payload": {
+      "label": "Browser plugin — new laptop"
+    }
+  },
+  {
+    "note": "approverDid is a did:web — a step-up approver is an Ed25519 did:key.",
+    "payload": {
+      "approverDid": "did:web:plugin.example"
+    }
+  },
+  {
+    "note": "replaces is not a did:key — only an approver can be replaced.",
+    "payload": {
+      "approverDid": "did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw",
+      "replaces": "did:web:old-laptop.example"
+    }
+  },
+  {
+    "note": "subject in the payload — the subject is the document's issuer; a payload member naming another subject would let one subject enrol a factor for somebody else.",
+    "payload": {
+      "approverDid": "did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw",
+      "subject": "did:webvh:QmBobScid5:wallet.example:bob"
+    }
+  },
+  {
+    "note": "A signingKeyDid naming a console delegation to act for the subject — an enrolment is signed by the subject's own DID, never by a delegation, so there is no member through which one could be nominated (a delegation-signed document is refused as subjectMismatch).",
+    "payload": {
+      "approverDid": "did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw",
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp"
+    }
+  },
+  {
+    "note": "statement as a string — it is a complete signed document, verified as received.",
+    "payload": {
+      "approverDid": "did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw",
+      "statement": "urn:uuid:a1d5e8f2-3b6c-4d7e-9f0a-1b2c3d4e5f0a"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response carrying the binding at the top level instead of under `approver`.",
+    "payload": {
+      "approverDid": "did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw",
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "enrolledAt": "2026-10-02T11:00:21Z",
+      "enrolledVia": "selfService"
+    }
+  }
+]

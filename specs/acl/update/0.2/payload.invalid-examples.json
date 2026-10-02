@@ -1,0 +1,176 @@
+[
+  {
+    "note": "`subject` is required.",
+    "payload": {
+      "label": "ops runner"
+    }
+  },
+  {
+    "note": "Role is not amendable here — acl/change-role owns that transition, with a compare-and-swap.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "role": "admin"
+    }
+  },
+  {
+    "note": "Empty `contexts` list is not a valid replacement act scope — it is neither `all` nor `none`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "act": {
+        "scope": "contexts",
+        "contexts": []
+      }
+    }
+  },
+  {
+    "note": "Empty `contexts` list is equally invalid as a replacement approve scope.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "approve": {
+        "scope": "contexts",
+        "contexts": []
+      }
+    }
+  },
+  {
+    "note": "Empty listed `keys` is not a valid replacement key scope — `none` is spelt `{\"scope\": \"none\"}`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "keys": {
+        "scope": "listed",
+        "keys": []
+      }
+    }
+  },
+  {
+    "note": "Empty listed capability `grants` is not a valid replacement — `none` is spelt `{\"scope\": \"none\"}`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "capabilities": {
+        "scope": "listed",
+        "grants": []
+      }
+    }
+  },
+  {
+    "note": "Empty listed approvable grants is invalid too.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "approveCapabilities": {
+        "scope": "listed",
+        "grants": []
+      }
+    }
+  },
+  {
+    "note": "`capabilities` has no null form in 0.2: returning to the full ceiling is `{\"scope\": \"ceiling\"}`, stated explicitly.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "capabilities": null
+    }
+  },
+  {
+    "note": "`keys` has no null form: every key is `{\"scope\": \"all\"}`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "keys": null
+    }
+  },
+  {
+    "note": "`approve` has no null form: withdrawal is stated as `{\"scope\": \"none\"}`, the only spelling that cannot be misread.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "approve": null
+    }
+  },
+  {
+    "note": "`act` cannot be cleared — every entry states an act scope.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "act": null
+    }
+  },
+  {
+    "note": "0.1's `allowedKeys` does not exist in 0.2; the key scope is `keys`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "allowedKeys": [
+        "key-1"
+      ]
+    }
+  },
+  {
+    "note": "0.1's `scopes` member does not exist in 0.2; the act scope is `act`.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "scopes": [
+        "ctx/a"
+      ]
+    }
+  },
+  {
+    "note": "`delegatedBy` is maintainer-populated provenance and is not settable by a producer.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "delegatedBy": "did:web:mallory.example"
+    }
+  },
+  {
+    "note": "A bare capability array is the pre-explicit shape; `capabilities` is a CapabilityScope object.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "capabilities": [
+        {
+          "capability": "git.repo.manage"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`additive` is meaningless on an approvable capability.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "approveCapabilities": {
+        "scope": "listed",
+        "grants": [
+          {
+            "capability": "vtc.vetting.manage",
+            "additive": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "note": "`stepUp.require` is a closed enum.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "stepUp": {
+        "require": "sometimes"
+      }
+    }
+  },
+  {
+    "note": "`expiresAt` must be an RFC 3339 date-time.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "expiresAt": "next tuesday"
+    }
+  },
+  {
+    "note": "Response entry without `capabilities` — the realized entry must state its capability scope.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        }
+      }
+    }
+  }
+]

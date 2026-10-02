@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/actions/list/0.1",
+  "title": "VTC Admin Actions — List — payload",
+  "description": "Enumerate the administrative actions a Verifiable Trust Community holds that the caller is entitled to see, one page at a time, from one of four views. The single-record sibling is vtc/admin/actions/show/0.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["view"],
+  "properties": {
+    "view": {
+      "type": "string",
+      "enum": ["waitingForMe", "requestedByMe", "history", "all"],
+      "description": "`waitingForMe` — open actions on which the caller is an eligible approver or acknowledger and has not yet decided. `requestedByMe` — open actions the caller requested. `history` — closed actions the caller requested, decided, or (with the audit-read capability) any closed action, newest first. `all` — every action the caller may see, open and closed."
+    },
+    "since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Only with `view: history`: return actions closed at or after this instant. Supplied with any other view it is refused with `invalidFilter` rather than ignored, so a caller never reads a silently unfiltered page as a filtered one."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25,
+      "description": "Maximum number of actions in the page. The community MAY return fewer."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Opaque continuation token from a previous page's `nextCursor`, valid only with the same `view` and `since` it was issued for."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Actions — List — response payload",
+      "description": "One page of actions and the caller's badge counts. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actions", "counts"],
+      "properties": {
+        "actions": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../_shared/0.1/action.schema.json#/$defs/Action"
+          },
+          "description": "The page, in the view's order: open views by `expiresAt` soonest first (non-expiring last, then by `createdAt`), `history` by `closedAt` newest first, `all` open-before-closed in those orders. An empty array is a successful answer: nothing in this view."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more actions follow. Pass it back as `cursor` with the same `view` and `since`."
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["waitingForMe", "requestedByMe"],
+          "description": "Totals across the whole collection, not the page — what a console badge shows. Computed for the caller regardless of which `view` was requested.",
+          "properties": {
+            "waitingForMe": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Open actions awaiting the caller's decision or acknowledgement."
+            },
+            "requestedByMe": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Open actions the caller requested."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

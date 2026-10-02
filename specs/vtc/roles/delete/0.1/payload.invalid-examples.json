@@ -1,0 +1,19 @@
+[
+  {
+    "note": "Missing required `name`.",
+    "payload": { "reason": "cleanup" }
+  },
+  {
+    "note": "Role names are lowercase hyphenated identifiers.",
+    "payload": { "name": "Events Team" }
+  },
+  {
+    "note": "There is no force flag: a role held by any entry cannot be deleted, so its holders cannot silently lose their ceiling.",
+    "payload": { "name": "events-team", "force": true }
+  },
+  {
+    "note": "Response `deleted` is the role name, not a boolean.",
+    "variant": "response",
+    "payload": { "deleted": true }
+  }
+]

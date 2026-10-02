@@ -1,0 +1,61 @@
+[
+  {
+    "note": "Unknown purpose — only stepUp, decision and enrol are defined, and the purpose is what stops a statement made for one use being spent at another.",
+    "payload": {
+      "purpose": "login",
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "audience": "did:webvh:QmVtcScid7:acme-vtc.example",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0"
+    }
+  },
+  {
+    "note": "audience missing — a statement that names no relying party could be carried to any of them.",
+    "payload": {
+      "purpose": "stepUp",
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0"
+    }
+  },
+  {
+    "note": "challenge below 16 characters — not a relying-party challenge of at least 128 bits.",
+    "payload": {
+      "purpose": "stepUp",
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "audience": "did:webvh:QmVtcScid7:acme-vtc.example",
+      "challenge": "short",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0"
+    }
+  },
+  {
+    "note": "boundTo missing — an unbound statement would satisfy whichever pending operation shared its challenge.",
+    "payload": {
+      "purpose": "stepUp",
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "audience": "did:webvh:QmVtcScid7:acme-vtc.example",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2"
+    }
+  },
+  {
+    "note": "subject is not a DID.",
+    "payload": {
+      "purpose": "enrol",
+      "subject": "alice",
+      "audience": "did:webvh:QmVtcScid7:acme-vtc.example",
+      "challenge": "RW5yb2xDaGFsbGVuZ2VOb25jZTAxMjM0NTY",
+      "boundTo": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01"
+    }
+  },
+  {
+    "note": "Unknown member `decision` — the statement attests a purpose; an approve/deny decision belongs to the carrying document.",
+    "payload": {
+      "purpose": "stepUp",
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "audience": "did:webvh:QmVtcScid7:acme-vtc.example",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0",
+      "decision": "approved"
+    }
+  }
+]

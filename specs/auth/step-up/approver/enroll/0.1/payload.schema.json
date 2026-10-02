@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approver/enroll/0.1",
+  "title": "Auth — Step-up Approver Enroll — payload",
+  "description": "A subject who already holds a step-up factor adds a step-up approver, optionally replacing one of theirs in the same step. The enrolment terms are this payload with `statement` removed; the new approver's statement binds a digest of them. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approverDid"
+  ],
+  "properties": {
+    "approverDid": {
+      "$ref": "../../_shared/0.1/approver.schema.json#/$defs/ApproverDid",
+      "description": "The step-up approver to bind. MUST equal the statement's issuer."
+    },
+    "label": {
+      "$ref": "../../_shared/0.1/approver.schema.json#/$defs/ApproverLabel"
+    },
+    "replaces": {
+      "$ref": "../../_shared/0.1/approver.schema.json#/$defs/ApproverDid",
+      "description": "A live approver of the same subject to revoke in the same step. Part of the enrolment terms, so the authority evidence for adding an approver cannot be reused to remove one."
+    },
+    "statement": {
+      "$ref": "../../_shared/0.1/approver.schema.json#/$defs/AttestStatement",
+      "description": "The new approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, over the challenge of the step-up authorizing this enrolment, with `boundTo` the terms digest defined by this specification. Not part of the enrolment terms. Absent only on a send made to obtain that challenge; an enrolment executes only with it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Step-up Approver Enroll — response payload",
+      "description": "The new binding as stored.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approver"
+      ],
+      "properties": {
+        "approver": {
+          "$ref": "../../_shared/0.1/approver.schema.json#/$defs/Approver"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

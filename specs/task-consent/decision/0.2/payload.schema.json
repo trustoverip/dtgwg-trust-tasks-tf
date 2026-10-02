@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/task-consent/decision/0.2",
+  "title": "Task Consent Decision — payload",
+  "description": "An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.1). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["challenge", "payloadDigest", "decision"],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it."
+    },
+    "payloadDigest": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+      "description": "Echoes the challenge-salted digest of the task being authorized, in the encoding the pending request carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention."
+    },
+    "decision": {
+      "$ref": "../../_shared/0.1/task-consent.schema.json#/$defs/Decision"
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "OPTIONAL human-facing note, most useful on a `deny`."
+    },
+    "actionId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "OPTIONAL identifier of the Verifiable Trust Community action (vtc/admin/actions/_shared/0.1 ActionId) this decision answers. A locator only: the executor finds the pending request by `payloadDigest` and checks `challenge` against it exactly as without this member, and refuses a decision whose `actionId` names a different action than the one those resolve to."
+    },
+    "evidence": {
+      "$ref": "#/$defs/Evidence"
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Evidence": {
+      "$anchor": "evidence",
+      "title": "Decision Evidence",
+      "description": "An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.",
+      "oneOf": [
+        {
+          "title": "WebAuthn",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "assertion"],
+          "properties": {
+            "kind": {
+              "const": "webauthn"
+            },
+            "assertion": {
+              "$ref": "../../../auth/_shared/0.1/webauthn.schema.json#/$defs/AssertionResponse",
+              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.5 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
+            }
+          }
+        },
+        {
+          "title": "ApproverSigned",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "statement"],
+          "properties": {
+            "kind": {
+              "const": "approverSigned"
+            },
+            "statement": {
+              "type": "object",
+              "description": "A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow."
+            }
+          }
+        }
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Task Consent Decision — response payload",
+      "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "payloadDigest"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["granted", "pending", "denied"],
+          "description": "`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted."
+        },
+        "payloadDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The digest this decision concerned, in the encoding the pending request carried it."
+        },
+        "actionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Echoed when the decision carried one."
+        },
+        "approvals": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct approvals recorded so far."
+        },
+        "needed": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Distinct approvals required. Present when status is `pending`."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

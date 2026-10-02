@@ -1,0 +1,82 @@
+[
+  {
+    "note": "approverSigned evidence without its statement — the statement is the factor; without it the subject's own signature is a proof the caller could make with no additional factor.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "decision": "approved",
+      "evidence": {
+        "kind": "approverSigned"
+      }
+    }
+  },
+  {
+    "note": "approverSigned statement as a string — it is a complete signed Trust Task document, verified as received, not a reference to one.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "decision": "approved",
+      "evidence": {
+        "kind": "approverSigned",
+        "statement": "urn:uuid:3a6c1e0b-9d2f-4b7a-8c15-2e4f6a8b0c01"
+      }
+    }
+  },
+  {
+    "note": "approverSigned with an empty statement object.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "decision": "approved",
+      "evidence": {
+        "kind": "approverSigned",
+        "statement": {}
+      }
+    }
+  },
+  {
+    "note": "approverSigned carrying an approverDid member — the approver is the statement's own issuer, never a separate claim the carrier could change.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "challenge": "R3JhbnRBZG1pbk5vbmNlWFlaMTIzNDU2",
+      "decision": "approved",
+      "evidence": {
+        "kind": "approverSigned",
+        "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "statement": {
+          "id": "urn:uuid:3a6c1e0b-9d2f-4b7a-8c15-2e4f6a8b0c01"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unknown evidence kind.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "approved",
+      "evidence": {
+        "kind": "totp",
+        "code": "123456"
+      }
+    }
+  },
+  {
+    "note": "Missing required challenge.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "decision": "approved"
+    }
+  },
+  {
+    "note": "An empty sessionId is not an absent one: echo it verbatim or omit it.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "",
+      "challenge": "VHJhbnNmZXJDb25maXJtTm9uY2VYWQ",
+      "decision": "approved"
+    }
+  }
+]

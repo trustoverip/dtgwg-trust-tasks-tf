@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approver/attest/0.1",
+  "title": "Auth — Step-up Approver Attest — payload",
+  "description": "A step-up approver's signed statement: for one subject, at one relying party, over one challenge the relying party issued, for one purpose, bound to one value. Issued and proved by the approver's did:key and carried embedded, as an open object, in the document it backs; never sent on its own. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "purpose",
+    "subject",
+    "audience",
+    "challenge",
+    "boundTo"
+  ],
+  "properties": {
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "stepUp",
+        "decision",
+        "enrol"
+      ],
+      "description": "What the statement attests. `stepUp`: a re-authentication bound to one operation (carried in auth/step-up/approve-response/0.6). `decision`: the factor backing a consent decision (carried in task-consent/decision/0.2 `evidence`). `enrol`: proof of possession of the approver key at enrolment. Signed, so a statement made for one use is refused at another."
+    },
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "The one subject DID the approver acts for. MUST equal the subject bound to the relying party's pending record, and MUST differ from the document's issuer."
+    },
+    "audience": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "The relying party's DID. MUST equal the document's recipient and the verifier's own DID."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512,
+      "description": "The relying party's challenge for this ceremony, copied verbatim: the approve-request's challenge for `stepUp`, the decision's `challenge` for `decision`, the enrolment start's challenge for `enrol`."
+    },
+    "boundTo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The opaque value the statement is bound to, compared by equality with the relying party's pending record. For `stepUp`, the approve-request's `boundTo` (a salted DigestMultibase of the operation). For `decision`, the decision's `payloadDigest`. For `enrol`, the enrolment id — an enrollmentId, a claimId, or the terms digest auth/step-up/approver/enroll/0.1 defines."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

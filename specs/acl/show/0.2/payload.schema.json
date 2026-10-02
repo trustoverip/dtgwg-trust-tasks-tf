@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl/show/0.2",
+  "title": "ACL Show 0.2 — payload",
+  "description": "Look up the AclEntry 0.2 a maintainer holds for one subject. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "VID of the party whose entry is being looked up."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Show 0.2 — response payload",
+      "description": "The success response to an acl/show/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "The looked-up AclEntry, or null if the subject is not in the ACL (or the querying party may not learn whether it is — see the specification).",
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "../../_shared/0.2/acl-entry.schema.json#/$defs/AclEntry" }
+          ]
+        },
+        "redactedFields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Names of AclEntry members the maintainer omitted from `entry` (for example ['label'] or ['ext.vnd.example.hr']). A maintainer cannot redact `act`, `keys` or `capabilities` — they are REQUIRED on every entry — and SHOULD NOT redact `approve` or `approveCapabilities`, because a redacted one is indistinguishable from an absent one, which means none: the reader would be told the subject approves nothing."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

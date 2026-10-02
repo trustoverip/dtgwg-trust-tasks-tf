@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/actions/_shared/0.1/action",
+  "title": "VTC Admin Actions — shared definitions",
+  "description": "Shared shapes for a Verifiable Trust Community's administrative ACTIONS: operations parked for other administrators' decision instead of being refused.\n\nTHE MODEL. When an administrative operation needs more than its requester's own authority — a grant of administrative authority that needs N-of-M approval, an operator's offline (break-glass) write every administrator must see, a human decision such as a join review — the community does not refuse it. It parks the operation as an Action. An Action names its eligible approvers (or acknowledgers) and, for `approval`, a threshold N. When the N-th approval lands, the community re-checks everything it checked at submission — the requester's standing, each approver's standing, the community's policy, the state the operation acts on — and executes the parked operation EXACTLY ONCE; the action then leaves every administrator's list. One deny closes it for everyone. An open action lapses at `expiresAt`: 72 hours by default, community-configurable between 15 minutes and 14 days.\n\nTHE REPLY TO THE REQUESTER. The gated operation is not answered with an error or with its own `#response`. The community answers it with the framework-reserved `trust-task-next-step/0.1`, carrying `continuation: proceed` and one `expects` entry whose `typeUri` is `https://trusttasks.org/spec/vtc/admin/actions/show/0.1` with `hint: {\"actionId\": \"…\"}`. `proceed` is deliberate: the requester does NOT re-submit the original operation — the community executes the parked payload itself once the threshold is met — so the requester's next step is to follow the action, not to retry. No separate response specification exists for this reply.\n\nTHE DECISION. An approver decides through `task-consent/decision` (0.2 or later), echoing the `challenge` it was shown on the action and quoting `actionId`. An acknowledger answers `acknowledge` actions with `vtc/admin/actions/acknowledge`. The requester may withdraw an open action with `vtc/admin/actions/cancel`.\n\nWHAT APPROVERS ARE SHOWN. The `summary` is rendered from a SUMMARY TEMPLATE delivered as data — a title, an effect sentence, and named fields each locating a value in the digested payload by JSON Pointer — and the template is pinned per kind by `templateDigest`. A renderer MUST derive every field it shows from `payload` via that field's `pointer`, and MUST refuse to render an action whose carried `value` differs from the value at the pointer, or whose `payloadDigest` does not match `payload`. It MUST NOT present an action from `title` or `effect` text alone: those are prose the community authored, and a decision taken on prose is a decision about whatever the prose claimed rather than about the payload that will execute (VTI-APV-013).",
+  "$defs": {
+    "ActionId": {
+      "title": "ActionId",
+      "description": "Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.",
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._~:-]+$"
+    },
+    "Action": {
+      "title": "Action",
+      "description": "One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actionId",
+        "category",
+        "kind",
+        "typeUri",
+        "requester",
+        "status",
+        "createdAt",
+        "approvals",
+        "summary",
+        "payload",
+        "payloadDigest",
+        "callerRole"
+      ],
+      "properties": {
+        "actionId": {
+          "$ref": "#/$defs/ActionId"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["approval", "acknowledge", "queue"],
+          "description": "`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one."
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-zA-Z0-9.]*$",
+          "description": "The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields."
+        },
+        "typeUri": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "description": "The Type URI of the parked operation — the Trust Task the community will execute when the action completes. Together with `payload` it is exactly what will run."
+        },
+        "requester": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "completed", "declined", "expired", "cancelled", "failed"],
+          "description": "`open` — awaiting decisions. `completed` — the threshold was met and the operation executed (or, for `acknowledge`, every administrator acknowledged). `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met but the re-check at execution refused it, or execution itself failed; the operation did not take effect."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the operation was parked."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When an open action lapses. Absent for an `acknowledge` or `queue` action that does not expire; ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days)."
+        },
+        "closedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the action left `open`. Present exactly when `status` is not `open`."
+        },
+        "closedReason": {
+          "type": "string",
+          "enum": [
+            "thresholdMet",
+            "declined",
+            "expired",
+            "cancelledByRequester",
+            "invalidated",
+            "failedRecheck",
+            "acknowledged"
+          ],
+          "description": "Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met but the execution-time re-check refused."
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator)."
+        },
+        "approvals": {
+          "type": "array",
+          "description": "The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["subject", "at"],
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048,
+                "description": "VID of the approver or acknowledger, as proven by the decision's own proof."
+              },
+              "at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When the decision was recorded."
+              }
+            }
+          }
+        },
+        "approversRemaining": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set."
+        },
+        "summary": {
+          "$ref": "#/$defs/Summary"
+        },
+        "payload": {
+          "type": "object",
+          "description": "The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received."
+        },
+        "payloadDigest": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked."
+        },
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 256,
+          "description": "Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester."
+        },
+        "callerRole": {
+          "type": "string",
+          "enum": ["approver", "requester", "acknowledger", "observer"],
+          "description": "The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view."
+        },
+        "requesterOpenActions": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "Summary": {
+      "title": "Summary",
+      "description": "What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "fields", "templateDigest"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields."
+        },
+        "effect": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "One or two sentences from the template saying what executing the operation will do."
+        },
+        "fields": {
+          "type": "object",
+          "description": "Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.",
+          "propertyNames": {
+            "pattern": "^[a-z][a-zA-Z0-9]*$",
+            "maxLength": 64
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/Field"
+          }
+        },
+        "templateDigest": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible."
+        }
+      }
+    },
+    "Field": {
+      "title": "Field",
+      "description": "One displayed value, with where it comes from and how to render it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "format", "value"],
+      "properties": {
+        "pointer": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^(/([^~/]|~[01])*)*$",
+          "description": "RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload."
+        },
+        "format": {
+          "type": "string",
+          "enum": ["did", "capabilityList", "duration", "datetime", "text"],
+          "description": "How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text."
+        },
+        "value": {
+          "description": "The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted."
+        }
+      }
+    }
+  }
+}

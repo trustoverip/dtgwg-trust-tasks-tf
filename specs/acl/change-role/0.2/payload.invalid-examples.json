@@ -1,0 +1,32 @@
+[
+  {
+    "note": "Missing required `fromRole` — the compare-and-swap needs the role the caller believes is current.",
+    "payload": { "subject": "did:web:bob.example", "toRole": "moderator" }
+  },
+  {
+    "note": "Missing required `toRole`.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member" }
+  },
+  {
+    "note": "Empty `toRole` violates minLength: 1.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "" }
+  },
+  {
+    "note": "This task changes only the role; capability changes go through acl/update/0.2.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "moderator", "capabilities": { "scope": "ceiling" } }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "moderator", "ext": { "no-dots": {} } }
+  },
+  {
+    "note": "Response entry with an empty `contexts` act scope is not a valid AclEntry 0.2.",
+    "variant": "response",
+    "payload": { "entry": { "subject": "did:web:bob.example", "role": "moderator", "act": { "scope": "contexts", "contexts": [] }, "keys": { "scope": "none" }, "capabilities": { "scope": "ceiling" } } }
+  },
+  {
+    "note": "Response entry must state `capabilities` — the new role's full ceiling is spelt `{\"scope\": \"ceiling\"}`.",
+    "variant": "response",
+    "payload": { "entry": { "subject": "did:web:bob.example", "role": "moderator", "act": { "scope": "all" }, "keys": { "scope": "none" } } }
+  }
+]

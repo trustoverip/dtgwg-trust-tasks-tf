@@ -1,0 +1,433 @@
+[
+  {
+    "note": "`act` is REQUIRED (explicit act scope). An entry that omits it must not be read as `all` or as `none` — it is malformed.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "`keys` is REQUIRED (VTI-ACL-006/007). 0.1's absent-`allowedKeys`-means-every-key is gone; an entry without an explicit key scope is malformed.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "`capabilities` is REQUIRED. Absence must not be read as the role's full ceiling — that is spelt `{\"scope\": \"ceiling\"}`.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        }
+      }
+    }
+  },
+  {
+    "note": "Empty `contexts` list is not a valid act scope — it is neither `all` nor `none` (minItems: 1). This is the empty-means-unrestricted defect class 0.2 exists to close.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "contexts",
+          "contexts": []
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "Empty listed `keys` is not a valid key scope — `none` is spelt `{\"scope\": \"none\"}`.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "listed",
+          "keys": []
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "Empty listed capability `grants` is not a valid capability scope — `none` is spelt `{\"scope\": \"none\"}`.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "listed",
+          "grants": []
+        }
+      }
+    }
+  },
+  {
+    "note": "Empty listed `approveCapabilities` grants is invalid too.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        },
+        "approve": {
+          "scope": "all"
+        },
+        "approveCapabilities": {
+          "scope": "listed",
+          "grants": []
+        }
+      }
+    }
+  },
+  {
+    "note": "A bare capability array is the pre-explicit shape; `capabilities` is a CapabilityScope object.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": [
+          {
+            "capability": "vtc.roles.assign"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "note": "0.1's `allowedKeys` does not exist in AclEntry 0.2 — it is replaced by `keys`.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        },
+        "allowedKeys": [
+          "key-1"
+        ]
+      }
+    }
+  },
+  {
+    "note": "`scope: contexts` without a `contexts` list is invalid; a dropped list must fail validation rather than mean something else.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "contexts"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "Unrecognised act scope value — only `all`, `none` and `contexts` exist.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "everywhere"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "`all` carrying a `contexts` list is ambiguous and rejected (additionalProperties: false on each scope shape).",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all",
+          "contexts": [
+            "ctx/a"
+          ]
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "`ceiling` is a capability-scope value, not a key-scope value.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "ceiling"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "Empty approve `contexts` list is equally invalid on the approve axis.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "approver",
+        "act": {
+          "scope": "none"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        },
+        "approve": {
+          "scope": "contexts",
+          "contexts": []
+        }
+      }
+    }
+  },
+  {
+    "note": "0.1's ambiguous `scopes` member does not exist in AclEntry 0.2 — it is replaced by `act`.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        },
+        "scopes": []
+      }
+    }
+  },
+  {
+    "note": "A bare-string act scope (`\"all\"`) is not the object shape; the explicit form is `{\"scope\": \"all\"}`.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": "all",
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "Capability identifiers are lowercase dot-separated segments — upper case fails the pattern.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "repo-manager",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "Git.Repo.Manage"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "note": "A CapabilityGrant needs `capability`; a bare resource names nothing.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "repo-manager",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "resource": "git-ns:github.com/acme"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "note": "`additive` is meaningless on an approvable capability (CapabilityRef has no such member).",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "approver",
+        "act": {
+          "scope": "none"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        },
+        "approve": {
+          "scope": "all"
+        },
+        "approveCapabilities": {
+          "scope": "listed",
+          "grants": [
+            {
+              "capability": "vtc.vetting.manage",
+              "additive": true
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule: every immediate child of ext MUST be reverse-DNS namespaced.",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      },
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "Response entry without `act` — the realized entry must state its act scope too.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "Response entry without `keys` — the realized entry must state its key scope too.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  }
+]

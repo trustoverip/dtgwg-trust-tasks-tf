@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/roles/show/0.1",
+  "title": "VTC Roles — Show — payload",
+  "description": "Fetch one administrative role of a VTC by name. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "$ref": "../../_shared/0.1/role.schema.json#/$defs/RoleName",
+      "description": "Name of the role, built-in or custom."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Roles — Show — response payload",
+      "description": "The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": {
+          "$ref": "../../_shared/0.1/role.schema.json#/$defs/RoleDefinition",
+          "description": "The role record."
+        },
+        "holders": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Optional: the number of ACL entries currently holding this role. A count, never a list of subjects. A VTC MAY omit it where the querying party may not learn it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

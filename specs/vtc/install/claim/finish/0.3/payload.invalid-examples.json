@@ -1,0 +1,41 @@
+[
+  {
+    "note": "A 0.2-shaped request — `installToken`, `registrationId` and `webauthnResponse` belong to the passkey claim and are unknown members here. Pins that the two versions are distinguishable rather than silently interchangeable.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r",
+      "webauthnResponse": {}
+    }
+  },
+  {
+    "note": "statement missing — without the approver's signature over the claim challenge, nothing shows the founder holds the factor being bound.",
+    "payload": {
+      "claimId": "clm_1f2e3d4c5b6a79880a1b2c3d4e5f6a7b",
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "approverDid is the founder's own webvh DID — a step-up approver is a distinct Ed25519 did:key.",
+    "payload": {
+      "claimId": "clm_1f2e3d4c5b6a79880a1b2c3d4e5f6a7b",
+      "approverDid": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "statement": { "id": "urn:uuid:d4a8b1c5-6e9f-4a01-c23d-4e5f6a7b8c1a" }
+    }
+  },
+  {
+    "note": "An adminDid in the request — the administrator is the DID the install token names and the document's issuer, never a payload claim.",
+    "payload": {
+      "claimId": "clm_1f2e3d4c5b6a79880a1b2c3d4e5f6a7b",
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+      "statement": { "id": "urn:uuid:d4a8b1c5-6e9f-4a01-c23d-4e5f6a7b8c1a" },
+      "adminDid": "did:webvh:QmMalloryScid9:evil.example:mallory"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without setupSessionToken — vtc/admin/bootstrap has nothing to consume.",
+    "payload": {
+      "adminDid": "did:webvh:QmAliceScid4:wallet.example:alice"
+    }
+  }
+]
