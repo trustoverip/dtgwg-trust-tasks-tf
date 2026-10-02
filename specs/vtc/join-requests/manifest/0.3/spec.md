@@ -1,0 +1,593 @@
+---
+slug: vtc/join-requests/manifest
+version: "0.3"
+title: VTC Join-Requests — Manifest
+summary: Discover a community's join criteria before applying — each way in, what it requires (credentials, vetting, an invitation, or nothing), whether meeting it admits automatically or is reviewed, and a digest naming its exact version.
+status: draft
+targetFrameworkVersion: "0.5.0"
+category: governance
+keywords:
+  - vtc
+  - join-requests
+  - onboarding
+  - discovery
+  - vetting
+authors:
+  - Glenn Gore (https://github.com/stormer78)
+parties:
+  - role: applicant
+    requirement: REQUIRED
+    member: issuer
+    identifierScope: pairwise
+  - role: community maintainer
+    requirement: REQUIRED
+    member: recipient
+    identifierScope: public
+proofRequirement:
+  requirement: RECOMMENDED
+  rationale: Join criteria are pre-membership discovery information; a proof is not required to read them, though it is recommended so a community can rate-limit or attribute discovery. What an applicant later relies on is the requirementsDigest, which is recomputable from the criterion itself and so needs no signature to be checked.
+sideEffects:
+  level: none
+  rationale: "Reads the community's published join criteria; persists nothing."
+exposure:
+  discloses: metadata
+  ingests: none
+  actsAsSubject: false
+  rationale: "The response describes what the community asks of applicants — admission modes, presentation-definitions, vetting counts and methods, invitation requirements, a governance link — and optionally how the community asks to be shown. None of it is data about a member, applicant, or natural person. The request carries nothing."
+retention:
+  class: transient
+  rationale: The request has no members at all, so there is nothing for a community to keep from it beyond whatever attribution the optional proof carries. This is the one task in the family that leaves no trace of an applicant, which is what makes it usable before deciding whether to apply.
+errorCodes: []
+related:
+  - vtc/join-requests/submit
+  - vtc/schemas/accepts/register
+  - vtc/endorsement-types/register
+  - vtc/vetting/vetters/grant
+  - vtc/vetting/vetters/list
+  - vetting/request
+---
+
+## Abstract
+
+The **VTC Join-Requests — Manifest** Trust Task returns a community's join criteria, so a prospective applicant knows what to present, and what will happen when they do, before presenting anything.
+
+Each criterion is one way into the community, and the criteria are alternatives: an applicant meets one of them, not all. A criterion states:
+
+- **`admission`**: whether a submission meeting it is admitted automatically (`automatic`) or referred to an administrator who decides (`review`);
+- what it requires, which is any of credentials (a **`presentationDefinition`**, from issuers named by **`credentialIssuers`**), **peer identity vetting** (a `vetting` requirements object: how many statements, by which methods, from whom) and an **invitation** this community issued (`invitationRequired`), or none of them;
+- a **`requirementsDigest`** naming that exact version of the criterion.
+
+Which criteria a community publishes is its own policy. This specification states none and prefers none. Open admission, admission after review, invitation-only admission and any combination of credentials, vetting and invitations are expressed the same way, and a community can publish several so applicants can choose.
+
+The applicant then gathers what its chosen criterion requires and submits via [`vtc/join-requests/submit/0.3`](../../submit/0.3/spec.md), naming the criterion by its digest. An applicant that needs vetters, and does not know any, can find the community's listed vetters with [`vtc/vetting/vetters/list`](../../../vetting/vetters/list/0.1/spec.md).
+
+The response **MAY** also carry **`branding`** — a display name, an accent colour and a logo — so a client can show the community recognisably. Branding is presentation, not identity.
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change in place while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+### Changes from 0.2
+
+In 0.2 a criterion was a presentation-definition, with optional vetting. That shape could not say three things a community may want to say:
+
+- that **nothing is required**. A presentation-definition asks for at least one credential, so an open community could publish no criterion at all, and an empty list did not say what it meant;
+- that a submission meeting the criterion is **reviewed** rather than admitted. 0.2 left the decision unstated, so an applicant could not tell an automatic path from one ending in a queue;
+- that an **invitation** is required, except inside `vetting`, or as a credential query any credential could satisfy.
+
+0.3 makes a criterion a complete statement of one way in. It adds `admission` (REQUIRED), makes `presentationDefinition` OPTIONAL with `credentialIssuers` beside it, adds `invitationRequired`, and makes `requirementsDigest` REQUIRED on every criterion, because a change to the admission mode changes what an applicant is told as much as a change to vetting does. It also says what an empty `criteria` list means.
+
+A 0.2 criterion is not a 0.3 criterion: it states no `admission`, and the community that published it is the only party who can say what it was.
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming **applicant** (`issuer`) sends the request with no parameters.
+
+A conforming **community** (`recipient`):
+
+1. Returns `communityDid` and `criteria`. The criteria are every way into the community: a community **MUST NOT** admit an applicant other than by a submission that meets one of them, decided as its `admission` states ([`vtc/join-requests/submit/0.3`](../../submit/0.3/spec.md)). A community **MAY** tailor the criteria to the caller, but the default is its public join policy.
+2. **MUST** carry `requirementsDigest` on every criterion, computed as defined below over the criterion exactly as returned.
+3. **MUST** list the criteria in the order it decides by: a submission that names no criterion is decided under the first one it meets ([`vtc/join-requests/submit/0.3`](../../submit/0.3/spec.md)). The order is the community's policy, as the criteria are.
+4. **MUST NOT** publish a `vetting` object it cannot evaluate as written: `minStatements` at least 1, `acceptedMethods` non-empty, every method in `minByMethod` also in `acceptedMethods`, and every duration in the form the schema permits.
+5. **MUST** evaluate a submission that cites a `requirementsDigest` under the criterion version that digest names, while that version is within its `requirementsGrace`, and **MUST** record which version governed the decision. Outside the grace window, or where no grace is declared, the current version governs.
+6. **MUST NOT** apply to a submission under a criterion any requirement the criterion does not state, and **MUST NOT** apply to a vetting statement any constraint the `vetting` object does not state. Absent members mean no requirement or constraint of that kind. This specification defines no default criterion, admission mode, credential, count, method floor, age limit or documentation, and a community that relies on one publishes it.
+7. **MAY** return `branding`, with any of its members. Branding belongs to no criterion, so no `requirementsDigest` covers it, and changing it changes nothing an applicant was told to gather.
+8. **MAY** return `requestedAttributes`: what it asks an applicant to tell it about themselves, as claim types, never values. An answer is **self-asserted** — the applicant's own statement, bound to them by the submission's proof and attested by nobody — and the community **MUST NOT** describe one as verified or make a decision that assumes it is. A community that needs an attested value asks for a credential in a criterion instead. It **SHOULD** ask only for what it will use, and state why in `purpose`: a requested attribute is the one part of this manifest that asks an applicant to hand over something about themselves before they have been admitted.
+9. **MAY** return an empty `criteria` list, which means it accepts no applications at present. A community that admits anyone who applies publishes a criterion that requires nothing, with the `admission` it chooses.
+
+A conforming **applicant**:
+
+1. **MUST** ignore members of `vetting` it does not recognise, and **MUST** treat a `vetting` object that fails item 4 above as unsatisfiable rather than guess at its meaning. A client's reading of the requirements is advisory in any case: the community's decision is authoritative, and some of what it evaluates — current vetter eligibility, for one — is visible only to the community.
+2. On starting an application under a criterion, **SHOULD** record its `requirementsDigest` at that moment, cite it in every [`vetting/request`](../../../../vetting/request/0.1/spec.md) and as the submission's `criterion`, and recompute it from the criterion before relying on it.
+3. **SHOULD** show the applicant every `requestedAttributes` entry, with its `purpose`, before disclosing anything, and **MUST** let them decline one whose `required` is false. The answers leave through the applicant's own disclosure path, so the applicant's record of what went where includes them.
+4. **MUST NOT** treat `branding` as evidence of which community it is dealing with — `communityDid` is that — and **SHOULD** ignore a `branding` member it cannot use, such as a logo that fails to load, rather than refuse the manifest.
+5. **MUST NOT** tell the applicant that meeting a criterion admits them unless its `admission` is `automatic`. Under `review`, meeting it means an administrator will decide.
+
+### Computing `requirementsDigest`
+
+```
+requirementsDigest = multibase( multihash( SHA-256( JCS( criterion ∖ requirementsDigest ) ) ) )
+```
+
+`criterion ∖ requirementsDigest` is the criterion object with its `requirementsDigest` member removed and nothing else changed — members of `vetting` a reader does not recognise included. `JCS` is [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) serialized as UTF-8. The value is a `DigestMultibase`. SHA-256 and base58btc (`z`) are **RECOMMENDED**, and a consumer compares decoded multihash bytes, not encoded strings. The digest covers every member of the criterion — `admission`, `description`, `presentationDefinition`, `credentialIssuers`, `invitationRequired` and `vetting` — because a change to any of them changes what the applicant must do, or how they will be decided.
+
+## Authorization
+
+This task is not consequential ([SPEC §3](/SPEC.md#3-terminology)): it changes nothing and discloses only the community's own published policy. It presupposes no authorization evidence beyond the community's own policy on who may read its criteria. A community that requires a `proof` does so to rate-limit or attribute discovery, not to authorize it; see Security & Privacy.
+
+## Definitions
+
+**Criterion** — one way into the community: an `id`, an optional human `description`, an `admission`, the requirements it states (any of `presentationDefinition` with `credentialIssuers`, `vetting` and `invitationRequired`, or none) and a `requirementsDigest`. Every stated requirement must be met; a criterion stating none is met by every submission.
+
+**`admission`** — `automatic`: a submission meeting the criterion is admitted without a person deciding. `review`: it is referred to an administrator, who admits or rejects it, and meeting the criterion never admits by itself.
+
+**`presentationDefinition`** and **`credentialIssuers`** — the credentials required, and whose credentials count: `community` (credentials this community issued), `recognised` (this community's, or those of a community it recognises through [`vtc/recognition/check`](../../../recognition/check/0.1/spec.md)), or `any` (any issuer whose credential verifies, further limited only by the presentation-definition). A credential that does not verify meets no criterion.
+
+**`invitationRequired`** — true: a valid, unconsumed invitation this community issued to the applicant ([`vtc/invitations/issue`](../../../invitations/issue/0.1/spec.md)) is required. Absent or false: an invitation plays no part in meeting the criterion.
+
+**Vetting requirements object (`vetting`)** — what identity-vetting evidence the criterion needs beyond what the presentation-definition can express. Every number in it is community policy. The object is open: members defined by a later version of its shape are ignored by readers that do not know them. A community with parameters this version does not name puts them under `ext` rather than waiting for a version that does — see [Extending the vetting requirements](#extending-the-vetting-requirements).
+
+| Member | Meaning |
+|---|---|
+| `version` | Version of this object's shape — `0.1` for the members below |
+| `statementType` | The predicate IRI a counted statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1` for peer identity vetting — registered as one the community accepts via [`vtc/endorsement-types/register`](../../../endorsement-types/register/0.1/spec.md) |
+| `minStatements` | Statements needed, counting each vetter once however many DIDs they hold |
+| `minByMethod` | Per-method floors within `minStatements`, keyed by method |
+| `acceptedMethods` | Methods whose statements count at all: `inPerson`, `video`, `priorAcquaintance` |
+| `acceptedDocumentClasses` | Optional, and absent by default. Absent: each vetter decides what documentation they accept, including none. Present: a statement that relied on none of the listed documentation does not count |
+| `requiredClaims` | Claim types the Vetting Card must carry and a counted statement must list as verified; the identity commitment is computed over these |
+| `optionalClaims` | Claim types an applicant may add; never affect counting |
+| `maxStatementAge` | A statement older than this at decision time does not count |
+| `eligibleVetters.role` | The role a statement's issuer must hold for it to count, matched as the action `role:<role>` in a Verifiable Authority Credential the community issued to that issuer, whose `authority.scope` is the community (see [`vtc/vetting/vetters/grant`](../../../vetting/vetters/grant/0.1/spec.md)) |
+| `independence` | Caps per declared vetter–applicant relationship (`none`, `communityColleague`, `sameEmployer`, `family`, `otherPersonal`); whether all statements must carry the same identity commitment |
+| `invitation` | Whether an invitation credential must (`required`) or may (`optional`) accompany the statements, or plays no part (`none`) |
+| `decisionSla` | How long after submission the community undertakes to decide |
+| `requirementsGrace` | How long an application started under an earlier digest is evaluated under that version |
+| `governanceFrameworkUrl` | Where the vetting governance, including the attestation text vetters sign, is published |
+| `ext` | Vendor-namespaced parameters this version does not enumerate ([SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) |
+| `extCritical` | Namespaces of `ext` an applicant must understand or refuse ([SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)) |
+
+Durations are ISO 8601 in weeks, days, hours, minutes and seconds (`P120D`, `P2W`, `PT15M`). Years and months are not accepted: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
+
+### Extending the vetting requirements
+
+`vetting.ext` carries parameters this version does not enumerate, under a reverse-DNS namespace its controller defines ([SPEC.md §4.5.1](../../../../../SPEC.md#451-the-ext-extension-member)). It is how a community publishes an admission mode the members above cannot express — the parameters of a zero-knowledge vetting scheme, say — without a version of this specification that names them.
+
+The object has always been open, so an undeclared member validated before `ext` existed. Validating is not the same as arriving: a generated type carries the members this schema declares and discards the rest, so an undeclared member is dropped on the way in and dropped again on the re-serialization `requirementsDigest` is computed over — a reader that recomputes the digest from what it parsed gets a value that does not match the one it was sent. `ext` is declared, so it survives both.
+
+`vetting.extCritical` names namespaces an applicant **MUST** understand or refuse — the criticality marking the framework defines alongside `ext`. A community marks one when applying under the criterion without understanding it would mean something other than what the community requires: an applicant that ignored a hidden-vetting namespace would gather named statements and submit them to a criterion whose purpose was that it does not receive them. Marked, that applicant stops with `unsupportedExtension` instead of silently applying the wrong way.
+
+Mark nothing whose absence leaves the criterion correct. A namespace carrying a hint, a display label or an audit annotation is not critical, and marking it turns every applicant that has not implemented it into a failure where it would otherwise have applied successfully. Both members are covered by `requirementsDigest` like every other part of the criterion, so adding a namespace changes the digest and starts the `requirementsGrace` window for applications already under way.
+
+**`requirementsDigest`** — the digest defined under Conformance. It names a version of a criterion, not a community policy as a whole.
+
+**Community branding (`branding`)** — how the community asks to be shown, all members optional:
+
+| Member | Rule |
+|---|---|
+| `displayName` | 1–128 characters |
+| `accentColor` | `#rrggbb`, hexadecimal, compared case-insensitively |
+| `logoUrl` | An https URL, at most 2048 characters |
+| `ext` | [SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member) extensions |
+
+A community sets it through its own administration, outside any Trust Task.
+
+## Request
+
+The applicant sends the request to the community; the payload is empty. See the top-level schema in [`payload.schema.json`](payload.schema.json).
+
+### Reading the criteria
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c01",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.3",
+  "recipient": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:00:00Z",
+  "payload": {}
+}
+```
+
+## Response
+
+The community returns its criteria, per the sub-schema reachable via `$anchor: "response"` in [`payload.schema.json`](payload.schema.json). This task defines no extended error codes; failures use `trust-task-error` with the framework's standard codes.
+
+### Several ways in: vetted, invited, a partner's member, or reviewed
+
+Four criteria, each one way into this community, and each the community's own choice. The first admits on two vetting statements, at least one in person, none from family. The second admits on an invitation it issued. The third admits a member of a community it recognises. The fourth requires nothing, and refers every application to an administrator. Nothing presented outside them admits anyone. An applicant may name the one it applies under; one that names none is decided under the first it meets, which is why the criterion that requires nothing is last — listed first, it would govern every submission and this community would review everyone. Each `requirementsDigest` shown is the real value for the criterion as printed.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c02",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.3#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c01",
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:00:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example",
+    "criteria": [
+      {
+        "id": "kernel-developer",
+        "description": "Two kernel vetters must confirm who you are. At least one must meet you in person.",
+        "admission": "automatic",
+        "presentationDefinition": {
+          "credentials": [
+            {
+              "id": "vetting",
+              "format": "ldp_vc",
+              "multiple": true,
+              "meta": {
+                "type_values": [
+                  [
+                    "StatementCredential"
+                  ]
+                ]
+              },
+              "claims": [
+                {
+                  "path": [
+                    "credentialSubject",
+                    "predicate"
+                  ],
+                  "values": [
+                    "https://registry.trustoverip.org/dtg/vsc/vetted/1"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "credentialIssuers": "any",
+        "vetting": {
+          "version": "0.1",
+          "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
+          "minStatements": 2,
+          "minByMethod": {
+            "inPerson": 1
+          },
+          "acceptedMethods": [
+            "inPerson",
+            "video",
+            "priorAcquaintance"
+          ],
+          "requiredClaims": [
+            "name.legal"
+          ],
+          "optionalClaims": [
+            "account.handle",
+            "url.homepage"
+          ],
+          "maxStatementAge": "P120D",
+          "eligibleVetters": {
+            "role": "vetter"
+          },
+          "independence": {
+            "maxByDeclaredRelationship": {
+              "family": 0,
+              "sameEmployer": 1
+            },
+            "requireConsistentIdentityCommitment": true
+          },
+          "invitation": "optional",
+          "decisionSla": "P14D",
+          "requirementsGrace": "P30D",
+          "governanceFrameworkUrl": "https://kernel-vtc.example/governance#vetting"
+        },
+        "requirementsDigest": "zQmaf3wtkysZWg8vCzdetBwzjiHACZz8JAxTVr4W66chiXV"
+      },
+      {
+        "id": "invited",
+        "description": "Present an invitation from this community.",
+        "admission": "automatic",
+        "invitationRequired": true,
+        "requirementsDigest": "zQmRitDbNjAJrrzt8QUUKYWpQVEEaLGm5FT7JZ7cLU7PzLh"
+      },
+      {
+        "id": "partner-member",
+        "description": "Members of a partner community may join on their membership credential.",
+        "admission": "automatic",
+        "presentationDefinition": {
+          "credentials": [
+            {
+              "id": "membership",
+              "format": "ldp_vc",
+              "meta": {
+                "type_values": [
+                  [
+                    "MembershipCredential"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        "credentialIssuers": "recognised",
+        "requirementsDigest": "zQmS2pPuojY2EXRGbn24vkJEaLV2m9MD6Quri3wPZ4ApA7J"
+      },
+      {
+        "id": "apply",
+        "description": "Anyone may apply; an administrator reviews every application.",
+        "admission": "review",
+        "requirementsDigest": "zQmRLSnrQUSEdiWJxr7nMTF1QsU5VG14qtdf2BZ1kBU7RM3"
+      }
+    ]
+  }
+}
+```
+
+### Review only
+
+This community has one criterion. It requires nothing and admits no one automatically: every application, whatever it carries, is decided by an administrator. An invitation or a credential presented with the application is information for the administrator, not a way in, because no criterion states it.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c05",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.3#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c01",
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:00:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example",
+    "criteria": [
+      {
+        "id": "apply",
+        "description": "Every application is reviewed by an administrator.",
+        "admission": "review",
+        "requirementsDigest": "zQmQnyY7jU5X3YxAdTn9ZxyzQAsUtxSyqzUhfnKKUADrhzo"
+      }
+    ]
+  }
+}
+```
+
+### Open: straight through
+
+This community admits anyone who applies.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c06",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.3#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c01",
+  "issuer": "did:webvh:QmVtcScid:open-vtc.example",
+  "issuedAt": "2026-09-12T08:00:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:open-vtc.example",
+    "criteria": [
+      {
+        "id": "open",
+        "description": "Anyone may join.",
+        "admission": "automatic",
+        "requirementsDigest": "zQmWCtwaFYPe1pTNzeSbTJLxQTKbfZEb8FiBNP1mgDMGNy5"
+      }
+    ]
+  }
+}
+```
+
+### A criterion whose vetting parameters this version does not name
+
+This community admits on two vetting statements like the one above, but counts them from a zero-knowledge proof rather than from credentials that name their issuers. The parameters an applicant proves against are not members this version defines, so they travel under a namespace the community controls, and the community marks that namespace critical: an applicant that ignored it would gather named statements and present them to a criterion whose purpose is that it never receives them. An applicant that does not implement the namespace stops with `unsupportedExtension` instead.
+
+The keys are truncated examples, not usable values. The `requirementsDigest` shown is the real value for the criterion as printed, `extCritical` and `ext` included — adding a namespace changes the digest, which is what starts `requirementsGrace` for applications already under way.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c04",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.3#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c03",
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:00:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example",
+    "criteria": [
+      {
+        "id": "kernel-developer-private",
+        "description": "Two kernel vetters must confirm who you are, and the community is told how many vouched for you without being told who.",
+        "admission": "automatic",
+        "presentationDefinition": {
+          "credentials": [
+            {
+              "id": "vetting",
+              "format": "ldp_vc",
+              "multiple": true,
+              "meta": {
+                "type_values": [
+                  [
+                    "StatementCredential"
+                  ]
+                ]
+              },
+              "claims": [
+                {
+                  "path": [
+                    "credentialSubject",
+                    "predicate"
+                  ],
+                  "values": [
+                    "https://registry.trustoverip.org/dtg/vsc/vetted/1"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "vetting": {
+          "version": "0.1",
+          "statementType": "https://registry.trustoverip.org/dtg/vsc/vetted/1",
+          "minStatements": 2,
+          "minByMethod": {
+            "inPerson": 1
+          },
+          "acceptedMethods": [
+            "inPerson",
+            "video"
+          ],
+          "requiredClaims": [
+            "name.legal"
+          ],
+          "maxStatementAge": "P120D",
+          "eligibleVetters": {
+            "role": "vetter"
+          },
+          "invitation": "none",
+          "decisionSla": "P14D",
+          "ext": {
+            "org.openvtc.hidden-vetting": {
+              "suite": "ps-ddh-bls12381",
+              "helperKey": "zUC7K4ndUaGZgV7Cp2yJy6JtMoUHY6u7tkcSYUvPrEidqn97FrCvKsrXJ8uPGZvRZzKVQvKKQBYJnGm4VnGWTGqCgKPsNjCNhbXJgHLPJwCJHKxqLvDfPqFcMhJQFYrJKxCgKPs",
+              "tokenKey": "zUC7YNfqQjHvbYWVYKxPvqJJ8ycDPZ4pGQHNqEwUbNLPjYhLcKGVKqWMxQfVzYjWQEyPQpLZnVvBqzKhQxNWbGYJRcPvMKnDLbYqWQJPKZGvYHcMXrLPqDvbNKcYzWMqJHLPvKx",
+              "vetterLabels": [
+                "vetter/2026-10",
+                "vetter/2026-09"
+              ],
+              "tokenLabels": [
+                "token/2026-10",
+                "token/2026-09"
+              ]
+            }
+          },
+          "extCritical": [
+            "org.openvtc.hidden-vetting"
+          ],
+          "governanceFrameworkUrl": "https://kernel-vtc.example/governance#vetting"
+        },
+        "credentialIssuers": "any",
+        "requirementsDigest": "zQmc3pV4jDBWtJ79F79MomEuzYVghF7DWdp87xrUaW8DUop"
+      }
+    ]
+  }
+}
+```
+
+### With community branding
+
+A community that sets branding returns it beside the criteria. Branding is outside every criterion, so the digest a criterion carries is unaffected by it.
+
+```json
+{
+  "id": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c04",
+  "type": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.3#response",
+  "threadId": "urn:uuid:5b0f3c1e-7d2a-4c8e-9f41-2a6b8d0e1c03",
+  "issuer": "did:webvh:QmVtcScid:kernel-vtc.example",
+  "issuedAt": "2026-09-12T08:05:01Z",
+  "payload": {
+    "communityDid": "did:webvh:QmVtcScid:kernel-vtc.example",
+    "criteria": [
+      {
+        "id": "invited",
+        "description": "Present an invitation from this community.",
+        "admission": "automatic",
+        "invitationRequired": true,
+        "requirementsDigest": "zQmRitDbNjAJrrzt8QUUKYWpQVEEaLGm5FT7JZ7cLU7PzLh"
+      }
+    ],
+    "branding": {
+      "displayName": "Kernel VTC",
+      "accentColor": "#1f6feb",
+      "logoUrl": "https://kernel-vtc.example/assets/logo.svg"
+    }
+  }
+}
+```
+
+## Security & Privacy
+
+### Data carried
+
+The request payload has no members. That remains the substance of this task:
+`manifest` is the only document in the join family a prospective applicant can send
+without disclosing anything about themselves, and `0.2` and `0.3` extend what it lets them
+learn before deciding. Someone can now find out that a community requires two
+people to check their identity, one of them face to face, and walk away having
+handed over nothing. Discovering the same thing by applying would have cost them a
+join DID, a Vetting Card and several introductions.
+
+The response describes the community's policy and nothing else. The `vetting`
+object names methods, counts, claim *types* and a governance link; it never carries
+a claim value, a vetter's identity, or anything about any applicant. In particular
+it does not list vetters. How an applicant finds one is a separate question, with a
+different privacy answer, and folding a vetter list into a document anyone can
+fetch anonymously would publish exactly the social graph peer vetting is designed
+to keep private. That answer is
+[`vtc/vetting/vetters/list`](../../../vetting/vetters/list/0.1/spec.md), which
+returns only vetters who chose to be listed, and only to callers the community can
+identify. A community **MUST NOT** use the open `vetting` object to carry
+vetter identities, applicant data, or anything else about a person.
+
+`acceptedDocumentClasses` is absent by default, and communities **SHOULD** leave it
+absent unless their governance genuinely needs a floor. Stating a floor pushes every
+vetter towards the same documents. It also excludes applicants who do not hold one
+of the listed classes, and a vetter who knows someone well enough to attest without a
+document is often the better evidence.
+
+`branding` is the community's own presentation and carries nothing about a person.
+`displayName` is self-asserted, and a client **SHOULD** show it beside, never in place
+of, whatever the user chose the community by. `logoUrl` is the one member a client
+fetches from somewhere other than the community, and fetching it tells that host
+that someone, at some network address, is looking at this community. A client
+**SHOULD** fetch a logo only when about to show it, **SHOULD NOT** send cookies or
+credentials with the fetch, and **MUST** treat the image as untrusted input.
+
+### Correlation
+
+The community maintainer declares `identifierScope: public` for the reason `0.1`
+gave. Discovery only works if a stranger can name the community: an applicant finds
+`communityDid` in a directory or governance document, asks it what to present, and
+later addresses the same identifier at [`submit`](../../submit/0.3/spec.md) and
+names it to every vetter. A pairwise community identifier would break that chain at
+its first link. The cost, a fixed community identifier any observer can name, is
+accepted openly.
+
+`requirementsDigest` adds a correlation handle that deserves a precise statement.
+An applicant echoes it to each vetter and at submission, so it links those
+documents to one criterion version. That is its purpose, and it links nothing a
+`communityDid` does not already link, **provided every caller receives the same
+digest**. A community that tailors criteria per caller produces per-caller digests,
+and the digest then becomes a tag the community can read back at submission to
+learn which discovery request led to which application — and, where a proof was
+required at discovery, which DID asked. A community **SHOULD NOT** tailor a
+criterion carrying `vetting`. An applicant can detect tailoring by comparing digests
+with another prospective applicant, or with a second anonymous read, and **SHOULD**
+treat a digest it has not seen served anonymously with suspicion.
+
+The applicant declares `pairwise`, and an unproofed read discloses no applicant
+identifier at all. A community that requires a proof converts an anonymous read into
+an attributable one, and thereby learns who is considering applying. That is a larger
+population than its applicants, and one that never chose to be observed.
+
+### Retention
+
+Transient on the community's side: there is nothing in the request to retain. Where a
+community requires a proof, what it may keep is that a particular DID asked, at a
+particular time. That is attribution metadata, and it **SHOULD** be aged out on a
+rate-limiting schedule, not an adjudication one.
+
+The applicant has a real reason to keep the response. The criterion version its
+`requirementsDigest` names is the evidence of what the applicant was told to gather.
+If requirements change mid-application, it is the only thing that lets the applicant
+show they were owed evaluation under the earlier version within `requirementsGrace`.
+An applicant **SHOULD** retain the criterion alongside the application until the
+decision.
+
+The community, for its part, **MUST** retain every criterion version whose digest a
+pending or decided application cites, because a digest it can no longer resolve is a
+decision record it can no longer explain.
+
+### Consent/purpose
+
+The purpose is pre-application discovery, and it serves data minimisation directly.
+An applicant who knows the requirements gathers exactly the vetting they need. One who
+does not either over-gathers — more vetters, more copies of their legal name on more
+devices — or learns what was missing only after submitting, disclosing more at each
+attempt.
+
+Nothing about a caller is collected here, so there is no reuse question about
+applicant data. The reuse question that does arise is the community's own: a proof
+required for rate-limiting yields a record of interest, and using it for anything
+other than rate-limiting is a purpose the caller never addressed. Whether to require
+a proof at all is consumer policy, and per
+[SPEC §7.3](/SPEC.md#73-specification-requirements) item 13 this specification takes
+no position on it.
