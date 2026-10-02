@@ -31,6 +31,40 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.26.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.26.1...trust-tasks-rs-v0.26.2) — 2026-10-02
+
+
+### Added
+
+- **auth/signing-key**: Enroll 0.2 — the identity's own authorization, and key replacement ([#712](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/712))
+
+auth/signing-key/enroll/0.2 adds two optional members to 0.1:
+
+  - authorization: a complete auth/signing-key/authorize/0.1 document (new),
+    issued and signed by identityDid, addressed to the consumer, whose payload
+    is the enrolment's payload with authorization removed. A valid one is the
+    authority evidence of control over identityDid in place of an
+    operation-bound step-up. For a holder who signs in with a key its agent
+    holds (a VTA wallet persona) and has no passkey at the consumer, it is the
+    only evidence available, and it is the stronger of the two.
+  - replaces: an active delegation of the same identity revoked in the same
+    critical section as the enrolment. At the consumer's cap a holder whose
+    other keys live on browsers it no longer has could neither list nor revoke
+    them — both need a working key — and so could not enrol at all.
+
+  tooManyKeys gains details.activeKeys, listed only once the enrolment's
+  authority evidence has been accepted. New codes: authorizationInvalid,
+  replaceNotFound (one answer for every reason). The cap is decided after the
+  evidence and standing, counting a replaced key as gone. Producers SHOULD mint
+  a new key per enrolment: an expired delegation still answers
+  alreadyEnrolled.
+
+  authorization is an open object in the enroll schema on purpose: its proof
+  covers every member, so a binding must not narrow it to a typed struct that
+  drops one before verification.
+
+
+
 ## [0.26.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.26.0...trust-tasks-rs-v0.26.1) — 2026-10-02
 
 
