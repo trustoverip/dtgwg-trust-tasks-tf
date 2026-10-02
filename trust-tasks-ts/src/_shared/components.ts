@@ -21,6 +21,10 @@ export type AcceptsCriterionId = string;
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
 /**
+ * How the community decides a submission that meets the criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who admits or rejects it; meeting the criterion never admits by itself. Which a criterion uses is the community's policy; this definition prefers neither.
+ */
+export type Admission = "automatic" | "review";
+/**
  * How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.
  *
  * It is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.
@@ -137,13 +141,21 @@ export type CountryCode = string;
  */
 export type CredentialId = string;
 /**
+ * Whose credentials meet the criterion's `query`. `community`: only credentials this community issued. `recognised`: credentials this community issued, or issued by a community it recognises (vtc/recognition/check). `any`: any issuer whose credential verifies — the query's own constraints, including DCQL `trusted_authorities`, are then all that limits it. A credential that does not verify (signature, validity window, revocation) never meets a criterion, whichever value is chosen.
+ */
+export type CredentialIssuers = "any" | "community" | "recognised";
+/**
  * A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.
  */
 export type CredentialTypeUri = string;
 /**
  * Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.
  */
-export type CriterionDescription = string;
+export type CriterionDescription_VtcV0_1 = string;
+/**
+ * Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when the criterion has a `query` — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and the criterion's other members disagree, those govern.
+ */
+export type CriterionDescription_VtcV0_2 = string;
 /**
  * The root of the room's record tree — a host's commitment to *which records the room holds*, as distinct from what any one of them says.
  *
@@ -1006,10 +1018,39 @@ export type WorldColour = "slate" | "indigo" | "teal" | "moss" | "sand" | "clay"
 /**
  * A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.
  */
-export interface AcceptsCriterion {
+export interface AcceptsCriterion_VtcV0_1 {
   id: AcceptsCriterionId;
   query: DcqlQuery;
-  description?: CriterionDescription;
+  description?: CriterionDescription_VtcV0_1;
+  vetting?: VettingRequirements;
+  /**
+   * When this criterion was last registered. Registering an existing id replaces it.
+   */
+  createdAt: string;
+  /**
+   * The administrator who last registered the criterion.
+   */
+  createdByDid: string;
+}
+/**
+ * One way into the community: what an applicant must present, and how a submission that presents it is decided. Every requirement it states must be met; requirements it does not state are not requirements. A criterion stating none is met by every submission. A community's criteria are alternatives: a submission is decided under the one it names. What vtc/join-requests/manifest/0.3 publishes to applicants as a `Criterion` is derived from this.
+ */
+export interface AcceptsCriterion_VtcV0_2 {
+  id: AcceptsCriterionId;
+  admission: Admission;
+  /**
+   * The credentials an applicant must present, as a DCQL query. Absent: the criterion requires no credential.
+   */
+  query?: DcqlQuery;
+  /**
+   * Whose credentials meet `query`. Present exactly when `query` is.
+   */
+  credentialIssuers?: CredentialIssuers;
+  /**
+   * True: a submission meets the criterion only when it carries a valid, unconsumed invitation credential this community issued to the applicant. Absent or false: an invitation plays no part in meeting this criterion (another criterion may still require one).
+   */
+  invitationRequired?: boolean;
+  description?: CriterionDescription_VtcV0_2;
   vetting?: VettingRequirements;
   /**
    * When this criterion was last registered. Registering an existing id replaces it.

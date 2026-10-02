@@ -3,7 +3,7 @@
  * Source: specs/vtc/schemas/accepts/show/0.1/payload.schema.json
  */
 
-import type { AcceptsCriterion, AcceptsCriterionId, ClaimType, CriterionDescription, DcqlQuery, Duration, Ext, ExtCritical, VettingDocumentation, VettingMethod, VettingRequirements } from "../../../../../_shared/components.js";
+import type { AcceptsCriterion_VtcV0_1 as AcceptsCriterion, AcceptsCriterionId, ClaimType, CriterionDescription_VtcV0_1 as CriterionDescription, DcqlQuery, Duration, Ext, ExtCritical, VettingDocumentation, VettingMethod, VettingRequirements } from "../../../../../_shared/components.js";
 
 
 /**

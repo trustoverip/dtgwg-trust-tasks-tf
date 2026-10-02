@@ -14,4 +14,4 @@ export interface VTCSharedSchemaRegistryDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AcceptsCriterion, AcceptsCriterionId, CredentialSchema, CredentialTypeUri, CriterionDescription, DcqlQuery, DtgType, Duration, SchemaDescription, SchemaEntry, SchemaKind, SchemaSummary, VettingRequirements } from "../../../_shared/components.js";
+export type { AcceptsCriterion_VtcV0_1 as AcceptsCriterion, AcceptsCriterionId, CredentialSchema, CredentialTypeUri, CriterionDescription_VtcV0_1 as CriterionDescription, DcqlQuery, DtgType, Duration, SchemaDescription, SchemaEntry, SchemaKind, SchemaSummary, VettingRequirements } from "../../../_shared/components.js";

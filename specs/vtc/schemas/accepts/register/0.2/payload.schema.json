@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/schemas/accepts/register/0.2",
+  "title": "VTC Schemas — Accepts — Register — payload",
+  "description": "Register a named Accepts criterion — one way into the community, stating what it requires and how a submission meeting it is decided — or replace the one registered under the same id. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "admission"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/AcceptsCriterionId"
+    },
+    "admission": {
+      "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/Admission"
+    },
+    "query": {
+      "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/DcqlQuery",
+      "description": "The credentials an applicant must present. Absent: the criterion requires no credential."
+    },
+    "credentialIssuers": {
+      "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/CredentialIssuers"
+    },
+    "invitationRequired": {
+      "type": "boolean",
+      "description": "True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant."
+    },
+    "description": {
+      "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/CriterionDescription"
+    },
+    "vetting": {
+      "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/VettingRequirements"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Schemas — Accepts — Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterion"
+      ],
+      "properties": {
+        "criterion": {
+          "$ref": "../../../../_shared/0.2/schema-registry.schema.json#/$defs/AcceptsCriterion"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  },
+  "dependentRequired": {
+    "query": [
+      "credentialIssuers"
+    ],
+    "credentialIssuers": [
+      "query"
+    ]
+  }
+}

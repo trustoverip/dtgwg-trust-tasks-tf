@@ -600,6 +600,7 @@ export * as SchemaRegistryShared_v0_1 from "./vtc/_shared/0.1/schema-registry.js
 export * as VetterProfileShared_v0_1 from "./vtc/_shared/0.1/vetter-profile.js";
 export * as VettingAutoGrantShared_v0_1 from "./vtc/_shared/0.1/vetting-auto-grant.js";
 export * as WebsiteTransferShared_v0_1 from "./vtc/_shared/0.1/website-transfer.js";
+export * as SchemaRegistryShared_v0_2 from "./vtc/_shared/0.2/schema-registry.js";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload.js";
 export * as VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
@@ -644,6 +645,7 @@ export * as VtcJoinRequestsDecide_v0_1 from "./vtc/join-requests/decide/0.1/payl
 export * as VtcJoinRequestsList_v0_1 from "./vtc/join-requests/list/0.1/payload.js";
 export * as VtcJoinRequestsManifest_v0_1 from "./vtc/join-requests/manifest/0.1/payload.js";
 export * as VtcJoinRequestsManifest_v0_2 from "./vtc/join-requests/manifest/0.2/payload.js";
+export * as VtcJoinRequestsManifest_v0_3 from "./vtc/join-requests/manifest/0.3/payload.js";
 export * as VtcJoinRequestsQuery_v0_1 from "./vtc/join-requests/query/0.1/payload.js";
 export * as VtcJoinRequestsReject_v0_1 from "./vtc/join-requests/reject/0.1/payload.js";
 export * as VtcJoinRequestsShow_v0_1 from "./vtc/join-requests/show/0.1/payload.js";
@@ -651,6 +653,7 @@ export * as VtcJoinRequestsStatus_v0_1 from "./vtc/join-requests/status/0.1/payl
 export * as VtcJoinRequestsSubmitReceipt_v0_1 from "./vtc/join-requests/submit-receipt/0.1/payload.js";
 export * as VtcJoinRequestsSubmit_v0_1 from "./vtc/join-requests/submit/0.1/payload.js";
 export * as VtcJoinRequestsSubmit_v0_2 from "./vtc/join-requests/submit/0.2/payload.js";
+export * as VtcJoinRequestsSubmit_v0_3 from "./vtc/join-requests/submit/0.3/payload.js";
 export * as VtcJoinRequestsSupplement_v0_1 from "./vtc/join-requests/supplement/0.1/payload.js";
 export * as VtcJoinRequestsVettingShow_v0_1 from "./vtc/join-requests/vetting/show/0.1/payload.js";
 export * as VtcJoinRequestsWithdraw_v0_1 from "./vtc/join-requests/withdraw/0.1/payload.js";
@@ -696,8 +699,11 @@ export * as VtcRelationshipsSuspend_v0_1 from "./vtc/relationships/suspend/0.1/p
 export * as VtcRoomsList_v0_1 from "./vtc/rooms/list/0.1/payload.js";
 export * as VtcSchemasAcceptsDelete_v0_1 from "./vtc/schemas/accepts/delete/0.1/payload.js";
 export * as VtcSchemasAcceptsList_v0_1 from "./vtc/schemas/accepts/list/0.1/payload.js";
+export * as VtcSchemasAcceptsList_v0_2 from "./vtc/schemas/accepts/list/0.2/payload.js";
 export * as VtcSchemasAcceptsRegister_v0_1 from "./vtc/schemas/accepts/register/0.1/payload.js";
+export * as VtcSchemasAcceptsRegister_v0_2 from "./vtc/schemas/accepts/register/0.2/payload.js";
 export * as VtcSchemasAcceptsShow_v0_1 from "./vtc/schemas/accepts/show/0.1/payload.js";
+export * as VtcSchemasAcceptsShow_v0_2 from "./vtc/schemas/accepts/show/0.2/payload.js";
 export * as VtcSchemasDelete_v0_1 from "./vtc/schemas/delete/0.1/payload.js";
 export * as VtcSchemasList_v0_1 from "./vtc/schemas/list/0.1/payload.js";
 export * as VtcSchemasRegister_v0_1 from "./vtc/schemas/register/0.1/payload.js";
