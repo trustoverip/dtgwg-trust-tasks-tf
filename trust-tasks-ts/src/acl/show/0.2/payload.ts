@@ -451,7 +451,6 @@ export const PAYLOAD_SCHEMA = {
         },
         "additive": {
           "type": "boolean",
-          "default": false,
           "description": "`true` declares an ADDITIVE grant: a capability no role implies, granted to this entry beside its role rather than through it, and therefore not intersected with the role's ceiling. Granting one requires unrestricted act authority (`act: {scope: all}`) of the granter, and an entry never acquires one by virtue of its role. Absent or `false` → an ordinary grant, intersected with the role's ceiling, and refused when written if it lies outside it. A consumer MUST refuse `additive: true` on a capability the role's ceiling already includes, so that the flag cannot be used to make an ordinary capability survive a later role change."
         }
       }
@@ -906,7 +905,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "additive": {
           "type": "boolean",
-          "default": false,
           "description": "`true` declares an ADDITIVE grant: a capability no role implies, granted to this entry beside its role rather than through it, and therefore not intersected with the role's ceiling. Granting one requires unrestricted act authority (`act: {scope: all}`) of the granter, and an entry never acquires one by virtue of its role. Absent or `false` → an ordinary grant, intersected with the role's ceiling, and refused when written if it lies outside it. A consumer MUST refuse `additive: true` on a capability the role's ceiling already includes, so that the flag cannot be used to make an ordinary capability survive a later role change."
         }
       }

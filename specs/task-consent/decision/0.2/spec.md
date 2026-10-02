@@ -223,8 +223,7 @@ Bob's console showed him the action from `vtc/admin/actions/list`, with his chal
         "response": {
           "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWXpkbU1UbGhNMlUxWWpKa05EaG1NR0UyWlRGa09XTTBZamhtTWpCaE16YyIsIm9yaWdpbiI6Imh0dHBzOi8vY29tbXVuaXR5LmV4YW1wbGUifQ",
           "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
-          "signature": "MEUCIQDexampleSignatureOverAuthenticatorDataAndClientDataHash",
-          "userHandle": null
+          "signature": "MEUCIQDexampleSignatureOverAuthenticatorDataAndClientDataHash"
         },
         "authenticatorAttachment": "platform"
       }

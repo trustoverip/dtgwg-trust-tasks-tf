@@ -28,7 +28,6 @@
     },
     "replaces": {
       "type": "boolean",
-      "default": false,
       "description": "`true` to replace an existing custom role of this name; `false` or absent to create one. A create against an existing name is refused with `exists`, and a replace against a missing one with `notFound`, so neither intent can be mistaken for the other."
     },
     "reason": {

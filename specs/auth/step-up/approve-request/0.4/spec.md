@@ -166,7 +166,14 @@ The relying party (`issuer`) sends the request to the approver (`recipient`), or
     "targetAcr": "aal2",
     "ttl": 120
   },
-  "proof": { "…": "…" }
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-05-23T14:00:00Z",
+    "verificationMethod": "did:web:bank.example#key-1",
+    "proofPurpose": "authentication",
+    "proofValue": "z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNSARiKBk9czhSePTFehP8c3PGfb6a22gkfUKKiMU5gSwwFdcjtPar"
+  }
 }
 ```
 
@@ -196,7 +203,14 @@ The relying party (`issuer`) sends the request to the approver (`recipient`), or
     },
     "ttl": 120
   },
-  "proof": { "…": "…" }
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-05-23T14:00:00Z",
+    "verificationMethod": "did:web:bank.example#key-1",
+    "proofPurpose": "authentication",
+    "proofValue": "z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNSARiKBk9czhSePTFehP8c3PGfb6a22gkfUKKiMU5gSwwFdcjtPar"
+  }
 }
 ```
 
