@@ -1,0 +1,65 @@
+[
+  {
+    "note": "statement missing — without the approver's signature over the ceremony challenge nobody has shown the approver key is held.",
+    "payload": {
+      "enrollmentId": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01",
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "approverDid is a did:web — a step-up approver is an Ed25519 did:key, whose document cannot be rewritten after enrolment.",
+    "payload": {
+      "enrollmentId": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01",
+      "approverDid": "did:web:plugin.example",
+      "statement": { "id": "urn:uuid:3a6c1e0b-9d2f-4b7a-8c15-2e4f6a8b0c02" }
+    }
+  },
+  {
+    "note": "approverDid is a P-256 did:key — approvers are Ed25519 (z6Mk…).",
+    "payload": {
+      "enrollmentId": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01",
+      "approverDid": "did:key:zDnaerDaTF5BXEavCrfRZEk316dpbLsfPDZ3WJ5hRTPFU2169",
+      "statement": { "id": "urn:uuid:3a6c1e0b-9d2f-4b7a-8c15-2e4f6a8b0c02" }
+    }
+  },
+  {
+    "note": "statement as a string — it is a complete signed document, verified as received.",
+    "payload": {
+      "enrollmentId": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01",
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+      "statement": "eyJhbGciOiJFZERTQSJ9"
+    }
+  },
+  {
+    "note": "label longer than 64 characters.",
+    "payload": {
+      "enrollmentId": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01",
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+      "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "statement": { "id": "urn:uuid:3a6c1e0b-9d2f-4b7a-8c15-2e4f6a8b0c02" }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Stored binding without enrolledVia — every binding records the anchor it rested on.",
+    "payload": {
+      "approver": {
+        "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+        "enrolledAt": "2026-10-01T15:04:06Z"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Stored binding with an unknown enrolledVia anchor.",
+    "payload": {
+      "approver": {
+        "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+        "enrolledAt": "2026-10-01T15:04:06Z",
+        "enrolledVia": "signingKey"
+      }
+    }
+  }
+]

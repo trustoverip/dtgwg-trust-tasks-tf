@@ -1,0 +1,138 @@
+[
+  {
+    "note": "Missing payloadDigest — without it the decision authorizes nothing in particular.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "Missing challenge — the decision would not be bound to a single pending request.",
+    "payload": {
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "Decision is not a member of the closed enum — silence, timeouts and dismissals are not assent.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "timeout"
+    }
+  },
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "approverSet": "operators"
+    }
+  },
+  {
+    "note": "Evidence `kind` outside the tagged union.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "evidence": {
+        "kind": "sms",
+        "code": "123456"
+      }
+    }
+  },
+  {
+    "note": "`didSigned` is not an evidence kind in 0.2 — the document's proof is always required, so naming it as evidence would add nothing.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "evidence": {
+        "kind": "didSigned"
+      }
+    }
+  },
+  {
+    "note": "WebAuthn evidence without its assertion.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "evidence": {
+        "kind": "webauthn"
+      }
+    }
+  },
+  {
+    "note": "WebAuthn assertion missing `response.signature` — the AuthenticatorAssertionResponse shape is carried unmodified.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "evidence": {
+        "kind": "webauthn",
+        "assertion": {
+          "id": "a",
+          "rawId": "a",
+          "type": "public-key",
+          "response": {
+            "clientDataJSON": "e30",
+            "authenticatorData": "AA"
+          }
+        }
+      }
+    }
+  },
+  {
+    "note": "approverSigned evidence carrying the statement as a string rather than the signed document object.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "evidence": {
+        "kind": "approverSigned",
+        "statement": "eyJ0eXBlIjoi..."
+      }
+    }
+  },
+  {
+    "note": "Evidence mixing both variants' members.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "evidence": {
+        "kind": "webauthn",
+        "assertion": {
+          "id": "a",
+          "rawId": "a",
+          "type": "public-key",
+          "response": {
+            "clientDataJSON": "e30",
+            "authenticatorData": "AA",
+            "signature": "AA"
+          }
+        },
+        "statement": {}
+      }
+    }
+  },
+  {
+    "note": "Empty `actionId`.",
+    "payload": {
+      "challenge": "9c1f4b7a2e6d80f35a4c9b1e7d2f6083",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+      "decision": "approve",
+      "actionId": ""
+    }
+  },
+  {
+    "note": "Response status outside the closed enum.",
+    "variant": "response",
+    "payload": {
+      "status": "executed",
+      "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d"
+    }
+  }
+]

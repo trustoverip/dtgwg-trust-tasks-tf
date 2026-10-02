@@ -1,0 +1,55 @@
+[
+  {
+    "note": "approverDid missing — a revocation names the one approver it withdraws.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice"
+    }
+  },
+  {
+    "note": "approverDid is a did:web — only a bound Ed25519 did:key approver can be revoked here.",
+    "payload": {
+      "approverDid": "did:web:plugin.example"
+    }
+  },
+  {
+    "note": "Empty reason — absent means none was given; an empty string is an invented one.",
+    "payload": {
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+      "reason": ""
+    }
+  },
+  {
+    "note": "An `all` flag — each revocation names one approver, so revoking a subject's whole set is a sequence of audited acts, never one bulk wipe.",
+    "payload": {
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+      "all": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without remainingApprovers — the caller needs to know whether the subject is left with no approver.",
+    "payload": {
+      "revoked": {
+        "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+        "enrolledAt": "2026-10-01T15:04:06Z",
+        "enrolledVia": "invite"
+      },
+      "revokedAt": "2026-10-02T12:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Negative remainingApprovers.",
+    "payload": {
+      "revoked": {
+        "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+        "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+        "enrolledAt": "2026-10-01T15:04:06Z",
+        "enrolledVia": "invite"
+      },
+      "revokedAt": "2026-10-02T12:00:01Z",
+      "remainingApprovers": -1
+    }
+  }
+]

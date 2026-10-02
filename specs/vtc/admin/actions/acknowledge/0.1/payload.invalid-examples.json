@@ -1,0 +1,97 @@
+[
+  {
+    "note": "`actionId` is required.",
+    "payload": {}
+  },
+  {
+    "note": "An acknowledgement carries no decision — `decision` is not a member; approving or declining is task-consent/decision.",
+    "payload": {
+      "actionId": "act_Qw3nB8vK1sYd6Pm2",
+      "decision": "approve"
+    }
+  },
+  {
+    "note": "`actionId` must be a string.",
+    "payload": {
+      "actionId": 12345678901234567
+    }
+  },
+  {
+    "note": "Response action whose `category` is outside the closed enum.",
+    "variant": "response",
+    "payload": {
+      "action": {
+        "actionId": "act_7Hq2mZp9Lx4vRk8T",
+        "category": "notice",
+        "kind": "acl.grant.authority",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "requester": "did:web:alice.example",
+        "status": "open",
+        "createdAt": "2026-10-02T08:00:00Z",
+        "expiresAt": "2026-10-05T08:00:00Z",
+        "threshold": 2,
+        "approvals": [],
+        "summary": {
+          "title": "Grant administrative authority",
+          "fields": {
+            "grantee": {
+              "pointer": "/entry/subject",
+              "format": "did",
+              "value": "did:web:carol.example"
+            }
+          },
+          "templateDigest": "zQmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+        },
+        "payload": {
+          "entry": {
+            "subject": "did:web:carol.example",
+            "role": "admin"
+          }
+        },
+        "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+        "callerRole": "requester"
+      }
+    }
+  },
+  {
+    "note": "Response approval entry missing `at`.",
+    "variant": "response",
+    "payload": {
+      "action": {
+        "actionId": "act_7Hq2mZp9Lx4vRk8T",
+        "category": "acknowledge",
+        "kind": "acl.grant.authority",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "requester": "did:web:alice.example",
+        "status": "open",
+        "createdAt": "2026-10-02T08:00:00Z",
+        "expiresAt": "2026-10-05T08:00:00Z",
+        "threshold": 2,
+        "approvals": [
+          {
+            "subject": "did:web:bob.example"
+          }
+        ],
+        "summary": {
+          "title": "Grant administrative authority",
+          "fields": {
+            "grantee": {
+              "pointer": "/entry/subject",
+              "format": "did",
+              "value": "did:web:carol.example"
+            }
+          },
+          "templateDigest": "zQmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+        },
+        "payload": {
+          "entry": {
+            "subject": "did:web:carol.example",
+            "role": "admin"
+          }
+        },
+        "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+        "callerRole": "requester"
+      }
+    }
+  }
+]

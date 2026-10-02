@@ -18,6 +18,7 @@ pub mod policies;
 pub mod recognition;
 pub mod registry;
 pub mod relationships;
+pub mod roles;
 pub mod rooms;
 pub mod schemas;
 pub mod vetting;

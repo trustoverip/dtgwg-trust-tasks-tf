@@ -30,3 +30,11 @@ repository = "https://github.com/trustoverip/dtgwg-trust-tasks-tf"
 [patch.crates-io]
 trust-tasks-rs = { path = "trust-tasks-rs" }
 trust-tasks-proof = { path = "trust-tasks-proof" }
+
+# `trust-tasks-rs` generates one module per specification (~700), and its test
+# build carries a test per module. With full debug info that build, compiled
+# beside the TDK crates, exceeds the memory of a GitHub-hosted runner: the job is
+# killed (SIGTERM, exit 143) mid-compile, not failed. Line tables keep file:line
+# in backtraces, which is all a test failure needs, at a fraction of the memory.
+[profile.test]
+debug = "line-tables-only"

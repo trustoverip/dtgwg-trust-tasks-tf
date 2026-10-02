@@ -1,0 +1,24 @@
+[
+  {
+    "note": "`includeBuiltIn` is a boolean, not a string.",
+    "payload": { "includeBuiltIn": "yes" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false.",
+    "payload": { "role": "moderator" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": { "ext": { "noNamespace": {} } }
+  },
+  {
+    "note": "A listed role must state its ceiling explicitly — no implied \"everything\".",
+    "variant": "response",
+    "payload": { "roles": [{ "name": "moderator", "builtIn": true, "approveScope": [] }] }
+  },
+  {
+    "note": "`roles` is REQUIRED; an empty vocabulary is `[]`.",
+    "variant": "response",
+    "payload": {}
+  }
+]

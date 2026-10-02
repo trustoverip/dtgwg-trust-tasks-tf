@@ -1,0 +1,30 @@
+[
+  {
+    "note": "Missing required `name`.",
+    "payload": {}
+  },
+  {
+    "note": "Role names are lowercase hyphenated identifiers.",
+    "payload": { "name": "Community_Admin" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false.",
+    "payload": { "name": "moderator", "includeHolders": true }
+  },
+  {
+    "note": "`holders` is a non-negative count, never a list of subjects.",
+    "variant": "response",
+    "payload": {
+      "role": { "name": "moderator", "builtIn": true, "ceiling": [], "approveScope": [] },
+      "holders": ["did:web:alice.example"]
+    }
+  },
+  {
+    "note": "`holders` cannot be negative.",
+    "variant": "response",
+    "payload": {
+      "role": { "name": "moderator", "builtIn": true, "ceiling": [], "approveScope": [] },
+      "holders": -1
+    }
+  }
+]

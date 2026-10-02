@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approver/redeem/start/0.1",
+  "title": "Auth — Step-up Approver Redeem (start) — payload",
+  "description": "The invited subject, signing as their own DID, presents an auth/step-up/approver/invite token and its claim code, and the relying party opens an enrolment ceremony with a challenge for the approver to sign. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "token",
+    "claimCode"
+  ],
+  "properties": {
+    "token": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512,
+      "description": "The invite token, as carried in the invite URL."
+    },
+    "claimCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "The claim code the administrator delivered separately. Never logged; compared with its stored hash."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Step-up Approver Redeem (start) — response payload",
+      "description": "The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enrollmentId",
+        "challenge",
+        "audience",
+        "expiresAt"
+      ],
+      "properties": {
+        "enrollmentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement."
+        },
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512,
+          "description": "A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`."
+        },
+        "audience": {
+          "type": "string",
+          "pattern": "^did:",
+          "minLength": 5,
+          "maxLength": 2048,
+          "description": "The relying party's DID, which the statement names as its `audience` and `recipient`."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this ceremony lapses (not the invite). No later than the invite's own expiry."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/install/claim/finish/0.3",
+  "title": "VTC Install Claim Finish — payload",
+  "description": "Complete first-administrator enrolment under a DID the founder already controls: the document is signed by the DID the install token names, verified against its live document, and carries the founder's step-up approver's enrolment statement over the claim's challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claimId",
+    "approverDid",
+    "statement"
+  ],
+  "properties": {
+    "claimId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement."
+    },
+    "approverDid": {
+      "$ref": "../../../../../auth/step-up/approver/_shared/0.1/approver.schema.json#/$defs/ApproverDid",
+      "description": "The founder's step-up approver. MUST equal the statement's issuer."
+    },
+    "label": {
+      "$ref": "../../../../../auth/step-up/approver/_shared/0.1/approver.schema.json#/$defs/ApproverLabel"
+    },
+    "statement": {
+      "$ref": "../../../../../auth/step-up/approver/_shared/0.1/approver.schema.json#/$defs/AttestStatement",
+      "description": "The approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, `boundTo` equal to `claimId`, over the start's `challenge`. Verified as received."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Install Claim Finish — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adminDid",
+        "setupSessionToken"
+      ],
+      "properties": {
+        "adminDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "minLength": 5,
+          "maxLength": 2048,
+          "description": "The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator."
+        },
+        "setupSessionToken": {
+          "type": "string",
+          "minLength": 1,
+          "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

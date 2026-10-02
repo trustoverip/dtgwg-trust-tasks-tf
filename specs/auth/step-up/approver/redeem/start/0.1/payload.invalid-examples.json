@@ -1,0 +1,38 @@
+[
+  {
+    "note": "claimCode missing — the URL alone is deliberately insufficient; the second channel is what makes one intercepted message not enough.",
+    "payload": {
+      "token": "sua_9c2e1f7a6b3d4c8e9a1b2d3e4f5a6b7c8d9e0f1a"
+    }
+  },
+  {
+    "note": "token missing.",
+    "payload": {
+      "claimCode": "7KQ4-MX2P-9TDA"
+    }
+  },
+  {
+    "note": "token shorter than 16 characters — not a token of at least 128 bits.",
+    "payload": {
+      "token": "sua_short",
+      "claimCode": "7KQ4-MX2P-9TDA"
+    }
+  },
+  {
+    "note": "An approverDid at start — the approver is named, and proves possession, only at finish, over the challenge this start issues.",
+    "payload": {
+      "token": "sua_9c2e1f7a6b3d4c8e9a1b2d3e4f5a6b7c8d9e0f1a",
+      "claimCode": "7KQ4-MX2P-9TDA",
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without audience — the statement must name the relying party, and the subject must not have to guess it.",
+    "payload": {
+      "enrollmentId": "enr_5b0e3a2e6f4c4b8f9d2a1f0c2b7e4a01",
+      "challenge": "RW5yb2xDaGFsbGVuZ2VOb25jZTAxMjM0NTY",
+      "expiresAt": "2026-10-01T15:08:01Z"
+    }
+  }
+]

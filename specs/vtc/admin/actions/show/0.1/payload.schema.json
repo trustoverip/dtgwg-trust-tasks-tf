@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/actions/show/0.1",
+  "title": "VTC Admin Actions — Show — payload",
+  "description": "Fetch one administrative action by its identifier — the read a requester follows after the community answers a gated operation with trust-task-next-step (continuation `proceed`, hint {actionId}). The enumeration sibling is vtc/admin/actions/list/0.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["actionId"],
+  "properties": {
+    "actionId": {
+      "$ref": "../../_shared/0.1/action.schema.json#/$defs/ActionId",
+      "description": "The action to fetch — from a next-step hint, a list entry, or a notification."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Actions — Show — response payload",
+      "description": "The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "$ref": "../../_shared/0.1/action.schema.json#/$defs/Action"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

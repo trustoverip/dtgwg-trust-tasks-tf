@@ -1,0 +1,114 @@
+[
+  {
+    "note": "Missing required `subject`.",
+    "payload": {}
+  },
+  {
+    "note": "Empty `subject` violates minLength: 1.",
+    "payload": {
+      "subject": ""
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "ext": {
+        "bareNamespace": {}
+      }
+    }
+  },
+  {
+    "note": "A returned entry must state its act scope; an entry without `act` is malformed, never read as `all` or `none`.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "A returned entry without `keys` is malformed — no implicit \"every key\".",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "A returned entry without `capabilities` is malformed — the full ceiling is spelt `{\"scope\": \"ceiling\"}`.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "all"
+        }
+      }
+    }
+  },
+  {
+    "note": "A returned entry with empty listed `keys` is invalid.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "all"
+        },
+        "keys": {
+          "scope": "listed",
+          "keys": []
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "A returned entry with an empty `contexts` list is not a valid act scope.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": {
+          "scope": "contexts",
+          "contexts": []
+        },
+        "keys": {
+          "scope": "all"
+        },
+        "capabilities": {
+          "scope": "ceiling"
+        }
+      }
+    }
+  },
+  {
+    "note": "`entry` is REQUIRED in the response — not-found is `entry: null`, not an absent member.",
+    "variant": "response",
+    "payload": {}
+  }
+]

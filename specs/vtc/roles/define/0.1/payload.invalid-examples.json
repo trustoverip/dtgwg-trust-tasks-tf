@@ -1,0 +1,43 @@
+[
+  {
+    "note": "`ceiling` is REQUIRED — a role states its ceiling explicitly; omission is not \"everything\".",
+    "payload": { "name": "events-team", "approveScope": [] }
+  },
+  {
+    "note": "`approveScope` is REQUIRED — absence must not be read as either \"none\" or \"the same as the ceiling\".",
+    "payload": { "name": "events-team", "ceiling": [{ "capability": "vtc.surface.admin" }] }
+  },
+  {
+    "note": "Role names are lowercase hyphenated identifiers.",
+    "payload": { "name": "Events Team", "ceiling": [], "approveScope": [] }
+  },
+  {
+    "note": "Role names are at most 64 characters.",
+    "payload": {
+      "name": "a123456789012345678901234567890123456789012345678901234567890123x",
+      "ceiling": [],
+      "approveScope": []
+    }
+  },
+  {
+    "note": "A role ceiling names capabilities, it does not grant them — `additive` has no meaning on a ceiling.",
+    "payload": {
+      "name": "events-team",
+      "ceiling": [{ "capability": "vtc.surface.admin", "additive": true }],
+      "approveScope": []
+    }
+  },
+  {
+    "note": "Ceiling items are CapabilityRef objects, not bare strings, and there is no wildcard.",
+    "payload": { "name": "events-team", "ceiling": ["*"], "approveScope": [] }
+  },
+  {
+    "note": "`builtIn` is not settable — a defined role is always custom.",
+    "payload": { "name": "events-team", "builtIn": true, "ceiling": [], "approveScope": [] }
+  },
+  {
+    "note": "Response role record must carry `builtIn`.",
+    "variant": "response",
+    "payload": { "role": { "name": "events-team", "ceiling": [], "approveScope": [] } }
+  }
+]

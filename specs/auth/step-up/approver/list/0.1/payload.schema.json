@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approver/list/0.1",
+  "title": "Auth — Step-up Approver List — payload",
+  "description": "List the live step-up approvers bound to one subject — the caller by default, or another subject within an administrator's authority. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "Whose approvers to list. Absent means the caller. A subject other than the caller is answered only for an administrator whose standing covers it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Step-up Approver List — response payload",
+      "description": "Every live approver bound to the subject. Empty when the subject holds none.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approvers"
+      ],
+      "properties": {
+        "approvers": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "$ref": "../../_shared/0.1/approver.schema.json#/$defs/Approver"
+          },
+          "description": "The subject's live approvers — at most five, so the whole set is always returned."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

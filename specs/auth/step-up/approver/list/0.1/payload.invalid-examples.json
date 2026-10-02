@@ -1,0 +1,39 @@
+[
+  {
+    "note": "subject is not a DID.",
+    "payload": {
+      "subject": "alice"
+    }
+  },
+  {
+    "note": "An approverDid filter — there is no per-approver lookup; the whole bounded set is returned every time (see Abstract).",
+    "payload": {
+      "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "A paging cursor — the collection is bounded at five per subject and is never paged.",
+    "payload": {
+      "cursor": "abc"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without approvers — an empty list is `[]`, never an absent member.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "More than five approvers — a subject never holds more than five live approvers.",
+    "payload": {
+      "approvers": [
+        { "approverDid": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH", "subject": "did:web:alice.example", "enrolledAt": "2026-10-01T00:00:00Z", "enrolledVia": "invite" },
+        { "approverDid": "did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw", "subject": "did:web:alice.example", "enrolledAt": "2026-10-01T00:00:00Z", "enrolledVia": "selfService" },
+        { "approverDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "subject": "did:web:alice.example", "enrolledAt": "2026-10-01T00:00:00Z", "enrolledVia": "selfService" },
+        { "approverDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "subject": "did:web:alice.example", "enrolledAt": "2026-10-01T00:00:00Z", "enrolledVia": "selfService" },
+        { "approverDid": "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG", "subject": "did:web:alice.example", "enrolledAt": "2026-10-01T00:00:00Z", "enrolledVia": "selfService" },
+        { "approverDid": "did:key:z6MkrJVnaZkeFzdQyMZu1cgjg7k1pZZ6pvBQ7XJPt4swbTQ2", "subject": "did:web:alice.example", "enrolledAt": "2026-10-01T00:00:00Z", "enrolledVia": "selfService" }
+      ]
+    }
+  }
+]

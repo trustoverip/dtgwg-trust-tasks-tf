@@ -3,7 +3,7 @@
  * Source: specs/acl/list/0.1/payload.schema.json
  */
 
-import type { AclEntry, Ext } from "../../../_shared/components.js";
+import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/components.js";
 
 
 export interface ACLListPayload {

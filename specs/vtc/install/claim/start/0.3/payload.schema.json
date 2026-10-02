@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/install/claim/start/0.3",
+  "title": "VTC Install Claim Start — payload",
+  "description": "Begin claiming a fresh community under a DID the founder already controls: exchange the install token and its claim code for a challenge the founder's step-up approver will sign. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "token",
+    "claimCode"
+  ],
+  "properties": {
+    "token": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 4096,
+      "description": "The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup. In 0.3 it names the founder's DID."
+    },
+    "claimCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "The claim code the operator received out of band, through a different channel from the install URL. Required in 0.3. Compared with its stored hash; never logged."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Install Claim Start — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claimId",
+        "adminDid",
+        "challenge",
+        "audience",
+        "expiresAt"
+      ],
+      "properties": {
+        "claimId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Opaque, single-use handle for this claim. Echoed in claim/finish, and the `boundTo` of the approver's enrolment statement."
+        },
+        "adminDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "minLength": 5,
+          "maxLength": 2048,
+          "description": "The DID the install token names — the DID that must sign claim/finish and that becomes the first administrator. Returned so the installer need not decode the token."
+        },
+        "challenge": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512,
+          "description": "A fresh challenge (≥128 bits) the founder's step-up approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`."
+        },
+        "audience": {
+          "type": "string",
+          "pattern": "^did:",
+          "minLength": 5,
+          "maxLength": 2048,
+          "description": "The community's DID, which the statement names as its `audience` and `recipient`, and to which claim/finish is addressed."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this claim ceremony lapses (not the install token)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

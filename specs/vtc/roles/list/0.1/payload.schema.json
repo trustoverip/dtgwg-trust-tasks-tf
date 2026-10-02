@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/roles/list/0.1",
+  "title": "VTC Roles — List — payload",
+  "description": "Enumerate the administrative roles a VTC holds — built-in and custom. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "includeBuiltIn": {
+      "type": "boolean",
+      "default": true,
+      "description": "`true` (the default) returns built-in and custom roles; `false` returns custom roles only."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Roles — List — response payload",
+      "description": "The success response to a vtc/roles/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roles"],
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": { "$ref": "../../_shared/0.1/role.schema.json#/$defs/RoleDefinition" },
+          "description": "Every role matching the request, each with its full ceiling and approve ceiling. Complete — not paged: a community's role vocabulary is small and bounded."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

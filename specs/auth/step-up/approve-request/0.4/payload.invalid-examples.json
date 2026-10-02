@@ -1,0 +1,74 @@
+[
+  {
+    "note": "accepts missing — in 0.4 the relying party always states what it will take, so an approver never has to guess.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Confirm transfer"
+    }
+  },
+  {
+    "note": "Empty accepts — an offer of no evidence kind is a step-up nobody can answer.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Grant the administrator role",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0",
+      "accepts": []
+    }
+  },
+  {
+    "note": "Unknown evidence kind in accepts.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Grant the administrator role",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0",
+      "accepts": ["totp"]
+    }
+  },
+  {
+    "note": "0.3's acceptableEvidence is replaced by accepts in 0.4 and is now an unknown member.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Grant the administrator role",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0",
+      "accepts": ["webauthn"],
+      "acceptableEvidence": ["webauthn"]
+    }
+  },
+  {
+    "note": "An approver that is a did:web — a step-up approver is always an Ed25519 did:key, resolvable without a network fetch.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Grant the administrator role",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0",
+      "accepts": ["approverSigned"],
+      "approvers": ["did:web:plugin.example"]
+    }
+  },
+  {
+    "note": "Empty approvers — when present it names at least one approver the relying party will accept.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "challenge": "Q2hhbExlbmdlVmFsdWVCYXNlNjQ",
+      "reason": "Grant the administrator role",
+      "boundTo": "uEiD3n4bE1QbQ8nY2l0cGhYc2FsdGVkZGlnZXN0",
+      "accepts": ["approverSigned"],
+      "approvers": []
+    }
+  },
+  {
+    "note": "Challenge too short.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "sessionId": "ec5d3c89",
+      "challenge": "short",
+      "reason": "Confirm transfer",
+      "accepts": ["didSigned"]
+    }
+  }
+]

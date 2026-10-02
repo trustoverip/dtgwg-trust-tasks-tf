@@ -45,6 +45,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      # trust-tasks-rs generates one module per specification, and its test
+      # build under `--features validate` peaks above a hosted runner's 16 GB
+      # beside the TDK crates; the kernel then kills the job (exit 143)
+      # mid-compile rather than failing it. Swap lets that peak page out
+      # instead. A larger runner would remove the need, but needs an org
+      # runner group.
+      - name: Add swap
+        run: |
+          sudo swapoff -a || true
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       # Affinidi's TDK pulls in keyring / secret-storage crates whose

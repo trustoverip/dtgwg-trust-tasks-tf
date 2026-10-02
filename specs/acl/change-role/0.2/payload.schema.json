@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/acl/change-role/0.2",
+  "title": "ACL Change Role 0.2 — payload",
+  "description": "Move a subject's AclEntry 0.2 from one role to another, with a compare-and-swap on the current role. Only the role changes; the entry's other members are carried over and re-evaluated against the new role's ceilings. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "fromRole", "toRole"],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "VID of the party whose role is changing."
+    },
+    "fromRole": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The subject's current role. The maintainer refuses the change with `stateMismatch` if it differs from the stored role."
+    },
+    "toRole": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The role to move the subject to."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Optional human-readable rationale."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "ACL Change Role 0.2 — response payload",
+      "description": "The success response to an acl/change-role/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "The AclEntry the maintainer now holds for the subject. `entry.role` MUST equal the request's `toRole`.",
+          "$ref": "../../_shared/0.2/acl-entry.schema.json#/$defs/AclEntry"
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+[
+  {
+    "note": "Missing subject — an invite always names the one subject whose factor it binds.",
+    "payload": {
+      "ttl": 900
+    }
+  },
+  {
+    "note": "subject is not a DID.",
+    "payload": {
+      "subject": "alice@example.com"
+    }
+  },
+  {
+    "note": "A claim code in the request — the relying party generates it; an inviter who chose it would know it before it was delivered.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "claimCode": "7KQ4-MX2P-9TDA"
+    }
+  },
+  {
+    "note": "A role in the request — an approver confers nothing, so an invite to bind one cannot carry a role.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "role": "admin"
+    }
+  },
+  {
+    "note": "ttl of zero — an invite must remain redeemable for at least a second.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "ttl": 0
+    }
+  },
+  {
+    "note": "label longer than 64 characters.",
+    "payload": {
+      "subject": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without claimCode — the code is the second channel and is returned exactly once, here.",
+    "payload": {
+      "inviteId": "sui_4f7a2c9e1b3d",
+      "url": "https://acme-vtc.example/admin/enrol-approver?token=sua_9c2e1f7a6b3d4c8e9a1b2d3e4f5a6b7c8d9e0f1a",
+      "expiresAt": "2026-10-01T15:15:01Z"
+    }
+  }
+]

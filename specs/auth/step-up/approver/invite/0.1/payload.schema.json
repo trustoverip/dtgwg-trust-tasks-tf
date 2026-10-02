@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/step-up/approver/invite/0.1",
+  "title": "Auth — Step-up Approver Invite — payload",
+  "description": "An administrator asks the relying party for a single-use invite, redeemed by the invited subject with a separately delivered claim code, to bind a step-up approver to that subject. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite."
+    },
+    "label": {
+      "$ref": "../../_shared/0.1/approver.schema.json#/$defs/ApproverLabel",
+      "description": "A suggested label for the approver. The subject MAY override it at redeem/finish."
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Seconds the invite stays redeemable. Default 900 (15 minutes). The relying party refuses more than 86400 (24 hours), or more than its own lower cap, with `ttlTooLong`."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Step-up Approver Invite — response payload",
+      "description": "The issued invite. The claim code is returned only here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inviteId",
+        "url",
+        "claimCode",
+        "expiresAt"
+      ],
+      "properties": {
+        "inviteId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code."
+        },
+        "claimCode": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 64,
+          "description": "A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the invite stops being redeemable."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

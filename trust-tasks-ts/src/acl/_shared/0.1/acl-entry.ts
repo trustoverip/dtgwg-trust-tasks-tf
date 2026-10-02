@@ -16,4 +16,4 @@ export interface AclEntrySharedDefinitionForTheAclSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AclEntry } from "../../../_shared/components.js";
+export type { AclEntry_AclV0_1 as AclEntry } from "../../../_shared/components.js";
