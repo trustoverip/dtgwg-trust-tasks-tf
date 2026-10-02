@@ -1,0 +1,136 @@
+[
+  {
+    "note": "signingKeyDid is a did:web — a delegated key must be a did:key, whose document cannot be rewritten after enrolment.",
+    "payload": {
+      "signingKeyDid": "did:web:laptop.example",
+      "identityDid": "did:web:alice.example",
+      "scope": "console"
+    }
+  },
+  {
+    "note": "identityDid missing — the identity the key acts for is named, never inferred from the key's own signature.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "scope": "console"
+    }
+  },
+  {
+    "note": "scope missing — a delegation is always scoped, so a consumer is never left to guess what it may be accepted for.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example"
+    }
+  },
+  {
+    "note": "scope `approver` — a delegated key is never accepted as an approver's attestation, so no scope can ask for it.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "approver"
+    }
+  },
+  {
+    "note": "Empty deviceLabel — absent means no label was chosen; an empty string is an invented one.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "deviceLabel": ""
+    }
+  },
+  {
+    "note": "Unknown member `role` — a delegation confers no role, so a request cannot ask for one.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "role": "admin"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Stored delegation without expiresAt — the consumer always sets and returns an expiry; an unbounded delegation is not a state this task can report.",
+    "payload": {
+      "signingKey": {
+        "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+        "identityDid": "did:web:alice.example",
+        "scope": "console",
+        "createdAt": "2026-09-28T10:00:31Z",
+        "active": true
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Stored delegation without scope.",
+    "payload": {
+      "signingKey": {
+        "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+        "identityDid": "did:web:alice.example",
+        "createdAt": "2026-09-28T10:00:31Z",
+        "expiresAt": "2026-10-28T10:00:31Z",
+        "active": true
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `active` — the liveness predicate is the consumer's to compute, so a holder must never have to re-derive it.",
+    "payload": {
+      "signingKey": {
+        "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+        "identityDid": "did:web:alice.example",
+        "scope": "console",
+        "createdAt": "2026-09-28T10:00:31Z",
+        "expiresAt": "2026-10-28T10:00:31Z"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response carrying the record at the top level instead of under `signingKey`.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "createdAt": "2026-09-28T10:00:31Z",
+      "expiresAt": "2026-10-28T10:00:31Z",
+      "active": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Unknown member on the stored record — a delegation carries no role-style scopes list.",
+    "payload": {
+      "signingKey": {
+        "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+        "identityDid": "did:web:alice.example",
+        "scope": "console",
+        "createdAt": "2026-09-28T10:00:31Z",
+        "expiresAt": "2026-10-28T10:00:31Z",
+        "active": true,
+        "scopes": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "note": "replaces is a did:web — only a delegated did:key can be swapped out.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "replaces": "did:web:old-laptop.example"
+    }
+  },
+  {
+    "note": "authorization as a string — it is a complete Trust Task document, verified as received, not a reference to one.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "authorization": "urn:uuid:7f1d2c3b-4a5e-4f60-8a71-b2c3d4e5f601"
+    }
+  }
+]

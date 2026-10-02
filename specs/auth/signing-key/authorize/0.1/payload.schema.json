@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/signing-key/authorize/0.1",
+  "title": "Auth — Signing Key Authorize — payload",
+  "description": "The terms of one signing-key enrolment, signed by the identity the key will act for. Exactly the payload of the auth/signing-key/enroll/0.2 document that carries this one as its `authorization`, with that member removed; the consumer compares the two and refuses any difference. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signingKeyDid",
+    "identityDid",
+    "scope"
+  ],
+  "properties": {
+    "signingKeyDid": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid"
+    },
+    "identityDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "The identity authorizing the delegation. Equal to the document's `issuer`: the identity signs for itself."
+    },
+    "scope": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyScope"
+    },
+    "deviceLabel": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/DeviceLabel"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The lifetime the enrolment requests, as in auth/signing-key/enroll/0.2."
+    },
+    "replaces": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid",
+      "description": "The identity's active key the enrolment replaces, as in auth/signing-key/enroll/0.2. Signed here so an authorization to add a key cannot be reused to remove one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  }
+}
