@@ -1,0 +1,27 @@
+[
+  {
+    "note": "identityDid missing — the authorization names the identity it is made by, which the consumer compares to the issuer and to the enrolment.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "scope": "console"
+    }
+  },
+  {
+    "note": "replaces is a did:web — only a delegated did:key can be replaced.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "replaces": "did:web:old-laptop.example"
+    }
+  },
+  {
+    "note": "authorization nested inside an authorization — the authorize payload is the enrolment's payload with `authorization` removed.",
+    "payload": {
+      "signingKeyDid": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "identityDid": "did:web:alice.example",
+      "scope": "console",
+      "authorization": {}
+    }
+  }
+]

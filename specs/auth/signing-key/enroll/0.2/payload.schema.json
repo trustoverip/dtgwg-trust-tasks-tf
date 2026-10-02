@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/signing-key/enroll/0.2",
+  "title": "Auth — Signing Key Enroll — payload",
+  "description": "A freshly generated key asks to be enrolled as a signing-key delegation of an identity: documents it signs will be authorized by that identity's standing. The document is issued and proved by the key being enrolled, which is the proof that the enrolling party holds it; the identity it will act for is named in the payload and is established by the authority evidence the consumer requires — an operation-bound step-up, or the identity's own signed `authorization` — never by the key's own signature. Optionally replaces one of the identity's active keys in the same step. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signingKeyDid",
+    "identityDid",
+    "scope"
+  ],
+  "properties": {
+    "signingKeyDid": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid"
+    },
+    "identityDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "minLength": 5,
+      "maxLength": 2048,
+      "description": "The identity the key will act for — the DID whose standing a document signed by the key is authorized by. Naming it is not claiming it: the consumer establishes that the enrolling party controls this identity from separate authority evidence (Authorization)."
+    },
+    "scope": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyScope"
+    },
+    "deviceLabel": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/DeviceLabel"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "A requested lifetime for the delegation. The consumer sets the delegation's actual expiry — no later than this, and no later than its own cap — and returns it; absent means the consumer's default lifetime. MUST be in the future when the consumer executes the task."
+    },
+    "replaces": {
+      "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKeyDid",
+      "description": "An active delegation of the same identity to revoke in the same step as this enrolment. For a holder at the consumer's cap on active keys, whose other keys live on devices it no longer has: one authorized enrolment swaps a key out rather than needing a working key to revoke one first. Covered by the authority evidence like every other member, so evidence for adding a key cannot be reused to remove one."
+    },
+    "authorization": {
+      "type": "object",
+      "description": "A complete, signed auth/signing-key/authorize/0.1 Trust Task document by which `identityDid` itself authorizes this enrolment: its payload is this payload with `authorization` removed. When present and valid it is the authority evidence of control over `identityDid`, in place of an operation-bound step-up. The consumer verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over the members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — Signing Key Enroll — response payload",
+      "description": "The delegation as stored. From this point a document the key signs is authorized by the identity's standing, read at execution time.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signingKey"
+      ],
+      "properties": {
+        "signingKey": {
+          "$ref": "../../../_shared/0.1/signing-key.schema.json#/$defs/SigningKey"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
