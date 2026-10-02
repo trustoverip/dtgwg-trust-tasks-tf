@@ -292,6 +292,25 @@ construction path). The consequence worth knowing:
   a spec with no `$defs.Response` gets no impl. `HttpsServer::on` still takes
   both type parameters — constraining it is an open follow-up.
 
+### ⚠️ `trust-tasks-rs` unit tests see only the `acl` family
+
+`cargo test` compiles a library twice — as the library, and again with
+`cfg(test)` as its unit-test harness — and the generated tree is ~46 MB of the
+crate. So the generator keeps that second build small:
+
+- **Every gated family except those in `UNIT_TEST_FAMILIES`** (in
+  `trust-tasks-codegen`, currently `["acl"]`) carries `#[cfg(not(test))]` in
+  `src/specs/mod.rs` and `src/schema_index.rs`. A `#[cfg(test)]` module in the
+  hand-written `src/*.rs` that names `crate::specs::vault::…` fails with an
+  unresolved path: add the family to the list, or write it as an integration
+  test under `tests/`, which links the full library.
+- **The per-spec conformance tests are the generated integration test
+  `tests/conformance/`**, not a `mod conformance` in each module. They only use
+  public items. The directory is generated and rewritten whole, so never edit
+  it by hand.
+
+Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:

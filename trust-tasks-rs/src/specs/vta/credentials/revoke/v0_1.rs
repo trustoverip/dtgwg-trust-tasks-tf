@@ -594,27 +594,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"2d51b8a0-7c33-4e12-9af4-1b6e0c2d3f55\",\n  \"type\": \"https://trusttasks.org/spec/vta/credentials/revoke/0.1\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-24T10:30:00Z\",\n  \"payload\": {\n    \"credentialId\": \"urn:uuid:c0ffee00-1234-4abc-9def-0123456789ab\",\n    \"reason\": \"The operator withdrew the share.\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"7a0e9c41-2f88-4b6d-a3e1-9c0b5d2e4f76\",\n  \"type\": \"https://trusttasks.org/spec/vta/credentials/revoke/0.1#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-24T10:30:01Z\",\n  \"threadId\": \"2d51b8a0-7c33-4e12-9af4-1b6e0c2d3f55\",\n  \"payload\": {\n    \"credentialId\": \"urn:uuid:c0ffee00-1234-4abc-9def-0123456789ab\",\n    \"revokedAt\": \"2026-06-24T10:30:01Z\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

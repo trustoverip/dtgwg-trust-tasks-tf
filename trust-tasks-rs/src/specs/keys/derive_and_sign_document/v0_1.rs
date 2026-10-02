@@ -632,27 +632,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"e8f90112-2334-4459-5667-788990011223\",\n  \"type\": \"https://trusttasks.org/spec/keys/derive-and-sign-document/0.1\",\n  \"issuer\": \"did:web:app.example\",\n  \"recipient\": \"did:web:custodian.example\",\n  \"issuedAt\": \"2026-07-31T09:50:00Z\",\n  \"payload\": {\n    \"keyType\": \"ed25519\",\n    \"derivationPath\": \"m/26'/9'/0'\",\n    \"document\": {\n      \"id\": \"urn:uuid:6f1b2c3d-4e5f-4061-8293-a4b5c6d7e8f9\",\n      \"type\": \"https://trusttasks.org/spec/auth/authenticate/0.1\",\n      \"issuer\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n      \"payload\": { \"sessionId\": \"s-1\", \"challenge\": \"c-1\" }\n    },\n    \"proofPurpose\": \"authentication\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"f9011223-3445-4560-6778-899001122334\",\n  \"type\": \"https://trusttasks.org/spec/keys/derive-and-sign-document/0.1#response\",\n  \"threadId\": \"e8f90112-2334-4459-5667-788990011223\",\n  \"issuer\": \"did:web:custodian.example\",\n  \"recipient\": \"did:web:app.example\",\n  \"issuedAt\": \"2026-07-31T09:50:01Z\",\n  \"payload\": {\n    \"signerDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n    \"document\": {\n      \"id\": \"urn:uuid:6f1b2c3d-4e5f-4061-8293-a4b5c6d7e8f9\",\n      \"type\": \"https://trusttasks.org/spec/auth/authenticate/0.1\",\n      \"issuer\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n      \"payload\": { \"sessionId\": \"s-1\", \"challenge\": \"c-1\" },\n      \"proof\": {\n        \"type\": \"DataIntegrityProof\",\n        \"cryptosuite\": \"eddsa-jcs-2022\",\n        \"created\": \"2026-07-31T09:50:01Z\",\n        \"verificationMethod\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n        \"proofPurpose\": \"assertionMethod\",\n        \"proofValue\": \"z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNSTjXwT2c1h2G5nP8aQ\"\n      }\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

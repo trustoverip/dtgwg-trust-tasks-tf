@@ -2118,27 +2118,3 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/messaging/account/list/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-06-22T10:00:00Z\",\n  \"payload\": {\n    \"limit\": 50\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-06-22T10:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"5e3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f3\",\n  \"type\": \"https://trusttasks.org/spec/messaging/account/list/0.1#response\",\n  \"threadId\": \"4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:mediator.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-06-22T10:00:01Z\",\n  \"payload\": {\n    \"accounts\": [\n      {\n        \"did\": \"did:web:alice.example\",\n        \"accountType\": \"standard\",\n        \"acl\": {\n          \"blocked\": false,\n          \"sendMessages\": true,\n          \"receiveMessages\": true,\n          \"didcommEnabled\": true,\n          \"tspEnabled\": true\n        }\n      },\n      {\n        \"did\": \"did:web:bob.example\",\n        \"accountType\": \"admin\",\n        \"acl\": {\n          \"blocked\": false,\n          \"sendMessages\": true,\n          \"receiveMessages\": true,\n          \"didcommEnabled\": true,\n          \"tspEnabled\": true\n        }\n      }\n    ],\n    \"nextCursor\": \"eyJvIjoxMDB9\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

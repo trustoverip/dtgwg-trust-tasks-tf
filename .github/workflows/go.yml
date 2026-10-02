@@ -15,6 +15,13 @@ on:
   # being able to make required.
   pull_request:
 
+# A newer push to the same PR supersedes the run in flight, so cancel it rather
+# than let it hold a runner. Keyed on the commit for every other event, so a run
+# on `main` is never cancelled by the next merge.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   # The toolchain the single-version jobs use. The *minimum* the module supports
   # is the `go` directive in trust-tasks-go/go.mod, and the build/test matrix

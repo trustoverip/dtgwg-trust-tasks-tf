@@ -1317,27 +1317,3 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"60718293-a4b5-4c62-d7e8-f90112233445\",\n  \"type\": \"https://trusttasks.org/spec/keys/list/0.1\",\n  \"issuer\": \"did:web:auditor.example\",\n  \"recipient\": \"did:web:custodian.example\",\n  \"issuedAt\": \"2026-07-31T09:30:00Z\",\n  \"payload\": {\n    \"status\": \"active\",\n    \"contextId\": \"app\",\n    \"limit\": 2\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"718293a4-b5c6-4d72-e8f9-011223344556\",\n  \"type\": \"https://trusttasks.org/spec/keys/list/0.1#response\",\n  \"threadId\": \"60718293-a4b5-4c62-d7e8-f90112233445\",\n  \"issuer\": \"did:web:custodian.example\",\n  \"recipient\": \"did:web:auditor.example\",\n  \"issuedAt\": \"2026-07-31T09:30:01Z\",\n  \"payload\": {\n    \"keys\": [\n      {\n        \"keyId\": \"app-signing-key\",\n        \"keyType\": \"ed25519\",\n        \"status\": \"active\",\n        \"publicKey\": \"z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH\",\n        \"origin\": \"derived\",\n        \"contextId\": \"app\",\n        \"createdAt\": \"2026-07-31T09:20:01Z\",\n        \"updatedAt\": \"2026-07-31T09:20:01Z\"\n      },\n      {\n        \"keyId\": \"app-agreement-key\",\n        \"keyType\": \"x25519\",\n        \"status\": \"active\",\n        \"publicKey\": \"z6LSbysY2xFMRpGMhb7tFTLMpeuPRaqaWM1yECx2AtzE3KCc\",\n        \"origin\": \"derived\",\n        \"contextId\": \"app\",\n        \"createdAt\": \"2026-07-31T09:21:00Z\",\n        \"updatedAt\": \"2026-07-31T09:21:00Z\"\n      }\n    ],\n    \"total\": 5,\n    \"offset\": 0,\n    \"limit\": 2\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

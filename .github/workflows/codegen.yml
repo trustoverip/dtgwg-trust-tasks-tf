@@ -27,6 +27,13 @@ on:
   # Deliberately unfiltered. See above.
   pull_request:
 
+# A newer push to the same PR supersedes the run in flight, so cancel it rather
+# than let it hold a runner. Keyed on the commit for every other event, so a run
+# on `main` is never cancelled by the next merge.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: 0
@@ -42,6 +49,12 @@ jobs:
         with:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
+        with:
+          # Save from `main` only. A PR restores main's entry (GitHub lets a
+          # PR read its base branch's cache) but its own saves were ~1 GB
+          # copies under the same key, which filled the repository's 10 GB
+          # quota and evicted the entries every run actually restores.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Run codegen
         run: cargo run -p trust-tasks-codegen
       # Codegen emits prettyplease-canonical output; the committed
@@ -58,9 +71,12 @@ jobs:
       # here; anything this diff reports was written by the generator.
       - name: Check for drift
         run: |
-          if ! git diff --quiet trust-tasks-rs; then
+          # `git status`, not `git diff`: a file the generator newly wrote (a new
+          # spec's module, or its `tests/conformance` file) is untracked, and
+          # `git diff` cannot see an untracked file.
+          if [ -n "$(git status --porcelain trust-tasks-rs)" ]; then
             echo "::error::Codegen output is stale. Run \`cargo run -p trust-tasks-codegen && cargo fmt --all\` and commit the diff."
-            git diff --stat trust-tasks-rs
+            git status --short trust-tasks-rs
             git diff trust-tasks-rs
             exit 1
           fi

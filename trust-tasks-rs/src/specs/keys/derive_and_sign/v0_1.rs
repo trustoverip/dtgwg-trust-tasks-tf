@@ -718,27 +718,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"c6d7e8f9-0112-4237-3445-566778899001\",\n  \"type\": \"https://trusttasks.org/spec/keys/derive-and-sign/0.1\",\n  \"issuer\": \"did:web:app.example\",\n  \"recipient\": \"did:web:custodian.example\",\n  \"issuedAt\": \"2026-07-31T09:45:00Z\",\n  \"payload\": {\n    \"keyType\": \"ed25519\",\n    \"derivationPath\": \"m/26'/9'/0'\",\n    \"payload\": \"dGVuYW50LWNoYWxsZW5nZQ\",\n    \"algorithm\": \"EdDSA\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"d7e8f901-1223-4348-4556-677889900112\",\n  \"type\": \"https://trusttasks.org/spec/keys/derive-and-sign/0.1#response\",\n  \"threadId\": \"c6d7e8f9-0112-4237-3445-566778899001\",\n  \"issuer\": \"did:web:custodian.example\",\n  \"recipient\": \"did:web:app.example\",\n  \"issuedAt\": \"2026-07-31T09:45:01Z\",\n  \"payload\": {\n    \"publicKey\": \"z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n    \"signature\": \"vB2sT9c1h2G5nP8aQ3q2-7wRLBt0FVsn6dR3ZLC8s0Xh0zvR3sVQ1qWvS0m8xJ7bB4kEwT\",\n    \"algorithm\": \"EdDSA\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

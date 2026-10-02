@@ -1437,27 +1437,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"1a2b3c4d-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/create/1.1\",\n  \"issuer\": \"did:key:z6MkAdmin\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T11:00:00Z\",\n  \"payload\": {\n    \"contextId\": \"personal\",\n    \"serverId\": \"prod\",\n    \"pathMode\": { \"mode\": \"explicit\", \"path\": \"alice\" },\n    \"portable\": true,\n    \"preRotationCount\": 3\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-08-19T11:00:00Z\",\n    \"verificationMethod\": \"did:key:z6MkAdmin#z6MkAdmin\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQ...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"2b3c4d5e-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vta/webvh/dids/create/1.1#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkAdmin\",\n  \"issuedAt\": \"2026-08-19T11:00:01Z\",\n  \"threadId\": \"1a2b3c4d-0000-4000-8000-000000000001\",\n  \"payload\": {\n    \"did\": \"did:webvh:QmScidAbCdEfGh:example.com:alice\",\n    \"contextId\": \"personal\",\n    \"serverId\": \"prod\",\n    \"serverless\": false,\n    \"mnemonic\": \"alice\",\n    \"scid\": \"QmScidAbCdEfGh\",\n    \"portable\": true,\n    \"signingKeyId\": \"webvh-alice-sign\",\n    \"kaKeyId\": \"webvh-alice-ka\",\n    \"preRotationKeyCount\": 3,\n    \"createdAt\": \"2026-08-19T11:00:01Z\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

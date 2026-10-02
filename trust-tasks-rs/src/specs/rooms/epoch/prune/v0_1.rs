@@ -704,27 +704,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/rooms/epoch/prune/0.1#request\",\n  \"issuer\": \"did:example:owner\",\n  \"recipient\": \"did:example:host\",\n  \"issuedAt\": \"2026-01-01T00:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n    \"beforeEpoch\": 5,\n    \"reason\": \"retention: the first four epochs are past the agreed window\",\n    \"presentation\": {\n      \"membership\": \"urn:uuid:11111111-1111-1111-1111-111111111111\",\n      \"authority\": [\n        \"urn:uuid:22222222-2222-2222-2222-222222222222\",\n        \"urn:uuid:33333333-3333-3333-3333-333333333333\"\n      ]\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/rooms/epoch/prune/0.1#response\",\n  \"issuer\": \"did:example:host\",\n  \"recipient\": \"did:example:owner\",\n  \"issuedAt\": \"2026-01-01T00:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n    \"pruned\": 4,\n    \"earliestRung\": 5\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

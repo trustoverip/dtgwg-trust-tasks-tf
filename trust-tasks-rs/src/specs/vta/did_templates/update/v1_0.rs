@@ -1444,27 +1444,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"2c3d4e5f-6071-8293-a4b5-c6d7e8f9a0b1\",\n  \"type\": \"https://trusttasks.org/spec/vta/did-templates/update/1.0\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-06-16T10:00:00Z\",\n  \"payload\": {\n    \"name\": \"messaging-bridge\",\n    \"template\": {\n      \"schemaVersion\": 1,\n      \"name\": \"messaging-bridge\",\n      \"kind\": \"messaging-bridge\",\n      \"description\": \"DIDComm messaging bridge host (v2 endpoint).\",\n      \"methods\": [\"webvh\", \"web\"],\n      \"requiredVars\": [\"MEDIATOR_DID\"],\n      \"optionalVars\": { \"ACCEPT\": [\"didcomm/v2\"] },\n      \"defaults\": { \"preRotationCount\": 3 },\n      \"document\": {\n        \"id\": \"{DID}\",\n        \"verificationMethod\": [\n          {\n            \"id\": \"{DID}#{SIGNING_KEY_MB}\",\n            \"type\": \"Multikey\",\n            \"controller\": \"{DID}\",\n            \"publicKeyMultibase\": \"{SIGNING_KEY_MB}\"\n          }\n        ],\n        \"service\": [\n          {\n            \"id\": \"{DID}#didcomm\",\n            \"type\": \"DIDCommMessaging\",\n            \"serviceEndpoint\": { \"uri\": \"{MEDIATOR_DID}\", \"accept\": \"{ACCEPT}\" }\n          }\n        ]\n      }\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-rdfc-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-06-16T10:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"3d4e5f60-7182-93a4-b5c6-d7e8f9a0b1c2\",\n  \"type\": \"https://trusttasks.org/spec/vta/did-templates/update/1.0#response\",\n  \"threadId\": \"2c3d4e5f-6071-8293-a4b5-c6d7e8f9a0b1\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-06-16T10:00:01Z\",\n  \"payload\": {\n    \"schemaVersion\": 1,\n    \"name\": \"messaging-bridge\",\n    \"kind\": \"messaging-bridge\",\n    \"description\": \"DIDComm messaging bridge host (v2 endpoint).\",\n    \"methods\": [\"webvh\", \"web\"],\n    \"requiredVars\": [\"MEDIATOR_DID\"],\n    \"optionalVars\": { \"ACCEPT\": [\"didcomm/v2\"] },\n    \"defaults\": { \"preRotationCount\": 3 },\n    \"document\": {\n      \"id\": \"{DID}\",\n      \"verificationMethod\": [\n        {\n          \"id\": \"{DID}#{SIGNING_KEY_MB}\",\n          \"type\": \"Multikey\",\n          \"controller\": \"{DID}\",\n          \"publicKeyMultibase\": \"{SIGNING_KEY_MB}\"\n        }\n      ],\n      \"service\": [\n        {\n          \"id\": \"{DID}#didcomm\",\n          \"type\": \"DIDCommMessaging\",\n          \"serviceEndpoint\": { \"uri\": \"{MEDIATOR_DID}\", \"accept\": \"{ACCEPT}\" }\n        }\n      ]\n    },\n    \"scope\": { \"type\": \"global\" },\n    \"createdAt\": 1781600401,\n    \"updatedAt\": 1781604001,\n    \"createdBy\": \"did:web:admin.example\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

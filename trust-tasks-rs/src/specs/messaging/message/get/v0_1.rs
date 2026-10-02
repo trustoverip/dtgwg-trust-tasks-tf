@@ -1250,27 +1250,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1f0e52-3d0a-4b8e-9a51-2f1c6e7d9a01\",\n  \"type\": \"https://trusttasks.org/spec/messaging/message/get/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:00:00Z\",\n  \"payload\": {\n    \"did\": \"did:web:alice.example\",\n    \"msgId\": \"1726912345000-0\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:00:00Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1f0e52-3d0a-4b8e-9a51-2f1c6e7d9a02\",\n  \"type\": \"https://trusttasks.org/spec/messaging/message/get/0.1#response\",\n  \"threadId\": \"urn:uuid:7c1f0e52-3d0a-4b8e-9a51-2f1c6e7d9a01\",\n  \"issuer\": \"did:web:mediator.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-09-21T10:00:01Z\",\n  \"payload\": {\n    \"meta\": {\n      \"msgId\": \"1726912345000-0\",\n      \"queue\": \"receive\",\n      \"size\": 1843,\n      \"receivedAt\": \"2026-09-21T09:12:25Z\",\n      \"expiresAt\": \"2026-09-28T09:12:25Z\",\n      \"to\": \"did:web:alice.example\",\n      \"protocol\": \"didcomm\",\n      \"deliveryState\": \"delivered\",\n      \"deliveredAt\": \"2026-09-21T09:12:26Z\"\n    },\n    \"message\": \"{\\\"protected\\\":\\\"eyJ0eXAiOiJhcHBsaWNhdGlvbi9kaWRjb21tLWVuY3J5cHRlZCtqc29uIn0\\\",\\\"recipients\\\":[{\\\"header\\\":{\\\"kid\\\":\\\"did:web:alice.example#key-2\\\"},\\\"encrypted_key\\\":\\\"...\\\"}],\\\"iv\\\":\\\"...\\\",\\\"ciphertext\\\":\\\"...\\\",\\\"tag\\\":\\\"...\\\"}\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

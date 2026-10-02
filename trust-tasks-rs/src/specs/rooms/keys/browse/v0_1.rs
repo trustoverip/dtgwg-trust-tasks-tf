@@ -2107,36 +2107,3 @@ pub mod error_codes {
         retryable: false,
     };
 }
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/browse/0.1#request\",\n  \"issuer\": \"did:example:member\",\n  \"recipient\": \"did:example:keyholder\",\n  \"issuedAt\": \"2026-01-01T00:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n    \"host\": \"did:webvh:example.com:northwind-community\"\n  }\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/browse/0.1#response\",\n  \"issuer\": \"did:example:keyholder\",\n  \"recipient\": \"did:example:member\",\n  \"issuedAt\": \"2026-01-01T00:00:03Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n    \"records\": [\n      {\n        \"key\": \"giXFLTGBdnnQJRoIsktuIg\",\n        \"version\": 412,\n        \"epoch\": 7,\n        \"status\": \"active\",\n        \"updatedAt\": \"2026-01-01T00:00:00Z\"\n      }\n    ],\n    \"complete\": true,\n    \"verification\": {\n      \"priorRoots\": \"agree\",\n      \"count\": \"agrees\",\n      \"head\": {\n        \"dataCommitment\": \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\",\n        \"recordCount\": 1,\n        \"headVersion\": 412\n      }\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-    #[test]
-    fn response_example_2() {
-        const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000003\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/browse/0.1#response\",\n  \"issuer\": \"did:example:keyholder\",\n  \"recipient\": \"did:example:member\",\n  \"issuedAt\": \"2026-01-01T00:00:03Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:example.com:rooms:northwind\",\n    \"records\": [],\n    \"complete\": true,\n    \"verification\": {\n      \"priorRoots\": \"noneHeld\",\n      \"count\": \"short\",\n      \"head\": {\n        \"dataCommitment\": \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\",\n        \"recordCount\": 118,\n        \"headVersion\": 412\n      }\n    }\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}

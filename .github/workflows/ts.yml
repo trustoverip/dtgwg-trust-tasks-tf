@@ -21,6 +21,13 @@ on:
   # correctness gap for.
   pull_request:
 
+# A newer push to the same PR supersedes the run in flight, so cancel it rather
+# than let it hold a runner. Keyed on the commit for every other event, so a run
+# on `main` is never cancelled by the next merge.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   # The Rust bindings have `codegen-drift` (see codegen.yml) but the TS side
   # had no equivalent, so a spec change that regenerated only the Rust

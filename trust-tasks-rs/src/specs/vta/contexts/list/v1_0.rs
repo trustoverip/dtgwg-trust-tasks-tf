@@ -799,27 +799,3 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-#[cfg(test)]
-mod conformance {
-    //! Round-trip tests harvested from the spec's `spec.md`,
-    //! plus a `rejects_invalid_examples` test for any fixtures
-    //! in `payload.invalid-examples.json` (validate feature).
-    #[test]
-    fn request_example_1() {
-        const JSON: &str = "{\n  \"id\": \"6f1a9d2c-4c1e-4f0e-9c1a-2b7d5e0f3a11\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/list/1.0\",\n  \"issuer\": \"did:key:z6MkOperator\",\n  \"recipient\": \"did:web:vta.example\",\n  \"issuedAt\": \"2026-08-19T09:00:00Z\",\n  \"payload\": {}\n}\n";
-        let doc: crate::TrustTask<super::Payload> =
-            serde_json::from_str(JSON).expect("deserialize request example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "request example failed round-trip");
-    }
-    #[test]
-    fn response_example_1() {
-        const JSON: &str = "{\n  \"id\": \"d3b2c1a0-8e7f-4a6b-9c5d-1e2f3a4b5c6d\",\n  \"type\": \"https://trusttasks.org/spec/vta/contexts/list/1.0#response\",\n  \"issuer\": \"did:web:vta.example\",\n  \"recipient\": \"did:key:z6MkOperator\",\n  \"issuedAt\": \"2026-08-19T09:00:01Z\",\n  \"threadId\": \"6f1a9d2c-4c1e-4f0e-9c1a-2b7d5e0f3a11\",\n  \"payload\": {\n    \"contexts\": [\n      {\n        \"id\": \"personal\",\n        \"name\": \"Personal\",\n        \"did\": \"did:webvh:QmScid:example.com\",\n        \"basePath\": \"personal\",\n        \"createdAt\": \"2026-01-04T10:00:00Z\",\n        \"updatedAt\": \"2026-07-19T14:22:00Z\"\n      },\n      {\n        \"id\": \"personal/banking\",\n        \"name\": \"Banking\",\n        \"parent\": \"personal\",\n        \"basePath\": \"personal/banking\",\n        \"createdAt\": \"2026-03-11T08:30:00Z\",\n        \"updatedAt\": \"2026-03-11T08:30:00Z\"\n      }\n    ]\n  }\n}\n";
-        let doc: crate::TrustTask<super::Response> =
-            serde_json::from_str(JSON).expect("deserialize response example");
-        let rendered = serde_json::to_value(&doc).expect("re-serialize");
-        let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
-        assert_eq!(rendered, expected, "response example failed round-trip");
-    }
-}
