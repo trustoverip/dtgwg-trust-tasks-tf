@@ -1054,6 +1054,10 @@ mod conformance {
                 "`requestId`, when supplied, must be a string — an applicant may omit it, but not send a number.",
                 "{\n  \"requestId\": 1\n}",
             ),
+            (
+                "`resendCredentials` is a flag, not a string — a `\"true\"` must not be read as a request for delivery.",
+                "{\n  \"requestId\": \"r1\",\n  \"resendCredentials\": \"true\"\n}",
+            ),
         ];
         for (i, (note, raw)) in fixtures.iter().enumerate() {
             let value: serde_json::Value = match serde_json::from_str(raw) {
