@@ -11,6 +11,10 @@ export interface VTCJoinRequestsStatusPayload {
    * The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.
    */
   requestId?: string;
+  /**
+   * Ask the community to deliver again the membership credential and role credential it already issued for this request, when the request is `approved` and they have not arrived. Set it only after a response of `approved` with `credentialsDelivered: false` and a reasonable wait; the community rate-limits it and answers in `credentialResend`. The community never issues new credentials in response.
+   */
+  resendCredentials?: boolean;
   ext?: Ext;
 }
 export interface VTCJoinRequestsStatusResponsePayload {
@@ -36,6 +40,18 @@ export interface VTCJoinRequestsStatusResponsePayload {
    * When more evidence is needed, the presentation-definition to satisfy (opaque here).
    */
   presentationDefinition?: {};
+  /**
+   * Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`.
+   */
+  credentialsDelivered?: boolean;
+  /**
+   * The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.
+   */
+  credentialResend?: "queued" | "notNeeded" | "rateLimited";
+  /**
+   * The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.
+   */
+  retryAfter?: string;
   ext?: Ext;
 }
 
@@ -74,6 +90,10 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "description": "The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller."
+    },
+    "resendCredentials": {
+      "type": "boolean",
+      "description": "Ask the community to deliver again the membership credential and role credential it already issued for this request, when the request is `approved` and they have not arrived. Set it only after a response of `approved` with `credentialsDelivered: false` and a reasonable wait; the community rate-limits it and answers in `credentialResend`. The community never issues new credentials in response."
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -131,6 +151,24 @@ export const PAYLOAD_SCHEMA = {
         "presentationDefinition": {
           "type": "object",
           "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here)."
+        },
+        "credentialsDelivered": {
+          "type": "boolean",
+          "description": "Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`."
+        },
+        "credentialResend": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "notNeeded",
+            "rateLimited"
+          ],
+          "description": "The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery."
+        },
+        "retryAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -207,6 +245,24 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "object",
           "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here)."
         },
+        "credentialsDelivered": {
+          "type": "boolean",
+          "description": "Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`."
+        },
+        "credentialResend": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "notNeeded",
+            "rateLimited"
+          ],
+          "description": "The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery."
+        },
+        "retryAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`."
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -236,7 +292,7 @@ export const SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: PAYLOAD_SCHEMA,
 } as const;
 
@@ -250,6 +306,6 @@ export const RESPONSE_SPEC = {
   isBearer: false,
   isProofRequired: true,
   isRecipientRequired: true,
-  isIssuedAtRequired: false,
+  isIssuedAtRequired: true,
   payloadSchema: RESPONSE_PAYLOAD_SCHEMA,
 } as const;
