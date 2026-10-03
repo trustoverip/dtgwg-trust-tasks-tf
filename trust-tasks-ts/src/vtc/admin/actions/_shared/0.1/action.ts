@@ -22,4 +22,4 @@ export interface VTCAdminActionsSharedDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../../_shared/components.js".
  */
-export type { Action, ActionId, Field, Summary } from "../../../../../_shared/components.js";
+export type { Action_VtcAdminActionsV0_1 as Action, ActionId, Field, Summary } from "../../../../../_shared/components.js";

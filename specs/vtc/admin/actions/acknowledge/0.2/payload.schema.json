@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/actions/acknowledge/0.2",
+  "title": "VTC Admin Actions — Acknowledge — payload",
+  "description": "An administrator acknowledges an `acknowledge`-category action — an operation that already took effect outside the approval path, such as an operator's offline or break-glass write — recording that they have seen it. There is nothing to approve or decline. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["actionId"],
+  "properties": {
+    "actionId": {
+      "$ref": "../../_shared/0.2/action.schema.json#/$defs/ActionId",
+      "description": "The open `acknowledge` action being acknowledged."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Actions — Acknowledge — response payload",
+      "description": "The action with the caller's acknowledgement recorded in `approvals`. When the caller was the last administrator expected to acknowledge it, `status` is `completed` and `closedReason` is `acknowledged`. Failures use trust-task-error, not this shape.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "$ref": "../../_shared/0.2/action.schema.json#/$defs/Action"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

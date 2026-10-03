@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`command` is a closed set — a renderer must never show an administrator an offline change it cannot name.",
+    "payload": { "command": "dropTable", "dids": ["did:web:erin.example"], "host": "vtc-01.community.example", "at": "2026-10-02T06:12:44Z" }
+  },
+  {
+    "note": "`dids` must not be empty — an offline write that changed nobody's access needs no acknowledgement, and an empty list hides who it changed.",
+    "payload": { "command": "aclAdd", "dids": [], "host": "vtc-01.community.example", "at": "2026-10-02T06:12:44Z" }
+  },
+  {
+    "note": "`host` is required — where an operator held access is the one fact the record can always state.",
+    "payload": { "command": "emergencyBootstrap", "dids": ["did:web:erin.example"], "at": "2026-10-02T06:12:44Z" }
+  },
+  {
+    "note": "`at` must be an RFC 3339 date-time.",
+    "payload": { "command": "aclRemove", "dids": ["did:web:carol.example"], "host": "vtc-01.community.example", "at": "this morning" }
+  },
+  {
+    "note": "Unknown top-level member — the record is not a request and takes no execution options.",
+    "payload": { "command": "aclAdd", "dids": ["did:web:erin.example"], "host": "vtc-01.community.example", "at": "2026-10-02T06:12:44Z", "role": "admin" }
+  }
+]

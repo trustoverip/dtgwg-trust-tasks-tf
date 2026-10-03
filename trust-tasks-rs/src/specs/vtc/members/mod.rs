@@ -2,6 +2,7 @@
 
 pub mod admin_remove;
 pub mod authority_reduced_notice;
+pub mod authority_reduction_pending_notice;
 pub mod credentials;
 pub mod list;
 pub mod personhood;

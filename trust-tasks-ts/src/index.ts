@@ -622,10 +622,15 @@ export * as VettingAutoGrantShared_v0_1 from "./vtc/_shared/0.1/vetting-auto-gra
 export * as WebsiteTransferShared_v0_1 from "./vtc/_shared/0.1/website-transfer.js";
 export * as SchemaRegistryShared_v0_2 from "./vtc/_shared/0.2/schema-registry.js";
 export * as ActionShared_v0_1 from "./vtc/admin/actions/_shared/0.1/action.js";
+export * as ActionShared_v0_2 from "./vtc/admin/actions/_shared/0.2/action.js";
 export * as VtcAdminActionsAcknowledge_v0_1 from "./vtc/admin/actions/acknowledge/0.1/payload.js";
+export * as VtcAdminActionsAcknowledge_v0_2 from "./vtc/admin/actions/acknowledge/0.2/payload.js";
 export * as VtcAdminActionsCancel_v0_1 from "./vtc/admin/actions/cancel/0.1/payload.js";
+export * as VtcAdminActionsCancel_v0_2 from "./vtc/admin/actions/cancel/0.2/payload.js";
 export * as VtcAdminActionsList_v0_1 from "./vtc/admin/actions/list/0.1/payload.js";
+export * as VtcAdminActionsList_v0_2 from "./vtc/admin/actions/list/0.2/payload.js";
 export * as VtcAdminActionsShow_v0_1 from "./vtc/admin/actions/show/0.1/payload.js";
+export * as VtcAdminActionsShow_v0_2 from "./vtc/admin/actions/show/0.2/payload.js";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload.js";
 export * as VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
@@ -686,6 +691,7 @@ export * as VtcJoinRequestsVettingShow_v0_1 from "./vtc/join-requests/vetting/sh
 export * as VtcJoinRequestsWithdraw_v0_1 from "./vtc/join-requests/withdraw/0.1/payload.js";
 export * as VtcMembersAdminRemove_v0_1 from "./vtc/members/admin-remove/0.1/payload.js";
 export * as VtcMembersAuthorityReducedNotice_v0_1 from "./vtc/members/authority-reduced-notice/0.1/payload.js";
+export * as VtcMembersAuthorityReductionPendingNotice_v0_1 from "./vtc/members/authority-reduction-pending-notice/0.1/payload.js";
 export * as VtcMembersCredentials_v0_1 from "./vtc/members/credentials/0.1/payload.js";
 export * as VtcMembersList_v0_1 from "./vtc/members/list/0.1/payload.js";
 export * as VtcMembersPersonhoodAssert_v0_1 from "./vtc/members/personhood/assert/0.1/payload.js";
@@ -705,6 +711,7 @@ export * as VtcMembersSolicitVmc_v0_1 from "./vtc/members/solicit-vmc/0.1/payloa
 export * as VtcMembersStepUpPasskeyNotice_v0_1 from "./vtc/members/step-up-passkey-notice/0.1/payload.js";
 export * as VtcMembersUpdate_v0_1 from "./vtc/members/update/0.1/payload.js";
 export * as VtcMembersVmc_v0_1 from "./vtc/members/vmc/0.1/payload.js";
+export * as VtcOperatorOfflineWrite_v0_1 from "./vtc/operator/offline-write/0.1/payload.js";
 export * as VtcPoliciesTest_v0_1 from "./vtc/policies/test/0.1/payload.js";
 export * as VtcRecognitionCheck_v0_1 from "./vtc/recognition/check/0.1/payload.js";
 export * as VtcRegistryDiagnostics_v0_1 from "./vtc/registry/diagnostics/0.1/payload.js";

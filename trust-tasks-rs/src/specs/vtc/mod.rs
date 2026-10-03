@@ -14,6 +14,7 @@ pub mod install;
 pub mod invitations;
 pub mod join_requests;
 pub mod members;
+pub mod operator;
 pub mod policies;
 pub mod recognition;
 pub mod registry;
