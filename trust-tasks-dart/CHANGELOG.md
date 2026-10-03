@@ -11,6 +11,44 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.5.2 — 2026-10-03
+
+
+### Added
+
+- **vtc**: Live admin console events — a hint-only subscription (#721)
+
+Adds vtc/admin/events/subscribe/0.1 and vtc/admin/events/event/0.1, and
+  the HTTPS binding 0.3 that carries them.
+
+  A console opens one live channel per session with a signed subscribe
+  naming the topics it renders (actions, acknowledgements, joinRequests,
+  members, singleAdminMode, config). The community answers with the
+  #response as the first document on a stream, then sends event documents
+  that are hints only: a topic, a time, a resume token, and for the badge
+  topics the caller's count. A hint MUST NOT carry record data, record
+  identifiers or personal data; the console re-fetches through the
+  existing signed reads, so authorization stays on every read and the
+  stream can neither leak a record nor grant a read. Each topic is sent
+  only to a caller who could perform its read, checked per hint; a
+  shrinking topic set ends the stream rather than silently narrowing it.
+  Resumption is in-band (`since`), an unknown token is never an error,
+  and the console must show live/offline from a signal that can go false
+  (heartbeat interval in the response). Polling stays the fallback.
+
+  HTTPS binding 0.2 said it defined no streaming variant, so 0.3 adds
+  §2.1 streamed responses: Accept: text/event-stream on the ordinary
+  POST; refusals stay JSON and never open a stream; the #response is the
+  first SSE event; one complete document per single data: line, no
+  event: field; SSE id carries the task's resume token; heartbeats are
+  SSE comments; resumption is in-band only, with Last-Event-ID a
+  cross-check (mismatch is malformedRequest); either side may close, a
+  close is not cancellation, no error is sent after the #response, and a
+  stream ends no later than the bearer credential that opened it. Native
+  EventSource reconnection (a bodiless GET) is deliberately not offered:
+  every (re)connection is a freshly signed request. Registered in
+  website/assets/bindings.js. No framework change was needed.
+
 ## 0.5.1 — 2026-10-03
 
 
