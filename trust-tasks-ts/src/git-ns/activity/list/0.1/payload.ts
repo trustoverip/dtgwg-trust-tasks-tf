@@ -7,6 +7,11 @@ import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource, Right } from "..
 
 
 /**
+ * Where the item came from: an audit row or a bridge job.
+ */
+export type Source = "audit" | "job";
+
+/**
  * A namespace's administrators list recent rights changes, drift reports and bridge jobs in the namespaces they administer — every namespace, for a community administrator. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface GitNamespacesListActivityPayload {
@@ -50,6 +55,7 @@ export interface ActivityItem {
    * What happened: `gitNs.right.granted`, `gitNs.repo.renamed`, `gitNs.drift.reported`, `gitNs.job.createRepo`, and so on. Not a closed enumeration — a VTC MAY add its own dot-separated `gitNs.*` actions, and a consumer MUST treat one it does not recognise as an opaque activity item rather than failing to parse it.
    */
   action: string;
+  source: Source;
   /**
    * The namespace the item belongs to. Absent only for a community-wide audit row from before any namespace was unbound (visible to a community administrator with no `namespace` filter only).
    */
@@ -158,6 +164,10 @@ export const PAYLOAD_SCHEMA = {
           "maxLength": 128,
           "pattern": "^[a-zA-Z][a-zA-Z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*)*$",
           "description": "What happened: `gitNs.right.granted`, `gitNs.repo.renamed`, `gitNs.drift.reported`, `gitNs.job.createRepo`, and so on. Not a closed enumeration — a VTC MAY add its own dot-separated `gitNs.*` actions, and a consumer MUST treat one it does not recognise as an opaque activity item rather than failing to parse it."
+        },
+        "source": {
+          "$ref": "#/$defs/Source",
+          "description": "Where the item came from: an audit row or a bridge job."
         },
         "namespace": {
           "$ref": "#/$defs/NamespaceId",
@@ -297,6 +307,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "maxLength": 128,
           "pattern": "^[a-zA-Z][a-zA-Z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*)*$",
           "description": "What happened: `gitNs.right.granted`, `gitNs.repo.renamed`, `gitNs.drift.reported`, `gitNs.job.createRepo`, and so on. Not a closed enumeration — a VTC MAY add its own dot-separated `gitNs.*` actions, and a consumer MUST treat one it does not recognise as an opaque activity item rather than failing to parse it."
+        },
+        "source": {
+          "$ref": "#/$defs/Source",
+          "description": "Where the item came from: an audit row or a bridge job."
         },
         "namespace": {
           "$ref": "#/$defs/NamespaceId",

@@ -1209,6 +1209,30 @@ function declaresClosure(schema) {
   return 'additionalProperties' in schema || 'unevaluatedProperties' in schema;
 }
 
+/** Every subschema of `schema` that is an object closed by
+ *  `additionalProperties: false` and carries a `required` list, as
+ *  `[jsonPointer, subschema]`. Only `additionalProperties: false` qualifies:
+ *  under `unevaluatedProperties` an `allOf` branch may supply the member.
+ *  Instance-valued keywords (`const`, `enum`, `default`, `examples`) are data,
+ *  not schemas, and are not descended into. */
+function closedObjectSubschemas(schema) {
+  const out = [];
+  const DATA = new Set(['const', 'enum', 'default', 'examples']);
+  const walk = (s, ptr) => {
+    if (!s || typeof s !== 'object') return;
+    if (Array.isArray(s)) {
+      s.forEach((x, i) => walk(x, `${ptr}/${i}`));
+      return;
+    }
+    if (Array.isArray(s.required) && s.additionalProperties === false) out.push([ptr, s]);
+    for (const [k, v] of Object.entries(s)) {
+      if (!DATA.has(k)) walk(v, `${ptr}/${k}`);
+    }
+  };
+  walk(schema, '#');
+  return out;
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -1256,17 +1280,20 @@ function checkPayloadSchema(slug, version, dir) {
   // nothing caught it, because every existing check looks at one keyword at a
   // time. The codegen then made it worse, emitting a required, untyped
   // `digest: serde_json::Value` from a `required` entry with no schema to read.
-  for (const [label, sub] of [['', schema], ['$defs.Response: ', schema.$defs?.Response]]) {
-    if (!sub || !Array.isArray(sub.required)) continue;
-    // Only meaningful for an object closed by `additionalProperties: false`.
-    // Under `unevaluatedProperties` an `allOf` branch may supply the member.
-    if (sub.additionalProperties !== false) continue;
+  //
+  // Every subschema is walked, not just the root and `$defs.Response`:
+  // `git-ns/activity/list/0.1` shipped `$defs.ActivityItem` requiring `source`
+  // with no `source` property, which the root-and-Response check could not see
+  // even though `Response.items` reaches it — every conforming response was
+  // unsatisfiable, and the codegen again emitted an untyped
+  // `source: serde_json::Value`.
+  for (const [ptr, sub] of closedObjectSubschemas(schema)) {
     const declared = new Set(Object.keys(sub.properties || {}));
     for (const name of sub.required) {
       if (!declared.has(name)) {
         fail(
           `${slug}/${version}/payload.schema.json`,
-          `${label}required names \`${name}\`, which is not in \`properties\`, and ` +
+          `${ptr}: required names \`${name}\`, which is not in \`properties\`, and ` +
             `additionalProperties is false — no document can satisfy this schema`,
         );
       }
