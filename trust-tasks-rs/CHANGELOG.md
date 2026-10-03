@@ -31,6 +31,70 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.27.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.26.3...trust-tasks-rs-v0.27.0) — 2026-10-03
+
+
+### Build & CI
+
+- Faster Rust CI and releases — parallel jobs, a lighter test build, verify on the Release PR ([#716](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/716))
+
+The Rust test job (10-19 min) gated every PR and release-plz's publish
+  (16-18 min) gated every release. Nearly all of both was compiling the
+  46 MB generated trust-tasks-rs, again and again.
+
+  - trust-tasks-codegen moves the per-spec conformance tests out of each
+    generated module into one generated integration test,
+    trust-tasks-rs/tests/conformance/, and leaves every family but `acl`
+    out of the crate's cfg(test) build. The unit-test harness no longer
+    compiles a second copy of the whole tree. The validate test build
+    went from 63s to 23s locally, peak RSS 9.0 GB to 4.3 GB. All 1558
+    generated tests and 126 unit tests still run.
+  - rust.yml runs workspace tests, validate tests and cargo doc as three
+    parallel jobs, and clippy's two feature sets as a matrix.
+  - release-plz publishes with publish_no_verify. The verify build moves to
+    a new package-workspace job on the Release PR (cargo package
+    --workspace, with unpublished siblings from the local registry
+    overlay), so a tarball that cannot compile now blocks the merge
+    instead of failing partway through an irreversible upload.
+  - rust-cache saves from main only. PR saves were 1 GB duplicates of
+    main's key and had filled the 10 GB cache quota.
+  - PR workflows cancel superseded runs.
+  - The codegen drift check now also catches untracked generated files.
+
+
+
+### Specifications
+
+- **git-ns**: Activity/list 0.1 declares the `source` its ActivityItem requires ([#718](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/718))
+
+`$defs/ActivityItem` listed `source` in `required` but defined no `source`
+  property, under `additionalProperties: false`. No item could validate, so no
+  non-empty `git-ns/activity/list/0.1#response` could either: a consumer that
+  validates rejected every conforming response. The `Source` enum (`audit` |
+  `job`) was defined in `$defs` but never referenced. The spec prose, its
+  examples and the one implementation (the VTC) all carry `source`; only the
+  schema lost it. The property now references `#/$defs/Source`.
+
+  The spec is a draft and the change makes the schema accept the wire its prose
+  and implementation already use, so it is edited in place (SPEC §5.2).
+
+  The registry's unsatisfiable-schema lint (added after
+  `provision/integration/0.3`, #326) checked only the root and
+  `$defs.Response`, so an item definition reached through `Response.items`
+  went unseen. It now walks every subschema closed by
+  `additionalProperties: false`; against main it reports exactly this defect
+  and nothing else.
+
+  Breaking for Rust: the generated `ActivityItem.source` was an untyped
+  `serde_json::Value` (the codegen's fallback for a required member with no
+  schema) and is now the generated `Source` enum. Go and Dart gain a typed
+  `source` field; TypeScript gains it on the interface and the embedded schema.
+
+  Reported by the VTA browser plugin's schema-satisfiability test against
+  @openvtc/trust-tasks 0.22.7.
+
+
+
 ## [0.26.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.26.2...trust-tasks-rs-v0.26.3) — 2026-10-02
 
 

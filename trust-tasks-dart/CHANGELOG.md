@@ -11,6 +11,39 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.5.0 — 2026-10-03
+
+
+### Specifications
+
+- **git-ns**: Activity/list 0.1 declares the `source` its ActivityItem requires (#718)
+
+`$defs/ActivityItem` listed `source` in `required` but defined no `source`
+  property, under `additionalProperties: false`. No item could validate, so no
+  non-empty `git-ns/activity/list/0.1#response` could either: a consumer that
+  validates rejected every conforming response. The `Source` enum (`audit` |
+  `job`) was defined in `$defs` but never referenced. The spec prose, its
+  examples and the one implementation (the VTC) all carry `source`; only the
+  schema lost it. The property now references `#/$defs/Source`.
+
+  The spec is a draft and the change makes the schema accept the wire its prose
+  and implementation already use, so it is edited in place (SPEC §5.2).
+
+  The registry's unsatisfiable-schema lint (added after
+  `provision/integration/0.3`, #326) checked only the root and
+  `$defs.Response`, so an item definition reached through `Response.items`
+  went unseen. It now walks every subschema closed by
+  `additionalProperties: false`; against main it reports exactly this defect
+  and nothing else.
+
+  Breaking for Rust: the generated `ActivityItem.source` was an untyped
+  `serde_json::Value` (the codegen's fallback for a required member with no
+  schema) and is now the generated `Source` enum. Go and Dart gain a typed
+  `source` field; TypeScript gains it on the interface and the embedded schema.
+
+  Reported by the VTA browser plugin's schema-satisfiability test against
+  @openvtc/trust-tasks 0.22.7.
+
 ## 0.4.7 — 2026-10-02
 
 
