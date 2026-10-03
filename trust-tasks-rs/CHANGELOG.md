@@ -31,6 +31,21 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.27.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.3...trust-tasks-rs-v0.27.4) — 2026-10-03
+
+
+### Added
+
+- **git-ns**: Job/list 0.2 lists closePullRequest jobs ([#727](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/727))
+
+git-ns/bridge/job/0.5 added the closePullRequest kind, but job/list 0.1's
+  JobKind is a closed response enum of the seven 0.4 kinds, so a VTC could not
+  list those jobs to a strict consumer. 0.2 adds closePullRequest to JobKind and
+  an optional row member `number` (the pull request closed; requires `repo`).
+  The request is unchanged. Regenerated Rust, TS, Go and Dart bindings.
+
+
+
 ## [0.27.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.2...trust-tasks-rs-v0.27.3) — 2026-10-03
 
 
