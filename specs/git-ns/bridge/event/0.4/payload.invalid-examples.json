@@ -1,0 +1,460 @@
+[
+  {
+    "note": "`event.type` is one of the ten forge-neutral types; forge webhook names are translated, never forwarded.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "repository.renamed",
+        "forgeId": "1"
+      }
+    }
+  },
+  {
+    "note": "A rename names both resources.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "repoRenamed",
+        "forgeId": "1",
+        "to": "github.com/acme/new"
+      }
+    }
+  },
+  {
+    "note": "`event` is required.",
+    "payload": {
+      "namespace": "ns_1",
+      "drift": []
+    }
+  },
+  {
+    "note": "A drift item's type is one of the drift types.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "installationRemoved"
+      },
+      "drift": [
+        {
+          "type": "somethingOdd",
+          "resource": "github.com/acme/widgets"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A role-map report carries the map.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported"
+      }
+    }
+  },
+  {
+    "note": "A role-map report names the ladder its map is rounded onto.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        }
+      }
+    }
+  },
+  {
+    "note": "A ladder lists each level once.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "ladder": [
+          "write",
+          "write"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A ladder lists at least one level.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "none",
+          "maintain": "none",
+          "commit": "none"
+        },
+        "ladder": []
+      }
+    }
+  },
+  {
+    "note": "A role map has no member for `git.ns.admin`: a namespace admin projects to no forge role, whatever a bridge is configured with.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none",
+          "nsAdmin": "admin"
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A role map names all three rights.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain"
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ]
+      }
+    }
+  },
+  {
+    "note": "Roles are levels of the bridge's forge-neutral ladder, not a forge's own names.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "owner",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A per-repository map names one repository, not a namespace.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ],
+        "repos": [
+          {
+            "resource": "github.com/acme",
+            "roleMap": {
+              "own": "admin",
+              "maintain": "maintain",
+              "commit": "none"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "note": "`stale` lists each repository once.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "roleMapReported",
+        "roleMap": {
+          "own": "admin",
+          "maintain": "maintain",
+          "commit": "none"
+        },
+        "ladder": [
+          "read",
+          "triage",
+          "write",
+          "maintain",
+          "admin"
+        ],
+        "stale": [
+          "github.com/acme/widgets",
+          "github.com/acme/widgets"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A pull request number is a positive integer: the forge numbers pull requests from 1.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 0,
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "A pull request number is an integer, not a string.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": "42",
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "`action` is `opened` or `reopened`; other forge pull-request actions (`synchronize`, `edited`, `closed`) are not reported.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "synchronize",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "`actor` is required: a reopen is judged by who performed it, so the VTC must never have to guess.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "`author` is required: the policy is evaluated against the pull request's author.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "opened",
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "`number` is required: without it the VTC cannot name the pull request to close.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "`resource` is required: the VTC checks that the repository lies inside the namespace.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "number": 42,
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "A forge account carries `forge`, `id` and `login`; a bare login is not an account.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "opened",
+        "author": "eve-dev",
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      }
+    }
+  },
+  {
+    "note": "`draft` is a boolean.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "draft": "yes"
+      }
+    }
+  },
+  {
+    "note": "`fromFork` is a boolean.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "fromFork": 1
+      }
+    }
+  },
+  {
+    "note": "Raw forge data such as the pull request's title or body is never forwarded; `additionalProperties` refuses it.",
+    "payload": {
+      "namespace": "ns_1",
+      "event": {
+        "type": "pullRequestOpened",
+        "forgeId": "812736451",
+        "resource": "github.com/acme/widgets",
+        "number": 42,
+        "action": "opened",
+        "author": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "actor": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        },
+        "title": "Add a feature"
+      }
+    }
+  }
+]

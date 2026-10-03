@@ -531,6 +531,7 @@ mod git_ns {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod job {
             mod list {
@@ -540,6 +541,7 @@ mod git_ns {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod result {
             mod v0_1;
