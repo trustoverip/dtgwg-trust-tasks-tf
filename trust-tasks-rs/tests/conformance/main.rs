@@ -1418,15 +1418,19 @@ mod vtc {
         mod actions {
             mod acknowledge {
                 mod v0_1;
+                mod v0_2;
             }
             mod cancel {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod show {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod bootstrap {
@@ -1631,6 +1635,9 @@ mod vtc {
         mod authority_reduced_notice {
             mod v0_1;
         }
+        mod authority_reduction_pending_notice {
+            mod v0_1;
+        }
         mod credentials {
             mod v0_1;
         }
@@ -1688,6 +1695,11 @@ mod vtc {
             mod v0_1;
         }
         mod vmc {
+            mod v0_1;
+        }
+    }
+    mod operator {
+        mod offline_write {
             mod v0_1;
         }
     }

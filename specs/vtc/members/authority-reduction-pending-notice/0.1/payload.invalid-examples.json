@@ -1,0 +1,26 @@
+[
+  {
+    "note": "landsAt is required: a pending notice that does not say when the reduction takes effect tells the subject nothing they can act on before it does.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "revoked", "previousRole": "community-admin", "decidedBy": "did:key:z6MkAdmin", "requestedAt": "2026-10-02T09:00:00Z", "actionId": "act_Cf9xT2kWq7Ln4Rv8" }
+  },
+  {
+    "note": "actionId is required: without it the subject cannot follow the action to learn whether it was cancelled or landed.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "revoked", "previousRole": "community-admin", "decidedBy": "did:key:z6MkAdmin", "requestedAt": "2026-10-02T09:00:00Z", "landsAt": "2026-10-03T09:00:00Z" }
+  },
+  {
+    "note": "code is a closed set; `removed` is a membership removal (vtc/members/removal-notice), not a reduction of authority.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "removed", "previousRole": "community-admin", "decidedBy": "did:key:z6MkAdmin", "requestedAt": "2026-10-02T09:00:00Z", "landsAt": "2026-10-03T09:00:00Z", "actionId": "act_Cf9xT2kWq7Ln4Rv8" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false. The notice carries no veto or objection handle: the subject cannot block the reduction.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "revoked", "previousRole": "community-admin", "decidedBy": "did:key:z6MkAdmin", "requestedAt": "2026-10-02T09:00:00Z", "landsAt": "2026-10-03T09:00:00Z", "actionId": "act_Cf9xT2kWq7Ln4Rv8", "objectionUrl": "https://community.example/object" }
+  },
+  {
+    "note": "actionId shorter than the shared ActionId minimum — a guessable id would let any subject probe other actions.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "demoted", "previousRole": "community-admin", "resultingRole": "member", "decidedBy": "did:key:z6MkAdmin", "requestedAt": "2026-10-02T09:00:00Z", "landsAt": "2026-10-03T09:00:00Z", "actionId": "act1" }
+  },
+  {
+    "note": "landsAt must be an RFC 3339 date-time, not a relative expression.",
+    "payload": { "did": "did:key:z6MkSubject", "code": "revoked", "previousRole": "community-admin", "decidedBy": "did:key:z6MkAdmin", "requestedAt": "2026-10-02T09:00:00Z", "landsAt": "tomorrow", "actionId": "act_Cf9xT2kWq7Ln4Rv8" }
+  }
+]

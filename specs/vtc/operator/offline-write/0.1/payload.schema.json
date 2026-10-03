@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/operator/offline-write/0.1",
+  "title": "VTC Operator Offline Write — record",
+  "description": "A RECORD TYPE, not a request. It describes one change to a Verifiable Trust Community's access control made by an operator with access to the community's host, through an offline command run against the community's store (`vtc admin emergency-bootstrap` and its siblings) rather than through any Trust Task. No party sends a document of this type to another and no consumer executes one: its Type URI exists so that an `acknowledge` action (vtc/admin/actions/_shared/0.2) can name what happened in `typeUri`, and so that the community's audit trail can reference it. When an action names it, the action's `payload` is this record. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["command", "dids", "host", "at"],
+  "properties": {
+    "command": {
+      "type": "string",
+      "enum": ["aclAdd", "aclRemove", "adminInvite", "createDidKeyAdmin", "enrolApprover", "emergencyBootstrap"],
+      "description": "Which offline command made the change. `aclAdd` — an access control entry was written. `aclRemove` — an access control entry was removed. `adminInvite` — an administrator invitation was minted. `createDidKeyAdmin` — a new `did:key` was minted on the host and made an administrator. `enrolApprover` — an approver was enrolled for a subject. `emergencyBootstrap` — the break-glass recovery that installs an administrator when none can act. A closed set: a new offline command is a new version, so that a renderer never shows an administrator a change it cannot name."
+    },
+    "dids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "description": "The DIDs whose access the command changed — the subject of an entry added or removed, the administrator installed or invited, the subject an approver was enrolled for and the approver — in the order the command reports them. Never empty: an offline write that changed nobody's access is not one administrators need to acknowledge."
+    },
+    "host": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 253,
+      "description": "The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the command wrote the change to the community's store, as recorded on the host. Not when the community noticed it, which is the action's `createdAt`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  }
+}

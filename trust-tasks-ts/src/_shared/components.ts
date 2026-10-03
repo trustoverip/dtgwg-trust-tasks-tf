@@ -1349,7 +1349,7 @@ export interface AclEntry_AclV0_2 {
 /**
  * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
  */
-export interface Action {
+export interface Action_VtcAdminActionsV0_1 {
   actionId: ActionId;
   /**
    * `approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one.
@@ -1432,6 +1432,107 @@ export interface Action {
    * The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.
    */
   callerRole: "approver" | "requester" | "acknowledger" | "observer";
+  /**
+   * How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.
+   */
+  requesterOpenActions?: number;
+  ext?: Ext;
+}
+/**
+ * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
+ */
+export interface Action_VtcAdminActionsV0_2 {
+  actionId: ActionId;
+  /**
+   * `approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.
+   */
+  category: "approval" | "acknowledge" | "queue" | "coolingOff";
+  /**
+   * The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.
+   */
+  kind: string;
+  /**
+   * The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.
+   */
+  typeUri: string;
+  /**
+   * VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.
+   */
+  requester: string;
+  /**
+   * `open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.
+   */
+  status: "open" | "completed" | "declined" | "expired" | "cancelled" | "failed";
+  /**
+   * When the operation was parked.
+   */
+  createdAt: string;
+  /**
+   * When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.
+   */
+  expiresAt?: string;
+  /**
+   * When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.
+   */
+  landsAt?: string;
+  /**
+   * Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.
+   */
+  cancellableBy?: "requester";
+  /**
+   * When the action left `open`. Present exactly when `status` is not `open`.
+   */
+  closedAt?: string;
+  /**
+   * Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).
+   */
+  closedReason?:
+    | "thresholdMet"
+    | "declined"
+    | "expired"
+    | "cancelledByRequester"
+    | "invalidated"
+    | "failedRecheck"
+    | "acknowledged"
+    | "landedAfterCoolingOff";
+  /**
+   * The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).
+   */
+  threshold?: number;
+  /**
+   * The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.
+   */
+  approvals: {
+    /**
+     * VID of the approver or acknowledger, as proven by the decision's own proof.
+     */
+    subject: string;
+    /**
+     * When the decision was recorded.
+     */
+    at: string;
+  }[];
+  /**
+   * How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.
+   */
+  approversRemaining?: number;
+  summary: Summary;
+  /**
+   * The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.
+   */
+  payload: {};
+  /**
+   * Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.
+   */
+  payloadDigest: DigestMultibase;
+  /**
+   * Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.
+   */
+  challenge?: string;
+  /**
+   * The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.
+   */
+  callerRole: "approver" | "requester" | "acknowledger" | "subject" | "observer";
   /**
    * How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.
    */

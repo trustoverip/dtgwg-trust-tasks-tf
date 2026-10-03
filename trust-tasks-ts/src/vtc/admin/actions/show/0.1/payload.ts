@@ -3,7 +3,7 @@
  * Source: specs/vtc/admin/actions/show/0.1/payload.schema.json
  */
 
-import type { Action, ActionId, DigestMultibase, Ext, Field, Summary } from "../../../../../_shared/components.js";
+import type { Action_VtcAdminActionsV0_1 as Action, ActionId, DigestMultibase, Ext, Field, Summary } from "../../../../../_shared/components.js";
 
 
 /**
