@@ -31,6 +31,28 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.27.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.2...trust-tasks-rs-v0.27.3) — 2026-10-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.4 pullRequestOpened and job 0.5 closePullRequest ([#723](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/723))
+
+A VTC community can restrict who may open pull requests on its governed
+  repositories. The bridge reports each pull request opened or reopened
+  (git-ns/bridge/event 0.4, new pullRequestOpened variant); when the VTC's
+  pull-request policy does not allow the author, it sends the bridge a
+  closePullRequest job (git-ns/bridge/job 0.5), which posts the community's
+  message as a comment and closes the pull request, idempotently.
+
+  Owners, maintainers and the bridge are always allowed; a reopen by an
+  owner or maintainer is an override. The gate is hygiene, not the merge
+  gate: the required commit-trust check remains the security control.
+
+  Regenerated Rust, TypeScript, Go and Dart bindings.
+
+
+
 ## [0.27.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.1...trust-tasks-rs-v0.27.2) — 2026-10-03
 
 
