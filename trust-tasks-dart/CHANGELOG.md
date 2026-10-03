@@ -11,6 +11,35 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.5.4 — 2026-10-03
+
+
+### Documentation
+
+- **git-ns**: Single-administrator mode may waive the self-grant rule (#725)
+
+Fixed rule 7 of git-ns/right/grant 0.3 named break-glass as the one way
+  an actor records an elevated right for themselves. In a community run by
+  one person there is nobody to make those grants or to ratify a
+  break-glass, so the rule left its administrator unable to own what they
+  create or adopt, or to reseat a namespace to themselves.
+
+  Add a narrowly scoped exception in git-ns/right/grant 0.3 (new section
+  "The single-administrator waiver"): a VTC its host operator has
+  configured for single-administrator operation (a host-level setting
+  outside community policy; VTI-APV-022 in the VTI specification) MAY
+  waive rule 7 for one operation when no other party is eligible to make
+  the grant. When it does it MUST require an operation-bound step-up,
+  MUST record a highest-severity audit event before the record (refusing
+  if it cannot), and MUST mark the record and the response (payload ext);
+  the record counts toward the last-owner and last-admin invariants. With
+  any other eligible party the rule applies unchanged.
+
+  repo/create 0.3, namespace/reseat 0.3 and drift/resolve 0.3 refer to
+  the waiver where they apply rule 7. Prose only, in place on draft specs
+  (SPEC 5.2); no schema change, since every affected response already
+  carries the open ext member.
+
 ## 0.5.3 — 2026-10-03
 
 
