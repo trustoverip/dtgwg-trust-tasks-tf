@@ -2,4 +2,5 @@
 
 pub mod actions;
 pub mod bootstrap;
+pub mod events;
 pub mod invites;

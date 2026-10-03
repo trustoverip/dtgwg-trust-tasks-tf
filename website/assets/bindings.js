@@ -30,6 +30,20 @@ window.TT_BINDINGS = [
     ],
   },
   {
+    id: "https/0.3",
+    slug: "https",
+    version: "0.3",
+    title: "HTTPS",
+    summary:
+      "Carries Trust Task documents as JSON over HTTP/1.1 POST to a single endpoint. Adds streamed responses: for a task whose specification defines a stream, the success response and the documents that follow it are carried as Server-Sent Events, one document per event, with heartbeats and in-band resumption.",
+    bindingURI: "https://trusttasks.org/binding/https/0.3",
+    envelopeType: null,
+    status: "draft",
+    accent: "teal",
+    prosePath: "/bindings/https/0.3/spec.md",
+    implementations: [],
+  },
+  {
     id: "https/0.2",
     slug: "https",
     version: "0.2",

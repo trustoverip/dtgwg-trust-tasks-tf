@@ -632,6 +632,9 @@ export * as VtcAdminActionsList_v0_2 from "./vtc/admin/actions/list/0.2/payload.
 export * as VtcAdminActionsShow_v0_1 from "./vtc/admin/actions/show/0.1/payload.js";
 export * as VtcAdminActionsShow_v0_2 from "./vtc/admin/actions/show/0.2/payload.js";
 export * as VtcAdminBootstrap_v0_1 from "./vtc/admin/bootstrap/0.1/payload.js";
+export * as TopicShared_v0_1 from "./vtc/admin/events/_shared/0.1/topic.js";
+export * as VtcAdminEventsEvent_v0_1 from "./vtc/admin/events/event/0.1/payload.js";
+export * as VtcAdminEventsSubscribe_v0_1 from "./vtc/admin/events/subscribe/0.1/payload.js";
 export * as VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 export * as VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
 export * as VtcAdminInvitesRevoke_v0_1 from "./vtc/admin/invites/revoke/0.1/payload.js";

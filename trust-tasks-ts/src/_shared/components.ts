@@ -638,6 +638,10 @@ export type Resource = string;
  */
 export type ResourceQualifier = string;
 /**
+ * Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.
+ */
+export type ResumeToken = string;
+/**
  * Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.
  */
 export type RetentionPolicy = "chained" | "fromJoin";
@@ -801,6 +805,10 @@ export type SyncEvent_SyncV0_2 =
   | VaultDeletedEvent_SyncV0_2
   | AclChangedEvent_SyncV0_2
   | PolicyChangedEvent_SyncV0_2;
+/**
+ * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
+ */
+export type Topic = "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config";
 /**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */

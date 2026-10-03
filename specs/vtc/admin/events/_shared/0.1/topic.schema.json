@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/events/_shared/0.1/topic",
+  "title": "VTC Admin Events — shared definitions",
+  "description": "Shared shapes for a Verifiable Trust Community's live administrative console events: a hint-only channel that tells an administrator's console WHEN to re-read, never WHAT changed.\n\nTHE MODEL. A console subscribes once per session with `vtc/admin/events/subscribe`, naming the topics it renders. The community answers with a stream of `vtc/admin/events/event` documents, each naming one topic and, for a count topic, the caller's current count. An event carries no record and no personal data. The console reacts by re-fetching the topic's own signed read, so the read stays the only place authorization is decided and the only place data leaves the community: the stream can neither leak a record nor grant a read. Polling those reads remains the fallback whenever the stream is down.\n\nTOPICS AND THEIR READS. Each topic names one read. A community sends a topic's events only to a caller it would answer on that read.\n\n- `actions` — the caller's visible administrative actions (`vtc/admin/actions/list`). Count topic: the caller's `waitingForMe` count.\n- `acknowledgements` — the acknowledge-category actions awaiting the caller (`vtc/admin/actions/list`). Count topic: the open acknowledge actions the caller has not yet acknowledged.\n- `joinRequests` — the community's join requests (`vtc/join-requests/list`). Count topic: the join requests awaiting a decision.\n- `members` — the community's members (`vtc/members/list`). No count.\n- `singleAdminMode` — whether single-administrator mode is in effect. Every administrator may read it. No count.\n- `config` — the community's stored configuration (`vtc/config/export`). No count.",
+  "$defs": {
+    "Topic": {
+      "title": "Topic",
+      "description": "One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.",
+      "type": "string",
+      "enum": [
+        "actions",
+        "acknowledgements",
+        "joinRequests",
+        "members",
+        "singleAdminMode",
+        "config"
+      ]
+    },
+    "ResumeToken": {
+      "title": "ResumeToken",
+      "description": "Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9._~-]+$"
+    }
+  }
+}

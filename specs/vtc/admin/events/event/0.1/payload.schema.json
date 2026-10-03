@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/events/event/0.1",
+  "title": "VTC Admin Events — Event — payload",
+  "description": "One hint, sent by a Verifiable Trust Community down an administrator console's live channel: something under `topic` changed, re-read it. It never carries the record that changed. Fire-and-forget: there is no response. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["topic", "at", "resumeToken"],
+  "properties": {
+    "topic": {
+      "$ref": "../../_shared/0.1/topic.schema.json#/$defs/Topic",
+      "description": "What changed. Always one of the effective topics the subscribe response named."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the community observed the change. Where it coalesced several changes into this hint, the latest of them."
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Only on a count topic (`actions`, `acknowledgements`, `joinRequests`): the caller's current count for that topic as of `at` — what a console badge shows. Absent on every other topic. A console MAY show it until its re-fetch returns, and MUST prefer the read's own count once it does."
+    },
+    "resumeToken": {
+      "$ref": "../../_shared/0.1/topic.schema.json#/$defs/ResumeToken",
+      "description": "The stream position after this hint. A console keeps the latest one and passes it back as `since` when it re-subscribes."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  }
+}
