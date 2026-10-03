@@ -536,6 +536,7 @@ mod git_ns {
         mod job {
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod v0_1;
             mod v0_2;
