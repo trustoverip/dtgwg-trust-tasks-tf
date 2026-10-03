@@ -11,6 +11,38 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.5.1 — 2026-10-03
+
+
+### Added
+
+- **vtc**: Cooling-off actions, a reduction-pending notice and an offline-write record type (#719)
+
+Three gaps the VTC implementation (OpenVTC/verifiable-trust-infrastructure#1920)
+  found in the vtc/admin/actions family.
+
+  vtc/admin/actions/_shared/0.2 adds the cooling-off action. A removal of an
+  administrator with no third party to consent is parked for a cooling-off
+  period and lands by itself unless its requester cancels. 0.1 could only say
+  that by omitting threshold and expiresAt against its own prose and carrying
+  the landing time in ext. 0.2 adds category coolingOff, landsAt (when it lands),
+  cancellableBy (requester), closedReason landedAfterCoolingOff, and callerRole
+  subject, so the administrator being removed can see the action. list, show,
+  cancel and acknowledge 0.2 re-point at _shared 0.2; their request payloads
+  and error codes are unchanged.
+
+  vtc/members/authority-reduction-pending-notice/0.1 tells the subject that a
+  reduction is cooling off, before it lands. The subject cannot block it,
+  because a veto held by the subject would protect a compromised subject. One-way,
+  proof REQUIRED.
+
+  vtc/operator/offline-write/0.1 is a record type, never sent. An acknowledge
+  action for an operator's offline write (vtc admin emergency-bootstrap and its
+  siblings) names it as typeUri and carries the record as payload. Before, there
+  was no Type URI to name, because those commands are not Trust Tasks.
+  sideEffects none. It follows the registry's existing never-sent-on-its-own
+  documents (auth/step-up/approver/attest, auth/signing-key/authorize).
+
 ## 0.5.0 — 2026-10-03
 
 
