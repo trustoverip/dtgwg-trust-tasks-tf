@@ -1,0 +1,62 @@
+[
+  {
+    "note": "Record data in a hint — additionalProperties: false catches `actionId`. An event says which topic to re-read, never what changed; the record comes from the signed read, where authorization is decided.",
+    "payload": {
+      "topic": "actions",
+      "at": "2026-10-03T09:15:00Z",
+      "count": 2,
+      "resumeToken": "evt.000142",
+      "actionId": "act_7Hq2mZp9Lx4vRk8T"
+    }
+  },
+  {
+    "note": "Personal data in a hint — additionalProperties: false catches `applicant`. A join-request hint carries a count, never who applied.",
+    "payload": {
+      "topic": "joinRequests",
+      "at": "2026-10-03T09:15:00Z",
+      "count": 1,
+      "resumeToken": "evt.000143",
+      "applicant": "did:web:dave.example"
+    }
+  },
+  {
+    "note": "`topic` outside the closed enum — each topic is bound to the read that authorizes it, so an unknown topic has no read to check entitlement against.",
+    "payload": {
+      "topic": "auditLog",
+      "at": "2026-10-03T09:15:00Z",
+      "resumeToken": "evt.000144"
+    }
+  },
+  {
+    "note": "`resumeToken` is required — without it a console that reconnects cannot resume, and must re-read everything.",
+    "payload": {
+      "topic": "members",
+      "at": "2026-10-03T09:15:00Z"
+    }
+  },
+  {
+    "note": "Negative `count` — a badge count cannot be below zero.",
+    "payload": {
+      "topic": "acknowledgements",
+      "at": "2026-10-03T09:15:00Z",
+      "count": -1,
+      "resumeToken": "evt.000145"
+    }
+  },
+  {
+    "note": "`at` must be an RFC 3339 date-time.",
+    "payload": {
+      "topic": "config",
+      "at": "just now",
+      "resumeToken": "evt.000146"
+    }
+  },
+  {
+    "note": "`resumeToken` with a newline — it is carried as the SSE `id` field over HTTPS, where a line break would end the field and corrupt the stream.",
+    "payload": {
+      "topic": "singleAdminMode",
+      "at": "2026-10-03T09:15:00Z",
+      "resumeToken": "evt.000147\ndata: {}"
+    }
+  }
+]

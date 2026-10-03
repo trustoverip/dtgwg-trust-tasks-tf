@@ -1436,6 +1436,14 @@ mod vtc {
         mod bootstrap {
             mod v0_1;
         }
+        mod events {
+            mod event {
+                mod v0_1;
+            }
+            mod subscribe {
+                mod v0_1;
+            }
+        }
         mod invites {
             mod create {
                 mod v0_1;
