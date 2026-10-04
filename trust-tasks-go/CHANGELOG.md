@@ -11,6 +11,19 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.5.5 — 2026-10-03
+
+
+### Added
+
+- **git-ns**: Job/list 0.2 lists closePullRequest jobs (#727)
+
+git-ns/bridge/job/0.5 added the closePullRequest kind, but job/list 0.1's
+  JobKind is a closed response enum of the seven 0.4 kinds, so a VTC could not
+  list those jobs to a strict consumer. 0.2 adds closePullRequest to JobKind and
+  an optional row member `number` (the pull request closed; requires `repo`).
+  The request is unchanged. Regenerated Rust, TS, Go and Dart bindings.
+
 ## 0.5.4 — 2026-10-03
 
 
