@@ -216,7 +216,8 @@ export const PAYLOAD_SCHEMA = {
         "memory-write",
         "room-present",
         "room-open",
-        "key-export"
+        "key-export",
+        "sign-sshsig"
       ],
       "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },
@@ -545,7 +546,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "memory-write",
         "room-present",
         "room-open",
-        "key-export"
+        "key-export",
+        "sign-sshsig"
       ],
       "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything."
     },

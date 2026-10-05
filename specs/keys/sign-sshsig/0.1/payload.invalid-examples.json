@@ -1,0 +1,111 @@
+[
+  {
+    "note": "Missing required `namespace` — an SSHSIG signature is bound to its namespace, and a custodian that defaulted one would be choosing what the signature means on the producer's behalf.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "hashAlgorithm": "sha512",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA"
+    }
+  },
+  {
+    "note": "A `payload` member carrying raw bytes to sign — the generic oracle's shape. `additionalProperties: false` is what keeps this task from becoming keys/sign under another name.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "git",
+      "hashAlgorithm": "sha512",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA",
+      "payload": "aGVsbG8tY2hhbGxlbmdl"
+    }
+  },
+  {
+    "note": "An algorithm SSHSIG defines no custodian signature for here (ML-DSA). The enum is narrower than the keys family's SignAlgorithm on purpose.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "ML-DSA-44",
+      "namespace": "git",
+      "hashAlgorithm": "sha512",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA"
+    }
+  },
+  {
+    "note": "A hash algorithm SSHSIG does not allow (sha1). The spelling is SSHSIG's own and the set is closed.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "git",
+      "hashAlgorithm": "sha1",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA"
+    }
+  },
+  {
+    "note": "Empty namespace — PROTOCOL.sshsig forbids it, and an empty namespace would bind the signature to nothing.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "",
+      "hashAlgorithm": "sha512",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA"
+    }
+  },
+  {
+    "note": "Namespace containing a space — printable ASCII without spaces only.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "git commit",
+      "hashAlgorithm": "sha512",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA"
+    }
+  },
+  {
+    "note": "messageHash in standard base64 with padding rather than base64url without — the pattern refuses `+`, `/` and `=`.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "git",
+      "hashAlgorithm": "sha256",
+      "messageHash": "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg="
+    }
+  },
+  {
+    "note": "messageHash too short to be any allowed digest (fewer than 43 characters).",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "git",
+      "hashAlgorithm": "sha256",
+      "messageHash": "n4bQgYhMfWWaL"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "namespace": "git",
+      "hashAlgorithm": "sha512",
+      "messageHash": "ZNK6UR4HwIpHXYznMreGQrxQYoYkXyEqA9lXghSB8x0qCebX7kzmrrWkvpd-TTFuFZ7HD5DBVT80O19QxSt8FA",
+      "ext": { "no-dots": {} }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `signature` — the one member the task exists to return.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response smuggling key material beside the signature — additionalProperties: false on the response is what makes 'never the private key' checkable.",
+    "payload": {
+      "keyId": "key-1",
+      "algorithm": "EdDSA",
+      "signature": "qQkWdYdoux5DnKSW0G1nIGQMrGC2L1RJkfuq9nrNuuAlU8hFazUPwKWlS3A68WWHs0DQxVbPl2GXjPUJdSIPBQ",
+      "privateKey": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc"
+    }
+  }
+]
