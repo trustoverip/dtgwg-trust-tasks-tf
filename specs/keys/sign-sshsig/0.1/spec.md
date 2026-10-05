@@ -189,6 +189,8 @@ The custodian answers with the raw signature; the payload validates against the 
 }
 ```
 
+The example is real: `ssh-keygen -Y sign -n git` produced it over the commit text whose SHA-512 is the request's `messageHash`, with the Ed25519 key whose public half is `HIZTeh5BcFIwYJ8AQ9_NgxmdwQpC7THQ8r4CnPDRs0I` (base64url). A custodian implementation can check its signed-data construction against it.
+
 The producer wraps that signature as `string "ssh-ed25519" || string signature`, places it with the public key, namespace and hash algorithm in the SSHSIG blob, and armours the blob between `-----BEGIN SSH SIGNATURE-----` lines — the output `ssh-keygen -Y sign` would have produced.
 
 ## Security & Privacy
