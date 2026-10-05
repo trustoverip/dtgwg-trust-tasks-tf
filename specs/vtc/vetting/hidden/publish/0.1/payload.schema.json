@@ -29,10 +29,7 @@
       "minimum": 1,
       "description": "How many attestation tokens a vetter draws per tick. Defaults to three."
     },
-    "tickLength": {
-      "$ref": "#/$defs/TickLength",
-      "description": "How long one tick of the drip lasts. Defaults to `P3D` when absent."
-    },
+    "tickLength": { "$ref": "#/$defs/TickLength" },
     "events": {
       "type": "array",
       "items": { "$ref": "#/$defs/RequestEvent" },
@@ -45,7 +42,7 @@
       "title": "TickLength",
       "type": "string",
       "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
     },
     "RequestEvent": {
       "title": "RequestEvent",

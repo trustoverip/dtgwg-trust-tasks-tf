@@ -7,13 +7,9 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 
 /**
- * How long one tick of the drip lasts. Defaults to `P3D` when absent.
+ * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
  */
 export type TickLength = string;
-/**
- * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
- */
-export type TickLength1 = string;
 
 /**
  * Turn on (or rotate the parameters of) hidden-vetter admission for one criterion. Every member but criterionId has a default. The outer document members are owned by the framework — SPEC §6.3.
@@ -123,7 +119,7 @@ export interface StoredConfig {
   livePeriods: string[];
   liveTokenLabels: string[];
   dripPerTick: number;
-  tickLength: TickLength1;
+  tickLength: TickLength;
   events: StoredEvent[];
 }
 export interface StoredEvent {
@@ -157,7 +153,7 @@ export interface PublishedConfig {
   vetterLabels: string[];
   tokenLabels: string[];
   dripPerTick: number;
-  tickLength: TickLength1;
+  tickLength: TickLength;
   events: PublishedEvent[];
 }
 /**
@@ -235,8 +231,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "How many attestation tokens a vetter draws per tick. Defaults to three."
     },
     "tickLength": {
-      "$ref": "#/$defs/TickLength",
-      "description": "How long one tick of the drip lasts. Defaults to `P3D` when absent."
+      "$ref": "#/$defs/TickLength"
     },
     "events": {
       "type": "array",
@@ -254,7 +249,7 @@ export const PAYLOAD_SCHEMA = {
       "title": "TickLength",
       "type": "string",
       "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
     },
     "RequestEvent": {
       "title": "RequestEvent",
@@ -591,7 +586,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "title": "TickLength",
       "type": "string",
       "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
     },
     "RequestEvent": {
       "title": "RequestEvent",
