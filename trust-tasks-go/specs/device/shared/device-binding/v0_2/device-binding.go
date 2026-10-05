@@ -116,6 +116,7 @@ const (
 	CapabilityRoomPresent     Capability = "roomPresent"
 	CapabilityRoomOpen        Capability = "roomOpen"
 	CapabilityKeyExport       Capability = "keyExport"
+	CapabilitySignSshsig      Capability = "signSshsig"
 )
 
 // DeviceAttestation Producer-supplied attestation at registration time, verifiable by the

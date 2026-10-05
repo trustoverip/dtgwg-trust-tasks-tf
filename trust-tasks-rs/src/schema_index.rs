@@ -1369,6 +1369,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign/0.1#response" => <crate::specs::keys::sign::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "keys")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/keys/sign-sshsig/0.1" => <crate::specs::keys::sign_sshsig::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "keys")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/keys/sign-sshsig/0.1#response" => <crate::specs::keys::sign_sshsig::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/access-list/add/0.1" => <crate::specs::messaging::access_list::add::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -5391,6 +5397,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/keys/sign/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::keys::sign::v0_1::Payload,
         >()),
+        #[cfg(feature = "keys")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/keys/sign-sshsig/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::keys::sign_sshsig::v0_1::Payload,
+        >()),
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/access-list/add/0.1" => {
@@ -9168,6 +9179,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign/0.1" => {
             Some(crate::specs::keys::sign::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "keys")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/keys/sign-sshsig/0.1" => {
+            Some(crate::specs::keys::sign_sshsig::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]

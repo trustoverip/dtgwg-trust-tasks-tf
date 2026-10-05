@@ -699,6 +699,9 @@ mod keys {
     mod sign {
         mod v0_1;
     }
+    mod sign_sshsig {
+        mod v0_1;
+    }
 }
 #[cfg(feature = "messaging")]
 mod messaging {
