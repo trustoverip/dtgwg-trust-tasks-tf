@@ -757,6 +757,8 @@ export * as VtcSchemasShow_v0_1 from "./vtc/schemas/show/0.1/payload.js";
 export * as VtcVettingAutoGrantShow_v0_1 from "./vtc/vetting/auto-grant/show/0.1/payload.js";
 export * as VtcVettingAutoGrantUpdate_v0_1 from "./vtc/vetting/auto-grant/update/0.1/payload.js";
 export * as VtcVettingHiddenPublish_v0_1 from "./vtc/vetting/hidden/publish/0.1/payload.js";
+export * as VtcVettingHiddenShow_v0_1 from "./vtc/vetting/hidden/show/0.1/payload.js";
+export * as VtcVettingHiddenWithdraw_v0_1 from "./vtc/vetting/hidden/withdraw/0.1/payload.js";
 export * as VtcVettingPcsChallenge_v0_1 from "./vtc/vetting/pcs-challenge/0.1/payload.js";
 export * as VtcVettingRevocationsList_v0_1 from "./vtc/vetting/revocations/list/0.1/payload.js";
 export * as VtcVettingRevokeStatement_v0_1 from "./vtc/vetting/revoke-statement/0.1/payload.js";
