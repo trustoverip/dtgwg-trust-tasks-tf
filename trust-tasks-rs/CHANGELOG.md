@@ -31,6 +31,36 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.27.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.5...trust-tasks-rs-v0.27.6) — 2026-10-05
+
+
+### Added
+
+- **keys/sign-sshsig**: SSHSIG signing without exporting the key ([#732](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/732))
+
+* feat(keys/sign-sshsig): SSHSIG signing without exporting the key
+
+  git's SSH commit signing (gpg.format = ssh) calls a gpg.ssh.program to
+  produce an SSHSIG signature. A producer whose key lives with a custodian
+  today has to take the key out with keys/export-secret to do that, and
+  keys/sign cannot stand in: since the opaque-signing hardening a custodian
+  frames caller bytes under its own domain tag, so the signature never
+  verifies as SSHSIG — which is the point of that hardening.
+
+  keys/sign-sshsig/0.1 takes a digest, a namespace and a hash algorithm.
+  The custodian builds the PROTOCOL.sshsig signed data itself and signs
+  that, so every signature begins with the SSHSIG magic and is usable as
+  nothing else. The message never travels; the key never leaves. EdDSA and
+  ES256 only — the key types SSHSIG defines a signature for.
+
+  Registers the signSshsig device capability (sign-sshsig in 0.1) beside
+  sign: a custodian must not require the general oracle for this task, and
+  may restrict namespaces and rate.
+
+  Bindings regenerated (Rust, TS, Go, Dart); no version bumps.
+
+
+
 ## [0.27.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.4...trust-tasks-rs-v0.27.5) — 2026-10-05
 
 
