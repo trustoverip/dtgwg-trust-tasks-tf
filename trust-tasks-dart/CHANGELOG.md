@@ -11,6 +11,40 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.5.6 — 2026-10-05
+
+
+### Added
+
+- **vtc**: Hidden vetting can be read and withdrawn, and an event approver names themselves (#729)
+
+Hidden-vetter admission had an on switch (vtc/vetting/hidden/publish/0.1)
+  and no way to turn it off or to see what was in force.
+
+  - vtc/vetting/hidden/withdraw/0.1: an administrator removes one criterion's
+    hidden-vetting parameters and republishes its manifest entry without them.
+    The criterion's named vetting is untouched. Idempotent: a criterion with
+    none answers withdrawn: false, not an error. Enrolment rows and the
+    spent-token ledger are not deleted, and republishing later derives the
+    same keys.
+  - vtc/vetting/hidden/show/0.1: an administrator reads the stored
+    configuration (events' approvedBy and graceDays included, which the
+    manifest omits), the published configuration, the current digest, and
+    counts only: enrolled vetters per live class label, and per event its
+    groupSize against groupFloor with derived approved/live. The community
+    MUST NOT disclose which members enrolled or asked. This is the companion
+    read publish/0.1 anticipated: because publish replaces events wholesale,
+    re-publishing from the manifest un-approves live events.
+  - vtc/vetting/hidden/publish/0.1 (draft, edited in place): an approvedBy
+    that is new or changed must name the publishing signer's principal
+    (approverNotSigner); an unchanged stored value may be re-sent by any
+    administrator so a re-publish keeps approvals; an approver who asked to
+    vet at the event is refused (approverInEvent). Publish and withdraw
+    SHOULD be audited with who, which criterion and the deltas, never a
+    reason.
+
+  Rust, TypeScript, Go and Dart bindings regenerated.
+
 ## 0.5.5 — 2026-10-03
 
 
