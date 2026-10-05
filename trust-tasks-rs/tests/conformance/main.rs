@@ -1836,6 +1836,12 @@ mod vtc {
             mod publish {
                 mod v0_1;
             }
+            mod show {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
         }
         mod pcs_challenge {
             mod v0_1;

@@ -1,0 +1,104 @@
+[
+  {
+    "note": "criterionId is required — there is no criterion to read without it.",
+    "payload": {}
+  },
+  {
+    "note": "criterionId must not be empty.",
+    "payload": { "criterionId": "" }
+  },
+  {
+    "note": "Unknown top-level member is rejected — a read takes no filter.",
+    "payload": { "criterionId": "vet-1", "includeMembers": true }
+  },
+  {
+    "variant": "response",
+    "note": "enabled and requirementsDigest are required on every response.",
+    "payload": { "criterionId": "vet-1" }
+  },
+  {
+    "variant": "response",
+    "note": "stored travels with published, enrolledVetters and eventStatus — a configuration without its counts is half an answer.",
+    "payload": {
+      "criterionId": "vet-1",
+      "enabled": true,
+      "requirementsDigest": "zQmDigest1",
+      "stored": {
+        "suite": "ps-ddh-bls12381",
+        "hvk": "z6MkhelperKey1",
+        "tvk": "z6MktokenKey1",
+        "livePeriods": ["2026-10"],
+        "liveTokenLabels": ["token/2026-10"],
+        "dripPerTick": 3,
+        "events": []
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "enrolledVetters is a count per label, never a list of who enrolled.",
+    "payload": {
+      "criterionId": "vet-1",
+      "enabled": true,
+      "requirementsDigest": "zQmDigest1",
+      "stored": {
+        "suite": "ps-ddh-bls12381",
+        "hvk": "z6MkhelperKey1",
+        "tvk": "z6MktokenKey1",
+        "livePeriods": ["2026-10"],
+        "liveTokenLabels": ["token/2026-10"],
+        "dripPerTick": 3,
+        "events": []
+      },
+      "published": {
+        "suite": "ps-ddh-bls12381",
+        "helperKey": "z6MkhelperKey1",
+        "tokenKey": "z6MktokenKey1",
+        "vetterLabels": ["vetter/2026-10"],
+        "tokenLabels": ["token/2026-10"],
+        "dripPerTick": 3,
+        "events": []
+      },
+      "enrolledVetters": { "vetter/2026-10": ["did:example:alice"] },
+      "eventStatus": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An event's status carries a count of who asked to vet at it, never their identifiers.",
+    "payload": {
+      "criterionId": "vet-1",
+      "enabled": true,
+      "requirementsDigest": "zQmDigest1",
+      "stored": {
+        "suite": "ps-ddh-bls12381",
+        "hvk": "z6MkhelperKey1",
+        "tvk": "z6MktokenKey1",
+        "livePeriods": ["2026-10"],
+        "liveTokenLabels": ["token/2026-10"],
+        "dripPerTick": 3,
+        "events": []
+      },
+      "published": {
+        "suite": "ps-ddh-bls12381",
+        "helperKey": "z6MkhelperKey1",
+        "tokenKey": "z6MktokenKey1",
+        "vetterLabels": ["vetter/2026-10"],
+        "tokenLabels": ["token/2026-10"],
+        "dripPerTick": 3,
+        "events": []
+      },
+      "enrolledVetters": { "vetter/2026-10": 4 },
+      "eventStatus": [
+        {
+          "eventId": "summit-2026",
+          "groupFloor": 3,
+          "groupSize": 5,
+          "approved": true,
+          "live": true,
+          "members": ["did:example:alice"]
+        }
+      ]
+    }
+  }
+]

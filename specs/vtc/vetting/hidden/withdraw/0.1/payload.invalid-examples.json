@@ -1,0 +1,34 @@
+[
+  {
+    "note": "criterionId is required — there is no criterion to withdraw from without it.",
+    "payload": {}
+  },
+  {
+    "note": "criterionId must not be empty.",
+    "payload": { "criterionId": "" }
+  },
+  {
+    "note": "Unknown top-level member is rejected — withdrawal takes no parameters to retire selectively; rotate labels with vtc/vetting/hidden/publish instead.",
+    "payload": { "criterionId": "vet-1", "livePeriods": ["2026-09"] }
+  },
+  {
+    "variant": "response",
+    "note": "withdrawn and requirementsDigest are both required on a response — a caller must be told whether anything changed.",
+    "payload": { "criterionId": "vet-1" }
+  },
+  {
+    "variant": "response",
+    "note": "withdrawn is a boolean, not a count or a string.",
+    "payload": { "criterionId": "vet-1", "withdrawn": "yes", "requirementsDigest": "zQmDigest1" }
+  },
+  {
+    "variant": "response",
+    "note": "The response carries no parameters — withdrawal publishes nothing, so a stored or published member has no place in it.",
+    "payload": {
+      "criterionId": "vet-1",
+      "withdrawn": true,
+      "requirementsDigest": "zQmDigest1",
+      "published": { "suite": "ps-ddh-bls12381" }
+    }
+  }
+]
