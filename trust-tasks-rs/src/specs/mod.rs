@@ -124,6 +124,8 @@ pub mod registry;
 #[cfg(feature = "rooms")]
 #[cfg(not(test))]
 pub mod rooms;
+#[cfg(feature = "social-recovery")]
+pub mod social_recovery;
 #[cfg(feature = "sync")]
 #[cfg(not(test))]
 pub mod sync;

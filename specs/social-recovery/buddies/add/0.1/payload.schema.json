@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/social-recovery/buddies/add/0.1",
+  "title": "Social Recovery — Add Buddy — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "recoveryBuddyDid": {
+      "type": "string",
+      "description": "did:* of the custodial party being enrolled. Source of truth: src/packages/devices/manifest-operations-part-2.ts, recovery_buddy.add inputSchema."
+    },
+    "recoveryBuddyPublicKeyHex": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The buddy's Ed25519 public key, 64 lowercase hex characters (32 bytes). Required by recovery_buddy.add; an enrolment without it names a party no later recovery event can verify."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional display label for the buddy, for audit and UI."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "required": ["recoveryBuddyDid", "recoveryBuddyPublicKeyHex"]
+}
