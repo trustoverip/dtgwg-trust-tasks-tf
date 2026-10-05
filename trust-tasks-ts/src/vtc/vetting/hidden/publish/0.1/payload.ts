@@ -7,6 +7,11 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 
 /**
+ * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
+ */
+export type TickLength = string;
+
+/**
  * Turn on (or rotate the parameters of) hidden-vetter admission for one criterion. Every member but criterionId has a default. The outer document members are owned by the framework — SPEC §6.3.
  */
 export interface VTCVettingHiddenPublishPayload {
@@ -30,6 +35,7 @@ export interface VTCVettingHiddenPublishPayload {
    * How many attestation tokens a vetter draws per tick. Defaults to three.
    */
   dripPerTick?: number;
+  tickLength?: TickLength;
   /**
    * Events this community is running, replacing whatever was there. Absent or empty removes every event.
    */
@@ -113,6 +119,7 @@ export interface StoredConfig {
   livePeriods: string[];
   liveTokenLabels: string[];
   dripPerTick: number;
+  tickLength: TickLength;
   events: StoredEvent[];
 }
 export interface StoredEvent {
@@ -146,6 +153,7 @@ export interface PublishedConfig {
   vetterLabels: string[];
   tokenLabels: string[];
   dripPerTick: number;
+  tickLength: TickLength;
   events: PublishedEvent[];
 }
 /**
@@ -222,6 +230,9 @@ export const PAYLOAD_SCHEMA = {
       "minimum": 1,
       "description": "How many attestation tokens a vetter draws per tick. Defaults to three."
     },
+    "tickLength": {
+      "$ref": "#/$defs/TickLength"
+    },
     "events": {
       "type": "array",
       "items": {
@@ -234,6 +245,12 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
     "RequestEvent": {
       "title": "RequestEvent",
       "type": "object",
@@ -403,6 +420,7 @@ export const PAYLOAD_SCHEMA = {
         "livePeriods",
         "liveTokenLabels",
         "dripPerTick",
+        "tickLength",
         "events"
       ],
       "properties": {
@@ -440,6 +458,9 @@ export const PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 1
         },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
         "events": {
           "type": "array",
           "items": {
@@ -460,6 +481,7 @@ export const PAYLOAD_SCHEMA = {
         "vetterLabels",
         "tokenLabels",
         "dripPerTick",
+        "tickLength",
         "events"
       ],
       "properties": {
@@ -495,6 +517,9 @@ export const PAYLOAD_SCHEMA = {
         "dripPerTick": {
           "type": "integer",
           "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
         },
         "events": {
           "type": "array",
@@ -557,6 +582,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
     "RequestEvent": {
       "title": "RequestEvent",
       "type": "object",
@@ -726,6 +757,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "livePeriods",
         "liveTokenLabels",
         "dripPerTick",
+        "tickLength",
         "events"
       ],
       "properties": {
@@ -763,6 +795,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 1
         },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
         "events": {
           "type": "array",
           "items": {
@@ -783,6 +818,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "vetterLabels",
         "tokenLabels",
         "dripPerTick",
+        "tickLength",
         "events"
       ],
       "properties": {
@@ -818,6 +854,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "dripPerTick": {
           "type": "integer",
           "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
         },
         "events": {
           "type": "array",

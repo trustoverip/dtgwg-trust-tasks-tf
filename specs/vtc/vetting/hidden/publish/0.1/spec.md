@@ -58,6 +58,12 @@ errorCodes:
   - code: vtc/vetting/hidden/publish:approverInEvent
     meaning: "An event's `approvedBy` names a member who has themselves asked to vet at that event through `vtc/vetting/vetters/event-mode`. A vetter cannot approve the event it asked to join."
     retryable: false
+  - code: vtc/vetting/hidden/publish:signerChanged
+    meaning: "The criterion's stored helper and token keys are not the ones the community's current credential-signer secret derives — the signer was rotated, or the community was restored under another key. Re-publishing would re-key silently and every enrolled vetter's credential would stop verifying. Withdraw hidden vetting from the criterion and publish it again, under a new period, to start a new key generation."
+    retryable: false
+  - code: vtc/vetting/hidden/publish:otherCriterion
+    meaning: "Hidden vetting is already on for a different criterion. A community runs it on at most one criterion, because enrolment, the drip and the challenge are served from a single configuration. Withdraw it from the other criterion first."
+    retryable: false
 related:
   - vtc/vetting/hidden/show
   - vtc/vetting/hidden/withdraw
@@ -82,21 +88,22 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming **administrator** (`issuer`) names the criterion in `criterionId` and, optionally, the live periods, live token labels, drip rate and events to publish under it. Every member but `criterionId` defaults to the current month's ordinary values when absent — the useful call is the short one.
+A conforming **administrator** (`issuer`) names the criterion in `criterionId` and, optionally, the live periods, live token labels, drip rate, tick length and events to publish under it. Every member but `criterionId` defaults to the current month's ordinary values when absent — the useful call is the short one.
 
 A conforming **community** (`recipient`):
 
 1. Applies the [SPEC §7.2](/SPEC.md#72-consumer-requirements) pipeline and **MUST** refuse a caller without administrator standing with `permissionDenied`.
 2. **MUST** refuse with `vtc/vetting/hidden/publish:noSuchCriterion` when `criterionId` names no stored criterion.
 3. **MUST** refuse with `vtc/vetting/hidden/publish:noVetting` when the named criterion asks for no vetting requirements.
-4. Derives the helper and token verification keys from its own credential-signer secret. Repeating this step with the same secret **MUST** yield the same keys every time — a consumer whose signer changed under it refuses instead of publishing keys nobody can verify against, per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 8.
-5. Defaults `livePeriods` to `["<this month>"]` and `liveTokenLabels` to `["token/<this month>"]` when absent, and `dripPerTick` to `3`.
-6. Replaces the whole `events` list with what was sent, absent or empty removing every event — this is a replace, not a merge.
+4. **MUST** refuse with `vtc/vetting/hidden/publish:otherCriterion` when hidden vetting is already on for a criterion other than `criterionId`. A community runs hidden vetting on at most one criterion: enrolment, the drip and the challenge are each served from a single configuration, so a second would accept proofs nobody can mint for.
+5. Derives the helper and token verification keys from its own credential-signer secret. Repeating this step with the same secret **MUST** yield the same keys every time. When the criterion already stores keys and they differ from what is derived now, the community **MUST** refuse with `vtc/vetting/hidden/publish:signerChanged` rather than replace them, per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 8: replacing them would leave every enrolled vetter holding a credential that no longer verifies. The recovery is deliberate — [`vtc/vetting/hidden/withdraw`](../../withdraw/0.1/spec.md), then this task, which, with no stored keys to compare, starts a new key generation. Vetters then enrol again; a member already enrolled under a class label that is still live cannot enrol under it a second time ([`vtc/vetting/vetters/pcs-root`](../../../vetters/pcs-root/0.1/spec.md)), so that publish **SHOULD** name a new period.
+6. Defaults `livePeriods` to `["<this month>"]` and `liveTokenLabels` to `["token/<this month>"]` when absent, `dripPerTick` to `3`, and `tickLength` to `P3D`. A `tickLength` **MUST** be at least `PT1H`. A configuration stored before `tickLength` existed is read as `P3D`.
+7. Replaces the whole `events` list with what was sent, absent or empty removing every event — this is a replace, not a merge.
    - An event's `approvedBy` that is **new or changed** relative to the stored configuration **MUST** equal the publishing signer's principal — the signer, or the identity its delegated signing key acts for — else the community refuses with `vtc/vetting/hidden/publish:approverNotSigner`. An approver names themselves.
    - An `approvedBy` **unchanged** from the stored value **MAY** be re-sent by any administrator, so that a re-publish preserves the approvals already given. Read the stored value with [`vtc/vetting/hidden/show`](../../show/0.1/spec.md); the manifest does not carry it.
    - The community **MUST** refuse with `vtc/vetting/hidden/publish:approverInEvent` when an event's `approvedBy` names a member who has asked to vet at that event through [`vtc/vetting/vetters/event-mode`](../../../vetters/event-mode/0.1/spec.md), which forbids the requesting member being its own approver.
-7. Stores the full configuration (`stored`) and republishes the criterion's manifest entry, then answers with `criterionId`, `stored`, `published` and the criterion's `requirementsDigest` **after** the change.
-8. **MUST NOT** include `approvedBy` or `graceDays` in any event inside `published` — those are the community's own record and a vetter is told the effective close date when its request is approved, not handed the raw grace period here.
+8. Stores the full configuration (`stored`) and republishes the criterion's manifest entry, then answers with `criterionId`, `stored`, `published` and the criterion's `requirementsDigest` **after** the change.
+9. **MUST NOT** include `approvedBy` or `graceDays` in any event inside `published` — those are the community's own record and a vetter is told the effective close date when its request is approved, not handed the raw grace period here.
 
 ## Authorization
 
@@ -109,6 +116,8 @@ The entitlement is **administrator standing at the community**: the signer's acc
 **Helper key (`hvk`/`helperKey`)**, **token key (`tvk`/`tokenKey`)** — the two verification keys the suite requires, derived from the community's credential-signer secret and never the same key as each other ([`vtc/vetting/vetters/pcs-root`](../../../vetters/pcs-root/0.1/spec.md) §5.1). Both are **public values**: `published` carries them under the wire-facing names `helperKey` and `tokenKey`, so that a client implementing the manifest's `vetting.ext` entry never has to read the underlying suite's paper to find the right member.
 
 **Live period**, **live token label** — the class labels (`vetter/<period>`) and token labels a submission may currently be built or spent against. Stored as the bare `<period>` (e.g. `2026-09`) and published as the label whole (`vetter/2026-09`), so a client reads exactly what it should present without reconstructing the string itself.
+
+**Tick length** — how long one tick of the drip lasts, an ISO 8601 duration in days and/or hours (`P3D`, `PT12H`, `P1DT12H`). Every vetter may draw `dripPerTick` tokens in each tick of a label; [`vtc/vetting/vetters/pcs-tokens`](../../../vetters/pcs-tokens/0.1/spec.md) defines where a label's ticks start and refuses one that has not begun, which is what turns the drip rate into a velocity cap. Published whole, so a vetter's client knows when to draw.
 
 **Event** — a bounded, named gathering this community publishes a rate menu for ([`vtc/vetting/vetters/event-mode`](../../../vetters/event-mode/0.1/spec.md) §5.1). Not live merely by being listed here: it also needs an approver named in `approvedBy` and to fall inside its `startDate`/`endDate` window (plus `graceDays`), which this task never checks — those conditions are evaluated where tokens are drawn and spent, not where events are configured.
 
@@ -182,6 +191,7 @@ The community answers with `criterionId`, `stored`, `published` and `requirement
       "livePeriods": ["2026-09"],
       "liveTokenLabels": ["token/2026-09"],
       "dripPerTick": 3,
+      "tickLength": "P3D",
       "events": []
     },
     "published": {
@@ -191,6 +201,7 @@ The community answers with `criterionId`, `stored`, `published` and `requirement
       "vetterLabels": ["vetter/2026-09"],
       "tokenLabels": ["token/2026-09"],
       "dripPerTick": 3,
+      "tickLength": "P3D",
       "events": []
     },
     "requirementsDigest": "zQmRequirementsDigestAfter1"
@@ -238,6 +249,6 @@ The purpose is to let a community turn on, or adjust, hidden-vetter admission fo
 
 ### Threats
 
-*Signer drift.* If the community's credential-signer secret changes between two publishes (key rotation, restore from an older backup), the keys this task derives change with it. A consumer **MUST** detect a stored configuration whose keys no longer match what it would derive now, and refuse rather than publish keys nobody can verify against — see [`vtc/vetting/vetters/pcs-root`](../../../vetters/pcs-root/0.1/spec.md) for the enrolment this failure would otherwise silently break.
+*Signer drift.* If the community's credential-signer secret changes between two publishes (key rotation, restore from an older backup), the keys this task derives change with it. A consumer **MUST** detect a stored configuration whose keys no longer match what it would derive now, and refuse with `vtc/vetting/hidden/publish:signerChanged` rather than publish keys nobody can verify against — see [`vtc/vetting/vetters/pcs-root`](../../../vetters/pcs-root/0.1/spec.md) for the enrolment this failure would otherwise silently break. Re-keying stays possible, but only as the explicit withdraw-then-publish of Conformance item 5.
 
 *Silent label retirement.* Because `events` is replaced wholesale and labels default to the current month, an administrator who calls this task without reviewing its current `published` output first can unintentionally drop a label or event still in use. A community **SHOULD** show the administrator the effective configuration — read with [`vtc/vetting/hidden/show`](../../show/0.1/spec.md), not from the manifest, which omits every event's `approvedBy` and so would un-approve live events if republished as read — before it republishes.

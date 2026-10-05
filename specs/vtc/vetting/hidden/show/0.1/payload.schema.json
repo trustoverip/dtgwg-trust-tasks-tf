@@ -137,6 +137,7 @@
         "livePeriods",
         "liveTokenLabels",
         "dripPerTick",
+        "tickLength",
         "events"
       ],
       "properties": {
@@ -174,6 +175,9 @@
           "type": "integer",
           "minimum": 1
         },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
         "events": {
           "type": "array",
           "items": {
@@ -194,6 +198,7 @@
         "vetterLabels",
         "tokenLabels",
         "dripPerTick",
+        "tickLength",
         "events"
       ],
       "properties": {
@@ -229,6 +234,9 @@
         "dripPerTick": {
           "type": "integer",
           "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
         },
         "events": {
           "type": "array",
@@ -346,6 +354,12 @@
           "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
         }
       }
+    },
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
     }
   }
 }

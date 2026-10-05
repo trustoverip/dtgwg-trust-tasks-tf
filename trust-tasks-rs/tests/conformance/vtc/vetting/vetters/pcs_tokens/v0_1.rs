@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::vtc::vetting::vetters::pcs_tokens::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1#request\",\n  \"issuer\": \"did:example:vetter\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-09-01T09:05:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"label\": \"token/2026-09\",\n    \"tick\": 1,\n    \"requests\": [\n      {\n        \"commitment\": \"z2umykFwGKzcv489j6kMGJnPTgKqAqMvCSPVkpyPCqAKA\",\n        \"openingProof\": \"zP3kHy6ZpnVAaRt7Y3PQRa2AeKkFSHJpQnoAneHhnDQxEJmWq7qy8H1oqRTPDtG8Zc\"\n      }\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1#request\",\n  \"issuer\": \"did:example:vetter\",\n  \"recipient\": \"did:example:community\",\n  \"issuedAt\": \"2026-09-01T09:05:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"label\": \"token/2026-09\",\n    \"tick\": 0,\n    \"requests\": [\n      {\n        \"commitment\": \"z2umykFwGKzcv489j6kMGJnPTgKqAqMvCSPVkpyPCqAKA\",\n        \"openingProof\": \"zP3kHy6ZpnVAaRt7Y3PQRa2AeKkFSHJpQnoAneHhnDQxEJmWq7qy8H1oqRTPDtG8Zc\"\n      }\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1#response\",\n  \"issuer\": \"did:example:community\",\n  \"recipient\": \"did:example:vetter\",\n  \"issuedAt\": \"2026-09-01T09:05:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"label\": \"token/2026-09\",\n    \"tick\": 1,\n    \"preCredentials\": [\n      \"z26q5oFrp6i2aTKLp6Y6jsLESJMoNfZQwk8VKXc37c24bJPj5fwBoUEsqv51ADbnUNM\"\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1#response\",\n  \"issuer\": \"did:example:community\",\n  \"recipient\": \"did:example:vetter\",\n  \"issuedAt\": \"2026-09-01T09:05:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"label\": \"token/2026-09\",\n    \"tick\": 0,\n    \"preCredentials\": [\n      \"z26q5oFrp6i2aTKLp6Y6jsLESJMoNfZQwk8VKXc37c24bJPj5fwBoUEsqv51ADbnUNM\"\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");

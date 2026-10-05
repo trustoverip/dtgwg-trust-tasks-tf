@@ -29,6 +29,7 @@
       "minimum": 1,
       "description": "How many attestation tokens a vetter draws per tick. Defaults to three."
     },
+    "tickLength": { "$ref": "#/$defs/TickLength" },
     "events": {
       "type": "array",
       "items": { "$ref": "#/$defs/RequestEvent" },
@@ -37,6 +38,12 @@
     "ext": { "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
   },
   "$defs": {
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
     "RequestEvent": {
       "title": "RequestEvent",
       "type": "object",
@@ -120,7 +127,7 @@
       "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["suite", "hvk", "tvk", "livePeriods", "liveTokenLabels", "dripPerTick", "events"],
+      "required": ["suite", "hvk", "tvk", "livePeriods", "liveTokenLabels", "dripPerTick", "tickLength", "events"],
       "properties": {
         "suite": { "type": "string", "minLength": 1, "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381." },
         "hvk": { "type": "string", "minLength": 1, "description": "The helper verification key, multibase. A public value, published as helperKey." },
@@ -132,6 +139,7 @@
         },
         "liveTokenLabels": { "type": "array", "items": { "type": "string", "minLength": 1 } },
         "dripPerTick": { "type": "integer", "minimum": 1 },
+        "tickLength": { "$ref": "#/$defs/TickLength" },
         "events": { "type": "array", "items": { "$ref": "#/$defs/StoredEvent" } }
       }
     },
@@ -140,7 +148,7 @@
       "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["suite", "helperKey", "tokenKey", "vetterLabels", "tokenLabels", "dripPerTick", "events"],
+      "required": ["suite", "helperKey", "tokenKey", "vetterLabels", "tokenLabels", "dripPerTick", "tickLength", "events"],
       "properties": {
         "suite": { "type": "string", "minLength": 1 },
         "helperKey": { "type": "string", "minLength": 1, "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk." },
@@ -152,6 +160,7 @@
         },
         "tokenLabels": { "type": "array", "items": { "type": "string", "minLength": 1 } },
         "dripPerTick": { "type": "integer", "minimum": 1 },
+        "tickLength": { "$ref": "#/$defs/TickLength" },
         "events": { "type": "array", "items": { "$ref": "#/$defs/PublishedEvent" } }
       }
     },
