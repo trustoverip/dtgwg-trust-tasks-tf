@@ -11,4 +11,4 @@
 library;
 
 /// The released version of `package:trust_tasks`.
-const String packageVersion = '0.5.6';
+const String packageVersion = '0.5.7';
