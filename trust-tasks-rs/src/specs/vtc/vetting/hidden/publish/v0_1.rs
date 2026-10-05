@@ -188,6 +188,10 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///        "minLength": 1
 ///      },
 ///      "minItems": 1
+///    },
+///    "tickLength": {
+///      "description": "How long one tick of the drip lasts. Defaults to `P3D` when absent.",
+///      "$ref": "#/definitions/TickLength"
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -227,6 +231,13 @@ pub struct Payload {
         skip_serializing_if = "::std::vec::Vec::is_empty"
     )]
     pub live_token_labels: ::std::vec::Vec<PayloadLiveTokenLabelsItem>,
+    ///How long one tick of the drip lasts. Defaults to `P3D` when absent.
+    #[serde(
+        rename = "tickLength",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub tick_length: ::std::option::Option<TickLength>,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -456,6 +467,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLiveTokenLabelsItem {
 ///    "events",
 ///    "helperKey",
 ///    "suite",
+///    "tickLength",
 ///    "tokenKey",
 ///    "tokenLabels",
 ///    "vetterLabels"
@@ -479,6 +491,9 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLiveTokenLabelsItem {
 ///    "suite": {
 ///      "type": "string",
 ///      "minLength": 1
+///    },
+///    "tickLength": {
+///      "$ref": "#/definitions/TickLength"
 ///    },
 ///    "tokenKey": {
 ///      "description": "The token verification key, multibase — named for its role on the wire rather than for tvk.",
@@ -516,6 +531,8 @@ pub struct PublishedConfig {
     #[serde(rename = "helperKey")]
     pub helper_key: PublishedConfigHelperKey,
     pub suite: PublishedConfigSuite,
+    #[serde(rename = "tickLength")]
+    pub tick_length: TickLength,
     ///The token verification key, multibase — named for its role on the wire rather than for tvk.
     #[serde(rename = "tokenKey")]
     pub token_key: PublishedConfigTokenKey,
@@ -1388,6 +1405,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCriterionId {
 ///    "livePeriods",
 ///    "liveTokenLabels",
 ///    "suite",
+///    "tickLength",
 ///    "tvk"
 ///  ],
 ///  "properties": {
@@ -1426,6 +1444,9 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCriterionId {
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
+///    "tickLength": {
+///      "$ref": "#/definitions/TickLength"
+///    },
 ///    "tvk": {
 ///      "description": "The token verification key, multibase. Never the same key as hvk.",
 ///      "type": "string",
@@ -1452,6 +1473,8 @@ pub struct StoredConfig {
     pub live_token_labels: ::std::vec::Vec<StoredConfigLiveTokenLabelsItem>,
     ///The blind-signature suite in force, e.g. ps-ddh-bls12381.
     pub suite: StoredConfigSuite,
+    #[serde(rename = "tickLength")]
+    pub tick_length: TickLength,
     ///The token verification key, multibase. Never the same key as hvk.
     pub tvk: StoredConfigTvk,
 }
@@ -1958,6 +1981,80 @@ impl<'de> ::serde::Deserialize<'de> for StoredEventEventId {
             })
     }
 }
+///The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "TickLength",
+///  "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).",
+///  "type": "string",
+///  "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct TickLength(::std::string::String);
+impl ::std::ops::Deref for TickLength {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<TickLength> for ::std::string::String {
+    fn from(value: TickLength) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for TickLength {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for TickLength {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for TickLength {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for TickLength {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for TickLength {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///`Tier`
 ///
 /// <details><summary>JSON schema</summary>
@@ -2089,6 +2186,8 @@ pub mod builder {
             ::std::vec::Vec<super::PayloadLiveTokenLabelsItem>,
             ::std::string::String,
         >,
+        tick_length:
+            ::std::result::Result<::std::option::Option<super::TickLength>, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -2099,6 +2198,7 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 live_periods: Ok(Default::default()),
                 live_token_labels: Ok(Default::default()),
+                tick_length: Ok(Default::default()),
             }
         }
     }
@@ -2163,6 +2263,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for live_token_labels: {e}"));
             self
         }
+        pub fn tick_length<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::TickLength>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tick_length = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tick_length: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Payload> for super::Payload {
         type Error = super::error::ConversionError;
@@ -2174,6 +2284,7 @@ pub mod builder {
                 ext: value.ext?,
                 live_periods: value.live_periods?,
                 live_token_labels: value.live_token_labels?,
+                tick_length: value.tick_length?,
             })
         }
     }
@@ -2186,6 +2297,7 @@ pub mod builder {
                 ext: Ok(value.ext),
                 live_periods: Ok(value.live_periods),
                 live_token_labels: Ok(value.live_token_labels),
+                tick_length: Ok(value.tick_length),
             }
         }
     }
@@ -2196,6 +2308,7 @@ pub mod builder {
             ::std::result::Result<::std::vec::Vec<super::PublishedEvent>, ::std::string::String>,
         helper_key: ::std::result::Result<super::PublishedConfigHelperKey, ::std::string::String>,
         suite: ::std::result::Result<super::PublishedConfigSuite, ::std::string::String>,
+        tick_length: ::std::result::Result<super::TickLength, ::std::string::String>,
         token_key: ::std::result::Result<super::PublishedConfigTokenKey, ::std::string::String>,
         token_labels: ::std::result::Result<
             ::std::vec::Vec<super::PublishedConfigTokenLabelsItem>,
@@ -2213,6 +2326,7 @@ pub mod builder {
                 events: Err("no value supplied for events".to_string()),
                 helper_key: Err("no value supplied for helper_key".to_string()),
                 suite: Err("no value supplied for suite".to_string()),
+                tick_length: Err("no value supplied for tick_length".to_string()),
                 token_key: Err("no value supplied for token_key".to_string()),
                 token_labels: Err("no value supplied for token_labels".to_string()),
                 vetter_labels: Err("no value supplied for vetter_labels".to_string()),
@@ -2260,6 +2374,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for suite: {e}"));
             self
         }
+        pub fn tick_length<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TickLength>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tick_length = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tick_length: {e}"));
+            self
+        }
         pub fn token_key<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::PublishedConfigTokenKey>,
@@ -2301,6 +2425,7 @@ pub mod builder {
                 events: value.events?,
                 helper_key: value.helper_key?,
                 suite: value.suite?,
+                tick_length: value.tick_length?,
                 token_key: value.token_key?,
                 token_labels: value.token_labels?,
                 vetter_labels: value.vetter_labels?,
@@ -2314,6 +2439,7 @@ pub mod builder {
                 events: Ok(value.events),
                 helper_key: Ok(value.helper_key),
                 suite: Ok(value.suite),
+                tick_length: Ok(value.tick_length),
                 token_key: Ok(value.token_key),
                 token_labels: Ok(value.token_labels),
                 vetter_labels: Ok(value.vetter_labels),
@@ -2657,6 +2783,7 @@ pub mod builder {
             ::std::string::String,
         >,
         suite: ::std::result::Result<super::StoredConfigSuite, ::std::string::String>,
+        tick_length: ::std::result::Result<super::TickLength, ::std::string::String>,
         tvk: ::std::result::Result<super::StoredConfigTvk, ::std::string::String>,
     }
     impl ::std::default::Default for StoredConfig {
@@ -2668,6 +2795,7 @@ pub mod builder {
                 live_periods: Err("no value supplied for live_periods".to_string()),
                 live_token_labels: Err("no value supplied for live_token_labels".to_string()),
                 suite: Err("no value supplied for suite".to_string()),
+                tick_length: Err("no value supplied for tick_length".to_string()),
                 tvk: Err("no value supplied for tvk".to_string()),
             }
         }
@@ -2733,6 +2861,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for suite: {e}"));
             self
         }
+        pub fn tick_length<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TickLength>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.tick_length = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for tick_length: {e}"));
+            self
+        }
         pub fn tvk<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::StoredConfigTvk>,
@@ -2756,6 +2894,7 @@ pub mod builder {
                 live_periods: value.live_periods?,
                 live_token_labels: value.live_token_labels?,
                 suite: value.suite?,
+                tick_length: value.tick_length?,
                 tvk: value.tvk?,
             })
         }
@@ -2769,6 +2908,7 @@ pub mod builder {
                 live_periods: Ok(value.live_periods),
                 live_token_labels: Ok(value.live_token_labels),
                 suite: Ok(value.suite),
+                tick_length: Ok(value.tick_length),
                 tvk: Ok(value.tvk),
             }
         }
@@ -2959,7 +3099,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"RequestEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event. Absent means nobody has, and the label is not live whatever else is true.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"endDate\": {\n          \"description\": \"Last day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"description\": \"The community's name for the gathering. It is the anonymity set for every token spent under this event, so it names something people attend — never one desk or one shift.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"description\": \"Days after endDate the label keeps being accepted. Defaults to fourteen.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"description\": \"The smallest group this community will open the label for. Defaults to three.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"description\": \"First day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"description\": \"The published menu of rates a vetter may pick from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"tiers\"\n      ],\n      \"title\": \"RequestEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"criterionId\": {\n          \"description\": \"The criterion that now accepts a hidden proof.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"published\": {\n          \"$ref\": \"#/$defs/PublishedConfig\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"stored\": {\n          \"$ref\": \"#/$defs/StoredConfig\"\n        }\n      },\n      \"required\": [\n        \"criterionId\",\n        \"stored\",\n        \"published\",\n        \"requirementsDigest\"\n      ],\n      \"title\": \"VTC Vetting — Hidden — Publish — response payload\",\n      \"type\": \"object\"\n    },\n    \"StoredConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as the community stores them, including the helper key it never publishes.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/StoredEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"hvk\": {\n          \"description\": \"The helper verification key, multibase. A public value, published as helperKey.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"livePeriods\": {\n          \"description\": \"Live vetter class periods, current first, stored as the bare YYYY-MM period.\",\n          \"items\": {\n            \"pattern\": \"^[0-9]{4}-(0[1-9]|1[0-2])$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"liveTokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"suite\": {\n          \"description\": \"The blind-signature suite in force, e.g. ps-ddh-bls12381.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tvk\": {\n          \"description\": \"The token verification key, multibase. Never the same key as hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"hvk\",\n        \"tvk\",\n        \"livePeriods\",\n        \"liveTokenLabels\",\n        \"dripPerTick\",\n        \"events\"\n      ],\n      \"title\": \"StoredConfig\",\n      \"type\": \"object\"\n    },\n    \"StoredEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"graceDays\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"StoredEvent\",\n      \"type\": \"object\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/hidden/publish/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Turn on (or rotate the parameters of) hidden-vetter admission for one criterion. Every member but criterionId has a default. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"criterionId\": {\n      \"description\": \"The Accepts criterion this applies to. It must already ask for vetting.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"dripPerTick\": {\n      \"description\": \"How many attestation tokens a vetter draws per tick. Defaults to three.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"events\": {\n      \"description\": \"Events this community is running, replacing whatever was there. Absent or empty removes every event.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/RequestEvent\"\n      },\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"livePeriods\": {\n      \"description\": \"Live vetter class periods, current first (e.g. [\\\"2026-10\\\", \\\"2026-09\\\"]). Defaults to the current month.\",\n      \"items\": {\n        \"pattern\": \"^[0-9]{4}-(0[1-9]|1[0-2])$\",\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"liveTokenLabels\": {\n      \"description\": \"Live token labels (e.g. [\\\"token/2026-09\\\"]). Defaults to the current month's.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"criterionId\"\n  ],\n  \"title\": \"VTC Vetting — Hidden — Publish — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"RequestEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event. Absent means nobody has, and the label is not live whatever else is true.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"endDate\": {\n          \"description\": \"Last day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"description\": \"The community's name for the gathering. It is the anonymity set for every token spent under this event, so it names something people attend — never one desk or one shift.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"description\": \"Days after endDate the label keeps being accepted. Defaults to fourteen.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"description\": \"The smallest group this community will open the label for. Defaults to three.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"description\": \"First day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"description\": \"The published menu of rates a vetter may pick from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"tiers\"\n      ],\n      \"title\": \"RequestEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"criterionId\": {\n          \"description\": \"The criterion that now accepts a hidden proof.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"published\": {\n          \"$ref\": \"#/$defs/PublishedConfig\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"stored\": {\n          \"$ref\": \"#/$defs/StoredConfig\"\n        }\n      },\n      \"required\": [\n        \"criterionId\",\n        \"stored\",\n        \"published\",\n        \"requirementsDigest\"\n      ],\n      \"title\": \"VTC Vetting — Hidden — Publish — response payload\",\n      \"type\": \"object\"\n    },\n    \"StoredConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as the community stores them, including the helper key it never publishes.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/StoredEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"hvk\": {\n          \"description\": \"The helper verification key, multibase. A public value, published as helperKey.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"livePeriods\": {\n          \"description\": \"Live vetter class periods, current first, stored as the bare YYYY-MM period.\",\n          \"items\": {\n            \"pattern\": \"^[0-9]{4}-(0[1-9]|1[0-2])$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"liveTokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"suite\": {\n          \"description\": \"The blind-signature suite in force, e.g. ps-ddh-bls12381.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tvk\": {\n          \"description\": \"The token verification key, multibase. Never the same key as hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"hvk\",\n        \"tvk\",\n        \"livePeriods\",\n        \"liveTokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"StoredConfig\",\n      \"type\": \"object\"\n    },\n    \"StoredEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"graceDays\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"StoredEvent\",\n      \"type\": \"object\"\n    },\n    \"TickLength\": {\n      \"description\": \"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\n      \"pattern\": \"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\n      \"title\": \"TickLength\",\n      \"type\": \"string\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/hidden/publish/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Turn on (or rotate the parameters of) hidden-vetter admission for one criterion. Every member but criterionId has a default. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"criterionId\": {\n      \"description\": \"The Accepts criterion this applies to. It must already ask for vetting.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"dripPerTick\": {\n      \"description\": \"How many attestation tokens a vetter draws per tick. Defaults to three.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"events\": {\n      \"description\": \"Events this community is running, replacing whatever was there. Absent or empty removes every event.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/RequestEvent\"\n      },\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"livePeriods\": {\n      \"description\": \"Live vetter class periods, current first (e.g. [\\\"2026-10\\\", \\\"2026-09\\\"]). Defaults to the current month.\",\n      \"items\": {\n        \"pattern\": \"^[0-9]{4}-(0[1-9]|1[0-2])$\",\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"liveTokenLabels\": {\n      \"description\": \"Live token labels (e.g. [\\\"token/2026-09\\\"]). Defaults to the current month's.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"tickLength\": {\n      \"$ref\": \"#/$defs/TickLength\",\n      \"description\": \"How long one tick of the drip lasts. Defaults to `P3D` when absent.\"\n    }\n  },\n  \"required\": [\n    \"criterionId\"\n  ],\n  \"title\": \"VTC Vetting — Hidden — Publish — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2969,7 +3109,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"RequestEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event. Absent means nobody has, and the label is not live whatever else is true.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"endDate\": {\n          \"description\": \"Last day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"description\": \"The community's name for the gathering. It is the anonymity set for every token spent under this event, so it names something people attend — never one desk or one shift.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"description\": \"Days after endDate the label keeps being accepted. Defaults to fourteen.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"description\": \"The smallest group this community will open the label for. Defaults to three.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"description\": \"First day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"description\": \"The published menu of rates a vetter may pick from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"tiers\"\n      ],\n      \"title\": \"RequestEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"criterionId\": {\n          \"description\": \"The criterion that now accepts a hidden proof.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"published\": {\n          \"$ref\": \"#/$defs/PublishedConfig\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"stored\": {\n          \"$ref\": \"#/$defs/StoredConfig\"\n        }\n      },\n      \"required\": [\n        \"criterionId\",\n        \"stored\",\n        \"published\",\n        \"requirementsDigest\"\n      ],\n      \"title\": \"VTC Vetting — Hidden — Publish — response payload\",\n      \"type\": \"object\"\n    },\n    \"StoredConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as the community stores them, including the helper key it never publishes.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/StoredEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"hvk\": {\n          \"description\": \"The helper verification key, multibase. A public value, published as helperKey.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"livePeriods\": {\n          \"description\": \"Live vetter class periods, current first, stored as the bare YYYY-MM period.\",\n          \"items\": {\n            \"pattern\": \"^[0-9]{4}-(0[1-9]|1[0-2])$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"liveTokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"suite\": {\n          \"description\": \"The blind-signature suite in force, e.g. ps-ddh-bls12381.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tvk\": {\n          \"description\": \"The token verification key, multibase. Never the same key as hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"hvk\",\n        \"tvk\",\n        \"livePeriods\",\n        \"liveTokenLabels\",\n        \"dripPerTick\",\n        \"events\"\n      ],\n      \"title\": \"StoredConfig\",\n      \"type\": \"object\"\n    },\n    \"StoredEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"graceDays\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"StoredEvent\",\n      \"type\": \"object\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"RequestEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event. Absent means nobody has, and the label is not live whatever else is true.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"endDate\": {\n          \"description\": \"Last day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"description\": \"The community's name for the gathering. It is the anonymity set for every token spent under this event, so it names something people attend — never one desk or one shift.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"description\": \"Days after endDate the label keeps being accepted. Defaults to fourteen.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"description\": \"The smallest group this community will open the label for. Defaults to three.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"description\": \"First day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"description\": \"The published menu of rates a vetter may pick from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"tiers\"\n      ],\n      \"title\": \"RequestEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"criterionId\": {\n          \"description\": \"The criterion that now accepts a hidden proof.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"published\": {\n          \"$ref\": \"#/$defs/PublishedConfig\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"stored\": {\n          \"$ref\": \"#/$defs/StoredConfig\"\n        }\n      },\n      \"required\": [\n        \"criterionId\",\n        \"stored\",\n        \"published\",\n        \"requirementsDigest\"\n      ],\n      \"title\": \"VTC Vetting — Hidden — Publish — response payload\",\n      \"type\": \"object\"\n    },\n    \"StoredConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as the community stores them, including the helper key it never publishes.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/StoredEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"hvk\": {\n          \"description\": \"The helper verification key, multibase. A public value, published as helperKey.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"livePeriods\": {\n          \"description\": \"Live vetter class periods, current first, stored as the bare YYYY-MM period.\",\n          \"items\": {\n            \"pattern\": \"^[0-9]{4}-(0[1-9]|1[0-2])$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"liveTokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"suite\": {\n          \"description\": \"The blind-signature suite in force, e.g. ps-ddh-bls12381.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tvk\": {\n          \"description\": \"The token verification key, multibase. Never the same key as hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"hvk\",\n        \"tvk\",\n        \"livePeriods\",\n        \"liveTokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"StoredConfig\",\n      \"type\": \"object\"\n    },\n    \"StoredEvent\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvedBy\": {\n          \"description\": \"Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"graceDays\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"graceDays\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"StoredEvent\",\n      \"type\": \"object\"\n    },\n    \"TickLength\": {\n      \"description\": \"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\n      \"pattern\": \"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\n      \"title\": \"TickLength\",\n      \"type\": \"string\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -2982,6 +3122,8 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::NO_VETTING,
     error_codes::APPROVER_NOT_SIGNER,
     error_codes::APPROVER_IN_EVENT,
+    error_codes::SIGNER_CHANGED,
+    error_codes::OTHER_CRITERION,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -3024,6 +3166,24 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const APPROVER_IN_EVENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:approverInEvent",
+        retryable: false,
+    };
+    /// `vtc/vetting/hidden/publish:signerChanged`
+    ///
+    /// The criterion's stored helper and token keys are not the ones the community's current credential-signer secret derives — the signer was rotated, or the community was restored under another key. Re-publishing would re-key silently and every enrolled vetter's credential would stop verifying. Withdraw hidden vetting from the criterion and publish it again, under a new period, to start a new key generation.
+    ///
+    /// Declared `retryable: false`.
+    pub const SIGNER_CHANGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/vetting/hidden/publish:signerChanged",
+        retryable: false,
+    };
+    /// `vtc/vetting/hidden/publish:otherCriterion`
+    ///
+    /// Hidden vetting is already on for a different criterion. A community runs it on at most one criterion, because enrolment, the drip and the challenge are served from a single configuration. Withdraw it from the other criterion first.
+    ///
+    /// Declared `retryable: false`.
+    pub const OTHER_CRITERION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/vetting/hidden/publish:otherCriterion",
         retryable: false,
     };
 }

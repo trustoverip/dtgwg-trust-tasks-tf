@@ -29,7 +29,7 @@ proofRequirement:
     never asked — and tokens are the only thing bounding how many anonymous attestations exist.
 issuedAtRequirement:
   requirement: REQUIRED
-  rationale: The once-per-tick rule is only enforceable against documents that can be placed in time relative to the tick they name.
+  rationale: The once-per-tick rule, and the refusal of a tick that has not begun, are only enforceable against documents that can be placed in time relative to the tick they name.
 sideEffects:
   level: mutating
   rationale: The community records that this member was served for this label and tick, and signs tokens that will be spendable until the label closes.
@@ -50,6 +50,9 @@ errorCodes:
   - code: vtc/vetting/vetters/pcs-tokens:alreadyServed
     meaning: "This member has already been served for this label and tick."
     retryable: false
+  - code: vtc/vetting/vetters/pcs-tokens:tickNotYet
+    meaning: "The requested `tick` of this label has not begun. It becomes drawable when its window opens."
+    retryable: true
   - code: vtc/vetting/vetters/pcs-tokens:overQuota
     meaning: "More tokens were asked for than the community's published drip rate for this label. Nothing was signed."
     retryable: false
@@ -96,14 +99,32 @@ The quota is authorization too, and it belongs to the consumer: a community MUST
 larger than the rate it publishes, before signing any of it. A request is not a negotiation, and a
 producer's restraint is not a control.
 
+So is the clock. A community MUST refuse a request whose `tick` has not begun with
+`vtc/vetting/vetters/pcs-tokens:tickNotYet`, and one it has already served for this member and label
+with `vtc/vetting/vetters/pcs-tokens:alreadyServed`. A tick that has begun and was never served
+remains drawable once — a vetter whose device was off catches up on its next draw — so the most a
+member can draw under a label is the drip rate times the number of ticks that have begun. The
+velocity cap is the reason the drip exists; a tick the vetter could name freely would make it
+unbounded, since a vetter could draw tick after tick in the same minute.
+
 ## Definitions
 
 **`label`** — the token label to draw under: the community's current monthly label, or an event
 label it has approved. Tokens are only spendable while their label is live, which is what makes an
 event's higher rate end with the event.
 
-**`tick`** — the vetter's own schedule counter for this label. It exists so a community can enforce
-"once per tick" without knowing anything about the vetter's week.
+**Label start** — the instant a token label's ticks are counted from: `00:00:00Z` on the first day
+of `<YYYY-MM>` for a monthly label `token/<YYYY-MM>`, and `00:00:00Z` on the event's `startDate`
+for an event label `token/event/<id>`.
+
+**Tick length** — the community's published `tickLength`
+([`vtc/vetting/hidden/publish`](../../../hidden/publish/0.1/spec.md)), an ISO 8601 duration in days
+and hours; `P3D` where a configuration predates the member.
+
+**`tick`** — which window of the label is being drawn. Tick `t` (`t` ≥ 0) is the half-open window
+`[start + t·tickLength, start + (t + 1)·tickLength)`. Every vetter receives the same rate in every
+tick, and a producer SHOULD draw at a random moment within the tick's window rather than at its
+opening, so that the draw's timing carries nothing either.
 
 **`requests`** — one blinded serial per token asked for, each with a proof that it opens to a serial
 the vetter holds. A community verifies every one of them before signing any.
@@ -127,7 +148,7 @@ The vetter issues the request to its community; the payload is the top-level obj
   "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
   "payload": {
     "label": "token/2026-09",
-    "tick": 1,
+    "tick": 0,
     "requests": [
       {
         "commitment": "z2umykFwGKzcv489j6kMGJnPTgKqAqMvCSPVkpyPCqAKA",
@@ -159,7 +180,7 @@ the vetter their draw.
   "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
   "payload": {
     "label": "token/2026-09",
-    "tick": 1,
+    "tick": 0,
     "preCredentials": [
       "z26q5oFrp6i2aTKLp6Y6jsLESJMoNfZQwk8VKXc37c24bJPj5fwBoUEsqv51ADbnUNM"
     ]

@@ -76,6 +76,7 @@ A conforming **community** (`recipient`):
 4. When it carries them, **MUST** answer `enabled: true` with:
    - `stored` — the parameters exactly as stored, in the shape [`vtc/vetting/hidden/publish`](../../publish/0.1/spec.md) returns as `stored`, every event's `approvedBy` and `graceDays` included;
    - `published` — the parameters exactly as the join manifest now carries them under `vetting.ext`, in the shape publish returns as `published`;
+   - in both, `tickLength` — the drip's tick length; a configuration stored before the member existed is answered as `P3D`, as publish/0.1 reads it;
    - `enrolledVetters` — for each live class label (`vetter/<period>`), the number of members holding an enrolment under it ([`vtc/vetting/vetters/pcs-root`](../../../vetters/pcs-root/0.1/spec.md));
    - `eventStatus` — one entry per stored event, in stored order: its `groupFloor`, its `groupSize` (members who have asked to vet at it through [`vtc/vetting/vetters/event-mode`](../../../vetters/event-mode/0.1/spec.md)), whether it is `approved`, and whether it is `live` — approved, `groupSize` at least `groupFloor`, and today no later than `endDate` plus `graceDays`.
 5. **MUST NOT** disclose which members enrolled under a label or asked to vet at an event — not in this response, its `ext`, or any member a future minor version adds. The counts are the whole of what it discloses about them. `groupSize` is the count event-mode already returns to a vetter waiting on that event; this task extends the same count, and nothing more, to the administrator.
@@ -135,6 +136,7 @@ The community answers in the sub-schema reachable via `$anchor: "response"` in [
       "livePeriods": ["2026-10"],
       "liveTokenLabels": ["token/2026-10"],
       "dripPerTick": 3,
+      "tickLength": "P3D",
       "events": [
         {
           "eventId": "summit-2026",
@@ -154,6 +156,7 @@ The community answers in the sub-schema reachable via `$anchor: "response"` in [
       "vetterLabels": ["vetter/2026-10"],
       "tokenLabels": ["token/2026-10"],
       "dripPerTick": 3,
+      "tickLength": "P3D",
       "events": [
         {
           "eventId": "summit-2026",

@@ -15,7 +15,7 @@ export interface VTCVettingPCSTokensPayload {
    */
   label: string;
   /**
-   * The vetter's own schedule counter for this label. It makes `once per tick` a rule the community can enforce without learning whether the vetter has been busy.
+   * Which tick of this label is being drawn: tick `t` is the window starting `t` tick lengths after the label's start instant (see the specification's Definitions). The community refuses a tick that has not begun (`tickNotYet`) and one already served (`alreadyServed`), so the total drawn under a label is bounded by the drip rate times the ticks elapsed.
    */
   tick: number;
   /**
@@ -116,7 +116,7 @@ export const PAYLOAD_SCHEMA = {
     "tick": {
       "type": "integer",
       "minimum": 0,
-      "description": "The vetter's own schedule counter for this label. It makes `once per tick` a rule the community can enforce without learning whether the vetter has been busy."
+      "description": "Which tick of this label is being drawn: tick `t` is the window starting `t` tick lengths after the label's start instant (see the specification's Definitions). The community refuses a tick that has not begun (`tickNotYet`) and one already served (`alreadyServed`), so the total drawn under a label is bounded by the drip rate times the ticks elapsed."
     },
     "requests": {
       "type": "array",
