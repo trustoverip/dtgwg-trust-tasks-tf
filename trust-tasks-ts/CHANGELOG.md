@@ -11,6 +11,43 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.23.8 — 2026-10-05
+
+
+### Specifications
+
+- **vtc/vetting**: A drip tick is a time window, and publish refuses a changed signer or a second criterion (#734)
+
+* spec(vtc/vetting): a drip tick is a time window, and publish refuses a changed signer or a second criterion
+
+  Three holes in hidden vetting's community half, all draft edits in place
+  (SPEC §5.2):
+
+  - pcs-tokens/0.1: `tick` was the vetter's own schedule counter, so "once per
+    tick" bounded nothing — a vetter could draw tick 1, 2, 3 … in the same
+    minute, and the drip, whose purpose is the velocity cap, was unbounded.
+    A tick is now a window: tick `t` (t ≥ 0) of a label is
+    [start + t·tickLength, start + (t+1)·tickLength), where a label starts at
+    00:00:00Z on the first day of its month (`token/<YYYY-MM>`) or on the
+    event's `startDate` (`token/event/<id>`). A tick that has not begun is
+    refused with the new `pcs-tokens:tickNotYet` (retryable); a begun, unserved
+    tick stays drawable once (catch-up), so a member draws at most dripPerTick
+    × ticks begun. Zero-based because the schema's `minimum` is 0, which keeps
+    the generated `tick: u64` unchanged.
+  - hidden/publish/0.1:
+    - `tickLength` (ISO 8601 days/hours, at least PT1H, default P3D) in the
+      payload, and required in `stored` and `published`; a configuration stored
+      before it existed reads as P3D.
+    - `signerChanged`: stored keys that differ from what the current signer
+      derives are refused rather than silently replaced (every enrolled vetter's
+      credential would stop verifying). Re-keying is the explicit
+      withdraw-then-publish, under a new period.
+    - `otherCriterion`: hidden vetting runs on at most one criterion, because
+      enrolment, the drip and the challenge are served from one configuration.
+  - hidden/show/0.1: `stored` and `published` carry `tickLength`.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
 ## 0.23.7 — 2026-10-05
 
 
