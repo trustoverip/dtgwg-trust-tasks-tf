@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/oob/request/0.1",
+  "title": "Auth — OOB Request — payload",
+  "description": "A starter asks a service to open an out-of-band request that an approver will decide on another device. The document is issued and signed by the starter's fresh Ed25519 key, which is fixed for the life of the request. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "purpose",
+    "mode"
+  ],
+  "properties": {
+    "purpose": {
+      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Purpose"
+    },
+    "mode": {
+      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Mode"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — OOB Request — response payload",
+      "description": "The handle of the new request and its claim deadline. The starter builds the trigger link from these and the service's DID.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "claimDeadline"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+        },
+        "claimDeadline": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The instant by which the request must be claimed, as integer UTC epoch seconds — the same unit as the trigger link's `_exp`, into which it is written unchanged. At most 180 s after the request was accepted; 120 s is RECOMMENDED."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

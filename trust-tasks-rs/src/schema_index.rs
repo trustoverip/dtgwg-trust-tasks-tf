@@ -114,6 +114,48 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/auth/challenge/0.1#response" => <crate::specs::auth::challenge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/cancel/0.1" => <crate::specs::auth::oob::cancel::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/cancel/0.1#response" => <crate::specs::auth::oob::cancel::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/claim/0.1" => <crate::specs::auth::oob::claim::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/claim/0.1#response" => <crate::specs::auth::oob::claim::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/grant/0.1" => <crate::specs::auth::oob::grant::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/identify/0.1" => <crate::specs::auth::oob::identify::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/prove/0.1" => <crate::specs::auth::oob::prove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/prove/0.1#response" => <crate::specs::auth::oob::prove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/redeem/0.1" => <crate::specs::auth::oob::redeem::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/redeem/0.1#response" => <crate::specs::auth::oob::redeem::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/request/0.1" => <crate::specs::auth::oob::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/request/0.1#response" => <crate::specs::auth::oob::request::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/respond/0.1" => <crate::specs::auth::oob::respond::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/respond/0.1#response" => <crate::specs::auth::oob::respond::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/passkey/admin-list/0.1" => <crate::specs::auth::passkey::admin_list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
@@ -4118,6 +4160,46 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/cancel/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::cancel::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/claim/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::claim::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/grant/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::grant::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/identify/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::identify::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/prove/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::prove::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/redeem/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::redeem::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::request::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/respond/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::auth::oob::respond::v0_1::Payload,
+        >()),
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/passkey/admin-list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::auth::passkey::admin_list::v0_1::Payload,
         >()),
@@ -8104,6 +8186,46 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/auth/challenge/0.1" => {
             Some(crate::specs::auth::challenge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/cancel/0.1" => {
+            Some(crate::specs::auth::oob::cancel::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/claim/0.1" => {
+            Some(crate::specs::auth::oob::claim::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/grant/0.1" => {
+            Some(crate::specs::auth::oob::grant::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/identify/0.1" => {
+            Some(crate::specs::auth::oob::identify::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/prove/0.1" => {
+            Some(crate::specs::auth::oob::prove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/redeem/0.1" => {
+            Some(crate::specs::auth::oob::redeem::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/request/0.1" => {
+            Some(crate::specs::auth::oob::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "auth")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/auth/oob/respond/0.1" => {
+            Some(crate::specs::auth::oob::respond::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "auth")]
         #[cfg(not(test))]
