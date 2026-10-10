@@ -1,0 +1,44 @@
+[
+  {
+    "note": "No groupBy.",
+    "payload": {
+      "filter": {
+        "roomId": "room:z6MkRoomExample0001"
+      }
+    }
+  },
+  {
+    "note": "Grouping by file — the host cannot name files.",
+    "payload": {
+      "groupBy": "file"
+    }
+  },
+  {
+    "note": "A page larger than 100.",
+    "payload": {
+      "groupBy": "room",
+      "limit": 500
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A row carrying a file name.",
+    "payload": {
+      "asOf": "2026-10-10T10:00:01Z",
+      "from": "2026-09-10",
+      "to": "2026-10-10",
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "files": 1,
+          "bytes": 1,
+          "reservedBytes": 0,
+          "uploads": 1,
+          "downloads": 0,
+          "egressBytes": 0,
+          "name": "term-sheet.pdf"
+        }
+      ]
+    }
+  }
+]

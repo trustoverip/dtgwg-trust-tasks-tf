@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/get/0.1",
+  "title": "VTC Rooms — Get — payload",
+  "description": "A room-hosting administrator reads one hosted room's host record, storage placement, limits and usage. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier, as its owner minted it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ConfigHoldings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A config holding some of this room's blobs, other than the one it is assigned to.",
+      "required": [
+        "configId",
+        "files",
+        "bytes"
+      ],
+      "properties": {
+        "configId": {
+          "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId"
+        },
+        "files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "MigrationProgress": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Progress of the room's migration, as vtc/rooms/storage/migrate reports it.",
+      "required": [
+        "migrationId",
+        "state",
+        "totalFiles",
+        "totalBytes",
+        "doneFiles",
+        "doneBytes"
+      ],
+      "properties": {
+        "migrationId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "running",
+            "paused",
+            "complete",
+            "failed"
+          ],
+          "description": "`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was."
+        },
+        "totalFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "doneFiles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "doneBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms — Get — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room",
+        "storage",
+        "limits",
+        "usage"
+      ],
+      "properties": {
+        "room": {
+          "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/HostedRoom"
+        },
+        "storage": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Where the room's blobs are.",
+          "required": [
+            "configId",
+            "earlierConfigs"
+          ],
+          "properties": {
+            "configId": {
+              "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId"
+            },
+            "earlierConfigs": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/ConfigHoldings"
+              }
+            },
+            "migration": {
+              "$ref": "#/$defs/MigrationProgress"
+            }
+          }
+        },
+        "limits": {
+          "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/EffectiveLimits"
+        },
+        "usage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "room",
+            "orphans"
+          ],
+          "properties": {
+            "room": {
+              "$ref": "../../../../rooms/_shared/0.1/blobs.schema.json#/$defs/Usage"
+            },
+            "orphans": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Blobs no record names, awaiting deletion after the grace window.",
+              "required": [
+                "files",
+                "bytes"
+              ],
+              "properties": {
+                "files": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "oldestOrphanedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        },
+        "largestBlobs": {
+          "type": "array",
+          "maxItems": 10,
+          "description": "The room's largest committed blobs, by size only.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "size",
+              "configId",
+              "createdAt"
+            ],
+            "properties": {
+              "size": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "configId": {
+                "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        },
+        "membersWithUsage": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

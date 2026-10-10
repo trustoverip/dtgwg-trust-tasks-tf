@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/file-key/0.1",
+  "title": "Rooms Keys File Key — payload",
+  "description": "A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "fileId", "purpose"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room the file belongs to. Bound into the derivation, so a key released for one room cannot open a blob relocated from another."
+    },
+    "fileId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$",
+      "description": "The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["seal", "open"],
+      "description": "`seal`: a key for a file about to be uploaded, derived under the room's CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names."
+    },
+    "epoch": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys File Key — response payload",
+      "description": "Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "epoch"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$",
+          "description": "The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Nothing to change.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "reason": "No-op."
+    }
+  },
+  {
+    "note": "Renaming the config — its identifier is immutable, because blobs name it.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "id": "eu-s3-main",
+      "reason": "Rename."
+    }
+  },
+  {
+    "note": "A state change — retiring is vtc/storage/configs/retire.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "state": "retired",
+      "reason": "Retire."
+    }
+  }
+]

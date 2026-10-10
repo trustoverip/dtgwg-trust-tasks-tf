@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/blobs/upload/begin/0.1",
+  "title": "Rooms Blobs — Upload — Begin — payload",
+  "description": "Open an upload of one file's ciphertext into a data room, committing to its size and to the digest of every chunk before any byte moves, and reserving room for it against every limit that applies. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation",
+    "manifest"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "maxLength": 2048,
+      "description": "The room the file is for. The host verifies the presentation against credentials this identifier issued, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `write` action at this room's scope. Its leaf's subject must be the party the host authenticated for this request."
+    },
+    "manifest": {
+      "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/BlobManifest",
+      "description": "The ciphertext manifest. Its digest is the BlobRef the blob will have once committed."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Blobs — Upload — Begin — response payload",
+      "description": "Success response to rooms/blobs/upload/begin. Type https://trusttasks.org/spec/rooms/blobs/upload/begin/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "missing",
+        "expiresAt"
+      ],
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferId"
+        },
+        "missing": {
+          "type": "array",
+          "maxItems": 4096,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex"
+          },
+          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one. Empty means the upload can be committed."
+        },
+        "expiresAt": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

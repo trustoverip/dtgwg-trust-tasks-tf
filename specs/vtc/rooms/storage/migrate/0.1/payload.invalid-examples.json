@@ -1,0 +1,24 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001"
+    }
+  },
+  {
+    "note": "A target config — a migration always moves blobs to the room's assigned config; change that with vtc/rooms/storage/assign.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "toConfig": "eu-s3-primary",
+      "reason": "Move."
+    }
+  },
+  {
+    "note": "A copy rate below the 64 KiB/s floor.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "maxBytesPerSecond": 1024,
+      "reason": "Slowly."
+    }
+  }
+]
