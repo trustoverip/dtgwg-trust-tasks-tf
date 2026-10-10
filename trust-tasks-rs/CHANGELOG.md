@@ -31,6 +31,36 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.27.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.7...trust-tasks-rs-v0.27.8) — 2026-10-10
+
+
+### Added
+
+- **external**: VTA external accounts — management, credential issuance and Sui signing ([#740](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/740))
+
+* feat(external): VTA external accounts — management, credential issuance and Sui signing
+
+  Adds the external/* family: external/accounts/{list,get,create,update,secret/set,bindings/grant,bindings/revoke,setup,probe,keys/rotate,suspend,resume,archive,restore,delete}/0.1, external/credentials/issue/0.1 and external/sign/0.1, with shared shapes and family conventions in external/_shared/0.1.
+
+  A key custodian holds an identity at a third party and never releases its key or secret. Integrations bound to the account get short-lived credentials the custodian obtained and downscoped itself, sealed to the caller, or signatures over Sui transactions the custodian decoded and checked against an allow-list. Every model pins the custodian's verification material at the provider, so none needs the custodian to be reachable from the internet; plain OIDC discovery federation is excluded for that reason.
+
+- **rooms**: Files in data rooms, and VTC room storage administration ([#739](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/739))
+
+* spec(rooms): shared file and blob types
+
+- **auth/oob**: Add the auth/oob out-of-band sign-in Trust Task family ([#738](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/738))
+
+* feat(auth/oob): add the auth/oob out-of-band sign-in family
+
+  Eight Trust Task specifications for out-of-band sign-in started by a
+  trigger link: request, claim, prove, identify, respond, grant, redeem
+  and cancel, with a shared auth/oob/_shared/0.1 component (closed
+  purpose and mode lists, handle, key, number, origin, requester), the
+  family conventions, and the binding note defining the sign-in trigger
+  link (VTI-LNK) in place of the trusttasks://oob scheme.
+
+
+
 ## [0.27.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.6...trust-tasks-rs-v0.27.7) — 2026-10-05
 
 
