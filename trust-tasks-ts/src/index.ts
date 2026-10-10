@@ -428,7 +428,9 @@ export * as RoomsOwnerRegister_v0_1 from "./rooms/owner/register/0.1/payload.js"
 export * as RoomsOwnerTransfer_v0_1 from "./rooms/owner/transfer/0.1/payload.js";
 export * as RoomsRecordsCurate_v0_1 from "./rooms/records/curate/0.1/payload.js";
 export * as RoomsRecordsGet_v0_1 from "./rooms/records/get/0.1/payload.js";
+export * as RoomsRecordsGet_v0_2 from "./rooms/records/get/0.2/payload.js";
 export * as RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
+export * as RoomsRecordsList_v0_2 from "./rooms/records/list/0.2/payload.js";
 export * as RoomsRecordsPut_v0_1 from "./rooms/records/put/0.1/payload.js";
 export * as RoomsRecordsPut_v0_2 from "./rooms/records/put/0.2/payload.js";
 export * as RoomsUsage_v0_1 from "./rooms/usage/0.1/payload.js";

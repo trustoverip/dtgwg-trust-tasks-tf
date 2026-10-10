@@ -9,7 +9,10 @@ package roomssharedblobsv0_1
 // what the file contains, and two uploads of one file have different BlobRefs (a fresh
 // `fileId` gives a different key, and so different ciphertext). Rooms cannot be
 // correlated by the files they share. Compared as decoded multihash bytes, never as
-// encoded strings.
+// encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states
+// it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings
+// that model the manifest as distinct types still compute the same BlobRef from the same
+// JSON.
 type BlobRef = DigestMultibase
 
 // BlobManifest The ciphertext manifest of one blob, committed by the uploader before any
@@ -98,15 +101,15 @@ type Usage struct {
 	ReservedFiles *int64 `json:"reservedFiles,omitempty"`
 }
 
-// LimitScope Which scope a limit belongs to. `object`: one blob. `member`: one member's
-// uploads in one room. `room`: the room. `storage`: the capacity of the storage the room
-// is assigned to, which is the host's own business and not a limit a member or owner can
-// act on. `host`: the host-wide ceiling.
+// LimitScope Which scope a limit belongs to. `member`: one member's uploads in one room.
+// `room`: the room. `storage`: the capacity of the storage the room is assigned to, which
+// is the host's own business and not a limit a member or owner can act on. `host`: the
+// host-wide ceiling. A single object has no scope of its own: its size is bounded by the
+// smallest `maxFileBytes` the member, room and host scopes set.
 type LimitScope string
 
 // Values LimitScope may take, per this specification's schema.
 const (
-	LimitScopeObject  LimitScope = "object"
 	LimitScopeMember  LimitScope = "member"
 	LimitScopeRoom    LimitScope = "room"
 	LimitScopeStorage LimitScope = "storage"
@@ -125,8 +128,10 @@ const (
 
 // LimitExceeded The `details` of a refusal because an upload would not fit. Names the one
 // limit that refused it and its numbers, so the uploader knows whether to delete their
-// own files or ask the room's owner or the host for more. Where several limits would
-// refuse, the narrowest scope is named: `object`, then `member`, `room`, `storage` and
+// own files or ask the room's owner or the host for more. `scope` is the scope whose
+// limit refused: for `maxFileBytes`, the scope the smallest applicable limit was set at;
+// for a count or a total, the narrowest scope that would be exceeded. Where two scopes
+// would refuse equally, the narrower is named: `member`, then `room`, `storage` and
 // `host`.
 type LimitExceeded struct {
 	Scope   LimitScope           `json:"scope"`
@@ -142,9 +147,9 @@ type LimitExceeded struct {
 }
 
 // FileManifestPadding Whether the plaintext was padded before sealing, so that ciphertext
-// sizes do not fingerprint known documents. `padme`: zero bytes appended to reach the
-// next Padmé bucket of `size`. Absent means `none`. The padding is inside the final
-// segment and removed after decryption by truncating to `size`.
+// sizes do not fingerprint known documents. `padme`: zero bytes appended to reach
+// `padme(size)`, the formula above. Absent means `none`. The padding is inside the final
+// segments, and a reader checks it is zero and removes it by truncating to `size`.
 type FileManifestPadding string
 
 // Values FileManifestPadding may take, per this specification's schema.
@@ -156,25 +161,44 @@ const (
 // FileManifest The `file` member of a sealed record body: everything that describes a
 // file, sealed with the record, signed by the record's author, and never seen by the
 // host. Defined here so that clients interoperate; no host task carries it, because the
-// host receives only ciphertext. **The file key.** `file_key = HKDF-SHA256(ikm =
-// storage_key(epoch), salt = fileId, info = "openvtc/room/file/v1" || roomId ||
-// u64be(epoch))`, where `storage_key(epoch)` is the room's per-epoch storage key, the one
-// records are sealed under. It is derived per file and never stored. It is bound to the
-// room and the epoch, so a key released for one room cannot open a blob relocated from
-// another, and releasing it exposes one file and nothing else. **The STREAM
-// construction.** The plaintext is cut into `segmentSize`-byte segments, the last holding
-// the remainder (at least one byte; an empty file is one empty final segment). Segment
-// `i` is sealed with ChaCha20-Poly1305 under `file_key`, with nonce `u32be(0) ||
-// u64be(i)` and associated data `"openvtc/room/file/v1" || roomId || fileId ||
-// u64be(epoch) || u64be(i) || u8(final)`, where `final` is 1 on the last segment and 0 on
-// every other. A host that truncates, reorders or splices ciphertext produces an
-// authentication failure, never a shorter or rearranged file. The nonces are counters, so
-// a `file_key` MUST NOT seal two different files; a fresh random `fileId` is what
-// guarantees it. Each sealed segment is one transfer chunk of the blob (BlobManifest), so
-// `segmentSize + 16` is the blob's `chunks.chunkSize`. **Reading.** A reader opens the
-// record, derives or obtains the file key, decrypts every segment, and then checks the
-// plaintext against `digest`. A reader MUST refuse a file whose digest does not match,
-// and MUST NOT present it with a warning instead.
+// host receives only ciphertext. **Byte encodings.** In every derivation below, `fileId`
+// is its **32 decoded bytes**, never its base64url text; `roomId` is the **UTF-8 bytes**
+// of the room identifier exactly as it appears on the wire; string constants are their
+// ASCII bytes; `u8`, `u32be` and `u64be` are unsigned integers of that width, big-endian.
+// Epochs are unsigned 64-bit on the wire. An implementation that holds epochs in a
+// narrower type **MUST** refuse a value it cannot represent with `malformedRequest` (or,
+// reading a manifest, refuse the file), and **MUST NOT** truncate it. **The file key.**
+// `file_key = HKDF-SHA256(ikm = storage_key(epoch), salt = fileId, info =
+// "openvtc/room/file/v1" || roomId || u64be(epoch))`, where `storage_key(epoch)` is the
+// room's per-epoch storage key, the one records are sealed under. It is derived per file
+// and never stored. It is bound to the room and the epoch, so a key released for one room
+// cannot open a blob relocated from another, and releasing it exposes one file and
+// nothing else. **Padding.** With `padding: "padme"`, the plaintext of length `L = size`
+// is extended with zero bytes to `padme(L)`: for `L < 2`, `padme(L) = L`; otherwise `E =
+// floor(log2 L)`, `S = floor(log2 E) + 1`, `z = E − S`, `mask = 2^z − 1`, and `padme(L) =
+// (L + mask) & ~mask`. The padded length is `padme(size)`; without padding it is `size`.
+// Padding bytes **MUST** be zero. **The STREAM construction.** The padded plaintext is
+// cut into `segmentSize`-byte segments, the last holding the remainder; an empty
+// plaintext is one empty final segment. Segment `i` is sealed with ChaCha20-Poly1305
+// under `file_key`, with nonce `u32be(0) || u64be(i)` and associated data
+// `"openvtc/room/file/v1" || roomId || fileId || u64be(epoch) || u64be(i) || u8(final)`,
+// where `final` is 1 on the last segment and 0 on every other. A host that truncates,
+// reorders or splices ciphertext produces an authentication failure, never a shorter or
+// rearranged file. The nonces are counters, so a `file_key` MUST NOT seal two different
+// files; a fresh random `fileId` is what guarantees it. Each sealed segment is one
+// transfer chunk of the blob (BlobManifest), so `segmentSize + 16` is the blob's
+// `chunks.chunkSize`, and an empty file is one 16-byte chunk. **Reading.** A reader opens
+// the record, derives or obtains the file key, and **MUST**, before trusting a byte: -
+// check that the blob's `chunks.chunkSize` equals `segmentSize + 16` and that
+// `chunks.chunkCount` equals `max(1, ceil(paddedLength / segmentSize))`, and refuse the
+// file otherwise; - decrypt every segment in order, refusing the file on any
+// authentication failure or on a final flag anywhere but the last segment; - check that
+// the decrypted length equals the padded length, that every padding byte is zero, and,
+// after removing the padding, that the plaintext matches `digest`. A reader **MUST**
+// refuse a file that fails any check, and **MUST NOT** present it with a warning instead.
+// A reader that streams **MUST NOT** treat the plaintext as received — save it under its
+// final name, render it, or hand it to another component — until the digest has verified;
+// it writes to a temporary destination and discards that destination on a mismatch.
 type FileManifest struct {
 	// 32 random bytes, base64url without padding, minted by the uploader for this file and
 	// never reused. The salt of the file key.
@@ -189,7 +213,8 @@ type FileManifest struct {
 	// bytes and its own policy, never from this alone.
 	MediaType *string `json:"mediaType,omitempty"`
 
-	// Plaintext bytes, before padding.
+	// Plaintext bytes, before padding. The decrypted length is `padme(size)` with `padme`
+	// padding and `size` without.
 	Size int64 `json:"size"`
 
 	// Digest of the plaintext bytes. Signed, with the rest of the record body, by the
@@ -199,7 +224,7 @@ type FileManifest struct {
 
 	// The epoch whose storage key the file key derives from. Usually the record's own epoch;
 	// a record rewritten under a later epoch that keeps the same blob keeps the file's
-	// original epoch here.
+	// original epoch here. Unsigned 64-bit; see Byte encodings.
 	Epoch int64 `json:"epoch"`
 
 	// Plaintext bytes per STREAM segment: the transfer chunk size less the 16-byte tag, so
@@ -207,9 +232,9 @@ type FileManifest struct {
 	SegmentSize int64 `json:"segmentSize"`
 
 	// Whether the plaintext was padded before sealing, so that ciphertext sizes do not
-	// fingerprint known documents. `padme`: zero bytes appended to reach the next Padmé
-	// bucket of `size`. Absent means `none`. The padding is inside the final segment and
-	// removed after decryption by truncating to `size`.
+	// fingerprint known documents. `padme`: zero bytes appended to reach `padme(size)`, the
+	// formula above. Absent means `none`. The padding is inside the final segments, and a
+	// reader checks it is zero and removes it by truncating to `size`.
 	Padding *FileManifestPadding `json:"padding,omitempty"`
 	BlobRef BlobRef              `json:"blobRef"`
 }

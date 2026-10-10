@@ -1009,6 +1009,12 @@ mod rooms {
         }
     }
     mod records {
+        mod get {
+            mod v0_2;
+        }
+        mod list {
+            mod v0_2;
+        }
         mod put {
             mod v0_2;
         }

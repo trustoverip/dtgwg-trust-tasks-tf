@@ -1265,11 +1265,8 @@ impl crate::RequestPayload for Payload {
 }
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
-pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
-    error_codes::NOT_AUTHORIZED,
-    error_codes::CHAIN_TOO_DEEP,
-    error_codes::NOT_AVAILABLE,
-];
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
+    &[error_codes::CHAIN_TOO_DEEP, error_codes::NOT_AVAILABLE];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
 ///
@@ -1277,15 +1274,6 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
-    /// `rooms/usage:notAuthorized`
-    ///
-    /// The presentation does not confer `admin` at this room's scope, or its chain does not reach the room.
-    ///
-    /// Declared `retryable: false`.
-    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "rooms/usage:notAuthorized",
-        retryable: false,
-    };
     /// `rooms/usage:chainTooDeep`
     ///
     /// The authority chain exceeds the maximum of 8 links.

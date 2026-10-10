@@ -165,6 +165,56 @@ type RecordMetadata struct {
 	Author *string `json:"author,omitempty"`
 }
 
+// RecordMetadataV2Status Curation state. `retracted` is a tombstone: the body is gone,
+// the key and version remain so incremental sync converges and the audit chain stays
+// intact.
+type RecordMetadataV2Status string
+
+// Values RecordMetadataV2Status may take, per this specification's schema.
+const (
+	RecordMetadataV2StatusActive     RecordMetadataV2Status = "active"
+	RecordMetadataV2StatusDeprecated RecordMetadataV2Status = "deprecated"
+	RecordMetadataV2StatusRetracted  RecordMetadataV2Status = "retracted"
+)
+
+// RecordMetadataV2 What `rooms/records/list/0.2` returns: `RecordMetadata` plus `blobs`.
+// A separate definition, not a change to `RecordMetadata`, so that
+// `rooms/records/list/0.1` keeps the exact shape it published. Never the body.
+type RecordMetadataV2 struct {
+	// The record's key within the room. On `attributed` and `private` rooms this MUST be
+	// opaque — a random identifier, never a descriptive slug. A key reading
+	// `decision/acquire-northwind` defeats the encryption sitting beside it; structured
+	// naming belongs inside the sealed body.
+	Key string `json:"key"`
+
+	// Server-assigned, monotonic per room.
+	Version int64 `json:"version"`
+
+	// The epoch the record was sealed under. Absent on an `open` room.
+	Epoch *int64 `json:"epoch,omitempty"`
+
+	// Curation state. `retracted` is a tombstone: the body is gone, the key and version
+	// remain so incremental sync converges and the audit chain stays intact.
+	Status    *RecordMetadataV2Status `json:"status,omitempty"`
+	UpdatedAt string                  `json:"updatedAt"`
+
+	// Present only on an `open` room; sealed with the body otherwise.
+	Title *string `json:"title,omitempty"`
+
+	// Present only on an `open` room; sealed with the body otherwise.
+	Description *string `json:"description,omitempty"`
+
+	// The member who wrote it. Present on `open` and `attributed`; on `private` the author is
+	// inside the sealed body, where only members can read it.
+	Author *string `json:"author,omitempty"`
+
+	// The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent when it
+	// names none, when it is retracted, and on records written by put 0.1. Cleartext on every
+	// tier, as on the write, so a listing discloses which records carry files, never anything
+	// about the files beyond the blobs' sizes.
+	Blobs *[]BlobRef `json:"blobs,omitempty"`
+}
+
 // CommittedRecordStatus Curation state. Committed rather than left out because a host
 // that could flip `active` to `retracted` would retract a record without touching a byte
 // of it.
@@ -641,3 +691,15 @@ type ReadVerification struct {
 // examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for
 // consistency with `did:key` and `did:webvh`.
 type DigestMultibase = string
+
+// BlobRef The name of one blob: the digest of its BlobManifest, taken over the manifest's
+// RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented.
+// Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about
+// what the file contains, and two uploads of one file have different BlobRefs (a fresh
+// `fileId` gives a different key, and so different ciphertext). Rooms cannot be
+// correlated by the files they share. Compared as decoded multihash bytes, never as
+// encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states
+// it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings
+// that model the manifest as distinct types still compute the same BlobRef from the same
+// JSON.
+type BlobRef = DigestMultibase

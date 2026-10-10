@@ -662,8 +662,7 @@ impl crate::RequestPayload for Payload {
 }
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
-pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
-    &[error_codes::NOT_AUTHORIZED, error_codes::UNKNOWN_EPOCH];
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::UNKNOWN_EPOCH];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
 ///
@@ -671,18 +670,9 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
-    /// `rooms/keys/file-key:notAuthorized`
-    ///
-    /// The caller is not authorized to seal or open files for this room.
-    ///
-    /// Declared `retryable: false`.
-    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "rooms/keys/file-key:notAuthorized",
-        retryable: false,
-    };
     /// `rooms/keys/file-key:unknownEpoch`
     ///
-    /// The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain.
+    /// The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain.
     ///
     /// Declared `retryable: false`.
     pub const UNKNOWN_EPOCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

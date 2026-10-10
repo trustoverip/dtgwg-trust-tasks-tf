@@ -71,7 +71,7 @@ export type AuditAction =
  */
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
 /**
- * The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings.
+ * The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.
  */
 export type BlobRef = DigestMultibase;
 /**
@@ -5045,6 +5045,47 @@ export interface RecordMetadata {
    * The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
    */
   author?: string;
+}
+/**
+ * What `rooms/records/list/0.2` returns: `RecordMetadata` plus `blobs`. A separate definition, not a change to `RecordMetadata`, so that `rooms/records/list/0.1` keeps the exact shape it published. Never the body.
+ */
+export interface RecordMetadataV2 {
+  /**
+   * The record's key within the room. On `attributed` and `private` rooms this MUST be opaque — a random identifier, never a descriptive slug. A key reading `decision/acquire-northwind` defeats the encryption sitting beside it; structured naming belongs inside the sealed body.
+   */
+  key: string;
+  /**
+   * Server-assigned, monotonic per room.
+   */
+  version: number;
+  /**
+   * The epoch the record was sealed under. Absent on an `open` room.
+   */
+  epoch?: number;
+  /**
+   * Curation state. `retracted` is a tombstone: the body is gone, the key and version remain so incremental sync converges and the audit chain stays intact.
+   */
+  status?: "active" | "deprecated" | "retracted";
+  updatedAt: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  title?: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  description?: string;
+  /**
+   * The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
+   */
+  author?: string;
+  /**
+   * The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent when it names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write, so a listing discloses which records carry files, never anything about the files beyond the blobs' sizes.
+   *
+   * @minItems 1
+   * @maxItems 1
+   */
+  blobs?: [BlobRef];
 }
 /**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.

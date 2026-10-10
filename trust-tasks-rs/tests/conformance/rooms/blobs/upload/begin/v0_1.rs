@@ -24,6 +24,15 @@ fn response_example_1() {
     let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
     assert_eq!(rendered, expected, "response example failed round-trip");
 }
+#[test]
+fn response_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000104\",\n  \"type\": \"https://trusttasks.org/spec/rooms/blobs/upload/begin/0.1#response\",\n  \"issuer\": \"did:example:host\",\n  \"recipient\": \"did:example:member\",\n  \"issuedAt\": \"2026-10-10T10:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000101ff\",\n  \"payload\": {\n    \"uploadId\": \"7a1c2e3d-4b5f-4a6e-8d7c-9b0a1f2e3d4c\",\n    \"missing\": [],\n    \"expiresAt\": \"2026-10-10T10:15:01Z\",\n    \"alreadyCommitted\": true\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Response> =
+        serde_json::from_str(JSON).expect("deserialize response example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "response example failed round-trip");
+}
 /// Each fixture in `payload.invalid-examples.json` MUST be
 /// rejected by at least one of: serde deserialization, or
 /// JSON-Schema validation under the `validate` feature. The

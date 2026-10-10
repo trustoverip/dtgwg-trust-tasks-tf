@@ -855,7 +855,6 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::NOT_FOUND,
     error_codes::CHUNK_OUT_OF_RANGE,
     error_codes::CHUNK_MISMATCH,
-    error_codes::ALREADY_STORED,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -889,15 +888,6 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const CHUNK_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/blobs/upload/chunk:chunkMismatch",
-        retryable: false,
-    };
-    /// `rooms/blobs/upload/chunk:alreadyStored`
-    ///
-    /// Different bytes are already staged at this index. Never returned for an identical re-send, which succeeds with `stored: false`.
-    ///
-    /// Declared `retryable: false`.
-    pub const ALREADY_STORED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "rooms/blobs/upload/chunk:alreadyStored",
         retryable: false,
     };
 }

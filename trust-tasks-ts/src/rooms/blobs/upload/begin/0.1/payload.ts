@@ -30,12 +30,16 @@ export interface RoomsBlobsUploadBeginPayload {
 export interface RoomsBlobsUploadBeginResponsePayload {
   uploadId: TransferId;
   /**
-   * The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one. Empty means the upload can be committed.
+   * The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed.
    *
    * @maxItems 4096
    */
   missing: ChunkIndex[];
   expiresAt: ExpiresAt;
+  /**
+   * True when the manifest's BlobRef is already committed in this room. `missing` is then empty, nothing was reserved, and commit returns the existing blob without charging it again. Absent or false on every other answer.
+   */
+  alreadyCommitted?: boolean;
   ext?: Ext;
 }
 
@@ -116,10 +120,14 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ChunkIndex"
           },
-          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one. Empty means the upload can be committed."
+          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed."
         },
         "expiresAt": {
           "$ref": "#/$defs/ExpiresAt"
+        },
+        "alreadyCommitted": {
+          "type": "boolean",
+          "description": "True when the manifest's BlobRef is already committed in this room. `missing` is then empty, nothing was reserved, and commit returns the existing blob without charging it again. Absent or false on every other answer."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -296,10 +304,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/ChunkIndex"
           },
-          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one. Empty means the upload can be committed."
+          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed."
         },
         "expiresAt": {
           "$ref": "#/$defs/ExpiresAt"
+        },
+        "alreadyCommitted": {
+          "type": "boolean",
+          "description": "True when the manifest's BlobRef is already committed in this room. `missing` is then empty, nothing was reserved, and commit returns the existing blob without charging it again. Absent or false on every other answer."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
