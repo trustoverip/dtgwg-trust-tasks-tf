@@ -88,6 +88,9 @@ pub mod device;
 #[cfg(feature = "did-management")]
 #[cfg(not(test))]
 pub mod did_management;
+#[cfg(feature = "external")]
+#[cfg(not(test))]
+pub mod external;
 #[cfg(feature = "git-ns")]
 #[cfg(not(test))]
 pub mod git_ns;

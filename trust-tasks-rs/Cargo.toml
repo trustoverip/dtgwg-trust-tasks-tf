@@ -45,6 +45,7 @@ all-specs = [
     "credential-exchange",
     "device",
     "did-management",
+    "external",
     "git-ns",
     "git-trust",
     "governance",
@@ -78,6 +79,7 @@ consent = []
 credential-exchange = []
 device = []
 did-management = []
+external = []
 git-ns = []
 git-trust = []
 governance = []
