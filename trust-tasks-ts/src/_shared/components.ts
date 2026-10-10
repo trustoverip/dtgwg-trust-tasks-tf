@@ -434,6 +434,14 @@ export type LanguageTag = string;
  */
 export type LifecycleReason = string;
 /**
+ * The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.
+ */
+export type MatchNumber = string;
+/**
+ * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
+ */
+export type Mode = "scan";
+/**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
@@ -441,6 +449,14 @@ export type Namespace = string;
  * The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
  */
 export type NamespaceId = string;
+/**
+ * A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.
+ */
+export type OobKey = string;
+/**
+ * A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.
+ */
+export type Origin = string;
 /**
  * A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.
  */
@@ -556,6 +572,10 @@ export type Provenance =
       derivedAt: string;
     };
 /**
+ * What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.
+ */
+export type Purpose = "login";
+/**
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
 export type PushRegistration = Apns | Fcm | WebPush;
@@ -626,6 +646,10 @@ export type RepoResource = string;
  */
 export type RepoVisibility = "public" | "private";
 /**
+ * The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.
+ */
+export type RequestId = string;
+/**
  * What the community asks an applicant to tell it about themselves, as claim types — never values. At most 32 entries, and no claim type twice: two answers to one question is a question nobody can answer. Self-asserted by the applicant when answered; a community MUST NOT describe an answer as verified. Empty means the community asks nothing.
  *
  * @maxItems 32
@@ -675,6 +699,10 @@ export type RotationState = "pendingApproval" | "staged" | "overlapping" | "comp
  * How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
  */
 export type Route = "wake" | "bridge-relay";
+/**
+ * Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.
+ */
+export type SameNetwork = boolean | "unknown";
 /**
  * An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.
  */
@@ -5006,6 +5034,28 @@ export interface RequestedCredential {
   claims: string[];
 }
 /**
+ * What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.
+ */
+export interface Requester {
+  /**
+   * City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.
+   */
+  location: string;
+  /**
+   * Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.
+   */
+  browser: string;
+  /**
+   * Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.
+   */
+  os: string;
+  /**
+   * When the service accepted the starter's auth/oob/request.
+   */
+  createdAt: string;
+  sameNetwork: SameNetwork;
+}
+/**
  * One line of a profile AFTER resolution: what the profile would present at this entry, rather than how the entry is written.
  *
  * Distinct from `Attribute` because a profile is a PROJECTION and may contain values that have no pool record behind them. An `inline` entry is a value the holder keeps in one profile and nowhere else — it has no `attributeId`, no `version` and no `updatedAt`, because there is no pool attribute to have them. Describing a resolved profile with the pool record's shape therefore cannot represent one at all, which leaves a maintainer choosing between synthesising an `attributeId` — a false claim about where a value lives — and omitting the entry, which returns a profile that appears to present less than it does. Neither is acceptable, so the projection gets its own shape.
@@ -5434,6 +5484,19 @@ export interface SealedRecord {
    * The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.
    */
   epoch: number;
+}
+/**
+ * Who the service says it is.
+ */
+export interface Service {
+  /**
+   * The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.
+   */
+  did: string;
+  /**
+   * The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.
+   */
+  name: string;
 }
 export interface ServiceInstance_DidManagementV0_1 {
   /**

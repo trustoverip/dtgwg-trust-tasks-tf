@@ -54,6 +54,32 @@ mod auth {
     mod challenge {
         mod v0_1;
     }
+    mod oob {
+        mod cancel {
+            mod v0_1;
+        }
+        mod claim {
+            mod v0_1;
+        }
+        mod grant {
+            mod v0_1;
+        }
+        mod identify {
+            mod v0_1;
+        }
+        mod prove {
+            mod v0_1;
+        }
+        mod redeem {
+            mod v0_1;
+        }
+        mod request {
+            mod v0_1;
+        }
+        mod respond {
+            mod v0_1;
+        }
+    }
     mod passkey {
         mod admin_list {
             mod v0_1;
