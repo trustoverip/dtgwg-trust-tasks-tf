@@ -87,7 +87,7 @@ A conforming **approver** (the wallet):
 1. **MUST** generate `K_a`, a fresh Ed25519 key, only after the person has chosen to continue, and **MUST NOT** use it for any other request.
 2. **MUST** follow VTI-LNK-054: set `issuer` to `K_a` as a `did:key`, `recipient` to the service DID (the link's `_from`), a unique `id`, and `parentThreadId` to the handle (the link's `_id`), and sign with `K_a` for `authentication`.
 3. **MUST** set `payload.requestId` to the same handle as `parentThreadId`.
-4. **MUST** take the endpoint from the service's verified DID document, never from the link.
+4. **MUST** take the endpoint from the service's verified DID document, never from the link: the `serviceEndpoint` of its `TrustTaskHTTPS` service is the Trust-Task base, composed into the request URL as [HTTPS binding 0.2 §6](../../../../../bindings/https/0.2/spec.md#6-endpoint-discovery) requires.
 5. **MUST** verify the response's proof against a key the service DID lists under `assertionMethod`, and **MUST** check that `requestId` equals the handle, `service.did` equals the link's `_from`, `purpose` is one it implements, `origin` is the origin of the service's `SignInPortal` service, and `decisionDeadline` is in the future. Any failure ends the exchange on the approver's side.
 6. **MUST** show the community's name from its own records and flag a difference from `service.name` (VTI-LNK-104).
 

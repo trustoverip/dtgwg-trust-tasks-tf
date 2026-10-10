@@ -31,6 +31,8 @@ The **link host** is configuration, defaulting to `link.trustoverip.org`, and
 nothing else: no endpoint, no purpose and no origin. A reader takes the
 transport from the service's verified DID document (VTI-LNK-053) and selects
 the service's Trust Task HTTPS service by `type` — `TrustTaskHTTPS` — never by `id`.
+Its `serviceEndpoint` is the Trust-Task base, and the reader composes the request
+URL from it as [HTTPS binding 0.2 §6](../../../../../bindings/https/0.2/spec.md#6-endpoint-discovery) requires.
 
 The producer emits ASCII only and stays within the size budget of VTI-LNK-081
 at QR error-correction level M. Render rules — level M, no logo, a quiet zone
