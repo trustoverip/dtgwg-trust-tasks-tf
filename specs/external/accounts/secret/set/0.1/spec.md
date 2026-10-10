@@ -76,7 +76,7 @@ A **producer** (the manager's client) **MUST**:
 A conforming **custodian** (`recipient`):
 
 1. **MUST** refuse an `archived` account with `external:archived`, and with `external/accounts/secret/set:notStaticModel` an account whose model is not `s3-static-presign` or `static-secret`.
-2. **MUST** open the bundle only with an unexpired, unused wrapping key it issued, discard that key whether or not the bundle opens, and verify the bundle's producer assertion.
+2. **MUST** open the bundle only with the wrapping key `wrappingKeyId` names, which it issued, has not used and has not let expire; **MUST** discard that key whether or not the bundle opens; **MUST** refuse with `external/accounts/secret/set:unsealFailed` an unknown, used or expired `wrappingKeyId`; and verify the bundle's producer assertion.
 3. **MUST** refuse with `external/accounts/secret/set:unsealFailed`, storing nothing, a bundle that does not open, fails its assertion, does not carry an `ExternalSecretPayload`, names a `context` or `account` other than the request's, or (for `s3-static-presign`) names an `accessKeyId` other than the account's.
 4. **MUST** store the secret wrapped, exclude it from backups, and **MUST NOT** return, log, audit or export it through any task, ever.
 5. **MUST** answer with a `SecretFingerprint`, keyed under a custodian-held key, so that the fingerprint cannot be used to test guesses offline.
@@ -113,6 +113,7 @@ A manager (`issuer`) sends the bundle to the custodian (`recipient`).
   "payload": {
     "context": "community",
     "id": "r2-rooms",
+    "wrappingKeyId": "wk-7c1e9a",
     "sealedSecret": "-----BEGIN VTA SEALED BUNDLE-----\nBundle-Id: 9f3c…\nDigest-Algo: sha-256\nChunk: 0/1\n\nU2VhbGVkU2VjcmV0Q2lwaGVydGV4dFNlYWxlZFNlY3JldENpcGhlcnRleHQ\n=Q1JD\n-----END VTA SEALED BUNDLE-----"
   }
 }

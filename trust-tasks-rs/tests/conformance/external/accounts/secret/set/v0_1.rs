@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::external::accounts::secret::set::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000009\",\n  \"type\": \"https://trusttasks.org/spec/external/accounts/secret/set/0.1#request\",\n  \"issuer\": \"did:example:community-console\",\n  \"recipient\": \"did:example:custodian\",\n  \"issuedAt\": \"2026-10-10T10:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-000000000105\",\n  \"payload\": {\n    \"context\": \"community\",\n    \"id\": \"r2-rooms\",\n    \"sealedSecret\": \"-----BEGIN VTA SEALED BUNDLE-----\\nBundle-Id: 9f3c…\\nDigest-Algo: sha-256\\nChunk: 0/1\\n\\nU2VhbGVkU2VjcmV0Q2lwaGVydGV4dFNlYWxlZFNlY3JldENpcGhlcnRleHQ\\n=Q1JD\\n-----END VTA SEALED BUNDLE-----\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000009\",\n  \"type\": \"https://trusttasks.org/spec/external/accounts/secret/set/0.1#request\",\n  \"issuer\": \"did:example:community-console\",\n  \"recipient\": \"did:example:custodian\",\n  \"issuedAt\": \"2026-10-10T10:00:00Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-000000000105\",\n  \"payload\": {\n    \"context\": \"community\",\n    \"id\": \"r2-rooms\",\n    \"wrappingKeyId\": \"wk-7c1e9a\",\n    \"sealedSecret\": \"-----BEGIN VTA SEALED BUNDLE-----\\nBundle-Id: 9f3c…\\nDigest-Algo: sha-256\\nChunk: 0/1\\n\\nU2VhbGVkU2VjcmV0Q2lwaGVydGV4dFNlYWxlZFNlY3JldENpcGhlcnRleHQ\\n=Q1JD\\n-----END VTA SEALED BUNDLE-----\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");

@@ -12,6 +12,10 @@ import type { AccountContextId, AccountId, Ext, SealedTransferBundle, SecretFing
 export interface ExternalAccountsSecretSetPayload {
   context: AccountContextId;
   id: AccountId;
+  /**
+   * The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key.
+   */
+  wrappingKeyId: string;
   sealedSecret: SealedTransferBundle;
   ext?: Ext;
 }
@@ -55,6 +59,7 @@ export const PAYLOAD_SCHEMA = {
   "required": [
     "context",
     "id",
+    "wrappingKeyId",
     "sealedSecret"
   ],
   "properties": {
@@ -63,6 +68,12 @@ export const PAYLOAD_SCHEMA = {
     },
     "id": {
       "$ref": "#/$defs/AccountId"
+    },
+    "wrappingKeyId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key."
     },
     "sealedSecret": {
       "$ref": "#/$defs/SealedTransferBundle"

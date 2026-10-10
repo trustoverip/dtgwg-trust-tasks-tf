@@ -304,7 +304,8 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "required": [
 ///    "context",
 ///    "id",
-///    "sealedSecret"
+///    "sealedSecret",
+///    "wrappingKeyId"
 ///  ],
 ///  "properties": {
 ///    "context": {
@@ -318,6 +319,12 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///    },
 ///    "sealedSecret": {
 ///      "$ref": "#/definitions/SealedTransferBundle"
+///    },
+///    "wrappingKeyId": {
+///      "description": "The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key.",
+///      "type": "string",
+///      "maxLength": 128,
+///      "minLength": 1
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -334,10 +341,86 @@ pub struct Payload {
     pub id: AccountId,
     #[serde(rename = "sealedSecret")]
     pub sealed_secret: SealedTransferBundle,
+    ///The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key.
+    #[serde(rename = "wrappingKeyId")]
+    pub wrapping_key_id: PayloadWrappingKeyId,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
         Default::default()
+    }
+}
+///The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key.",
+///  "type": "string",
+///  "maxLength": 128,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadWrappingKeyId(::std::string::String);
+impl ::std::ops::Deref for PayloadWrappingKeyId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadWrappingKeyId> for ::std::string::String {
+    fn from(value: PayloadWrappingKeyId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadWrappingKeyId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadWrappingKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadWrappingKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadWrappingKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadWrappingKeyId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`Response`
@@ -559,6 +642,7 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         id: ::std::result::Result<super::AccountId, ::std::string::String>,
         sealed_secret: ::std::result::Result<super::SealedTransferBundle, ::std::string::String>,
+        wrapping_key_id: ::std::result::Result<super::PayloadWrappingKeyId, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -567,6 +651,7 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 id: Err("no value supplied for id".to_string()),
                 sealed_secret: Err("no value supplied for sealed_secret".to_string()),
+                wrapping_key_id: Err("no value supplied for wrapping_key_id".to_string()),
             }
         }
     }
@@ -611,6 +696,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for sealed_secret: {e}"));
             self
         }
+        pub fn wrapping_key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadWrappingKeyId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.wrapping_key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for wrapping_key_id: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Payload> for super::Payload {
         type Error = super::error::ConversionError;
@@ -620,6 +715,7 @@ pub mod builder {
                 ext: value.ext?,
                 id: value.id?,
                 sealed_secret: value.sealed_secret?,
+                wrapping_key_id: value.wrapping_key_id?,
             })
         }
     }
@@ -630,6 +726,7 @@ pub mod builder {
                 ext: Ok(value.ext),
                 id: Ok(value.id),
                 sealed_secret: Ok(value.sealed_secret),
+                wrapping_key_id: Ok(value.wrapping_key_id),
             }
         }
     }
@@ -707,7 +804,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/SecretFingerprint\"\n        },\n        \"setAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"fingerprint\",\n        \"setAt\"\n      ],\n      \"title\": \"External Accounts — Secret — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedTransferBundle\": {\n      \"description\": \"A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \\\"the response\\\" from ever holding a usable secret, whatever transport carried the document.\",\n      \"maxLength\": 65536,\n      \"minLength\": 64,\n      \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\n      \"title\": \"SealedTransferBundle\",\n      \"type\": \"string\"\n    },\n    \"SecretFingerprint\": {\n      \"description\": \"Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.\",\n      \"maxLength\": 33,\n      \"pattern\": \"^hmacsha256:[A-Za-z0-9_-]{22}$\",\n      \"title\": \"SecretFingerprint\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/accounts/secret/set/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Set a static external account's secret, sealed to the custodian. Write-only. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    },\n    \"sealedSecret\": {\n      \"$ref\": \"#/$defs/SealedTransferBundle\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"id\",\n    \"sealedSecret\"\n  ],\n  \"title\": \"External Accounts — Secret — Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/SecretFingerprint\"\n        },\n        \"setAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"fingerprint\",\n        \"setAt\"\n      ],\n      \"title\": \"External Accounts — Secret — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedTransferBundle\": {\n      \"description\": \"A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \\\"the response\\\" from ever holding a usable secret, whatever transport carried the document.\",\n      \"maxLength\": 65536,\n      \"minLength\": 64,\n      \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\n      \"title\": \"SealedTransferBundle\",\n      \"type\": \"string\"\n    },\n    \"SecretFingerprint\": {\n      \"description\": \"Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.\",\n      \"maxLength\": 33,\n      \"pattern\": \"^hmacsha256:[A-Za-z0-9_-]{22}$\",\n      \"title\": \"SecretFingerprint\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/accounts/secret/set/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Set a static external account's secret, sealed to the custodian. Write-only. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    },\n    \"sealedSecret\": {\n      \"$ref\": \"#/$defs/SealedTransferBundle\"\n    },\n    \"wrappingKeyId\": {\n      \"description\": \"The `keyId` keys/import-wrapping-key returned with the wrapping key `sealedSecret` is sealed to. The custodian opens the bundle with that key only, and discards it whether or not the bundle opens, so a failed attempt cannot be retried against the same key.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"id\",\n    \"wrappingKeyId\",\n    \"sealedSecret\"\n  ],\n  \"title\": \"External Accounts — Secret — Set — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
