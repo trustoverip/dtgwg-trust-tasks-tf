@@ -2,6 +2,7 @@
 
 pub mod authenticate;
 pub mod challenge;
+pub mod oob;
 pub mod passkey;
 pub mod refresh;
 pub mod revoke_session;

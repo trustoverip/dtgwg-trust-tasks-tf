@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Missing grant — respond without the carried decision is meaningless.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — a bare decision outside the signed grant is rejected.",
+    "payload": { "grant": {}, "decision": "approve" }
+  },
+  {
+    "variant": "response",
+    "note": "The response never carries session material — a `session` member is rejected by additionalProperties: false.",
+    "payload": { "status": "approved", "session": { "id": "s1" } }
+  },
+  {
+    "variant": "response",
+    "note": "status is approved or declined only.",
+    "payload": { "status": "pending" }
+  }
+]

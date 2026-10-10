@@ -1,0 +1,22 @@
+[
+  {
+    "note": "An `ext` member is refused — identify is closed so a VTA signing it without user verification cannot be made to sign anything else (additionalProperties: false, no ext).",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "enteredNumber": "47", "ext": { "org.example": { "scope": "admin" } } }
+  },
+  {
+    "note": "Smuggled authority — a sessionKey in identify is rejected; only a user-verified grant may name a session key.",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "enteredNumber": "47", "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp" }
+  },
+  {
+    "note": "enteredNumber must be exactly two digits, as a string.",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "enteredNumber": "473" }
+  },
+  {
+    "note": "approverKey must be an Ed25519 did:key — a did:web lock is refused.",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "approverKey": "did:web:phone.example", "enteredNumber": "47" }
+  },
+  {
+    "note": "Missing enteredNumber — the number proof is required.",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK" }
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "note": "Missing requestId — a claim must name the request it locks.",
+    "payload": {}
+  },
+  {
+    "note": "requestId with characters outside unpadded base64url (padding `=`) must be rejected.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg=="
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false rejects an approver-supplied identity in the claim; the member's DID is not revealed until prove.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "subject": "did:web:alice.example"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Step 1 must contain nothing about the starter — a `requester` member is rejected by additionalProperties: false.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example",
+      "purpose": "login",
+      "decisionDeadline": 1791626560,
+      "requester": {
+        "location": "Sydney, Australia"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An origin with a path is not an origin.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
+      "origin": "https://members.community.example/login",
+      "purpose": "login",
+      "decisionDeadline": 1791626560
+    }
+  }
+]

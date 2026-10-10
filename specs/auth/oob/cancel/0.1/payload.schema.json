@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/oob/cancel/0.1",
+  "title": "Auth — OOB Cancel — payload",
+  "description": "The starter or the lock holder ends an out-of-band request. Issued and signed by the starter key or by the lock key. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestId"],
+  "properties": {
+    "requestId": {
+      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — OOB Cancel — response payload",
+      "description": "Confirms the request is cancelled. Cancelling an already-cancelled request answers the same way.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["cancelled"],
+          "description": "The request's final state."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
