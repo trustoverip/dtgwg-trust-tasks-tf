@@ -1,0 +1,42 @@
+[
+  {
+    "note": "Missing requestId.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — the starter cannot ask for a longer session in redeem; additionalProperties: false rejects it.",
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "notAfter": "2027-01-01T00:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No tokens in the body — an accessToken member is rejected by additionalProperties: false.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "displayName": "Alice",
+      "notAfter": 1791655200,
+      "amr": [
+        "did",
+        "oob",
+        "uv"
+      ],
+      "accessToken": "eyJ…"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "notAfter is integer epoch seconds, not RFC 3339.",
+    "payload": {
+      "subject": "did:web:alice.example",
+      "displayName": "Alice",
+      "notAfter": "2026-10-10T18:00:00Z",
+      "amr": [
+        "did",
+        "oob",
+        "uv"
+      ]
+    }
+  }
+]
