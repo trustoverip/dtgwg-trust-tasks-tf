@@ -1,0 +1,23 @@
+[
+  {
+    "note": "No presentation — a read presents the room-issued chain exactly as a write does; a host never authorizes a room read from a session or ACL of its own.",
+    "payload": { "roomId": "did:example:room", "key": "9f2c1a7e" }
+  },
+  {
+    "variant": "response",
+    "note": "Two blobs on one record — a record carries at most one file in this version, and the response echoes what put 0.2 could write.",
+    "payload": {
+      "key": "9f2c1a7e",
+      "version": 3,
+      "blobs": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+        "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An empty blobs array — absence is how 'no file' is written; an empty array would give one record two spellings.",
+    "payload": { "key": "9f2c1a7e", "version": 3, "blobs": [] }
+  }
+]

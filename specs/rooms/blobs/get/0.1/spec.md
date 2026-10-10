@@ -44,9 +44,6 @@ retention:
   rationale: >-
     The download handle lives until it expires. The host counts the download in the room's usage figures, which keep counts, never which blob was read by whom.
 errorCodes:
-  - code: rooms/blobs/get:notAuthorized
-    meaning: "The presentation does not confer `read` at this room's scope, its chain does not reach the room, or its leaf is not the party the host authenticated."
-    retryable: false
   - code: rooms/blobs/get:notFound
     meaning: "No blob with this BlobRef is committed in this room. Says nothing about whether one exists in another room."
     retryable: false
@@ -83,7 +80,7 @@ A conforming **producer** (the reader):
 
 A conforming **host** (`recipient`):
 
-1. **MUST** authorize from the presentation alone, verifying every link of the chain against the room, and **MUST** refuse with `notAuthorized` unless it confers `read` at the room's scope and its leaf's subject is the party the host authenticated for this request.
+1. **MUST** authorize from the presentation alone, verifying every link of the chain against the room, and **MUST** refuse with the standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)) unless it confers `read` at the room's scope and its leaf's subject is the party the host authenticated for this request.
 2. **MUST** answer `notFound` unless the BlobRef names a blob committed **in this room** and not yet deleted from its store. It **MUST NOT** reveal whether a blob with that BlobRef exists in another room.
 3. **MUST** return the manifest exactly as committed, and a fresh, unguessable `downloadId` bound to the room, the blob and the party it authenticated, with the handle's expiry.
 4. **MUST** admit, on any binding, a `rooms/blobs/chunk` response up to that task's `maxDocumentBytes` toward the party that owns an open download.

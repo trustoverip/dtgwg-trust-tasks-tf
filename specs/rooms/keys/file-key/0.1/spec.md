@@ -40,11 +40,8 @@ retention:
   class: transient
   rationale: "The oracle derives the key on demand and keeps nothing but an audit line. The caller holds it for the duration of one encryption or decryption and discards it."
 errorCodes:
-  - code: rooms/keys/file-key:notAuthorized
-    meaning: "The caller is not authorized to seal or open files for this room."
-    retryable: false
   - code: rooms/keys/file-key:unknownEpoch
-    meaning: "The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain."
+    meaning: "The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain."
     retryable: false
     detailsSchema:
       type: object
@@ -55,6 +52,9 @@ errorCodes:
           type: string
           enum: [notDelivered, beyondChain]
         earliestEpoch:
+          type: integer
+          minimum: 1
+        heldEpoch:
           type: integer
           minimum: 1
 related:
@@ -117,10 +117,14 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 A conforming **oracle** (`recipient`) **MUST**:
 
-1. Refuse a caller its principal has not authorized to open files for this room with
-   `notAuthorized`.
-2. Refuse with `malformedRequest` a `seal` request carrying `epoch`, and an `open` request
-   without one.
+1. Refuse a caller its principal has not authorized to open files for this room with the
+   standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), as
+   `rooms/keys/open` does; this specification declares no task-specific code for it. An
+   oracle that holds no group for the room answers the standard `notFound`.
+2. Refuse with `malformedRequest` a `seal` request carrying `epoch`, an `open` request
+   without one, and an `epoch` it cannot represent. Epochs are unsigned 64-bit on the wire;
+   an oracle holding epochs in a narrower type **MUST** refuse an out-of-range value rather
+   than truncate it.
 3. Derive the key exactly as `FileManifest` defines it:
    `file_key = HKDF-SHA256(ikm = storage_key(E), salt = fileId, info = "openvtc/room/file/v1" || roomId || u64be(E))`,
    where `fileId` is the decoded 32 bytes, `roomId` the identifier's UTF-8 bytes, and
@@ -133,7 +137,8 @@ A conforming **oracle** (`recipient`) **MUST**:
      `rooms/keys/open` does for a record sealed under `E`.
 4. Refuse with `unknownEpoch` an epoch it cannot reach, saying which of the two cases holds:
    `notDelivered` when `E` is later than any epoch it holds (a commit has not been
-   delivered), `beyondChain` with `earliestEpoch` when the chain does not reach back to `E`.
+   delivered), with `heldEpoch` naming the latest epoch it holds, and `beyondChain` with
+   `earliestEpoch` when the chain does not reach back to `E`.
    It **MUST NOT** derive under a different epoch and return that.
 5. Return only the derived key and its epoch. It **MUST NOT** return `storage_key(E)`, an
    epoch-chain link, or any key that is not the one file key requested.

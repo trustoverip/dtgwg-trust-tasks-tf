@@ -36,9 +36,6 @@ retention:
   class: transient
   rationale: "A read; the host keeps nothing beyond what it held already."
 errorCodes:
-  - code: rooms/info:notAuthorized
-    meaning: "The presentation does not confer `read` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/info:chainTooDeep
     meaning: "The authority chain exceeds the maximum of 8 links."
     retryable: false
@@ -94,6 +91,8 @@ A conforming **host** (`recipient`) **MUST**:
    record or file content.
 
 ## Authorization
+
+A presentation that does not confer `read` at this room's scope, whose chain does not reach the room, or whose leaf is not the party the host authenticated, is refused with the standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)); this specification declares no task-specific code for it.
 
 Authority is **conferred by the room**: the presentation must confer `read` at this room's
 scope. The host's own access control is neither required nor consulted — a community

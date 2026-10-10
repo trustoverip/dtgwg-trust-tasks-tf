@@ -57,9 +57,6 @@ errorCodes:
   - code: rooms/blobs/upload/chunk:chunkMismatch
     meaning: "`digestMultibase` differs from the manifest entry for `index`, the decoded `data` does not match it, or its length is wrong for its position (every chunk but the last is exactly `chunkSize`). The chunk is not stored; re-send the right bytes."
     retryable: false
-  - code: rooms/blobs/upload/chunk:alreadyStored
-    meaning: "Different bytes are already staged at this index. Never returned for an identical re-send, which succeeds with `stored: false`."
-    retryable: false
 related:
   - rooms/blobs/upload/begin
   - rooms/blobs/upload/commit
@@ -93,8 +90,8 @@ A conforming **host** (`recipient`):
 1. **MUST** admit this document, on any binding, up to its `maxDocumentBytes` when its authenticated sender owns the open upload it names, whether or not that sender holds an access-control entry at the host. It **SHOULD** refuse a larger document, or one naming no upload the sender owns, before parsing more than it must.
 2. **MUST** answer `notFound` unless `uploadId` names an open upload begun by the party the host authenticated for this request. It **MUST NOT** distinguish an unknown id from another party's upload.
 3. **MUST** refuse with `chunkOutOfRange` an index not below `chunkCount`, and with `chunkMismatch` a chunk whose restated digest, decoded bytes or length disagree with the manifest.
-4. **MUST** answer an identical re-send with `stored: false`, and **MUST** refuse different bytes at an already-stored index with `alreadyStored`.
-5. **MAY** extend the upload's expiry on each stored chunk, never past its own ceiling, and **MUST** report the current expiry and how many indices remain.
+4. **MUST** answer an identical re-send with `stored: false`. Different bytes at an already-stored index cannot arise: every chunk's digest was committed at begin, so they fail item 3 as `chunkMismatch` before anything is compared with what is staged.
+5. **MUST** extend the upload's expiry on each accepted chunk to no sooner than 15 minutes later, up to a total slot lifetime of at least 24 hours, as [`rooms/blobs/upload/begin`](../../begin/0.1/spec.md) requires, and **MUST** report the current expiry and how many indices remain.
 
 ## Authorization
 

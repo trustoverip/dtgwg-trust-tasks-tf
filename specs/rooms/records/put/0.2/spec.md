@@ -41,9 +41,6 @@ retention:
   class: durable
   rationale: "A record persists until a member overwrites it or retracts it, and keeps the blob it names stored for as long; outliving the session that wrote it is the point of the task."
 errorCodes:
-  - code: rooms/records/put:notAuthorized
-    meaning: "The presentation does not confer `write` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/records/put:versionConflict
     meaning: "`expectedVersion` did not match. The response carries the current version and record."
     retryable: false
@@ -62,6 +59,29 @@ errorCodes:
   - code: rooms/records/put:blobNotFound
     meaning: "A `blobs` entry names no blob committed in this room — never uploaded, still uploading, uploaded to another room, or already collected. Answered identically in every case, so the refusal does not say whether the blob exists elsewhere."
     retryable: false
+  - code: rooms/records/put:limitExceeded
+    meaning: "The record names an orphaned blob — committed in this room, released by every record, not yet collected — and charging it again would exceed a member or room limit. `details` has the shape of `LimitExceeded` in rooms/_shared/0.1/blobs.schema.json."
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: [scope, measure, limit, used, requested]
+      properties:
+        scope:
+          type: string
+          enum: [member, room, storage, host]
+        measure:
+          type: string
+          enum: [maxFiles, maxFileBytes, maxBytes]
+        limit:
+          type: integer
+          minimum: 0
+        used:
+          type: integer
+          minimum: 0
+        requested:
+          type: integer
+          minimum: 0
 related:
   - rooms/records/get
   - rooms/records/list
@@ -163,6 +183,14 @@ A conforming **consumer** (the host) **MUST**:
 9. Accept a record naming a blob another record of the same room already names. The count
    is per blob, not per record, so two records sharing one blob is well-defined, and a blob
    is orphaned only when the last of them releases it.
+10. Treat a record naming an **orphaned** blob not yet collected as re-referencing it, and
+    charge it again exactly as a new upload of that blob would be charged: to the subject at
+    the root of the presented chain, checked against the member's and the room's file counts
+    and totals with the blob added. If it would not fit, refuse the whole put with
+    `limitExceeded` and change nothing. Orphaning credited the space back at once (item 8);
+    re-referencing without a check would let a room exceed its limits by reviving what it
+    had released.
+11. Refuse an unauthorized presentation with the standard `permissionDenied`; an authorization refusal is the framework standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), which this specification does not shadow with a task-specific code.
 
 A conforming host **MUST NOT** require a session or account of its own as a condition of
 serving a `private` room. Authorizing by session would record which member acted on every
@@ -273,6 +301,15 @@ the version assigned and the epoch it is stored under. Failures use `trust-task-
 ```
 
 ## Security & Privacy
+
+**What the room's commitment does not yet cover.** The leaf preimage of `CommittedRecord`
+([`rooms/_shared/0.1/room.schema.json`](../../../_shared/0.1/room.schema.json)) predates
+`blobs` and does not commit to it. The integrity of a file does not depend on it: the
+`blobRef` is inside the sealed body the author signed, so a reader detects a substituted or
+missing blob regardless. What the commitment does not cover is **retention metadata** — which
+blobs a record keeps alive — so a host that dropped `blobs` from a record could orphan its
+file without the commitment showing it, although readers would still find the file missing.
+Committing to `blobs` is left to a future version of `CommittedRecord`.
 
 **A host verifies chains; it does not keep a roster.** Authorization is decided entirely by
 credentials the room issued. A host that consults state of its own has made the room

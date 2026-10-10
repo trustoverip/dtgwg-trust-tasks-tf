@@ -96,7 +96,7 @@ A conforming **host** (`recipient`):
 4. **MUST** store the blob durably in the store the room is assigned to before answering, and **MUST** record it as committed **in this room**: the room, the BlobRef, the size, the store, and — on `open` and `attributed` rooms — the member it is charged to. A blob committed in one room is never referenceable from another.
 5. **MUST** convert the upload's reservation into usage, charged to the subject at the root of the chain that began it, atomically with recording the blob.
 6. **MUST** answer a repeated commit of an already-committed upload by the same party with the same `blobRef` and `size`, without storing or charging anything a second time, for as long as it remembers the upload.
-7. **MUST NOT** store or charge a second copy when a blob with the same BlobRef is already committed in the room; it **MUST** release the new upload's reservation and answer with the existing blob.
+7. **MUST NOT** store or charge a second copy when a blob with the same BlobRef is already committed in the room; it **MUST** release the new upload's reservation and answer with the existing blob. This includes an upload that begin answered with `alreadyCommitted: true`: it has no chunks and no reservation, and its commit answers at once with the existing blob.
 
 ## Authorization
 

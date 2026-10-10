@@ -2,7 +2,7 @@
 slug: rooms/blobs/upload/begin
 version: "0.1"
 title: "Rooms Blobs — Upload — Begin"
-summary: "A member opens an upload of one file's ciphertext into a data room, committing to its size and every chunk's digest before any byte moves, and reserving space for it against the room's, the member's and the object's limits."
+summary: "A member opens an upload of one file's ciphertext into a data room, committing to its size and every chunk's digest before any byte moves, and reserving space for it against the member's, the room's and the host's limits."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: access-control
@@ -44,13 +44,10 @@ retention:
   rationale: >-
     The slot, its reservation and any staged chunks live until commit, abort or expiry, and no longer.
 maxDocumentBytes:
-  request: 262144
+  request: 327680
   rationale: >-
-    The request carries the chunk manifest — one digest per chunk, up to 4096 of them (about 205 KiB for sha2-256 in base58btc) — plus an authority chain of up to 8 credentials. That can exceed the 64 KiB a host applies to a Trust Task by default. A 100 MiB file at 256 KiB chunks needs 400 digests, well inside it.
+    The request carries the chunk manifest and an authority chain. A full manifest is 4096 sha2-256 digests, each a 34-byte multihash that encodes to about 47 base58btc characters, so about 205 KiB with its JSON punctuation. An authority chain of up to 8 credentials, plus the membership credential, adds up to about 64 KiB more, and the envelope and proof a few KiB; 320 KiB holds the largest legitimate request with room to spare. That exceeds the 64 KiB a host applies to a Trust Task by default. A 100 MiB file at 256 KiB chunks needs 400 digests, well inside it.
 errorCodes:
-  - code: rooms/blobs/upload/begin:notAuthorized
-    meaning: "The presentation does not confer `write` at this room's scope, its chain does not reach the room, or its leaf is not the party the host authenticated."
-    retryable: false
   - code: rooms/blobs/upload/begin:filesDisabled
     meaning: "The host stores no files for this room. Records without files are unaffected."
     retryable: false
@@ -58,7 +55,7 @@ errorCodes:
     meaning: "`chunks.chunkCount` is not ceil(size / chunks.chunkSize), or `chunks.chunkDigests` does not have exactly `chunkCount` items, or a digest names a hash the host does not implement."
     retryable: false
   - code: rooms/blobs/upload/begin:limitExceeded
-    meaning: "The upload would not fit one of the limits that apply. `details` names the narrowest scope that refuses it, the measure, the limit, current use with reservations, and what this upload would add."
+    meaning: "The upload would not fit one of the limits that apply. `details` names the scope whose limit refuses it (for `maxFileBytes`, the scope the smallest applicable limit comes from), the measure, the limit, current use with reservations, and what this upload would add."
     retryable: false
     detailsSchema:
       type: object
@@ -67,7 +64,7 @@ errorCodes:
       properties:
         scope:
           type: string
-          enum: [object, member, room, storage, host]
+          enum: [member, room, storage, host]
         measure:
           type: string
           enum: [maxFiles, maxFileBytes, maxBytes]
@@ -80,6 +77,16 @@ errorCodes:
         requested:
           type: integer
           minimum: 0
+  - code: rooms/blobs/upload/begin:tooManyUploads
+    meaning: "The authenticated party already holds as many open uploads as the host allows one party. Commit, abort or let one lapse, then begin again. `details.maxOpen`, when present, states the host's limit."
+    retryable: true
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        maxOpen:
+          type: integer
+          minimum: 1
 related:
   - rooms/blobs/upload/chunk
   - rooms/blobs/upload/commit
@@ -104,6 +111,8 @@ The member then writes the record that names the blob, with [`rooms/records/put/
 
 **Resume** is this task again. A member whose upload was interrupted sends `begin` with the same room and the same manifest; the host recognises the open slot and answers with the same `uploadId` and the indices it still lacks.
 
+**A blob the room already holds** is not uploaded twice. If the manifest's BlobRef is already committed in this room, the host answers `alreadyCommitted: true` with nothing missing, and the member commits at once; no byte moves and nothing is charged again.
+
 ## Status of this Document
 
 This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
@@ -122,16 +131,19 @@ A conforming **producer** (the member, or an agent acting under an attenuated ch
 
 A conforming **host** (`recipient`):
 
-1. **MUST** authorize from the presentation alone, verifying every link of the chain against the room as [`rooms/records/put`](../../../../records/put/0.1/spec.md) requires, and **MUST** refuse with `notAuthorized` unless it confers `write` at the room's scope and its leaf's subject is the party the host authenticated for this request.
+1. **MUST** authorize from the presentation alone, verifying every link of the chain against the room as [`rooms/records/put`](../../../../records/put/0.1/spec.md) requires, and **MUST** refuse with the standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)) unless it confers `write` at the room's scope and its leaf's subject is the party the host authenticated for this request.
 2. **MUST** refuse with `filesDisabled` when the room's limits have `filesEnabled: false`.
 3. **MUST** refuse with `invalidManifest` a manifest inconsistent with its own `size`, or naming a hash it does not implement.
-4. **MUST** check the upload against every scope at once, before reserving anything: the blob's `size` against the smallest `maxFileBytes` among the member, the room and the host ceiling; the member's and the room's file counts and totals, reservations included, with this blob added; and the capacity of the storage the room is assigned to. It **MUST** refuse with `limitExceeded`, naming the narrowest refusing scope, when any of them would be exceeded.
-5. **MUST** charge the member scope to the **subject at the root of the presented chain**, not to the leaf, so that an agent writing under an attenuated chain spends its member's allowance. On a `private` room, where the host cannot tell members apart, it **MUST NOT** apply member limits; the object and room limits still hold.
+4. **MUST** check the upload against every scope at once, before reserving anything: the blob's `size` against the smallest `maxFileBytes` among the member, the room and the host ceiling; the member's and the room's file counts and totals, reservations included, with this blob added; and the capacity of the storage the room is assigned to. It **MUST** refuse with `limitExceeded` when any of them would be exceeded. `details.scope` names the scope whose limit refused: for `maxFileBytes`, the scope the smallest applicable limit was set at, and where two scopes set the same value, the narrower (`member`, then `room`, `storage` and `host`); for a count or a total, the narrowest scope that would be exceeded.
+5. **MUST** charge the member scope to the **subject at the root of the presented chain**, not to the leaf, so that an agent writing under an attenuated chain spends its member's allowance. On a `private` room, where the host cannot tell members apart, it **MUST NOT** apply member limits; the room, storage and host limits still hold.
 6. **MUST** reserve the blob's size and one file against the member, the room and the storage, atomically with the check, so that two concurrent uploads cannot both fit under a limit only one of them fits.
 7. **MUST** mint an unguessable `uploadId`, bind it to the room, the manifest and the party it authenticated, and answer with the id, every index it lacks and the slot's expiry.
 8. **MUST**, when the same authenticated party begins again with the same room and an identical manifest while a slot for it is open, answer with that slot's `uploadId` and the indices still missing, and **MUST NOT** reserve a second time.
-9. **MUST** admit, on any binding, a `rooms/blobs/upload/chunk` document up to that task's `maxDocumentBytes` from the party that owns an open upload, whether or not that party holds an access-control entry at the host. Room members ordinarily hold none; an open slot exists only because a verified chain opened it, so admitting its owner admits nobody a verified chain did not.
-10. **MUST NOT** accept a slot whose total exceeds the transfer ceiling: 4096 chunks of at most 262144 bytes, so 1 GiB. A room's limits may be lower, never higher.
+9. **MUST**, when the manifest's BlobRef is already committed in this room, answer with an `uploadId` bound as item 7 requires, `missing: []` and `alreadyCommitted: true`, and **MUST NOT** reserve anything. A commit of that upload returns the existing blob and charges nothing (see [`rooms/blobs/upload/commit`](../../commit/0.1/spec.md)). The authorization and `filesDisabled` checks still run first, so the answer discloses nothing to a party that could not upload into the room. A BlobRef committed in another room is never reported: it is uploaded and stored again, in this room.
+10. **MAY** limit how many uploads one party holds open, and **MUST** refuse a begin beyond that limit with `tooManyUploads`, retryable, rather than a generic failure.
+11. **MUST NOT** expire a slot sooner than **15 minutes** after the last chunk it accepted (or after this begin, before any chunk arrives), and **MUST** extend the slot while chunks keep arriving, up to a total lifetime of at least **24 hours**. A client that lets a slot lapse begins again from nothing. These are floors, not targets: a 1 GiB blob over a slow or intermittent link takes hours, and a slot that expired on a fixed short clock would make such an upload impossible however patiently the client resumed it.
+12. **MUST** admit, on any binding, a `rooms/blobs/upload/chunk` document up to that task's `maxDocumentBytes` from the party that owns an open upload, whether or not that party holds an access-control entry at the host. Room members ordinarily hold none; an open slot exists only because a verified chain opened it, so admitting its owner admits nobody a verified chain did not.
+13. **MUST NOT** accept a slot whose total exceeds the transfer ceiling: 4096 chunks of at most 262144 bytes, so 1 GiB. A room's limits may be lower, never higher.
 
 ## Authorization
 
@@ -145,7 +157,7 @@ How much the room may store is a separate question and the host's own: its limit
 - **Ciphertext manifest** — `BlobManifest`: the blob's `size`, its chunk manifest and the digest of the whole.
 - **BlobRef** — the digest of the manifest's RFC 8785 canonicalization. Content addressing over ciphertext.
 - **Upload** — one chunked transfer from begin to commit, abort or expiry, identified by its `uploadId`.
-- **Scopes** — `object` (one blob), `member` (one member's uploads in one room), `room`, `storage` (the capacity of the store the room is assigned to) and `host` (the host-wide ceiling). Limits are `RoomLimits`; all sizes are ciphertext bytes.
+- **Scopes** — `member` (one member's uploads in one room), `room`, `storage` (the capacity of the store the room is assigned to) and `host` (the host-wide ceiling). One blob's size is bounded by the smallest `maxFileBytes` among the member, the room and the host, so a single object has no limit of its own. Limits are `RoomLimits`; all sizes are ciphertext bytes.
 
 ## Request
 
@@ -190,7 +202,7 @@ The presentation is shortened for the example.
 
 ## Response
 
-The host answers with the sub-schema reachable via `$anchor: "response"`: the upload id, the indices it lacks and the slot's expiry. A refusal is a `trust-task-error`.
+The host answers with the sub-schema reachable via `$anchor: "response"`: the upload id, the indices it lacks, the slot's expiry and, when the room already holds this blob, `alreadyCommitted: true`. A refusal is a `trust-task-error`.
 
 ### Slot opened
 
@@ -206,6 +218,25 @@ The host answers with the sub-schema reachable via `$anchor: "response"`: the up
     "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
     "missing": [0, 1],
     "expiresAt": "2026-10-10T11:00:01Z"
+  }
+}
+```
+
+### The room already holds this blob
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000104",
+  "type": "https://trusttasks.org/spec/rooms/blobs/upload/begin/0.1#response",
+  "issuer": "did:example:host",
+  "recipient": "did:example:member",
+  "issuedAt": "2026-10-10T10:00:01Z",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-0000000101ff",
+  "payload": {
+    "uploadId": "7a1c2e3d-4b5f-4a6e-8d7c-9b0a1f2e3d4c",
+    "missing": [],
+    "expiresAt": "2026-10-10T10:15:01Z",
+    "alreadyCommitted": true
   }
 }
 ```
@@ -253,7 +284,7 @@ On `attributed` and `open` rooms the presentation names the acting member, so th
 
 ### Retention
 
-The slot and its reservation live until commit, abort or expiry. A host **SHOULD** keep the expiry short (an hour in the reference design) and extend it as chunks arrive.
+The slot and its reservation live until commit, abort or expiry. Expiry is idle-based: at least 15 minutes after the last accepted chunk, extended as chunks arrive up to at least 24 hours in all (Conformance, item 11). A host **SHOULD NOT** keep an idle slot much longer than its floor, since a slot holds a reservation against the room's limits.
 
 ### Consent/purpose
 

@@ -51,10 +51,14 @@
           "items": {
             "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex"
           },
-          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one. Empty means the upload can be committed."
+          "description": "The chunk indices the host does not yet hold, in ascending order. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed."
         },
         "expiresAt": {
           "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "alreadyCommitted": {
+          "type": "boolean",
+          "description": "True when the manifest's BlobRef is already committed in this room. `missing` is then empty, nothing was reserved, and commit returns the existing blob without charging it again. Absent or false on every other answer."
         },
         "ext": {
           "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
