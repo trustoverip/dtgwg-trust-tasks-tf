@@ -35,6 +35,9 @@ errorCodes:
   - code: "external:notFound"
     meaning: "No account with this id exists in the named context that the caller may see. See the family conventions §2."
     retryable: false
+  - code: "external:archived"
+    meaning: "The account is `archived`; restore it before changing or using it. See the family conventions §2."
+    retryable: false
   - code: "external/accounts/bindings/grant:ceilingNotApplicable"
     meaning: "The ceiling does not fit the model: prefixes on an account with no bucket, `scopes` outside the account's own, or a ceiling on `sui-signer`, whose ceiling is the account's allow-list."
     retryable: false
@@ -67,7 +70,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse with `external/accounts/bindings/grant:ceilingNotApplicable` a ceiling the model cannot honour.
+1. **MUST** refuse an `archived` account with `external:archived`, and with `external/accounts/bindings/grant:ceilingNotApplicable` a ceiling the model cannot honour.
 2. **MUST** replace an existing binding for the same consumer rather than add a second one.
 3. **MUST** record `grantedAt`.
 4. **SHOULD NOT** require the consumer to hold `external-auth-use` at grant time, since provisioning often runs in the other order, but **MUST** require it at every use.

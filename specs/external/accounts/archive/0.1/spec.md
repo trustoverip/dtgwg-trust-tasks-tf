@@ -35,6 +35,9 @@ errorCodes:
   - code: "external:notFound"
     meaning: "No account with this id exists in the named context that the caller may see. See the family conventions §2."
     retryable: false
+  - code: "external:archived"
+    meaning: "The account is `archived`; restore it before changing or using it. See the family conventions §2."
+    retryable: false
   - code: "external/accounts/archive:invalidTransition"
     meaning: "The account is not in a state this task applies to (`active` or `suspended`)."
     retryable: false
@@ -61,7 +64,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** accept the task only for an account that is `active` or `suspended`, and refuse any other with `external/accounts/archive:invalidTransition`.
+1. **MUST** accept the task only for an account that is `active` or `suspended`. **MUST** refuse an `archived` account, where `archived` is not a starting state, with `external:archived`, and any other state with `external/accounts/archive:invalidTransition`.
 2. **MUST** refuse every issuance and signature for an archived account.
 
 ## Authorization
@@ -174,4 +177,4 @@ The state change persists; the audit trail keeps who changed it, when and why.
 
 ### Consent/purpose
 
-Reductions need no one else; restorations of authority are consented.
+Reductions need no one else; restorations of authority are consented where the operator enforces consent (conventions §4).

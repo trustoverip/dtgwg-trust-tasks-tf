@@ -63,7 +63,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** accept the task only for an account that is `archived`, and refuse any other with `external/accounts/delete:invalidTransition`.
+1. **MUST** accept the task only for an account that is `archived`. **MUST** refuse an `archived` account, where `archived` is not a starting state, with `external:archived`, and any other state with `external/accounts/delete:invalidTransition`.
 2. **MUST** destroy the account's wrapped key or secret and **MUST** record its derived key path, if any, as retired, never to be derived for another account.
 3. **MUST NOT** reuse the account id in the context while any audit row names it.
 
@@ -136,4 +136,4 @@ The state change persists; the audit trail keeps who changed it, when and why.
 
 ### Consent/purpose
 
-Reductions need no one else; restorations of authority are consented.
+Reductions need no one else; restorations of authority are consented where the operator enforces consent (conventions §4).

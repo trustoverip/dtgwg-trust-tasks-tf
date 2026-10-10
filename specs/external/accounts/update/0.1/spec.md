@@ -35,6 +35,9 @@ errorCodes:
   - code: "external:notFound"
     meaning: "No account with this id exists in the named context that the caller may see. See the family conventions §2."
     retryable: false
+  - code: "external:archived"
+    meaning: "The account is `archived`; restore it before changing or using it. See the family conventions §2."
+    retryable: false
   - code: "external:invalidSettings"
     meaning: "The settings validate against the schema but are unusable: a model change, an inconsistent value, or a driver or network this custodian does not implement. `details.member` names the offending member."
     retryable: false
@@ -63,9 +66,9 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse with `external:invalidSettings` (`details.member: "model"`) a `settings.model` different from the account's.
+1. **MUST** refuse an `archived` account with `external:archived`, and with `external:invalidSettings` (`details.member: "model"`) a `settings.model` different from the account's.
 2. **MUST** replace `settings` whole when present — never merge — so that the stored settings are exactly what was approved.
-3. **MUST** recompute `egressHosts`, and **SHOULD** set `providerSetupRequired` when a setting the provider-side setup encodes has changed (a role, a pool provider, a bucket), until a probe succeeds.
+3. **MUST** recompute `egressHosts`, and **SHOULD** set `providerSetupRequired` when a setting the provider-side setup encodes has changed (a role, a pool provider, a bucket), until a complete probe succeeds.
 4. **MUST NOT** change bindings, key or state.
 
 ## Authorization

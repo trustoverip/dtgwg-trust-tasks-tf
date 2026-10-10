@@ -104,7 +104,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`), before signing:
 
-1. **MUST** check the account and the binding as [`external/credentials/issue`](../../credentials/issue/0.1/spec.md) does — existence, state, caller is a binding's consumer by proof, `external-auth-use`, rate — with the same codes, and refuse an account whose model is not `sui-signer` with `external/sign:notSignOnly`.
+1. **MUST** check the caller and the account as [`external/credentials/issue`](../../credentials/issue/0.1/spec.md) does, in its order — the caller is a binding's consumer by proof (else the same `external:notFound` for every unbound caller and unknown account), `external-auth-use`, then state and rate — with the same codes, and refuse an account whose model is not `sui-signer` with `external/sign:notSignOnly`.
 2. **MUST** decode `txBytes` as BCS `TransactionData` and refuse anything it cannot fully decode, or that is not a programmable transaction, with `external/sign:undecodable`.
 3. **MUST** refuse with `senderMismatch` a sender or gas owner other than the account's address.
 4. **MUST** check **every** command: each `MoveCall` names a `(package, module, function)` in `allowedCalls`; only the coin-handling commands the allowed calls need (`SplitCoins`, `MergeCoins`, and `TransferObjects` back to the account's own address) appear; `Publish`, `Upgrade` and transfers to any other address do not. Else `callNotAllowed`. When `allowedObjects` is set, every shared-object input is in it. Else `objectNotAllowed`.
@@ -124,7 +124,7 @@ Signing is not consent-gated per transaction: the account's allow-list and caps 
 
 ## Definitions
 
-- **Allow-list, caps** — `SuiSignerSettings` in [`external/_shared/0.1/accounts.schema.json`](../../_shared/0.1/accounts.schema.json).
+- **Allow-list, caps** — the `sui-signer` settings of `AccountSettings` in [`external/_shared/0.1/accounts.schema.json`](../../_shared/0.1/accounts.schema.json).
 - **Intent message** — Sui's `IntentMessage<TransactionData>`: the three-byte intent prefix followed by the BCS bytes of the transaction. Its Blake2b-256 digest is what Sui signatures commit to, and is the transaction digest.
 
 ## Request

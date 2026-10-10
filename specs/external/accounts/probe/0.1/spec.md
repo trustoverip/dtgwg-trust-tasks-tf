@@ -35,8 +35,8 @@ errorCodes:
   - code: "external:notFound"
     meaning: "No account with this id exists in the named context that the caller may see. See the family conventions §2."
     retryable: false
-  - code: "external:notActive"
-    meaning: "The account is `suspended` or `archived` and cannot be used."
+  - code: "external:archived"
+    meaning: "The account is `archived`; restore it before changing or using it. See the family conventions §2."
     retryable: false
   - code: "external:providerUnavailable"
     meaning: "The provider could not be reached or did not answer in time."
@@ -53,9 +53,9 @@ The **External Accounts — Probe** Trust Task answers the question an approver 
 
 1. **signs** the model's assertion or session request (for `sui-signer`, builds a test transaction and runs it through its own allow-list — never submitting it);
 2. **exchanges** it at the provider for a credential, downscoped as an issuance would be;
-3. at the narrowest scope any binding allows, **puts, gets and deletes** one canary object.
+3. at the narrowest scope any binding allows — or, with no bindings, under the account's `probePrefix` — **puts, gets and deletes** one canary object.
 
-The first failing step ends the probe and its report carries the provider's own error, verbatim. A probe is not consent-gated: it is how a change is shown to work **before** consent is asked for, and approvers see its report beside the request.
+The first failing step ends the probe and its report carries the provider's own error, verbatim. A probe that could not reach step 3 because nothing names a canary prefix reports `complete: false`: it shows the account authenticates, not that it works. A probe is not consent-gated: it is how a change is shown to work **before** consent is asked for, and approvers see its report beside the request.
 
 ## Status of this Document
 
@@ -69,11 +69,11 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse with `external:notActive` an account that is `archived`. It **MAY** probe a `suspended` account, since checking an account before resuming it is a reason to probe; the credential it obtains is used for the canary only.
+1. **MUST** refuse with `external:archived` an account that is `archived`. It **MAY** probe a `suspended` account, since checking an account before resuming it is a reason to probe; the credential it obtains is used for the canary only.
 2. **MUST** run the steps in order and stop at the first failure, reporting it with the provider's error text — truncated, and with any credential, signature or token removed.
-3. **MUST** write the canary under a name it chooses inside the narrowest bound prefix, and **MUST** delete it; with no bindings, **MUST** stop after `exchange`.
+3. **MUST** write the canary under a name it chooses inside the narrowest bound prefix — with no bindings, inside the settings' `probePrefix` — and **MUST** delete it. With neither, **MUST** stop after `exchange` and report `complete: false`.
 4. **MUST** discard the credential it obtained when the probe ends, and **MUST NOT** return it.
-5. **MUST** store the report as the account's `lastProbe`, and **SHOULD** clear `providerSetupRequired` when every step succeeds and no rotation is pending confirmation.
+5. **MUST** report `complete: true` only when the canary steps ran, and **MUST** store the report as the account's `lastProbe`. **MUST NOT** clear `providerSetupRequired` except on a report that is both `ok` and `complete`, with no rotation pending confirmation: an exchange alone proves the provider trusts the key, not that the account can do what its bindings will ask.
 6. A provider refusal is a **successful** probe response with `ok: false`, not a `trust-task-error`; `external:providerUnavailable` is for a provider that could not be reached at all.
 
 ## Authorization
@@ -125,6 +125,7 @@ The sub-schema reachable via `$anchor: "response"`.
     "report": {
       "at": "2026-10-10T10:00:03Z",
       "ok": true,
+      "complete": true,
       "steps": [
         {
           "step": "sign",
@@ -166,7 +167,7 @@ An account reference in; a report out. The credential obtained during the probe 
 
 ### Correlation
 
-The provider sees an authentication and three object operations from the account, at the time of the probe.
+The provider sees an authentication and three object operations from the account, at the time of the probe. The connections go only to hosts in the account's `egressHosts`.
 
 ### Retention
 

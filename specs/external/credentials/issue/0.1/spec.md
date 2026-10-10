@@ -38,7 +38,7 @@ exposure:
   discloses: "secret"
   ingests: "metadata"
   actsAsSubject: true
-  rationale: "The custodian authenticates to the provider as the account and returns a usable credential — a secret for its lifetime — sealed to the caller's DID. The request carries an account reference and a scope."
+  rationale: "The custodian authenticates to the provider as the account and returns a usable credential — a secret for its lifetime — sealed to the caller's key-agreement key. The request carries an account reference and a scope."
 retention:
   class: "transient"
   rationale: "The credential is the caller's to hold in memory until it expires; the custodian keeps only an audit row, never the credential."
@@ -76,6 +76,9 @@ errorCodes:
   - code: "external/credentials/issue:notBrokered"
     meaning: "The account is `sui-signer`, which issues no credentials; use external/sign."
     retryable: false
+  - code: "external/credentials/issue:noKeyAgreement"
+    meaning: "The caller's DID offers no X25519 key-agreement key to seal the credential to: it is not a `did:key`, and its resolved DID document has no X25519 `keyAgreement` verification method."
+    retryable: false
 related:
   - "external/sign"
   - "external/accounts/bindings/grant"
@@ -91,7 +94,7 @@ A **bound integration** names an account, a scope and a lifetime. The custodian:
 1. checks the binding ([Conformance](#conformance), in order);
 2. **performs the provider exchange itself** — signs a Roles Anywhere CreateSession, an ID token for Google's STS, a client assertion for Entra or another token endpoint; or presigns one S3 request;
 3. **downscopes** the result to the request: an inline session policy on one bucket prefix, a GCS Credential Access Boundary, the single object a presigned URL names;
-4. returns it **sealed to the caller's DID**.
+4. returns it **sealed to the caller's key-agreement key**, inside a response the custodian signs.
 
 The consumer never sees a signed assertion. If the custodian returned one for the consumer to exchange, the consumer would choose the session policy, and the narrowest layer of least privilege would be its promise rather than the custodian's enforcement ([conventions §1](../../../_shared/0.1/CONVENTIONS.md#1-five-rules)).
 
@@ -107,9 +110,9 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`) checks, **in this order**, before anything is signed:
 
-1. The account exists in `context` (else `external:notFound`) and is `active` (else `external:notActive`); its model is brokered (else `external/credentials/issue:notBrokered`); its provider setup is complete (else `external:providerSetupRequired`).
-2. **The caller is a binding's consumer** — the DID the request's proof, or the transport's sender authentication, established; never a DID named in the payload or a header. Else `external:notBound`.
-3. The caller holds `external-auth-use` in the account's context, through its entry's act scope. Else `permissionDenied`.
+1. **The caller is a binding's consumer on the named account** — the DID the request's proof, or the transport's sender authentication, established; never a DID named in the payload or a header. Every caller that is not, **including every caller naming an account that does not exist**, gets the same `external:notFound`, so the task is no oracle for which accounts exist or what state they are in.
+2. The caller holds `external-auth-use` in the account's context, through its entry's act scope. Else `permissionDenied`.
+3. Only now, to a bound consumer: the account is `active` (else `external:notActive`); its model is brokered (else `external/credentials/issue:notBrokered`); its provider setup is complete (else `external:providerSetupRequired`).
 4. **The scope is inside the binding's ceiling**: `prefix` begins with one of `scopeCeiling.prefixes`, every action is in `scopeCeiling.actions`, every OAuth scope in `scopeCeiling.scopes`; for `s3-static-presign`, exactly one action and an `objectKey`. Else `external/credentials/issue:scopeOutsideCeiling`.
 5. `ttlSeconds` does not exceed the binding's `maxTtlSeconds`. Else `external/credentials/issue:ttlTooLong`.
 6. The binding's rate is not exhausted. Else `external:rateLimited`.
@@ -119,14 +122,21 @@ Then it:
 7. **MUST** build every provider policy from validated values with the provider language's own encoder — the IAM policy as JSON, the access boundary condition through a CEL builder — and **MUST NOT** interpolate a caller string into one.
 8. **MUST** downscope to exactly the requested scope: for AWS, `s3:PutObject`/`GetObject`/`DeleteObject` as requested on `arn:aws:s3:::<bucket>/<prefix>*` only, plus `aws:SourceIp` when the binding names `sourceCidrs`; for GCS, a Credential Access Boundary on `resource.name.startsWith('projects/_/buckets/<bucket>/objects/<prefix>')`; for a presigned URL, one method on one key.
 9. **MUST** request a provider lifetime no longer than `ttlSeconds`, and report the provider's actual expiry as `expiresAt`.
-10. **MUST** return the credential only inside a sealed-transfer bundle sealed to the caller's DID, carrying a `SealedPayloadV1::ExternalCredential` payload, and **MUST NOT** log, store or audit the credential.
-11. **SHOULD** audit the issuance (account, binding, consumer, scope, expiry, provider request id), and **SHOULD** raise a security alert on a refusal at step 2 or 4.
+10. **MUST** return the credential only inside a sealed-transfer bundle whose plaintext is an `ExternalCredentialPayload`, sealed to the caller's **key-agreement key**: for a `did:key`, the X25519 derivation of its Ed25519 key; otherwise the first X25519 `keyAgreement` verification method of the caller's resolved DID document. With neither, **MUST** refuse with `external/credentials/issue:noKeyAgreement` before contacting the provider. **MUST NOT** log, store or audit the credential.
+11. **MUST** use the `PinnedOnly` producer assertion for the bundle, and **MUST** sign the response document (its proof is REQUIRED): the response proof covers `sealedCredential` and so the bundle's digest, and it is the anchor the consumer trusts the bundle by.
+12. **SHOULD** audit the issuance (account, binding, consumer, scope, expiry, provider request id), and **SHOULD** raise a security alert on a refusal at step 1 for a caller holding `external-auth-use`, or at step 4.
 
-A **consumer** **MUST** keep issued credentials in memory only, re-issue before expiry, and drop them on shutdown.
+A **consumer** **MUST** verify the response's proof against the custodian's DID before opening the bundle, **MUST** keep issued credentials in memory only, re-issue before expiry, and drop them on shutdown.
 
 ### The sealed credential
 
-The cleartext inside the bundle is defined beside `sealed_transfer`, not here, because only the consumer reads it. Informatively, it carries the account id, the granted scope, `expiresAt`, the provider's request id, and one model-specific credential: AWS session credentials (access key id, secret access key, session token, region); a bearer access token and its type (GCP, Azure, OAuth 2.0); or a presigned request (method, URL, headers to send).
+The plaintext of the sealed bundle is an `ExternalCredentialPayload` ([`external/_shared/0.1/accounts.schema.json`](../../../_shared/0.1/accounts.schema.json)), discriminated by `kind`:
+
+- **`awsSession`** — AWS session credentials (`accessKeyId`, `secretAccessKey`, `sessionToken`, `expiration`, optional `region`), from `aws-roles-anywhere`;
+- **`bearerToken`** — an access token (`token`, `tokenType`, `expiresAt`, optional `scope`), from `gcp-wif-pinned`, `azure-cert` or `oauth2-private-key-jwt`;
+- **`presignedRequest`** — one request (`method`, `url`, optional `headers`, `expiresAt`), from `s3-static-presign`;
+
+each with the provider's request id when there is one. Producer assertion and sealing key: [conventions §6](../../../_shared/0.1/CONVENTIONS.md#6-sealed-payloads).
 
 ### Retries
 
@@ -140,7 +150,8 @@ Issuance is not consent-gated: the consent that governs it was given when the bi
 
 ## Definitions
 
-- **AccountBinding**, **CredentialScope**, **SealedTransferBundle** — as [`external/_shared/0.1/accounts.schema.json`](../../../_shared/0.1/accounts.schema.json).
+- **AccountBinding**, **CredentialScope**, **SealedTransferBundle**, **ExternalCredentialPayload** — as [`external/_shared/0.1/accounts.schema.json`](../../../_shared/0.1/accounts.schema.json).
+- **Key-agreement key** — the X25519 key a credential is sealed to; see Conformance item 10.
 - **Brokered model** — every model but `sui-signer`: `aws-roles-anywhere`, `gcp-wif-pinned`, `azure-cert`, `oauth2-private-key-jwt`, `s3-static-presign`, `static-secret`.
 
 ## Request
@@ -231,7 +242,7 @@ The sub-schema reachable via `$anchor: "response"`: the sealed credential, and i
 
 ### Data carried
 
-An account reference, a scope and a lifetime in. A credential out, sealed to the caller's DID: whatever transport carried the document, and whatever relayed, terminated or logged it, the credential is readable only by the caller.
+An account reference, a scope and a lifetime in. A credential out, sealed to the caller's key-agreement key: whatever transport carried the document, and whatever relayed, terminated or logged it, the credential is readable only by the caller. A caller with no binding learns nothing about the account, not even that it exists.
 
 ### Correlation
 

@@ -39,6 +39,9 @@ errorCodes:
     meaning: "The settings validate against the schema but are unusable: a model change, an inconsistent value, or a driver or network this custodian does not implement. `details.member` names the offending member."
     retryable: false
     detailsSchema: {"type": "object", "additionalProperties": false, "required": ["member"], "properties": {"member": {"type": "string", "maxLength": 128}}}
+  - code: "external/accounts/create:modelUnsupported"
+    meaning: "The custodian does not implement `settings.model`. A model it implements but cannot use as configured is `external:invalidSettings` instead."
+    retryable: false
 related:
   - "external/accounts/setup"
   - "external/accounts/probe"
@@ -67,10 +70,10 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse with `external:alreadyExists` an id already used in the context, and with `external:invalidSettings` settings it cannot use (a driver or network it does not implement, a missing `bucket` it will later need).
+1. **MUST** refuse with the framework's `notFound` a `context` it does not have; with `external/accounts/create:modelUnsupported` a model it does not implement; with `external:alreadyExists` an id already used in the context; and with `external:invalidSettings` settings it cannot use (a driver or network it does not implement, a missing `bucket` it will later need), naming the member.
 2. **MUST** generate the account's key itself: a P-256 key derived in the context's key space at a path it records on the account and never takes from the caller, or, where the model or provider needs RSA, a 3072-bit key generated and stored wrapped. For `aws-roles-anywhere` it **MUST** also ensure the context's certificate authority exists and certify the account's key with a short-lived end-entity certificate. Static models get no key.
-3. **MUST** derive `egressHosts` from the settings, and **MUST NOT** later connect anywhere else on the account's behalf.
-4. **MUST** create the account `active`, with no bindings, and **SHOULD** set `providerSetupRequired` until a probe succeeds.
+3. **MUST** derive `egressHosts` from the settings — the hosts issuance exchanges with and the hosts a probe dials — and **MUST NOT** later connect anywhere else on the account's behalf.
+4. **MUST** create the account `active`, with no bindings, and **SHOULD** set `providerSetupRequired` until a complete probe succeeds.
 5. **MUST NOT** contact the provider.
 
 ## Authorization

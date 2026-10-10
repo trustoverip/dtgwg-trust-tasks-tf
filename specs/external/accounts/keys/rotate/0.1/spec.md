@@ -38,6 +38,9 @@ errorCodes:
   - code: "external:notActive"
     meaning: "The account is `suspended` or `archived` and cannot be used."
     retryable: false
+  - code: "external:archived"
+    meaning: "The account is `archived`; restore it before changing or using it. See the family conventions §2."
+    retryable: false
   - code: "external/accounts/keys/rotate:notKeyModel"
     meaning: "The account holds a secret, not a key; replace it with external/accounts/secret/set."
     retryable: false
@@ -79,9 +82,9 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse a static model with `external/accounts/keys/rotate:notKeyModel`.
+1. **MUST** refuse an `archived` account with `external:archived`, a `suspended` one with `external:notActive`, and a static model with `external/accounts/keys/rotate:notKeyModel`.
 2. On `stage`: **MUST** refuse with `rotationPending` if a successor exists; otherwise **MUST** generate one as `external/accounts/create` would, keep using the current key for issuance, and answer with the account and the regenerated setup.
-3. On `confirm`: **MUST** refuse with `noRotationPending` if none is staged; **MUST** run a probe with the successor and refuse with `probeFailed` unless it succeeds; then **MUST** make the successor current, retire the old key so that it is never used or derived again for any account, and for `aws-roles-anywhere` **SHOULD** add the old end-entity certificate to the CRL that setup returns.
+3. On `confirm`: **MUST** refuse with `noRotationPending` if none is staged; **MUST** run a probe with the successor and refuse with `probeFailed` unless it is both `ok` and `complete`; then **MUST** make the successor current, retire the old key so that it is never used or derived again for any account, and for `aws-roles-anywhere` **SHOULD** add the old end-entity certificate to the CRL that setup returns.
 4. On `abandon`: **MUST** discard the successor.
 5. For `sui-signer`, **MUST** refuse `stage`: a new key is a new address holding no funds, which is a new account, not a rotation.
 

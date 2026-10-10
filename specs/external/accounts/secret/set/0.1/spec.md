@@ -2,7 +2,7 @@
 slug: "external/accounts/secret/set"
 version: "0.1"
 title: "External Accounts — Secret — Set"
-summary: "A manager sets or replaces the secret of a static external account, sealed to the key custodian in the manager's own client; the value is never returned, only a fingerprint."
+summary: "A manager sets or replaces the secret of a static external account, sealed in the manager's own client to a single-use wrapping key the custodian issued; the value is never returned, only a keyed fingerprint."
 status: "draft"
 targetFrameworkVersion: "0.6.0"
 category: "key-management"
@@ -27,7 +27,7 @@ exposure:
   discloses: "none"
   ingests: "secret"
   actsAsSubject: false
-  rationale: "Ingests a provider secret — an access-key secret or an API token — inside a sealed-transfer bundle only the custodian can open. Returns a keyed fingerprint and a time, never the value."
+  rationale: "Ingests a provider secret — an access-key secret or an API token — inside a sealed-transfer bundle sealed to a single-use wrapping key only the custodian holds. Returns a keyed fingerprint and a time, never the value."
 retention:
   class: "durable"
   rationale: "The secret is kept, wrapped, until replaced or the account is deleted. It is excluded from the custodian's backups."
@@ -35,13 +35,17 @@ errorCodes:
   - code: "external:notFound"
     meaning: "No account with this id exists in the named context that the caller may see. See the family conventions §2."
     retryable: false
+  - code: "external:archived"
+    meaning: "The account is `archived`; restore it before changing or using it. See the family conventions §2."
+    retryable: false
   - code: "external/accounts/secret/set:notStaticModel"
     meaning: "The account's model holds a key, not a secret (only `s3-static-presign` and `static-secret` take one)."
     retryable: false
   - code: "external/accounts/secret/set:unsealFailed"
-    meaning: "The bundle is not sealed to this custodian, fails its producer assertion, or does not carry an external-account secret."
+    meaning: "The bundle is not sealed to an unexpired, unused wrapping key of this custodian, fails its producer assertion, does not carry an ExternalSecretPayload, or names a different context, account or access key id than the request and the account."
     retryable: false
 related:
+  - "keys/import-wrapping-key"
   - "external/accounts/create"
   - "external/accounts/probe"
 ---
@@ -50,7 +54,7 @@ related:
 
 Two models hold a **secret** instead of a key: `s3-static-presign` (an S3-compatible store that cannot federate) and `static-secret` (an API key used by a custodian driver). The **External Accounts — Secret — Set** Trust Task is the only way such a secret reaches the custodian, and nothing ever brings it back out.
 
-The secret travels as a **sealed-transfer bundle** sealed to the custodian's own DID **in the manager's client** — the administrator's browser, say — so a console relaying the request, a terminating proxy, or a request log never holds it. The custodian answers with a fingerprint: enough to confirm which value is set, nothing that recovers it.
+The secret travels as a **sealed-transfer bundle**, sealed **in the manager's client** — the administrator's browser, say — so a console relaying the request, a terminating proxy, or a request log never holds it. It is sealed to a **single-use wrapping key** the client first obtains from the custodian with [`keys/import-wrapping-key`](../../../../../keys/import-wrapping-key/0.1/spec.md), not to the custodian's DID: the wrapping key's private half lives in the custodian's memory for minutes and opens one bundle, so a captured bundle cannot be replayed, and a later compromise of the custodian's DID key opens nothing recorded earlier. The custodian answers with a fingerprint: enough to confirm which value is set, nothing that recovers it.
 
 So no administrator, however many there are, can recover the secret after setting it, through any surface the custodian offers.
 
@@ -64,15 +68,21 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here, and the family conventions in [`external/_shared/0.1/CONVENTIONS.md`](../../../../../external/_shared/0.1/CONVENTIONS.md).
 
-A **producer** **MUST** seal the secret to the custodian's DID, with a producer assertion, in the client where the secret was entered, and **MUST NOT** pass the cleartext to any other party first.
+A **producer** (the manager's client) **MUST**:
+
+1. Obtain a wrapping key with [`keys/import-wrapping-key`](../../../../../keys/import-wrapping-key/0.1/spec.md) and verify that response's proof against the custodian's DID before sealing to it, as that task requires.
+2. Seal an `ExternalSecretPayload` naming this request's `context` and `id` to the wrapping key, in the client where the secret was entered, with a producer assertion, and **MUST NOT** pass the cleartext to any other party first. Sealing to the custodian's DID is not conforming.
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse with `external/accounts/secret/set:notStaticModel` an account whose model is not `s3-static-presign` or `static-secret`.
-2. **MUST** open the bundle with its own key and verify its producer assertion; on any failure **MUST** refuse with `external/accounts/secret/set:unsealFailed` and store nothing.
-3. **MUST** store the secret wrapped, exclude it from backups, and **MUST NOT** return, log, audit or export it through any task, ever.
-4. **MUST** answer with a fingerprint computed as a keyed digest under a custodian-held key, so that the fingerprint cannot be used to test guesses offline.
-5. **SHOULD** clear `providerSetupRequired` only after a probe with the new secret succeeds.
+1. **MUST** refuse an `archived` account with `external:archived`, and with `external/accounts/secret/set:notStaticModel` an account whose model is not `s3-static-presign` or `static-secret`.
+2. **MUST** open the bundle only with an unexpired, unused wrapping key it issued, discard that key whether or not the bundle opens, and verify the bundle's producer assertion.
+3. **MUST** refuse with `external/accounts/secret/set:unsealFailed`, storing nothing, a bundle that does not open, fails its assertion, does not carry an `ExternalSecretPayload`, names a `context` or `account` other than the request's, or (for `s3-static-presign`) names an `accessKeyId` other than the account's.
+4. **MUST** store the secret wrapped, exclude it from backups, and **MUST NOT** return, log, audit or export it through any task, ever.
+5. **MUST** answer with a `SecretFingerprint`, keyed under a custodian-held key, so that the fingerprint cannot be used to test guesses offline.
+6. **SHOULD** clear `providerSetupRequired` only after a complete probe with the new secret succeeds.
+
+The authority [`keys/import-wrapping-key`](../../../../../keys/import-wrapping-key/0.1/spec.md) checks before issuing a wrapping key is, for this purpose, the authority to set a secret: a custodian **MUST** issue one to a caller holding `external-accounts-manage`.
 
 ## Authorization
 
@@ -82,7 +92,9 @@ The authority this task presupposes is the capability **`external-accounts-manag
 
 ## Definitions
 
-- **Sealed bundle** — `SealedTransferBundle` in [`external/_shared/0.1/accounts.schema.json`](../../../../_shared/0.1/accounts.schema.json). The sealed payload carries the secret and the account id it is for; a bundle naming another account is refused as `unsealFailed`.
+- **Sealed bundle** — `SealedTransferBundle` in [`external/_shared/0.1/accounts.schema.json`](../../../../_shared/0.1/accounts.schema.json). The plaintext of the sealed bundle is an `ExternalSecretPayload` from the same file: the secret, and the context and account it is for, so a bundle captured on its way to one account cannot be replayed into another.
+- **Wrapping key** — as [`keys/import-wrapping-key`](../../../../../keys/import-wrapping-key/0.1/spec.md) defines it: fresh, single-use, held in memory for minutes. See [conventions §6](../../../../_shared/0.1/CONVENTIONS.md#6-sealed-payloads).
+- **Fingerprint** — `SecretFingerprint` from the same file.
 
 ## Request
 
@@ -121,7 +133,7 @@ The sub-schema reachable via `$anchor: "response"`: the fingerprint and the time
   "issuedAt": "2026-10-10T10:00:01Z",
   "threadId": "urn:uuid:00000000-0000-4000-8000-000000000105",
   "payload": {
-    "fingerprint": "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX",
+    "fingerprint": "hmacsha256:q3Vx9Lr2mB7cT0nY8wKe4A",
     "setAt": "2026-10-10T10:00:01Z"
   }
 }
@@ -135,7 +147,7 @@ A sealed secret in; a keyed fingerprint out. The cleartext exists only in the cl
 
 ### Correlation
 
-The fingerprint is keyed per custodian, so the same secret set at two custodians does not produce matching fingerprints.
+The fingerprint is keyed per custodian, so the same secret set at two custodians does not produce matching fingerprints. The wrapping key is fresh per request and belongs to no DID document, so it links nothing.
 
 ### Retention
 

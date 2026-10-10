@@ -43,7 +43,8 @@ specification that can reach one **MUST** list it in its `errorCodes`.
 | `external:notFound` | No account with this id exists in the named context **that the caller may see**. Conflates an unknown account with one the caller has no standing to read, so existence is not confirmed to a stranger. | no |
 | `external:alreadyExists` | An account in the context already carries this id. | no |
 | `external:invalidSettings` | The settings are well-formed against the schema but unusable: a model change on update, a value inconsistent with another, a driver or network the custodian does not implement. `details.member` names the member. | no |
-| `external:notActive` | The account is `suspended` or `archived`, so it cannot be used. | no |
+| `external:notActive` | The account is `suspended` or `archived`, so it cannot be used. Answered by the use tasks (`external/credentials/issue`, `external/sign`, and `external/accounts/probe` on a suspended account's behalf), and only to a bound consumer or a manager. | no |
+| `external:archived` | The account is `archived`, and the task changes or uses it: `update`, `secret/set`, `bindings/grant`, `keys/rotate`, `probe`, and a lifecycle task for which `archived` is not a starting state (`suspend`, `resume`). Restore it first. Reads still answer. | no |
 | `external:notBound` | The caller is not the consumer of any binding on this account. | no |
 | `external:rateLimited` | The binding's rate is exhausted. `details.retryAfterSeconds` says when to try again. | yes |
 | `external:providerSetupRequired` | The account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret, or while a rotation awaits confirmation. | no |
@@ -52,7 +53,8 @@ specification that can reach one **MUST** list it in its `errorCodes`.
 
 Refusing a caller who lacks the capability a task needs is the framework's own
 `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)); no specification in this
-family declares a namespaced equivalent.
+family declares a namespaced equivalent. A task naming a context the custodian does not have
+is answered with the framework's `notFound`, for the same reason.
 
 ## 3. Network exposure
 
@@ -64,8 +66,11 @@ through a mediator it connected to). Revocation lists for `aws-roles-anywhere` a
 the custodian and **pushed** to the provider by an administrator; nothing is fetched from it.
 
 Outbound, a custodian connects only to the hosts an account's `egressHosts` names, and only on
-that account's behalf, so an egress proxy can allow exactly that set. `s3-static-presign` and
-`sui-signer` need no egress at all.
+that account's behalf, so an egress proxy can allow exactly that set. `egressHosts` covers both
+issuance and `external/accounts/probe`: issuing from `s3-static-presign` needs no egress, since
+presigning is a computation, but probing it dials the object store, so the store's host is
+listed. `sui-signer` needs none at all: its probe builds a test transaction and never submits
+it.
 
 **Plain OpenID Connect discovery federation is not an account model**, and an implementation
 **MUST NOT** add it under another name. It works by the provider fetching the issuer's JWKS
@@ -76,15 +81,22 @@ alternative.
 
 ## 4. Capabilities and consent
 
+- The two capabilities are registered as device capabilities `externalAccountsManage` and
+  `externalAuthUse` (`external-accounts-manage`, `external-auth-use` in the 0.1 casing) in
+  [`device/_shared`](../../../device/_shared/0.2/device-binding.schema.json), so an agent can be
+  granted one without `sign`, which would confer strictly more.
 - **`external-accounts-manage`**, in the account's context, authorizes the
   `external/accounts/*` tasks. **`external-auth-use`**, in the account's context, authorizes
   `external/credentials/issue` and `external/sign`, and only for a caller that is also the
   consumer of a binding on the account. Both are read from the caller's access-control entry at
   the custodian at execution time, through the entry's act scope: an entry with no contexts is
   unrestricted only for an administrator role and authorizes nothing for any other.
-- A custodian **SHOULD** subject these tasks to **consent** under its approvals policy:
+- Gating these tasks on **consent** is **RECOMMENDED operator policy**:
   `external/accounts/create`, `update`, `secret/set`, `bindings/grant`, `keys/rotate` (stage),
-  `resume` and `delete`. Consent is the `task-consent/request` ceremony: approvers — the
+  `resume` and `delete`. A custodian **MAY** ship these as defaults; whether they are enforced
+  is the operator's approvals configuration, which may be off, and a specification cannot
+  assume it is on. That is why each task's own checks never depend on consent having happened.
+  Where it is enforced, consent is the `task-consent/request` ceremony: approvers — the
   context's administrators other than the requester — each decide with a
   `task-consent/decision` signed **by their own DID**. A decision counts for the DID that
   signed it and never for the party that delivered it, so a relayer (a community console
@@ -106,7 +118,29 @@ alternative.
   them. After a restore those accounts report `providerSetupRequired` until rotated or
   re-entered.
 
-## 6. Audit
+## 6. Sealed payloads
+
+Secret material crosses the wire in this family only inside a `SealedTransferBundle`, and only
+in two places:
+
+- **`external/accounts/secret/set`**, inward. The manager's client seals an
+  `ExternalSecretPayload` to a **single-use wrapping key** the custodian issued through
+  [`keys/import-wrapping-key`](../../../keys/import-wrapping-key/0.1/spec.md), never to the
+  custodian's DID. The wrapping key's private half lives in the custodian's memory for minutes
+  and opens one bundle, so a captured bundle cannot be replayed, and a later compromise of the
+  custodian's DID key opens nothing recorded earlier. The payload names its context and account
+  inside the seal, and a bundle naming another account is refused.
+- **`external/credentials/issue`**, outward. The custodian seals an
+  `ExternalCredentialPayload` to the caller's **key-agreement key**: for a `did:key`, the X25519
+  derivation of its Ed25519 key; otherwise the first X25519 `keyAgreement` verification method
+  of the caller's resolved DID document. The bundle's producer assertion is `PinnedOnly`, and
+  its anchor is the response document's REQUIRED proof, which covers the armor and so its
+  digest: the consumer trusts the bundle because the custodian signed the document carrying it.
+
+Secret fingerprints are `SecretFingerprint`: keyed under a custodian-held key, never a bare
+hash.
+
+## 7. Audit
 
 A custodian **SHOULD** write one audit row per issuance and per signature — account, binding,
 consumer, the downscoped scope or the decoded calls, expiry, and the provider's request id so a
