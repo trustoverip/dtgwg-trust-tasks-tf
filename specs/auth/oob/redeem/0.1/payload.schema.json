@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/oob/redeem/0.1",
+  "title": "Auth — OOB Redeem — payload",
+  "description": "The starter turns an approved out-of-band request into the outcome its purpose defines — for `login`, a session bound to the starter key. Issued and signed by the starter key; held as a long poll until the request is approved. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestId"],
+  "properties": {
+    "requestId": {
+      "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — OOB Redeem — response payload",
+      "description": "For `login`: the session the service created, with the approving DID as subject and the starter key as session key, and the identity's display name for the starter's \"Continue as …?\" confirmation. Never tokens: over HTTPS the session is delivered as HttpOnly cookies.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session"],
+      "properties": {
+        "session": {
+          "$ref": "../../../_shared/0.3/session.schema.json#/$defs/Session"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "A name for the signed-in identity, for the starter's confirmation step. Chosen by the member or the service; untrusted wherever rendered. Absent rather than invented."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

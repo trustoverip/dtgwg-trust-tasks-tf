@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Reserved purpose — `stepUp` is reserved, not defined in 0.1; the closed Purpose list must reject it.",
+    "payload": { "purpose": "stepUp", "mode": "scan" }
+  },
+  {
+    "note": "Reserved mode — `push` is reserved, not defined in 0.1; the closed Mode list must reject it.",
+    "payload": { "purpose": "login", "mode": "push" }
+  },
+  {
+    "note": "Missing mode — both purpose and mode are required.",
+    "payload": { "purpose": "login" }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false rejects an endpoint smuggled into the request.",
+    "payload": { "purpose": "login", "mode": "scan", "callback": "https://evil.example/" }
+  },
+  {
+    "variant": "response",
+    "note": "A requestId shorter than 22 characters carries fewer than 128 bits and must be rejected.",
+    "payload": { "requestId": "tooShort", "claimDeadline": "2026-10-10T10:02:00Z" }
+  }
+]

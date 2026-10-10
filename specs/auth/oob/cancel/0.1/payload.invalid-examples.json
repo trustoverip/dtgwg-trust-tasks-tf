@@ -1,0 +1,15 @@
+[
+  {
+    "note": "Missing requestId.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — a reason string is not part of 0.1; additionalProperties: false rejects it.",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "reason": "changed my mind" }
+  },
+  {
+    "variant": "response",
+    "note": "status is `cancelled` only.",
+    "payload": { "status": "approved" }
+  }
+]

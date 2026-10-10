@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Missing requestId.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown member — the starter cannot ask for a longer session in redeem; additionalProperties: false rejects it.",
+    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "notAfter": "2027-01-01T00:00:00Z" }
+  },
+  {
+    "variant": "response",
+    "note": "No tokens in the body — an accessToken member is rejected by additionalProperties: false.",
+    "payload": { "session": { "id": "s-1", "subject": "did:web:alice.example", "issuedAt": "2026-10-10T10:01:32Z", "expiresAt": "2026-10-10T18:00:00Z" }, "accessToken": "eyJ…" }
+  },
+  {
+    "variant": "response",
+    "note": "Missing session.",
+    "payload": { "displayName": "Alice" }
+  }
+]

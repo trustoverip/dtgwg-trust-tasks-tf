@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/auth/oob/prove/0.1",
+  "title": "Auth — OOB Prove — payload",
+  "description": "The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identify"
+  ],
+  "properties": {
+    "identify": {
+      "type": "object",
+      "description": "A complete, signed auth/oob/identify/0.1 Trust Task document, issued by the approving DID and signed by its VTA for `authentication`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Auth — OOB Prove — response payload (step 2)",
+      "description": "Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, and which DID was identified. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "service",
+        "origin",
+        "purpose",
+        "decisionDeadline",
+        "sessionKey",
+        "requester",
+        "identifiedAs"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
+        },
+        "service": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Service"
+        },
+        "origin": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Origin"
+        },
+        "purpose": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Purpose"
+        },
+        "decisionDeadline": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Unchanged from step 1."
+        },
+        "sessionKey": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/OobKey",
+          "description": "The starter key `K_b`: the key a grant would let act as the identified DID."
+        },
+        "requester": {
+          "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Requester"
+        },
+        "identifiedAs": {
+          "type": "string",
+          "pattern": "^did:",
+          "minLength": 5,
+          "maxLength": 2048,
+          "description": "The DID that issued the verified identify document. A grant must come from this DID."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
