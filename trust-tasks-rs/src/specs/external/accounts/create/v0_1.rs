@@ -6686,6 +6686,7 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::NOT_FOUND,
     error_codes::ALREADY_EXISTS,
     error_codes::INVALID_SETTINGS,
     error_codes::MODEL_UNSUPPORTED,
@@ -6697,6 +6698,15 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
+    /// `external:notFound`
+    ///
+    /// The named context does not exist, or the caller has no standing in it. Conflated so that a context's existence is not confirmed to a stranger. See the family conventions §2.
+    ///
+    /// Declared `retryable: false`.
+    pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "external:notFound",
+        retryable: false,
+    };
     /// `external:alreadyExists`
     ///
     /// An account in the context already carries this id.

@@ -40,7 +40,7 @@ specification that can reach one **MUST** list it in its `errorCodes`.
 
 | Code | Meaning | Retryable |
 |---|---|---|
-| `external:notFound` | No account with this id exists in the named context **that the caller may see**. Conflates an unknown account with one the caller has no standing to read, so existence is not confirmed to a stranger. | no |
+| `external:notFound` | No account with this id exists in the named context **that the caller may see**, or the named context does not exist. Conflates an unknown account with one the caller has no standing to read, so existence is not confirmed to a stranger. | no |
 | `external:alreadyExists` | An account in the context already carries this id. | no |
 | `external:invalidSettings` | The settings are well-formed against the schema but unusable: a model change on update, a value inconsistent with another, a driver or network the custodian does not implement. `details.member` names the member. | no |
 | `external:notActive` | The account is `suspended` or `archived`, so it cannot be used. Answered by the use tasks (`external/credentials/issue`, `external/sign`, and `external/accounts/probe` on a suspended account's behalf), and only to a bound consumer or a manager. | no |
@@ -54,7 +54,9 @@ specification that can reach one **MUST** list it in its `errorCodes`.
 Refusing a caller who lacks the capability a task needs is the framework's own
 `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)); no specification in this
 family declares a namespaced equivalent. A task naming a context the custodian does not have
-is answered with the framework's `notFound`, for the same reason.
+is answered `external:notFound`: the framework defines no standard not-found code, and
+conflating an unknown context with one the caller cannot see keeps its existence from a
+stranger.
 
 ## 3. Network exposure
 

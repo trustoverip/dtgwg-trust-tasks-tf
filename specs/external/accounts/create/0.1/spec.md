@@ -32,6 +32,9 @@ retention:
   class: "durable"
   rationale: "The account persists until deleted; it is an authority the community relies on."
 errorCodes:
+  - code: "external:notFound"
+    meaning: "The named context does not exist, or the caller has no standing in it. Conflated so that a context's existence is not confirmed to a stranger. See the family conventions §2."
+    retryable: false
   - code: "external:alreadyExists"
     meaning: "An account in the context already carries this id."
     retryable: false
@@ -70,7 +73,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`):
 
-1. **MUST** refuse with the framework's `notFound` a `context` it does not have; with `external/accounts/create:modelUnsupported` a model it does not implement; with `external:alreadyExists` an id already used in the context; and with `external:invalidSettings` settings it cannot use (a driver or network it does not implement, a missing `bucket` it will later need), naming the member.
+1. **MUST** refuse with `external:notFound` a `context` it does not have; with `external/accounts/create:modelUnsupported` a model it does not implement; with `external:alreadyExists` an id already used in the context; and with `external:invalidSettings` settings it cannot use (a driver or network it does not implement, a missing `bucket` it will later need), naming the member.
 2. **MUST** generate the account's key itself: a P-256 key derived in the context's key space at a path it records on the account and never takes from the caller, or, where the model or provider needs RSA, a 3072-bit key generated and stored wrapped. For `aws-roles-anywhere` it **MUST** also ensure the context's certificate authority exists and certify the account's key with a short-lived end-entity certificate. Static models get no key.
 3. **MUST** derive `egressHosts` from the settings — the hosts issuance exchanges with and the hosts a probe dials — and **MUST NOT** later connect anywhere else on the account's behalf.
 4. **MUST** create the account `active`, with no bindings, and **SHOULD** set `providerSetupRequired` until a complete probe succeeds.
