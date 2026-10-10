@@ -71,6 +71,10 @@ export type AuditAction =
  */
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
 /**
+ * The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings.
+ */
+export type BlobRef = DigestMultibase;
+/**
  * The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.
  */
 export type BundleDescriptor = StreamDescriptor | ChunkedDescriptor;
@@ -154,6 +158,10 @@ export type ChunkSize = number;
  * The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.
  */
 export type ClaimType = string;
+/**
+ * `active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.
+ */
+export type ConfigState = "active" | "draining" | "retired";
 /**
  * Discriminator: is this consumer a user-driven Companion or a headless Service?
  */
@@ -331,6 +339,10 @@ export type ExpiresAt = string;
  */
 export type ExtCritical = [string, ...string[]];
 /**
+ * The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.
+ */
+export type ExternalAccountId = string;
+/**
  * Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).
  *
  * A tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.
@@ -434,6 +446,10 @@ export type LanguageTag = string;
  */
 export type LifecycleReason = string;
 /**
+ * Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.
+ */
+export type LimitSource = "policy" | "override" | "default";
+/**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
@@ -441,6 +457,10 @@ export type Namespace = string;
  * The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
  */
 export type NamespaceId = string;
+/**
+ * A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.
+ */
+export type ObjectPrefix = string;
 /**
  * A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.
  */
@@ -794,6 +814,38 @@ export type SiteTarget_VaultV0_2 = WebOrigin_VaultV0_2 | Did_VaultV0_2 | IosApp_
  */
 export type Slot = string;
 /**
+ * How the community authenticates to a config's backend. Absent on a `local` config, which needs none.
+ *
+ * `vta-account` (RECOMMENDED): an external account in the community's VTA. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.
+ *
+ * `ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.
+ *
+ * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.
+ */
+export type StorageAuth =
+  | {
+      mode: "vta-account";
+      account: ExternalAccountId;
+    }
+  | {
+      mode: "ambient";
+    }
+  | {
+      mode: "sealed";
+    };
+/**
+ * A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.
+ */
+export type StorageConfigId = string;
+/**
+ * Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.
+ */
+export type StorageKind = "local" | "s3" | "gcs" | "walrus";
+/**
+ * A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.
+ */
+export type StorageSettings = LocalSettings | S3Settings | GcsSettings | WalrusSettings;
+/**
  * Minutes between sweeps: at most every five minutes, at least once a day.
  */
 export type SweepMinutes = number;
@@ -831,6 +883,10 @@ export type TrafficStage =
   | "deleted"
   | "expired"
   | "purged";
+/**
+ * Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.
+ */
+export type TransferId = string;
 /**
  * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
  */
@@ -2057,6 +2113,24 @@ export interface BackupEnvelope {
   ciphertext: string;
 }
 /**
+ * The ciphertext manifest of one blob, committed by the uploader before any byte moves. Its digest is the BlobRef. Every chunk is checked against `chunks.chunkDigests` on arrival and the reassembled blob against `digest`, so a host can neither accept nor serve bytes the uploader did not commit to. The manifest also appears, by its BlobRef, inside the sealed FileManifest the author signs; a reader who opens the record therefore knows which ciphertext its author meant, and a host cannot substitute a different blob under the same record.
+ *
+ * Consistency rules JSON Schema cannot state: `chunks.chunkCount` MUST equal ceil(size / chunks.chunkSize), and `chunks.chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.
+ *
+ * Each transfer chunk is exactly one sealed STREAM segment (see FileManifest): every chunk but the last is `chunkSize` bytes, and `chunkSize` is the plaintext segment size plus the 16-byte AEAD tag. The 262144-byte ceiling of ChunkSize therefore puts the largest plaintext segment at 262128 bytes, and the 4096-chunk ceiling of ChunkCount puts the largest blob at 1 GiB of ciphertext.
+ */
+export interface BlobManifest {
+  /**
+   * Ciphertext bytes, padding included. What the host stores, and what every limit and usage figure is stated in.
+   */
+  size: ExpectedSizeBytes;
+  chunks: ChunkManifest;
+  /**
+   * Digest of the whole ciphertext, over its bytes. Checked after reassembly, so a correct set of chunks in the wrong order is still caught.
+   */
+  digest: DigestMultibase;
+}
+/**
  * Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.
  */
 export interface Bootstrap {
@@ -2629,6 +2703,28 @@ export interface CredentialReference {
  */
 export interface CredentialSchema {
   [k: string]: unknown | undefined;
+}
+/**
+ * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
+ */
+export interface CredentialState {
+  status: "vta-account" | "ambient" | "sealed" | "required" | "none";
+  /**
+   * Present with `vta-account`.
+   */
+  account?: ExternalAccountId;
+  /**
+   * Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
+   */
+  fingerprint?: DigestMultibase;
+  /**
+   * Present with `sealed`: when the stored credential was last set.
+   */
+  setAt?: string;
+  /**
+   * Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.
+   */
+  roomsHoldingCredentials?: number;
 }
 /**
  * A W3C Data Integrity proof by the card's publisher. Additional Data Integrity members (e.g. `created`) are permitted and are covered as the cryptosuite defines.
@@ -3292,6 +3388,18 @@ export interface Effect_TaskConsentV0_1 {
     [k: string]: unknown | undefined;
   };
 }
+/**
+ * The limits a room is enforced against now, with where each scope's came from.
+ */
+export interface EffectiveLimits {
+  limits: RoomLimits;
+  roomSource: LimitSource;
+  memberSource: LimitSource;
+  /**
+   * The host-wide largest-file ceiling, which no room or member limit can exceed.
+   */
+  hostCeilingBytes?: number;
+}
 export interface EncryptionParams {
   /**
    * AEAD identifier, e.g. `aes-256-gcm`.
@@ -3445,6 +3553,14 @@ export interface ForgeAccount {
    */
   login: string;
 }
+export interface GcsSettings {
+  kind: "gcs";
+  /**
+   * The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.
+   */
+  bucket: string;
+  prefix?: ObjectPrefix;
+}
 /**
  * The VTC's binding to one owner on one forge.
  */
@@ -3504,6 +3620,22 @@ export interface HistogramBucket {
    * Number of observations at or below `le`.
    */
   count: number;
+}
+/**
+ * One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.
+ */
+export interface HostedRoom {
+  roomId: string;
+  ownerDid: string;
+  visibility: Visibility;
+  retentionPolicy: RetentionPolicy;
+  epoch: number;
+  lifecycle: "live" | "lapsed" | "dormant" | "reclaimable";
+  epochExpiresAt?: number;
+  retentionDays: number;
+  mirrorOf?: string;
+  createdAt: number;
+  updatedAt: number;
 }
 /**
  * OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.
@@ -3883,6 +4015,23 @@ export interface KeyScopeListed {
  */
 export interface KeyScopeNone {
   scope: "none";
+}
+/**
+ * Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.
+ */
+export interface LimitTarget {
+  kind: "room" | "memberDefault" | "member";
+  /**
+   * The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.
+   */
+  member?: string;
+}
+export interface LocalSettings {
+  kind: "local";
+  /**
+   * Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.
+   */
+  root: string;
 }
 /**
  * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
@@ -5320,6 +5469,23 @@ export interface RollbackResult {
   ext?: Ext;
 }
 /**
+ * How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.
+ */
+export interface RoomLimits {
+  /**
+   * False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.
+   */
+  filesEnabled: boolean;
+  /**
+   * Limits on the room as a whole.
+   */
+  room?: ScopeLimits;
+  /**
+   * Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.
+   */
+  member?: ScopeLimits;
+}
+/**
  * One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.
  */
 export interface RotationRecord {
@@ -5369,6 +5535,26 @@ export interface RotationRecord {
    */
   cacheHorizonAt?: string;
 }
+export interface S3Settings {
+  kind: "s3";
+  /**
+   * The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.
+   */
+  endpoint?: string;
+  /**
+   * The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).
+   */
+  region: string;
+  /**
+   * The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.
+   */
+  bucket: string;
+  prefix?: ObjectPrefix;
+  /**
+   * Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.
+   */
+  pathStyle?: boolean;
+}
 /**
  * One registered credential type, as the community stores it.
  */
@@ -5407,6 +5593,23 @@ export interface SchemaSummary {
    * The administrator who last registered the entry.
    */
   createdByDid: string;
+}
+/**
+ * Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.
+ */
+export interface ScopeLimits {
+  /**
+   * The number of committed blobs the scope may hold. 0 refuses every upload at this scope.
+   */
+  maxFiles?: number;
+  /**
+   * The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).
+   */
+  maxFileBytes?: number;
+  /**
+   * The total size of the committed and reserved blobs the scope may hold.
+   */
+  maxBytes?: number;
 }
 export interface Builtin_VtaV0_1 {
   type: "builtin";
@@ -5827,6 +6030,83 @@ export interface StepUpProof_VaultV0_2 {
   challengeId: string;
 }
 /**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+/**
+ * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
+ */
+export interface StorageConfigFacts {
+  /**
+   * Rooms assigned to this config.
+   */
+  rooms: number;
+  /**
+   * Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.
+   */
+  files: number;
+  /**
+   * Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.
+   */
+  bytes: number;
+  /**
+   * Bytes of orphaned blobs awaiting deletion after their grace window.
+   */
+  pendingDeleteBytes: number;
+  credential: CredentialState;
+  health: StorageHealth;
+  /**
+   * Present on a `walrus` config.
+   */
+  walrus?: {
+    /**
+     * The Sui address that pays for storage, derived from the VTA account's key.
+     */
+    signerAddress?: string;
+    nextExtensionDueAt?: string;
+  };
+}
+/**
+ * The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.
+ */
+export interface StorageHealth {
+  lastProbeAt?: string;
+  lastProbeOk?: boolean;
+  /**
+   * The last successful blob write.
+   */
+  lastPutAt?: string;
+  /**
+   * The last successful chunk read.
+   */
+  lastGetAt?: string;
+  /**
+   * The last successful deletion (on `walrus`, the last lapse the community observed).
+   */
+  lastDeleteAt?: string;
+}
+/**
  * A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/* /1.0` descriptor.
  */
 export interface StreamDescriptor {
@@ -6015,6 +6295,27 @@ export interface UploadTarget {
   kind: "file" | "bundle";
   path?: WebsitePath;
   ifMatch?: WebsiteEtag;
+}
+/**
+ * What one scope holds now. Ciphertext bytes throughout.
+ */
+export interface Usage {
+  /**
+   * Committed blobs that are not orphaned.
+   */
+  files: number;
+  /**
+   * Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.
+   */
+  bytes: number;
+  /**
+   * Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.
+   */
+  reservedBytes: number;
+  /**
+   * Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.
+   */
+  reservedFiles?: number;
 }
 export interface VaultDeletedEvent_SyncV0_1 {
   kind: "vault.deleted";
@@ -6562,6 +6863,25 @@ export interface WakeTriggerPolicy {
    * DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.
    */
   allowedTriggers: string[];
+}
+export interface WalrusSettings {
+  kind: "walrus";
+  /**
+   * The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.
+   */
+  relayUrl: string;
+  /**
+   * The Walrus aggregator the community reads through.
+   */
+  aggregatorUrl: string;
+  /**
+   * Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.
+   */
+  epochs: number;
+  /**
+   * How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.
+   */
+  extendBeforeEpochs: number;
 }
 /**
  * A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.
