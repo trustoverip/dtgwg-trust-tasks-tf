@@ -443,6 +443,7 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 ///  "type": "object",
 ///  "required": [
 ///    "at",
+///    "complete",
 ///    "ok",
 ///    "steps"
 ///  ],
@@ -451,8 +452,12 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 ///      "type": "string",
 ///      "format": "date-time"
 ///    },
+///    "complete": {
+///      "description": "True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.",
+///      "type": "boolean"
+///    },
 ///    "ok": {
-///      "description": "True when every step succeeded.",
+///      "description": "True when every step that ran succeeded.",
 ///      "type": "boolean"
 ///    },
 ///    "steps": {
@@ -500,7 +505,9 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 #[non_exhaustive]
 pub struct AccountProbeReport {
     pub at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///True when every step succeeded.
+    ///True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.
+    pub complete: bool,
+    ///True when every step that ran succeeded.
     pub ok: bool,
     ///In order; the first failing step ends the probe.
     pub steps: ::std::vec::Vec<AccountProbeReportStepsItem>,
@@ -1891,8 +1898,7 @@ impl<'de> ::serde::Deserialize<'de> for AccountPublicMaterialPublicKeyJwkY {
 ///  ],
 ///  "properties": {
 ///    "fingerprint": {
-///      "description": "A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it.",
-///      "$ref": "#/definitions/DigestMultibase"
+///      "$ref": "#/definitions/SecretFingerprint"
 ///    },
 ///    "setAt": {
 ///      "type": "string",
@@ -1907,8 +1913,7 @@ impl<'de> ::serde::Deserialize<'de> for AccountPublicMaterialPublicKeyJwkY {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct AccountSecretInfo {
-    ///A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it.
-    pub fingerprint: DigestMultibase,
+    pub fingerprint: SecretFingerprint,
     #[serde(rename = "setAt")]
     pub set_at: ::chrono::DateTime<::chrono::offset::Utc>,
 }
@@ -1917,85 +1922,1823 @@ impl AccountSecretInfo {
         Default::default()
     }
 }
-///Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.
+///Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` ("the `sui-signer` settings"). They carry no `title`, so that every binding renders each as a plain variant of this union.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "AccountSettings",
-///  "description": "Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.",
+///  "description": "Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` (\"the `sui-signer` settings\"). They carry no `title`, so that every binding renders each as a plain variant of this union.",
 ///  "oneOf": [
 ///    {
-///      "$ref": "#/definitions/AwsRolesAnywhereSettings"
+///      "description": "Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.",
+///      "type": "object",
+///      "required": [
+///        "model",
+///        "profileArn",
+///        "region",
+///        "roleArn",
+///        "trustAnchorArn"
+///      ],
+///      "properties": {
+///        "bucket": {
+///          "description": "The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.",
+///          "$ref": "#/definitions/ProviderBucketName"
+///        },
+///        "chainedRoleArn": {
+///          "description": "When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.",
+///          "$ref": "#/definitions/AwsArn"
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "aws-roles-anywhere"
+///        },
+///        "probePrefix": {
+///          "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.",
+///          "$ref": "#/definitions/ProviderObjectPrefix"
+///        },
+///        "profileArn": {
+///          "$ref": "#/definitions/AwsArn"
+///        },
+///        "region": {
+///          "$ref": "#/definitions/AwsRegion"
+///        },
+///        "roleArn": {
+///          "$ref": "#/definitions/AwsArn"
+///        },
+///        "trustAnchorArn": {
+///          "description": "The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.",
+///          "$ref": "#/definitions/AwsArn"
+///        }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    {
-///      "$ref": "#/definitions/GcpWifPinnedSettings"
+///      "description": "Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.",
+///      "type": "object",
+///      "required": [
+///        "model",
+///        "poolId",
+///        "projectNumber",
+///        "providerId"
+///      ],
+///      "properties": {
+///        "bucket": {
+///          "description": "The GCS bucket issuances are scoped within, by a Credential Access Boundary.",
+///          "$ref": "#/definitions/ProviderBucketName"
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "gcp-wif-pinned"
+///        },
+///        "poolId": {
+///          "type": "string",
+///          "pattern": "^[a-z0-9-]{4,32}$"
+///        },
+///        "probePrefix": {
+///          "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.",
+///          "$ref": "#/definitions/ProviderObjectPrefix"
+///        },
+///        "projectNumber": {
+///          "type": "string",
+///          "pattern": "^[0-9]{1,20}$"
+///        },
+///        "providerId": {
+///          "type": "string",
+///          "pattern": "^[a-z0-9-]{4,32}$"
+///        },
+///        "serviceAccount": {
+///          "description": "When set, the federated token is exchanged for this service account's access token.",
+///          "type": "string",
+///          "maxLength": 254,
+///          "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
+///        },
+///        "signingAlgorithm": {
+///          "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.",
+///          "type": "string",
+///          "enum": [
+///            "ES256",
+///            "RS256"
+///          ]
+///        }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    {
-///      "$ref": "#/definitions/AzureCertSettings"
+///      "description": "Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.",
+///      "type": "object",
+///      "required": [
+///        "clientId",
+///        "model",
+///        "tenantId",
+///        "tokenScope"
+///      ],
+///      "properties": {
+///        "authorityHost": {
+///          "description": "Absent means `login.microsoftonline.com`.",
+///          "type": "string",
+///          "maxLength": 253,
+///          "pattern": "^[a-z0-9.-]+$"
+///        },
+///        "clientId": {
+///          "type": "string",
+///          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "azure-cert"
+///        },
+///        "tenantId": {
+///          "type": "string",
+///          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+///        },
+///        "tokenScope": {
+///          "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.",
+///          "type": "string",
+///          "maxLength": 512,
+///          "pattern": "^[A-Za-z0-9:/._-]+$"
+///        }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    {
-///      "$ref": "#/definitions/OAuth2PrivateKeyJwtSettings"
+///      "description": "Egress: the host of `tokenEndpoint`, and nothing else.",
+///      "type": "object",
+///      "required": [
+///        "clientId",
+///        "model",
+///        "tokenEndpoint"
+///      ],
+///      "properties": {
+///        "audience": {
+///          "description": "The assertion's `aud`. Absent means `tokenEndpoint`.",
+///          "type": "string",
+///          "maxLength": 2048,
+///          "pattern": "^[!-~]+$"
+///        },
+///        "clientId": {
+///          "type": "string",
+///          "maxLength": 512,
+///          "minLength": 1,
+///          "pattern": "^[!-~]+$"
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "oauth2-private-key-jwt"
+///        },
+///        "scopes": {
+///          "description": "The scopes a binding may request, the ceiling for every issuance.",
+///          "type": "array",
+///          "items": {
+///            "type": "string",
+///            "maxLength": 256,
+///            "pattern": "^[!#-\\[\\]-~]+$"
+///          },
+///          "maxItems": 64,
+///          "uniqueItems": true
+///        },
+///        "signingAlgorithm": {
+///          "type": "string",
+///          "enum": [
+///            "ES256",
+///            "RS256"
+///          ]
+///        },
+///        "tokenEndpoint": {
+///          "$ref": "#/definitions/ProviderHttpsUrl"
+///        }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    {
-///      "$ref": "#/definitions/S3StaticPresignSettings"
+///      "description": "Issuance needs no egress: presigning is a computation inside the custodian, and the consumer uses the URL itself. The probe connects to the host of `endpoint`, which `egressHosts` therefore lists.",
+///      "type": "object",
+///      "required": [
+///        "accessKeyId",
+///        "bucket",
+///        "endpoint",
+///        "model",
+///        "region"
+///      ],
+///      "properties": {
+///        "accessKeyId": {
+///          "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.",
+///          "type": "string",
+///          "maxLength": 128,
+///          "pattern": "^[A-Za-z0-9]+$"
+///        },
+///        "bucket": {
+///          "$ref": "#/definitions/ProviderBucketName"
+///        },
+///        "endpoint": {
+///          "$ref": "#/definitions/ProviderHttpsUrl"
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "s3-static-presign"
+///        },
+///        "pathStyle": {
+///          "description": "Address the bucket in the path rather than the host name, as MinIO usually needs.",
+///          "type": "boolean"
+///        },
+///        "probePrefix": {
+///          "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.",
+///          "$ref": "#/definitions/ProviderObjectPrefix"
+///        },
+///        "region": {
+///          "description": "The SigV4 signing region; `auto` for Cloudflare R2.",
+///          "type": "string",
+///          "maxLength": 64,
+///          "pattern": "^[a-z0-9-]+$"
+///        }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    {
-///      "$ref": "#/definitions/SuiSignerSettings"
+///      "description": "No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.",
+///      "type": "object",
+///      "required": [
+///        "allowedCalls",
+///        "maxGasBudgetMist",
+///        "maxGasPerDayMist",
+///        "model",
+///        "network"
+///      ],
+///      "properties": {
+///        "allowedCalls": {
+///          "description": "Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.",
+///          "type": "array",
+///          "items": {
+///            "$ref": "#/definitions/SuiMoveCall"
+///          },
+///          "maxItems": 32,
+///          "minItems": 1
+///        },
+///        "allowedObjects": {
+///          "description": "Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.",
+///          "type": "array",
+///          "items": {
+///            "type": "string",
+///            "pattern": "^0x[0-9a-f]{64}$"
+///          },
+///          "maxItems": 32
+///        },
+///        "maxCoinOutPerTx": {
+///          "description": "Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.",
+///          "type": "array",
+///          "items": {
+///            "type": "object",
+///            "required": [
+///              "amount",
+///              "coinType"
+///            ],
+///            "properties": {
+///              "amount": {
+///                "type": "integer",
+///                "minimum": 0.0
+///              },
+///              "coinType": {
+///                "type": "string",
+///                "maxLength": 512,
+///                "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
+///              }
+///            },
+///            "additionalProperties": false
+///          },
+///          "maxItems": 8
+///        },
+///        "maxGasBudgetMist": {
+///          "description": "The largest gas budget one transaction may declare.",
+///          "type": "integer",
+///          "minimum": 1.0
+///        },
+///        "maxGasPerDayMist": {
+///          "description": "The total gas budget signed per rolling 24 hours.",
+///          "type": "integer",
+///          "minimum": 1.0
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "sui-signer"
+///        },
+///        "network": {
+///          "type": "string",
+///          "enum": [
+///            "mainnet",
+///            "testnet",
+///            "devnet"
+///          ]
+///        }
+///      },
+///      "additionalProperties": false
 ///    },
 ///    {
-///      "$ref": "#/definitions/StaticSecretSettings"
+///      "description": "Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.",
+///      "type": "object",
+///      "required": [
+///        "baseUrl",
+///        "driver",
+///        "model"
+///      ],
+///      "properties": {
+///        "baseUrl": {
+///          "$ref": "#/definitions/ProviderHttpsUrl"
+///        },
+///        "driver": {
+///          "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.",
+///          "type": "string",
+///          "maxLength": 64,
+///          "pattern": "^[a-z0-9][a-z0-9-]*$"
+///        },
+///        "model": {
+///          "type": "string",
+///          "const": "static-secret"
+///        }
+///      },
+///      "additionalProperties": false
 ///    }
 ///  ]
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged)]
+#[serde(tag = "model", deny_unknown_fields)]
 #[non_exhaustive]
 pub enum AccountSettings {
-    AwsRolesAnywhereSettings(AwsRolesAnywhereSettings),
-    GcpWifPinnedSettings(GcpWifPinnedSettings),
-    AzureCertSettings(AzureCertSettings),
-    OAuth2PrivateKeyJwtSettings(OAuth2PrivateKeyJwtSettings),
-    S3StaticPresignSettings(S3StaticPresignSettings),
-    SuiSignerSettings(SuiSignerSettings),
-    StaticSecretSettings(StaticSecretSettings),
+    ///Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.
+    #[serde(rename = "aws-roles-anywhere")]
+    AwsRolesAnywhere {
+        ///The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        bucket: ::std::option::Option<ProviderBucketName>,
+        ///When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.
+        #[serde(
+            rename = "chainedRoleArn",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        chained_role_arn: ::std::option::Option<AwsArn>,
+        ///Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+        #[serde(
+            rename = "probePrefix",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        probe_prefix: ::std::option::Option<ProviderObjectPrefix>,
+        #[serde(rename = "profileArn")]
+        profile_arn: AwsArn,
+        region: AwsRegion,
+        #[serde(rename = "roleArn")]
+        role_arn: AwsArn,
+        ///The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.
+        #[serde(rename = "trustAnchorArn")]
+        trust_anchor_arn: AwsArn,
+    },
+    ///Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.
+    #[serde(rename = "gcp-wif-pinned")]
+    GcpWifPinned {
+        ///The GCS bucket issuances are scoped within, by a Credential Access Boundary.
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        bucket: ::std::option::Option<ProviderBucketName>,
+        #[serde(rename = "poolId")]
+        pool_id: AccountSettingsPoolId,
+        ///Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+        #[serde(
+            rename = "probePrefix",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        probe_prefix: ::std::option::Option<ProviderObjectPrefix>,
+        #[serde(rename = "projectNumber")]
+        project_number: AccountSettingsProjectNumber,
+        #[serde(rename = "providerId")]
+        provider_id: AccountSettingsProviderId,
+        ///When set, the federated token is exchanged for this service account's access token.
+        #[serde(
+            rename = "serviceAccount",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        service_account: ::std::option::Option<AccountSettingsServiceAccount>,
+        ///The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
+        #[serde(
+            rename = "signingAlgorithm",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        signing_algorithm: ::std::option::Option<AccountSettingsSigningAlgorithm>,
+    },
+    ///Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.
+    #[serde(rename = "azure-cert")]
+    AzureCert {
+        ///Absent means `login.microsoftonline.com`.
+        #[serde(
+            rename = "authorityHost",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        authority_host: ::std::option::Option<AccountSettingsAuthorityHost>,
+        #[serde(rename = "clientId")]
+        client_id: AccountSettingsClientId,
+        #[serde(rename = "tenantId")]
+        tenant_id: AccountSettingsTenantId,
+        ///The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
+        #[serde(rename = "tokenScope")]
+        token_scope: AccountSettingsTokenScope,
+    },
+    ///Egress: the host of `tokenEndpoint`, and nothing else.
+    #[serde(rename = "oauth2-private-key-jwt")]
+    Oauth2PrivateKeyJwt {
+        ///The assertion's `aud`. Absent means `tokenEndpoint`.
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        audience: ::std::option::Option<AccountSettingsAudience>,
+        #[serde(rename = "clientId")]
+        client_id: AccountSettingsClientId,
+        ///The scopes a binding may request, the ceiling for every issuance.
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        scopes: ::std::option::Option<Vec<AccountSettingsScopesItem>>,
+        #[serde(
+            rename = "signingAlgorithm",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        signing_algorithm: ::std::option::Option<AccountSettingsSigningAlgorithm>,
+        #[serde(rename = "tokenEndpoint")]
+        token_endpoint: ProviderHttpsUrl,
+    },
+    ///Issuance needs no egress: presigning is a computation inside the custodian, and the consumer uses the URL itself. The probe connects to the host of `endpoint`, which `egressHosts` therefore lists.
+    #[serde(rename = "s3-static-presign")]
+    S3StaticPresign {
+        ///The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
+        #[serde(rename = "accessKeyId")]
+        access_key_id: AccountSettingsAccessKeyId,
+        bucket: ProviderBucketName,
+        endpoint: ProviderHttpsUrl,
+        ///Address the bucket in the path rather than the host name, as MinIO usually needs.
+        #[serde(
+            rename = "pathStyle",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        path_style: ::std::option::Option<bool>,
+        ///Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+        #[serde(
+            rename = "probePrefix",
+            default,
+            skip_serializing_if = "::std::option::Option::is_none"
+        )]
+        probe_prefix: ::std::option::Option<ProviderObjectPrefix>,
+        ///The SigV4 signing region; `auto` for Cloudflare R2.
+        region: AccountSettingsRegion,
+    },
+    ///No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.
+    #[serde(rename = "sui-signer")]
+    SuiSigner {
+        ///Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.
+        #[serde(rename = "allowedCalls")]
+        allowed_calls: ::std::vec::Vec<SuiMoveCall>,
+        ///Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.
+        #[serde(
+            rename = "allowedObjects",
+            default,
+            skip_serializing_if = "::std::vec::Vec::is_empty"
+        )]
+        allowed_objects: ::std::vec::Vec<AccountSettingsAllowedObjectsItem>,
+        ///Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.
+        #[serde(
+            rename = "maxCoinOutPerTx",
+            default,
+            skip_serializing_if = "::std::vec::Vec::is_empty"
+        )]
+        max_coin_out_per_tx: ::std::vec::Vec<AccountSettingsMaxCoinOutPerTxItem>,
+        ///The largest gas budget one transaction may declare.
+        #[serde(rename = "maxGasBudgetMist")]
+        max_gas_budget_mist: ::std::num::NonZeroU64,
+        ///The total gas budget signed per rolling 24 hours.
+        #[serde(rename = "maxGasPerDayMist")]
+        max_gas_per_day_mist: ::std::num::NonZeroU64,
+        network: AccountSettingsNetwork,
+    },
+    ///Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.
+    #[serde(rename = "static-secret")]
+    StaticSecret {
+        #[serde(rename = "baseUrl")]
+        base_url: ProviderHttpsUrl,
+        ///The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
+        driver: AccountSettingsDriver,
+    },
 }
-impl ::std::convert::From<AwsRolesAnywhereSettings> for AccountSettings {
-    fn from(value: AwsRolesAnywhereSettings) -> Self {
-        Self::AwsRolesAnywhereSettings(value)
+///The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.",
+///  "type": "string",
+///  "maxLength": 128,
+///  "pattern": "^[A-Za-z0-9]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsAccessKeyId(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsAccessKeyId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
     }
 }
-impl ::std::convert::From<GcpWifPinnedSettings> for AccountSettings {
-    fn from(value: GcpWifPinnedSettings) -> Self {
-        Self::GcpWifPinnedSettings(value)
+impl ::std::convert::From<AccountSettingsAccessKeyId> for ::std::string::String {
+    fn from(value: AccountSettingsAccessKeyId) -> Self {
+        value.0
     }
 }
-impl ::std::convert::From<AzureCertSettings> for AccountSettings {
-    fn from(value: AzureCertSettings) -> Self {
-        Self::AzureCertSettings(value)
+impl ::std::str::FromStr for AccountSettingsAccessKeyId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[A-Za-z0-9]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::From<OAuth2PrivateKeyJwtSettings> for AccountSettings {
-    fn from(value: OAuth2PrivateKeyJwtSettings) -> Self {
-        Self::OAuth2PrivateKeyJwtSettings(value)
+impl ::std::convert::TryFrom<&str> for AccountSettingsAccessKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
-impl ::std::convert::From<S3StaticPresignSettings> for AccountSettings {
-    fn from(value: S3StaticPresignSettings) -> Self {
-        Self::S3StaticPresignSettings(value)
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsAccessKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
-impl ::std::convert::From<SuiSignerSettings> for AccountSettings {
-    fn from(value: SuiSignerSettings) -> Self {
-        Self::SuiSignerSettings(value)
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsAccessKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
-impl ::std::convert::From<StaticSecretSettings> for AccountSettings {
-    fn from(value: StaticSecretSettings) -> Self {
-        Self::StaticSecretSettings(value)
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsAccessKeyId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsAllowedObjectsItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^0x[0-9a-f]{64}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsAllowedObjectsItem(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsAllowedObjectsItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsAllowedObjectsItem> for ::std::string::String {
+    fn from(value: AccountSettingsAllowedObjectsItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsAllowedObjectsItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^0x[0-9a-f]{64}$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^0x[0-9a-f]{64}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsAllowedObjectsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsAllowedObjectsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsAllowedObjectsItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsAllowedObjectsItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The assertion's `aud`. Absent means `tokenEndpoint`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The assertion's `aud`. Absent means `tokenEndpoint`.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "pattern": "^[!-~]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsAudience(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsAudience {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsAudience> for ::std::string::String {
+    fn from(value: AccountSettingsAudience) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsAudience {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[!-~]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[!-~]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsAudience {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsAudience {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsAudience {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsAudience {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Absent means `login.microsoftonline.com`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Absent means `login.microsoftonline.com`.",
+///  "type": "string",
+///  "maxLength": 253,
+///  "pattern": "^[a-z0-9.-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsAuthorityHost(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsAuthorityHost {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsAuthorityHost> for ::std::string::String {
+    fn from(value: AccountSettingsAuthorityHost) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsAuthorityHost {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 253usize {
+            return Err("longer than 253 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9.-]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z0-9.-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsAuthorityHost {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsAuthorityHost {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsAuthorityHost {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsAuthorityHost {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsClientId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsClientId(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsClientId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsClientId> for ::std::string::String {
+    fn from(value: AccountSettingsClientId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsClientId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new(
+                    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                )
+                .unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsClientId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsClientId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsClientId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsClientId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.",
+///  "type": "string",
+///  "maxLength": 64,
+///  "pattern": "^[a-z0-9][a-z0-9-]*$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsDriver(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsDriver {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsDriver> for ::std::string::String {
+    fn from(value: AccountSettingsDriver) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsDriver {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9][a-z0-9-]*$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z0-9][a-z0-9-]*$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsDriver {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsDriver {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsDriver {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsDriver {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsMaxCoinOutPerTxItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "amount",
+///    "coinType"
+///  ],
+///  "properties": {
+///    "amount": {
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "coinType": {
+///      "type": "string",
+///      "maxLength": 512,
+///      "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AccountSettingsMaxCoinOutPerTxItem {
+    pub amount: u64,
+    #[serde(rename = "coinType")]
+    pub coin_type: AccountSettingsMaxCoinOutPerTxItemCoinType,
+}
+impl AccountSettingsMaxCoinOutPerTxItem {
+    pub fn builder() -> builder::AccountSettingsMaxCoinOutPerTxItem {
+        Default::default()
+    }
+}
+///`AccountSettingsMaxCoinOutPerTxItemCoinType`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 512,
+///  "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsMaxCoinOutPerTxItemCoinType(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsMaxCoinOutPerTxItemCoinType {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsMaxCoinOutPerTxItemCoinType> for ::std::string::String {
+    fn from(value: AccountSettingsMaxCoinOutPerTxItemCoinType) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsMaxCoinOutPerTxItemCoinType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 512usize {
+            return Err("longer than 512 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$\"".into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsMaxCoinOutPerTxItemCoinType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String>
+    for AccountSettingsMaxCoinOutPerTxItemCoinType
+{
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsMaxCoinOutPerTxItemCoinType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsMaxCoinOutPerTxItemCoinType {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsNetwork`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "mainnet",
+///    "testnet",
+///    "devnet"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum AccountSettingsNetwork {
+    #[serde(rename = "mainnet")]
+    Mainnet,
+    #[serde(rename = "testnet")]
+    Testnet,
+    #[serde(rename = "devnet")]
+    Devnet,
+}
+impl ::std::fmt::Display for AccountSettingsNetwork {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Mainnet => f.write_str("mainnet"),
+            Self::Testnet => f.write_str("testnet"),
+            Self::Devnet => f.write_str("devnet"),
+        }
+    }
+}
+impl ::std::str::FromStr for AccountSettingsNetwork {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "mainnet" => Ok(Self::Mainnet),
+            "testnet" => Ok(Self::Testnet),
+            "devnet" => Ok(Self::Devnet),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsNetwork {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsNetwork {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsNetwork {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///`AccountSettingsPoolId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^[a-z0-9-]{4,32}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsPoolId(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsPoolId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsPoolId> for ::std::string::String {
+    fn from(value: AccountSettingsPoolId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsPoolId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]{4,32}$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z0-9-]{4,32}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsPoolId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsPoolId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsPoolId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsPoolId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsProjectNumber`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^[0-9]{1,20}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsProjectNumber(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsProjectNumber {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsProjectNumber> for ::std::string::String {
+    fn from(value: AccountSettingsProjectNumber) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsProjectNumber {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[0-9]{1,20}$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[0-9]{1,20}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsProjectNumber {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsProjectNumber {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsProjectNumber {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsProjectNumber {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsProviderId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^[a-z0-9-]{4,32}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsProviderId(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsProviderId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsProviderId> for ::std::string::String {
+    fn from(value: AccountSettingsProviderId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsProviderId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]{4,32}$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z0-9-]{4,32}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsProviderId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsProviderId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsProviderId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsProviderId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The SigV4 signing region; `auto` for Cloudflare R2.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The SigV4 signing region; `auto` for Cloudflare R2.",
+///  "type": "string",
+///  "maxLength": 64,
+///  "pattern": "^[a-z0-9-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsRegion(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsRegion {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsRegion> for ::std::string::String {
+    fn from(value: AccountSettingsRegion) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsRegion {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[a-z0-9-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsRegion {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsRegion {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsRegion {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsRegion {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`AccountSettingsScopesItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 256,
+///  "pattern": "^[!#-\\[\\]-~]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsScopesItem(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsScopesItem {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsScopesItem> for ::std::string::String {
+    fn from(value: AccountSettingsScopesItem) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsScopesItem {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[!#-\\[\\]-~]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[!#-\\[\\]-~]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsScopesItem {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsScopesItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsScopesItem {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsScopesItem {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///When set, the federated token is exchanged for this service account's access token.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "When set, the federated token is exchanged for this service account's access token.",
+///  "type": "string",
+///  "maxLength": 254,
+///  "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsServiceAccount(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsServiceAccount {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsServiceAccount> for ::std::string::String {
+    fn from(value: AccountSettingsServiceAccount) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsServiceAccount {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 254usize {
+            return Err("longer than 254 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$")
+                    .unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsServiceAccount {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsServiceAccount {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsServiceAccount {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsServiceAccount {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.",
+///  "type": "string",
+///  "enum": [
+///    "ES256",
+///    "RS256"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum AccountSettingsSigningAlgorithm {
+    #[serde(rename = "ES256")]
+    Es256,
+    #[serde(rename = "RS256")]
+    Rs256,
+}
+impl ::std::fmt::Display for AccountSettingsSigningAlgorithm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Es256 => f.write_str("ES256"),
+            Self::Rs256 => f.write_str("RS256"),
+        }
+    }
+}
+impl ::std::str::FromStr for AccountSettingsSigningAlgorithm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "ES256" => Ok(Self::Es256),
+            "RS256" => Ok(Self::Rs256),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsSigningAlgorithm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsSigningAlgorithm {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsSigningAlgorithm {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///`AccountSettingsTenantId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsTenantId(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsTenantId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsTenantId> for ::std::string::String {
+    fn from(value: AccountSettingsTenantId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsTenantId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new(
+                    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                )
+                .unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsTenantId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsTenantId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsTenantId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsTenantId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.",
+///  "type": "string",
+///  "maxLength": 512,
+///  "pattern": "^[A-Za-z0-9:/._-]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AccountSettingsTokenScope(::std::string::String);
+impl ::std::ops::Deref for AccountSettingsTokenScope {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AccountSettingsTokenScope> for ::std::string::String {
+    fn from(value: AccountSettingsTokenScope) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AccountSettingsTokenScope {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 512usize {
+            return Err("longer than 512 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9:/._-]+$").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^[A-Za-z0-9:/._-]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AccountSettingsTokenScope {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AccountSettingsTokenScope {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AccountSettingsTokenScope {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AccountSettingsTokenScope {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///`active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.
@@ -2227,458 +3970,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AwsRegion {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for AwsRegion {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AwsRolesAnywhereSettings",
-///  "description": "Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.",
-///  "type": "object",
-///  "required": [
-///    "model",
-///    "profileArn",
-///    "region",
-///    "roleArn",
-///    "trustAnchorArn"
-///  ],
-///  "properties": {
-///    "bucket": {
-///      "description": "The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.",
-///      "$ref": "#/definitions/ProviderBucketName"
-///    },
-///    "chainedRoleArn": {
-///      "description": "When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.",
-///      "$ref": "#/definitions/AwsArn"
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "aws-roles-anywhere"
-///    },
-///    "profileArn": {
-///      "$ref": "#/definitions/AwsArn"
-///    },
-///    "region": {
-///      "$ref": "#/definitions/AwsRegion"
-///    },
-///    "roleArn": {
-///      "$ref": "#/definitions/AwsArn"
-///    },
-///    "trustAnchorArn": {
-///      "description": "The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.",
-///      "$ref": "#/definitions/AwsArn"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct AwsRolesAnywhereSettings {
-    ///The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub bucket: ::std::option::Option<ProviderBucketName>,
-    ///When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.
-    #[serde(
-        rename = "chainedRoleArn",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub chained_role_arn: ::std::option::Option<AwsArn>,
-    pub model: ::std::string::String,
-    #[serde(rename = "profileArn")]
-    pub profile_arn: AwsArn,
-    pub region: AwsRegion,
-    #[serde(rename = "roleArn")]
-    pub role_arn: AwsArn,
-    ///The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.
-    #[serde(rename = "trustAnchorArn")]
-    pub trust_anchor_arn: AwsArn,
-}
-impl AwsRolesAnywhereSettings {
-    pub fn builder() -> builder::AwsRolesAnywhereSettings {
-        Default::default()
-    }
-}
-///Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AzureCertSettings",
-///  "description": "Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.",
-///  "type": "object",
-///  "required": [
-///    "clientId",
-///    "model",
-///    "tenantId",
-///    "tokenScope"
-///  ],
-///  "properties": {
-///    "authorityHost": {
-///      "description": "Absent means `login.microsoftonline.com`.",
-///      "type": "string",
-///      "maxLength": 253,
-///      "pattern": "^[a-z0-9.-]+$"
-///    },
-///    "clientId": {
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "azure-cert"
-///    },
-///    "tenantId": {
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "tokenScope": {
-///      "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "pattern": "^[A-Za-z0-9:/._-]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct AzureCertSettings {
-    ///Absent means `login.microsoftonline.com`.
-    #[serde(
-        rename = "authorityHost",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub authority_host: ::std::option::Option<AzureCertSettingsAuthorityHost>,
-    #[serde(rename = "clientId")]
-    pub client_id: AzureCertSettingsClientId,
-    pub model: ::std::string::String,
-    #[serde(rename = "tenantId")]
-    pub tenant_id: AzureCertSettingsTenantId,
-    ///The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
-    #[serde(rename = "tokenScope")]
-    pub token_scope: AzureCertSettingsTokenScope,
-}
-impl AzureCertSettings {
-    pub fn builder() -> builder::AzureCertSettings {
-        Default::default()
-    }
-}
-///Absent means `login.microsoftonline.com`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Absent means `login.microsoftonline.com`.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "pattern": "^[a-z0-9.-]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AzureCertSettingsAuthorityHost(::std::string::String);
-impl ::std::ops::Deref for AzureCertSettingsAuthorityHost {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AzureCertSettingsAuthorityHost> for ::std::string::String {
-    fn from(value: AzureCertSettingsAuthorityHost) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AzureCertSettingsAuthorityHost {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 253usize {
-            return Err("longer than 253 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9.-]+$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z0-9.-]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AzureCertSettingsAuthorityHost {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AzureCertSettingsAuthorityHost {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AzureCertSettingsAuthorityHost {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AzureCertSettingsAuthorityHost {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`AzureCertSettingsClientId`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AzureCertSettingsClientId(::std::string::String);
-impl ::std::ops::Deref for AzureCertSettingsClientId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AzureCertSettingsClientId> for ::std::string::String {
-    fn from(value: AzureCertSettingsClientId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AzureCertSettingsClientId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new(
-                    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                )
-                .unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AzureCertSettingsClientId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AzureCertSettingsClientId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AzureCertSettingsClientId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AzureCertSettingsClientId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`AzureCertSettingsTenantId`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AzureCertSettingsTenantId(::std::string::String);
-impl ::std::ops::Deref for AzureCertSettingsTenantId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AzureCertSettingsTenantId> for ::std::string::String {
-    fn from(value: AzureCertSettingsTenantId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AzureCertSettingsTenantId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new(
-                    "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                )
-                .unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AzureCertSettingsTenantId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AzureCertSettingsTenantId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AzureCertSettingsTenantId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AzureCertSettingsTenantId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "pattern": "^[A-Za-z0-9:/._-]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct AzureCertSettingsTokenScope(::std::string::String);
-impl ::std::ops::Deref for AzureCertSettingsTokenScope {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<AzureCertSettingsTokenScope> for ::std::string::String {
-    fn from(value: AzureCertSettingsTokenScope) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for AzureCertSettingsTokenScope {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 512usize {
-            return Err("longer than 512 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9:/._-]+$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[A-Za-z0-9:/._-]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for AzureCertSettingsTokenScope {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for AzureCertSettingsTokenScope {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for AzureCertSettingsTokenScope {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for AzureCertSettingsTokenScope {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -3067,7 +4358,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "format": "date-time"
 ///    },
 ///    "egressHosts": {
-///      "description": "The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress.",
+///      "description": "The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.",
 ///      "type": "array",
 ///      "items": {
 ///        "type": "string",
@@ -3123,7 +4414,7 @@ pub struct ExternalAccount {
     pub context: AccountContextId,
     #[serde(rename = "createdAt")]
     pub created_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress.
+    ///The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.
     #[serde(rename = "egressHosts")]
     pub egress_hosts: ::std::vec::Vec<ExternalAccountEgressHostsItem>,
     pub id: AccountId,
@@ -3303,848 +4594,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountLabel {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
-    }
-}
-///Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GcpWifPinnedSettings",
-///  "description": "Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.",
-///  "type": "object",
-///  "required": [
-///    "model",
-///    "poolId",
-///    "projectNumber",
-///    "providerId"
-///  ],
-///  "properties": {
-///    "bucket": {
-///      "description": "The GCS bucket issuances are scoped within, by a Credential Access Boundary.",
-///      "$ref": "#/definitions/ProviderBucketName"
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "gcp-wif-pinned"
-///    },
-///    "poolId": {
-///      "type": "string",
-///      "pattern": "^[a-z0-9-]{4,32}$"
-///    },
-///    "projectNumber": {
-///      "type": "string",
-///      "pattern": "^[0-9]{1,20}$"
-///    },
-///    "providerId": {
-///      "type": "string",
-///      "pattern": "^[a-z0-9-]{4,32}$"
-///    },
-///    "serviceAccount": {
-///      "description": "When set, the federated token is exchanged for this service account's access token.",
-///      "type": "string",
-///      "maxLength": 254,
-///      "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
-///    },
-///    "signingAlgorithm": {
-///      "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.",
-///      "type": "string",
-///      "enum": [
-///        "ES256",
-///        "RS256"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct GcpWifPinnedSettings {
-    ///The GCS bucket issuances are scoped within, by a Credential Access Boundary.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub bucket: ::std::option::Option<ProviderBucketName>,
-    pub model: ::std::string::String,
-    #[serde(rename = "poolId")]
-    pub pool_id: GcpWifPinnedSettingsPoolId,
-    #[serde(rename = "projectNumber")]
-    pub project_number: GcpWifPinnedSettingsProjectNumber,
-    #[serde(rename = "providerId")]
-    pub provider_id: GcpWifPinnedSettingsProviderId,
-    ///When set, the federated token is exchanged for this service account's access token.
-    #[serde(
-        rename = "serviceAccount",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub service_account: ::std::option::Option<GcpWifPinnedSettingsServiceAccount>,
-    ///The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
-    #[serde(
-        rename = "signingAlgorithm",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub signing_algorithm: ::std::option::Option<GcpWifPinnedSettingsSigningAlgorithm>,
-}
-impl GcpWifPinnedSettings {
-    pub fn builder() -> builder::GcpWifPinnedSettings {
-        Default::default()
-    }
-}
-///`GcpWifPinnedSettingsPoolId`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z0-9-]{4,32}$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct GcpWifPinnedSettingsPoolId(::std::string::String);
-impl ::std::ops::Deref for GcpWifPinnedSettingsPoolId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<GcpWifPinnedSettingsPoolId> for ::std::string::String {
-    fn from(value: GcpWifPinnedSettingsPoolId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for GcpWifPinnedSettingsPoolId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]{4,32}$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z0-9-]{4,32}$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for GcpWifPinnedSettingsPoolId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for GcpWifPinnedSettingsPoolId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for GcpWifPinnedSettingsPoolId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for GcpWifPinnedSettingsPoolId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`GcpWifPinnedSettingsProjectNumber`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9]{1,20}$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct GcpWifPinnedSettingsProjectNumber(::std::string::String);
-impl ::std::ops::Deref for GcpWifPinnedSettingsProjectNumber {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<GcpWifPinnedSettingsProjectNumber> for ::std::string::String {
-    fn from(value: GcpWifPinnedSettingsProjectNumber) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for GcpWifPinnedSettingsProjectNumber {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[0-9]{1,20}$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[0-9]{1,20}$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for GcpWifPinnedSettingsProjectNumber {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for GcpWifPinnedSettingsProjectNumber {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for GcpWifPinnedSettingsProjectNumber {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for GcpWifPinnedSettingsProjectNumber {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`GcpWifPinnedSettingsProviderId`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z0-9-]{4,32}$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct GcpWifPinnedSettingsProviderId(::std::string::String);
-impl ::std::ops::Deref for GcpWifPinnedSettingsProviderId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<GcpWifPinnedSettingsProviderId> for ::std::string::String {
-    fn from(value: GcpWifPinnedSettingsProviderId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for GcpWifPinnedSettingsProviderId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]{4,32}$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z0-9-]{4,32}$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for GcpWifPinnedSettingsProviderId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for GcpWifPinnedSettingsProviderId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for GcpWifPinnedSettingsProviderId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for GcpWifPinnedSettingsProviderId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///When set, the federated token is exchanged for this service account's access token.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "When set, the federated token is exchanged for this service account's access token.",
-///  "type": "string",
-///  "maxLength": 254,
-///  "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct GcpWifPinnedSettingsServiceAccount(::std::string::String);
-impl ::std::ops::Deref for GcpWifPinnedSettingsServiceAccount {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<GcpWifPinnedSettingsServiceAccount> for ::std::string::String {
-    fn from(value: GcpWifPinnedSettingsServiceAccount) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for GcpWifPinnedSettingsServiceAccount {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 254usize {
-            return Err("longer than 254 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$")
-                    .unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$\""
-                    .into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for GcpWifPinnedSettingsServiceAccount {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for GcpWifPinnedSettingsServiceAccount {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for GcpWifPinnedSettingsServiceAccount {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for GcpWifPinnedSettingsServiceAccount {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.",
-///  "type": "string",
-///  "enum": [
-///    "ES256",
-///    "RS256"
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum GcpWifPinnedSettingsSigningAlgorithm {
-    #[serde(rename = "ES256")]
-    Es256,
-    #[serde(rename = "RS256")]
-    Rs256,
-}
-impl ::std::fmt::Display for GcpWifPinnedSettingsSigningAlgorithm {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Es256 => f.write_str("ES256"),
-            Self::Rs256 => f.write_str("RS256"),
-        }
-    }
-}
-impl ::std::str::FromStr for GcpWifPinnedSettingsSigningAlgorithm {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "ES256" => Ok(Self::Es256),
-            "RS256" => Ok(Self::Rs256),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for GcpWifPinnedSettingsSigningAlgorithm {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for GcpWifPinnedSettingsSigningAlgorithm {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for GcpWifPinnedSettingsSigningAlgorithm {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///Egress: the host of `tokenEndpoint`, and nothing else.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OAuth2PrivateKeyJwtSettings",
-///  "description": "Egress: the host of `tokenEndpoint`, and nothing else.",
-///  "type": "object",
-///  "required": [
-///    "clientId",
-///    "model",
-///    "tokenEndpoint"
-///  ],
-///  "properties": {
-///    "audience": {
-///      "description": "The assertion's `aud`. Absent means `tokenEndpoint`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^[!-~]+$"
-///    },
-///    "clientId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1,
-///      "pattern": "^[!-~]+$"
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "oauth2-private-key-jwt"
-///    },
-///    "scopes": {
-///      "description": "The scopes a binding may request, the ceiling for every issuance.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256,
-///        "pattern": "^[!#-\\[\\]-~]+$"
-///      },
-///      "maxItems": 64,
-///      "uniqueItems": true
-///    },
-///    "signingAlgorithm": {
-///      "type": "string",
-///      "enum": [
-///        "ES256",
-///        "RS256"
-///      ]
-///    },
-///    "tokenEndpoint": {
-///      "$ref": "#/definitions/ProviderHttpsUrl"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct OAuth2PrivateKeyJwtSettings {
-    ///The assertion's `aud`. Absent means `tokenEndpoint`.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub audience: ::std::option::Option<OAuth2PrivateKeyJwtSettingsAudience>,
-    #[serde(rename = "clientId")]
-    pub client_id: OAuth2PrivateKeyJwtSettingsClientId,
-    pub model: ::std::string::String,
-    ///The scopes a binding may request, the ceiling for every issuance.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub scopes: ::std::option::Option<Vec<OAuth2PrivateKeyJwtSettingsScopesItem>>,
-    #[serde(
-        rename = "signingAlgorithm",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub signing_algorithm: ::std::option::Option<OAuth2PrivateKeyJwtSettingsSigningAlgorithm>,
-    #[serde(rename = "tokenEndpoint")]
-    pub token_endpoint: ProviderHttpsUrl,
-}
-impl OAuth2PrivateKeyJwtSettings {
-    pub fn builder() -> builder::OAuth2PrivateKeyJwtSettings {
-        Default::default()
-    }
-}
-///The assertion's `aud`. Absent means `tokenEndpoint`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The assertion's `aud`. Absent means `tokenEndpoint`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^[!-~]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct OAuth2PrivateKeyJwtSettingsAudience(::std::string::String);
-impl ::std::ops::Deref for OAuth2PrivateKeyJwtSettingsAudience {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<OAuth2PrivateKeyJwtSettingsAudience> for ::std::string::String {
-    fn from(value: OAuth2PrivateKeyJwtSettingsAudience) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for OAuth2PrivateKeyJwtSettingsAudience {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[!-~]+$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[!-~]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for OAuth2PrivateKeyJwtSettingsAudience {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for OAuth2PrivateKeyJwtSettingsAudience {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for OAuth2PrivateKeyJwtSettingsAudience {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for OAuth2PrivateKeyJwtSettingsAudience {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`OAuth2PrivateKeyJwtSettingsClientId`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1,
-///  "pattern": "^[!-~]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct OAuth2PrivateKeyJwtSettingsClientId(::std::string::String);
-impl ::std::ops::Deref for OAuth2PrivateKeyJwtSettingsClientId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<OAuth2PrivateKeyJwtSettingsClientId> for ::std::string::String {
-    fn from(value: OAuth2PrivateKeyJwtSettingsClientId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for OAuth2PrivateKeyJwtSettingsClientId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 512usize {
-            return Err("longer than 512 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[!-~]+$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[!-~]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for OAuth2PrivateKeyJwtSettingsClientId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for OAuth2PrivateKeyJwtSettingsClientId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for OAuth2PrivateKeyJwtSettingsClientId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for OAuth2PrivateKeyJwtSettingsClientId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`OAuth2PrivateKeyJwtSettingsScopesItem`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "pattern": "^[!#-\\[\\]-~]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct OAuth2PrivateKeyJwtSettingsScopesItem(::std::string::String);
-impl ::std::ops::Deref for OAuth2PrivateKeyJwtSettingsScopesItem {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<OAuth2PrivateKeyJwtSettingsScopesItem> for ::std::string::String {
-    fn from(value: OAuth2PrivateKeyJwtSettingsScopesItem) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for OAuth2PrivateKeyJwtSettingsScopesItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 256usize {
-            return Err("longer than 256 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[!#-\\[\\]-~]+$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[!#-\\[\\]-~]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for OAuth2PrivateKeyJwtSettingsScopesItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for OAuth2PrivateKeyJwtSettingsScopesItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for OAuth2PrivateKeyJwtSettingsScopesItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for OAuth2PrivateKeyJwtSettingsScopesItem {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`OAuth2PrivateKeyJwtSettingsSigningAlgorithm`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "ES256",
-///    "RS256"
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum OAuth2PrivateKeyJwtSettingsSigningAlgorithm {
-    #[serde(rename = "ES256")]
-    Es256,
-    #[serde(rename = "RS256")]
-    Rs256,
-}
-impl ::std::fmt::Display for OAuth2PrivateKeyJwtSettingsSigningAlgorithm {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Es256 => f.write_str("ES256"),
-            Self::Rs256 => f.write_str("RS256"),
-        }
-    }
-}
-impl ::std::str::FromStr for OAuth2PrivateKeyJwtSettingsSigningAlgorithm {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "ES256" => Ok(Self::Es256),
-            "RS256" => Ok(Self::Rs256),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for OAuth2PrivateKeyJwtSettingsSigningAlgorithm {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String>
-    for OAuth2PrivateKeyJwtSettingsSigningAlgorithm
-{
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String>
-    for OAuth2PrivateKeyJwtSettingsSigningAlgorithm
-{
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
     }
 }
 ///Read one external account. The outer document members are owned by the framework — SPEC §6.3.
@@ -4517,127 +4966,57 @@ impl Response {
         Default::default()
     }
 }
-///No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.
+///Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
-///  "title": "S3StaticPresignSettings",
-///  "description": "No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.",
-///  "type": "object",
-///  "required": [
-///    "accessKeyId",
-///    "bucket",
-///    "endpoint",
-///    "model",
-///    "region"
-///  ],
-///  "properties": {
-///    "accessKeyId": {
-///      "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "pattern": "^[A-Za-z0-9]+$"
-///    },
-///    "bucket": {
-///      "$ref": "#/definitions/ProviderBucketName"
-///    },
-///    "endpoint": {
-///      "$ref": "#/definitions/ProviderHttpsUrl"
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "s3-static-presign"
-///    },
-///    "pathStyle": {
-///      "description": "Address the bucket in the path rather than the host name, as MinIO usually needs.",
-///      "type": "boolean"
-///    },
-///    "region": {
-///      "description": "The SigV4 signing region; `auto` for Cloudflare R2.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "pattern": "^[a-z0-9-]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct S3StaticPresignSettings {
-    ///The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
-    #[serde(rename = "accessKeyId")]
-    pub access_key_id: S3StaticPresignSettingsAccessKeyId,
-    pub bucket: ProviderBucketName,
-    pub endpoint: ProviderHttpsUrl,
-    pub model: ::std::string::String,
-    ///Address the bucket in the path rather than the host name, as MinIO usually needs.
-    #[serde(
-        rename = "pathStyle",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub path_style: ::std::option::Option<bool>,
-    ///The SigV4 signing region; `auto` for Cloudflare R2.
-    pub region: S3StaticPresignSettingsRegion,
-}
-impl S3StaticPresignSettings {
-    pub fn builder() -> builder::S3StaticPresignSettings {
-        Default::default()
-    }
-}
-///The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.",
+///  "title": "SecretFingerprint",
+///  "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.",
 ///  "type": "string",
-///  "maxLength": 128,
-///  "pattern": "^[A-Za-z0-9]+$"
+///  "maxLength": 33,
+///  "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$"
 ///}
 /// ```
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct S3StaticPresignSettingsAccessKeyId(::std::string::String);
-impl ::std::ops::Deref for S3StaticPresignSettingsAccessKeyId {
+pub struct SecretFingerprint(::std::string::String);
+impl ::std::ops::Deref for SecretFingerprint {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<S3StaticPresignSettingsAccessKeyId> for ::std::string::String {
-    fn from(value: S3StaticPresignSettingsAccessKeyId) -> Self {
+impl ::std::convert::From<SecretFingerprint> for ::std::string::String {
+    fn from(value: SecretFingerprint) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for S3StaticPresignSettingsAccessKeyId {
+impl ::std::str::FromStr for SecretFingerprint {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 128usize {
-            return Err("longer than 128 characters".into());
+        if value.chars().count() > 33usize {
+            return Err("longer than 33 characters".into());
         }
         static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[A-Za-z0-9]+$").unwrap());
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^hmacsha256:[A-Za-z0-9_-]{22}$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[A-Za-z0-9]+$\"".into());
+            return Err("doesn't match pattern \"^hmacsha256:[A-Za-z0-9_-]{22}$\"".into());
         }
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for S3StaticPresignSettingsAccessKeyId {
+impl ::std::convert::TryFrom<&str> for SecretFingerprint {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for S3StaticPresignSettingsAccessKeyId {
+impl ::std::convert::TryFrom<&::std::string::String> for SecretFingerprint {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -4645,7 +5024,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for S3StaticPresignSettings
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for S3StaticPresignSettingsAccessKeyId {
+impl ::std::convert::TryFrom<::std::string::String> for SecretFingerprint {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -4653,205 +5032,7 @@ impl ::std::convert::TryFrom<::std::string::String> for S3StaticPresignSettingsA
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for S3StaticPresignSettingsAccessKeyId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The SigV4 signing region; `auto` for Cloudflare R2.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The SigV4 signing region; `auto` for Cloudflare R2.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "pattern": "^[a-z0-9-]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct S3StaticPresignSettingsRegion(::std::string::String);
-impl ::std::ops::Deref for S3StaticPresignSettingsRegion {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<S3StaticPresignSettingsRegion> for ::std::string::String {
-    fn from(value: S3StaticPresignSettingsRegion) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for S3StaticPresignSettingsRegion {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 64usize {
-            return Err("longer than 64 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9-]+$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z0-9-]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for S3StaticPresignSettingsRegion {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for S3StaticPresignSettingsRegion {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for S3StaticPresignSettingsRegion {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for S3StaticPresignSettingsRegion {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StaticSecretSettings",
-///  "description": "Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.",
-///  "type": "object",
-///  "required": [
-///    "baseUrl",
-///    "driver",
-///    "model"
-///  ],
-///  "properties": {
-///    "baseUrl": {
-///      "$ref": "#/definitions/ProviderHttpsUrl"
-///    },
-///    "driver": {
-///      "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "pattern": "^[a-z0-9][a-z0-9-]*$"
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "static-secret"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct StaticSecretSettings {
-    #[serde(rename = "baseUrl")]
-    pub base_url: ProviderHttpsUrl,
-    ///The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
-    pub driver: StaticSecretSettingsDriver,
-    pub model: ::std::string::String,
-}
-impl StaticSecretSettings {
-    pub fn builder() -> builder::StaticSecretSettings {
-        Default::default()
-    }
-}
-///The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "pattern": "^[a-z0-9][a-z0-9-]*$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct StaticSecretSettingsDriver(::std::string::String);
-impl ::std::ops::Deref for StaticSecretSettingsDriver {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<StaticSecretSettingsDriver> for ::std::string::String {
-    fn from(value: StaticSecretSettingsDriver) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for StaticSecretSettingsDriver {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 64usize {
-            return Err("longer than 64 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^[a-z0-9][a-z0-9-]*$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^[a-z0-9][a-z0-9-]*$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for StaticSecretSettingsDriver {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for StaticSecretSettingsDriver {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for StaticSecretSettingsDriver {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for StaticSecretSettingsDriver {
+impl<'de> ::serde::Deserialize<'de> for SecretFingerprint {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -5122,396 +5303,6 @@ impl<'de> ::serde::Deserialize<'de> for SuiMoveCallPackage {
             })
     }
 }
-///No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SuiSignerSettings",
-///  "description": "No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.",
-///  "type": "object",
-///  "required": [
-///    "allowedCalls",
-///    "maxGasBudgetMist",
-///    "maxGasPerDayMist",
-///    "model",
-///    "network"
-///  ],
-///  "properties": {
-///    "allowedCalls": {
-///      "description": "Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/SuiMoveCall"
-///      },
-///      "maxItems": 32,
-///      "minItems": 1
-///    },
-///    "allowedObjects": {
-///      "description": "Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^0x[0-9a-f]{64}$"
-///      },
-///      "maxItems": 32
-///    },
-///    "maxCoinOutPerTx": {
-///      "description": "Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "amount",
-///          "coinType"
-///        ],
-///        "properties": {
-///          "amount": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "coinType": {
-///            "type": "string",
-///            "maxLength": 512,
-///            "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 8
-///    },
-///    "maxGasBudgetMist": {
-///      "description": "The largest gas budget one transaction may declare.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "maxGasPerDayMist": {
-///      "description": "The total gas budget signed per rolling 24 hours.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "model": {
-///      "type": "string",
-///      "const": "sui-signer"
-///    },
-///    "network": {
-///      "type": "string",
-///      "enum": [
-///        "mainnet",
-///        "testnet",
-///        "devnet"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct SuiSignerSettings {
-    ///Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.
-    #[serde(rename = "allowedCalls")]
-    pub allowed_calls: ::std::vec::Vec<SuiMoveCall>,
-    ///Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.
-    #[serde(
-        rename = "allowedObjects",
-        default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
-    )]
-    pub allowed_objects: ::std::vec::Vec<SuiSignerSettingsAllowedObjectsItem>,
-    ///Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.
-    #[serde(
-        rename = "maxCoinOutPerTx",
-        default,
-        skip_serializing_if = "::std::vec::Vec::is_empty"
-    )]
-    pub max_coin_out_per_tx: ::std::vec::Vec<SuiSignerSettingsMaxCoinOutPerTxItem>,
-    ///The largest gas budget one transaction may declare.
-    #[serde(rename = "maxGasBudgetMist")]
-    pub max_gas_budget_mist: ::std::num::NonZeroU64,
-    ///The total gas budget signed per rolling 24 hours.
-    #[serde(rename = "maxGasPerDayMist")]
-    pub max_gas_per_day_mist: ::std::num::NonZeroU64,
-    pub model: ::std::string::String,
-    pub network: SuiSignerSettingsNetwork,
-}
-impl SuiSignerSettings {
-    pub fn builder() -> builder::SuiSignerSettings {
-        Default::default()
-    }
-}
-///`SuiSignerSettingsAllowedObjectsItem`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^0x[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct SuiSignerSettingsAllowedObjectsItem(::std::string::String);
-impl ::std::ops::Deref for SuiSignerSettingsAllowedObjectsItem {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<SuiSignerSettingsAllowedObjectsItem> for ::std::string::String {
-    fn from(value: SuiSignerSettingsAllowedObjectsItem) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for SuiSignerSettingsAllowedObjectsItem {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^0x[0-9a-f]{64}$").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^0x[0-9a-f]{64}$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for SuiSignerSettingsAllowedObjectsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for SuiSignerSettingsAllowedObjectsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for SuiSignerSettingsAllowedObjectsItem {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for SuiSignerSettingsAllowedObjectsItem {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`SuiSignerSettingsMaxCoinOutPerTxItem`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "amount",
-///    "coinType"
-///  ],
-///  "properties": {
-///    "amount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "coinType": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct SuiSignerSettingsMaxCoinOutPerTxItem {
-    pub amount: u64,
-    #[serde(rename = "coinType")]
-    pub coin_type: SuiSignerSettingsMaxCoinOutPerTxItemCoinType,
-}
-impl SuiSignerSettingsMaxCoinOutPerTxItem {
-    pub fn builder() -> builder::SuiSignerSettingsMaxCoinOutPerTxItem {
-        Default::default()
-    }
-}
-///`SuiSignerSettingsMaxCoinOutPerTxItemCoinType`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct SuiSignerSettingsMaxCoinOutPerTxItemCoinType(::std::string::String);
-impl ::std::ops::Deref for SuiSignerSettingsMaxCoinOutPerTxItemCoinType {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<SuiSignerSettingsMaxCoinOutPerTxItemCoinType> for ::std::string::String {
-    fn from(value: SuiSignerSettingsMaxCoinOutPerTxItemCoinType) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for SuiSignerSettingsMaxCoinOutPerTxItemCoinType {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 512usize {
-            return Err("longer than 512 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$").unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err(
-                "doesn't match pattern \"^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$\"".into(),
-            );
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for SuiSignerSettingsMaxCoinOutPerTxItemCoinType {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String>
-    for SuiSignerSettingsMaxCoinOutPerTxItemCoinType
-{
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String>
-    for SuiSignerSettingsMaxCoinOutPerTxItemCoinType
-{
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for SuiSignerSettingsMaxCoinOutPerTxItemCoinType {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`SuiSignerSettingsNetwork`
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "mainnet",
-///    "testnet",
-///    "devnet"
-///  ]
-///}
-/// ```
-/// </details>
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum SuiSignerSettingsNetwork {
-    #[serde(rename = "mainnet")]
-    Mainnet,
-    #[serde(rename = "testnet")]
-    Testnet,
-    #[serde(rename = "devnet")]
-    Devnet,
-}
-impl ::std::fmt::Display for SuiSignerSettingsNetwork {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Mainnet => f.write_str("mainnet"),
-            Self::Testnet => f.write_str("testnet"),
-            Self::Devnet => f.write_str("devnet"),
-        }
-    }
-}
-impl ::std::str::FromStr for SuiSignerSettingsNetwork {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "mainnet" => Ok(Self::Mainnet),
-            "testnet" => Ok(Self::Testnet),
-            "devnet" => Ok(Self::Devnet),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for SuiSignerSettingsNetwork {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for SuiSignerSettingsNetwork {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for SuiSignerSettingsNetwork {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
@@ -5638,6 +5429,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct AccountProbeReport {
         at: ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        complete: ::std::result::Result<bool, ::std::string::String>,
         ok: ::std::result::Result<bool, ::std::string::String>,
         steps: ::std::result::Result<
             ::std::vec::Vec<super::AccountProbeReportStepsItem>,
@@ -5648,6 +5440,7 @@ pub mod builder {
         fn default() -> Self {
             Self {
                 at: Err("no value supplied for at".to_string()),
+                complete: Err("no value supplied for complete".to_string()),
                 ok: Err("no value supplied for ok".to_string()),
                 steps: Err("no value supplied for steps".to_string()),
             }
@@ -5662,6 +5455,16 @@ pub mod builder {
             self.at = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for at: {e}"));
+            self
+        }
+        pub fn complete<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.complete = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for complete: {e}"));
             self
         }
         pub fn ok<T>(mut self, value: T) -> Self
@@ -5692,6 +5495,7 @@ pub mod builder {
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 at: value.at?,
+                complete: value.complete?,
                 ok: value.ok?,
                 steps: value.steps?,
             })
@@ -5701,6 +5505,7 @@ pub mod builder {
         fn from(value: super::AccountProbeReport) -> Self {
             Self {
                 at: Ok(value.at),
+                complete: Ok(value.complete),
                 ok: Ok(value.ok),
                 steps: Ok(value.steps),
             }
@@ -6136,7 +5941,7 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct AccountSecretInfo {
-        fingerprint: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        fingerprint: ::std::result::Result<super::SecretFingerprint, ::std::string::String>,
         set_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
     }
@@ -6151,7 +5956,7 @@ pub mod builder {
     impl AccountSecretInfo {
         pub fn fingerprint<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T: ::std::convert::TryInto<super::SecretFingerprint>,
             T::Error: ::std::fmt::Display,
         {
             self.fingerprint = value
@@ -6190,232 +5995,63 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct AwsRolesAnywhereSettings {
-        bucket: ::std::result::Result<
-            ::std::option::Option<super::ProviderBucketName>,
+    pub struct AccountSettingsMaxCoinOutPerTxItem {
+        amount: ::std::result::Result<u64, ::std::string::String>,
+        coin_type: ::std::result::Result<
+            super::AccountSettingsMaxCoinOutPerTxItemCoinType,
             ::std::string::String,
         >,
-        chained_role_arn:
-            ::std::result::Result<::std::option::Option<super::AwsArn>, ::std::string::String>,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-        profile_arn: ::std::result::Result<super::AwsArn, ::std::string::String>,
-        region: ::std::result::Result<super::AwsRegion, ::std::string::String>,
-        role_arn: ::std::result::Result<super::AwsArn, ::std::string::String>,
-        trust_anchor_arn: ::std::result::Result<super::AwsArn, ::std::string::String>,
     }
-    impl ::std::default::Default for AwsRolesAnywhereSettings {
+    impl ::std::default::Default for AccountSettingsMaxCoinOutPerTxItem {
         fn default() -> Self {
             Self {
-                bucket: Ok(Default::default()),
-                chained_role_arn: Ok(Default::default()),
-                model: Err("no value supplied for model".to_string()),
-                profile_arn: Err("no value supplied for profile_arn".to_string()),
-                region: Err("no value supplied for region".to_string()),
-                role_arn: Err("no value supplied for role_arn".to_string()),
-                trust_anchor_arn: Err("no value supplied for trust_anchor_arn".to_string()),
+                amount: Err("no value supplied for amount".to_string()),
+                coin_type: Err("no value supplied for coin_type".to_string()),
             }
         }
     }
-    impl AwsRolesAnywhereSettings {
-        pub fn bucket<T>(mut self, value: T) -> Self
+    impl AccountSettingsMaxCoinOutPerTxItem {
+        pub fn amount<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::ProviderBucketName>>,
+            T: ::std::convert::TryInto<u64>,
             T::Error: ::std::fmt::Display,
         {
-            self.bucket = value
+            self.amount = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for bucket: {e}"));
+                .map_err(|e| format!("error converting supplied value for amount: {e}"));
             self
         }
-        pub fn chained_role_arn<T>(mut self, value: T) -> Self
+        pub fn coin_type<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::AwsArn>>,
+            T: ::std::convert::TryInto<super::AccountSettingsMaxCoinOutPerTxItemCoinType>,
             T::Error: ::std::fmt::Display,
         {
-            self.chained_role_arn = value
+            self.coin_type = value
                 .try_into()
-                .map_err(|e| format!("error converting supplied value for chained_role_arn: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn profile_arn<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AwsArn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.profile_arn = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for profile_arn: {e}"));
-            self
-        }
-        pub fn region<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AwsRegion>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.region = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for region: {e}"));
-            self
-        }
-        pub fn role_arn<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AwsArn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.role_arn = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for role_arn: {e}"));
-            self
-        }
-        pub fn trust_anchor_arn<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AwsArn>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.trust_anchor_arn = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for trust_anchor_arn: {e}"));
+                .map_err(|e| format!("error converting supplied value for coin_type: {e}"));
             self
         }
     }
-    impl ::std::convert::TryFrom<AwsRolesAnywhereSettings> for super::AwsRolesAnywhereSettings {
+    impl ::std::convert::TryFrom<AccountSettingsMaxCoinOutPerTxItem>
+        for super::AccountSettingsMaxCoinOutPerTxItem
+    {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: AwsRolesAnywhereSettings,
+            value: AccountSettingsMaxCoinOutPerTxItem,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
-                bucket: value.bucket?,
-                chained_role_arn: value.chained_role_arn?,
-                model: value.model?,
-                profile_arn: value.profile_arn?,
-                region: value.region?,
-                role_arn: value.role_arn?,
-                trust_anchor_arn: value.trust_anchor_arn?,
+                amount: value.amount?,
+                coin_type: value.coin_type?,
             })
         }
     }
-    impl ::std::convert::From<super::AwsRolesAnywhereSettings> for AwsRolesAnywhereSettings {
-        fn from(value: super::AwsRolesAnywhereSettings) -> Self {
+    impl ::std::convert::From<super::AccountSettingsMaxCoinOutPerTxItem>
+        for AccountSettingsMaxCoinOutPerTxItem
+    {
+        fn from(value: super::AccountSettingsMaxCoinOutPerTxItem) -> Self {
             Self {
-                bucket: Ok(value.bucket),
-                chained_role_arn: Ok(value.chained_role_arn),
-                model: Ok(value.model),
-                profile_arn: Ok(value.profile_arn),
-                region: Ok(value.region),
-                role_arn: Ok(value.role_arn),
-                trust_anchor_arn: Ok(value.trust_anchor_arn),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct AzureCertSettings {
-        authority_host: ::std::result::Result<
-            ::std::option::Option<super::AzureCertSettingsAuthorityHost>,
-            ::std::string::String,
-        >,
-        client_id: ::std::result::Result<super::AzureCertSettingsClientId, ::std::string::String>,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-        tenant_id: ::std::result::Result<super::AzureCertSettingsTenantId, ::std::string::String>,
-        token_scope:
-            ::std::result::Result<super::AzureCertSettingsTokenScope, ::std::string::String>,
-    }
-    impl ::std::default::Default for AzureCertSettings {
-        fn default() -> Self {
-            Self {
-                authority_host: Ok(Default::default()),
-                client_id: Err("no value supplied for client_id".to_string()),
-                model: Err("no value supplied for model".to_string()),
-                tenant_id: Err("no value supplied for tenant_id".to_string()),
-                token_scope: Err("no value supplied for token_scope".to_string()),
-            }
-        }
-    }
-    impl AzureCertSettings {
-        pub fn authority_host<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<super::AzureCertSettingsAuthorityHost>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.authority_host = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for authority_host: {e}"));
-            self
-        }
-        pub fn client_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AzureCertSettingsClientId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.client_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for client_id: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn tenant_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AzureCertSettingsTenantId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.tenant_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for tenant_id: {e}"));
-            self
-        }
-        pub fn token_scope<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::AzureCertSettingsTokenScope>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.token_scope = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for token_scope: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<AzureCertSettings> for super::AzureCertSettings {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: AzureCertSettings,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                authority_host: value.authority_host?,
-                client_id: value.client_id?,
-                model: value.model?,
-                tenant_id: value.tenant_id?,
-                token_scope: value.token_scope?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::AzureCertSettings> for AzureCertSettings {
-        fn from(value: super::AzureCertSettings) -> Self {
-            Self {
-                authority_host: Ok(value.authority_host),
-                client_id: Ok(value.client_id),
-                model: Ok(value.model),
-                tenant_id: Ok(value.tenant_id),
-                token_scope: Ok(value.token_scope),
+                amount: Ok(value.amount),
+                coin_type: Ok(value.coin_type),
             }
         }
     }
@@ -6724,273 +6360,6 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct GcpWifPinnedSettings {
-        bucket: ::std::result::Result<
-            ::std::option::Option<super::ProviderBucketName>,
-            ::std::string::String,
-        >,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-        pool_id: ::std::result::Result<super::GcpWifPinnedSettingsPoolId, ::std::string::String>,
-        project_number:
-            ::std::result::Result<super::GcpWifPinnedSettingsProjectNumber, ::std::string::String>,
-        provider_id:
-            ::std::result::Result<super::GcpWifPinnedSettingsProviderId, ::std::string::String>,
-        service_account: ::std::result::Result<
-            ::std::option::Option<super::GcpWifPinnedSettingsServiceAccount>,
-            ::std::string::String,
-        >,
-        signing_algorithm: ::std::result::Result<
-            ::std::option::Option<super::GcpWifPinnedSettingsSigningAlgorithm>,
-            ::std::string::String,
-        >,
-    }
-    impl ::std::default::Default for GcpWifPinnedSettings {
-        fn default() -> Self {
-            Self {
-                bucket: Ok(Default::default()),
-                model: Err("no value supplied for model".to_string()),
-                pool_id: Err("no value supplied for pool_id".to_string()),
-                project_number: Err("no value supplied for project_number".to_string()),
-                provider_id: Err("no value supplied for provider_id".to_string()),
-                service_account: Ok(Default::default()),
-                signing_algorithm: Ok(Default::default()),
-            }
-        }
-    }
-    impl GcpWifPinnedSettings {
-        pub fn bucket<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::ProviderBucketName>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.bucket = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for bucket: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn pool_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::GcpWifPinnedSettingsPoolId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.pool_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for pool_id: {e}"));
-            self
-        }
-        pub fn project_number<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::GcpWifPinnedSettingsProjectNumber>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.project_number = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for project_number: {e}"));
-            self
-        }
-        pub fn provider_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::GcpWifPinnedSettingsProviderId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.provider_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for provider_id: {e}"));
-            self
-        }
-        pub fn service_account<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<super::GcpWifPinnedSettingsServiceAccount>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.service_account = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for service_account: {e}"));
-            self
-        }
-        pub fn signing_algorithm<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<super::GcpWifPinnedSettingsSigningAlgorithm>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.signing_algorithm = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for signing_algorithm: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<GcpWifPinnedSettings> for super::GcpWifPinnedSettings {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: GcpWifPinnedSettings,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                bucket: value.bucket?,
-                model: value.model?,
-                pool_id: value.pool_id?,
-                project_number: value.project_number?,
-                provider_id: value.provider_id?,
-                service_account: value.service_account?,
-                signing_algorithm: value.signing_algorithm?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::GcpWifPinnedSettings> for GcpWifPinnedSettings {
-        fn from(value: super::GcpWifPinnedSettings) -> Self {
-            Self {
-                bucket: Ok(value.bucket),
-                model: Ok(value.model),
-                pool_id: Ok(value.pool_id),
-                project_number: Ok(value.project_number),
-                provider_id: Ok(value.provider_id),
-                service_account: Ok(value.service_account),
-                signing_algorithm: Ok(value.signing_algorithm),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct OAuth2PrivateKeyJwtSettings {
-        audience: ::std::result::Result<
-            ::std::option::Option<super::OAuth2PrivateKeyJwtSettingsAudience>,
-            ::std::string::String,
-        >,
-        client_id: ::std::result::Result<
-            super::OAuth2PrivateKeyJwtSettingsClientId,
-            ::std::string::String,
-        >,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-        scopes: ::std::result::Result<
-            ::std::option::Option<Vec<super::OAuth2PrivateKeyJwtSettingsScopesItem>>,
-            ::std::string::String,
-        >,
-        signing_algorithm: ::std::result::Result<
-            ::std::option::Option<super::OAuth2PrivateKeyJwtSettingsSigningAlgorithm>,
-            ::std::string::String,
-        >,
-        token_endpoint: ::std::result::Result<super::ProviderHttpsUrl, ::std::string::String>,
-    }
-    impl ::std::default::Default for OAuth2PrivateKeyJwtSettings {
-        fn default() -> Self {
-            Self {
-                audience: Ok(Default::default()),
-                client_id: Err("no value supplied for client_id".to_string()),
-                model: Err("no value supplied for model".to_string()),
-                scopes: Ok(Default::default()),
-                signing_algorithm: Ok(Default::default()),
-                token_endpoint: Err("no value supplied for token_endpoint".to_string()),
-            }
-        }
-    }
-    impl OAuth2PrivateKeyJwtSettings {
-        pub fn audience<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<super::OAuth2PrivateKeyJwtSettingsAudience>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.audience = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for audience: {e}"));
-            self
-        }
-        pub fn client_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::OAuth2PrivateKeyJwtSettingsClientId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.client_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for client_id: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn scopes<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<Vec<super::OAuth2PrivateKeyJwtSettingsScopesItem>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.scopes = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for scopes: {e}"));
-            self
-        }
-        pub fn signing_algorithm<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<super::OAuth2PrivateKeyJwtSettingsSigningAlgorithm>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.signing_algorithm = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for signing_algorithm: {e}"));
-            self
-        }
-        pub fn token_endpoint<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ProviderHttpsUrl>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.token_endpoint = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for token_endpoint: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<OAuth2PrivateKeyJwtSettings> for super::OAuth2PrivateKeyJwtSettings {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: OAuth2PrivateKeyJwtSettings,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                audience: value.audience?,
-                client_id: value.client_id?,
-                model: value.model?,
-                scopes: value.scopes?,
-                signing_algorithm: value.signing_algorithm?,
-                token_endpoint: value.token_endpoint?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::OAuth2PrivateKeyJwtSettings> for OAuth2PrivateKeyJwtSettings {
-        fn from(value: super::OAuth2PrivateKeyJwtSettings) -> Self {
-            Self {
-                audience: Ok(value.audience),
-                client_id: Ok(value.client_id),
-                model: Ok(value.model),
-                scopes: Ok(value.scopes),
-                signing_algorithm: Ok(value.signing_algorithm),
-                token_endpoint: Ok(value.token_endpoint),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
     pub struct Payload {
         context: ::std::result::Result<super::AccountContextId, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
@@ -7109,185 +6478,6 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct S3StaticPresignSettings {
-        access_key_id:
-            ::std::result::Result<super::S3StaticPresignSettingsAccessKeyId, ::std::string::String>,
-        bucket: ::std::result::Result<super::ProviderBucketName, ::std::string::String>,
-        endpoint: ::std::result::Result<super::ProviderHttpsUrl, ::std::string::String>,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-        path_style: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        region: ::std::result::Result<super::S3StaticPresignSettingsRegion, ::std::string::String>,
-    }
-    impl ::std::default::Default for S3StaticPresignSettings {
-        fn default() -> Self {
-            Self {
-                access_key_id: Err("no value supplied for access_key_id".to_string()),
-                bucket: Err("no value supplied for bucket".to_string()),
-                endpoint: Err("no value supplied for endpoint".to_string()),
-                model: Err("no value supplied for model".to_string()),
-                path_style: Ok(Default::default()),
-                region: Err("no value supplied for region".to_string()),
-            }
-        }
-    }
-    impl S3StaticPresignSettings {
-        pub fn access_key_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::S3StaticPresignSettingsAccessKeyId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.access_key_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for access_key_id: {e}"));
-            self
-        }
-        pub fn bucket<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ProviderBucketName>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.bucket = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for bucket: {e}"));
-            self
-        }
-        pub fn endpoint<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ProviderHttpsUrl>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.endpoint = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for endpoint: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn path_style<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.path_style = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for path_style: {e}"));
-            self
-        }
-        pub fn region<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::S3StaticPresignSettingsRegion>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.region = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for region: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<S3StaticPresignSettings> for super::S3StaticPresignSettings {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: S3StaticPresignSettings,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                access_key_id: value.access_key_id?,
-                bucket: value.bucket?,
-                endpoint: value.endpoint?,
-                model: value.model?,
-                path_style: value.path_style?,
-                region: value.region?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::S3StaticPresignSettings> for S3StaticPresignSettings {
-        fn from(value: super::S3StaticPresignSettings) -> Self {
-            Self {
-                access_key_id: Ok(value.access_key_id),
-                bucket: Ok(value.bucket),
-                endpoint: Ok(value.endpoint),
-                model: Ok(value.model),
-                path_style: Ok(value.path_style),
-                region: Ok(value.region),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct StaticSecretSettings {
-        base_url: ::std::result::Result<super::ProviderHttpsUrl, ::std::string::String>,
-        driver: ::std::result::Result<super::StaticSecretSettingsDriver, ::std::string::String>,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-    }
-    impl ::std::default::Default for StaticSecretSettings {
-        fn default() -> Self {
-            Self {
-                base_url: Err("no value supplied for base_url".to_string()),
-                driver: Err("no value supplied for driver".to_string()),
-                model: Err("no value supplied for model".to_string()),
-            }
-        }
-    }
-    impl StaticSecretSettings {
-        pub fn base_url<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ProviderHttpsUrl>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.base_url = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for base_url: {e}"));
-            self
-        }
-        pub fn driver<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::StaticSecretSettingsDriver>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.driver = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for driver: {e}"));
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<StaticSecretSettings> for super::StaticSecretSettings {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: StaticSecretSettings,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                base_url: value.base_url?,
-                driver: value.driver?,
-                model: value.model?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::StaticSecretSettings> for StaticSecretSettings {
-        fn from(value: super::StaticSecretSettings) -> Self {
-            Self {
-                base_url: Ok(value.base_url),
-                driver: Ok(value.driver),
-                model: Ok(value.model),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
     pub struct SuiMoveCall {
         function: ::std::result::Result<super::SuiMoveCallFunction, ::std::string::String>,
         module: ::std::result::Result<super::SuiMoveCallModule, ::std::string::String>,
@@ -7355,213 +6545,19 @@ pub mod builder {
             }
         }
     }
-    #[derive(Clone, Debug)]
-    pub struct SuiSignerSettings {
-        allowed_calls:
-            ::std::result::Result<::std::vec::Vec<super::SuiMoveCall>, ::std::string::String>,
-        allowed_objects: ::std::result::Result<
-            ::std::vec::Vec<super::SuiSignerSettingsAllowedObjectsItem>,
-            ::std::string::String,
-        >,
-        max_coin_out_per_tx: ::std::result::Result<
-            ::std::vec::Vec<super::SuiSignerSettingsMaxCoinOutPerTxItem>,
-            ::std::string::String,
-        >,
-        max_gas_budget_mist: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
-        max_gas_per_day_mist: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
-        model: ::std::result::Result<::std::string::String, ::std::string::String>,
-        network: ::std::result::Result<super::SuiSignerSettingsNetwork, ::std::string::String>,
-    }
-    impl ::std::default::Default for SuiSignerSettings {
-        fn default() -> Self {
-            Self {
-                allowed_calls: Err("no value supplied for allowed_calls".to_string()),
-                allowed_objects: Ok(Default::default()),
-                max_coin_out_per_tx: Ok(Default::default()),
-                max_gas_budget_mist: Err("no value supplied for max_gas_budget_mist".to_string()),
-                max_gas_per_day_mist: Err("no value supplied for max_gas_per_day_mist".to_string()),
-                model: Err("no value supplied for model".to_string()),
-                network: Err("no value supplied for network".to_string()),
-            }
-        }
-    }
-    impl SuiSignerSettings {
-        pub fn allowed_calls<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::SuiMoveCall>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.allowed_calls = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for allowed_calls: {e}"));
-            self
-        }
-        pub fn allowed_objects<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::SuiSignerSettingsAllowedObjectsItem>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.allowed_objects = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for allowed_objects: {e}"));
-            self
-        }
-        pub fn max_coin_out_per_tx<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::vec::Vec<super::SuiSignerSettingsMaxCoinOutPerTxItem>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.max_coin_out_per_tx = value.try_into().map_err(|e| {
-                format!("error converting supplied value for max_coin_out_per_tx: {e}")
-            });
-            self
-        }
-        pub fn max_gas_budget_mist<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.max_gas_budget_mist = value.try_into().map_err(|e| {
-                format!("error converting supplied value for max_gas_budget_mist: {e}")
-            });
-            self
-        }
-        pub fn max_gas_per_day_mist<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::num::NonZeroU64>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.max_gas_per_day_mist = value.try_into().map_err(|e| {
-                format!("error converting supplied value for max_gas_per_day_mist: {e}")
-            });
-            self
-        }
-        pub fn model<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::string::String>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.model = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for model: {e}"));
-            self
-        }
-        pub fn network<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::SuiSignerSettingsNetwork>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.network = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for network: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<SuiSignerSettings> for super::SuiSignerSettings {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: SuiSignerSettings,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                allowed_calls: value.allowed_calls?,
-                allowed_objects: value.allowed_objects?,
-                max_coin_out_per_tx: value.max_coin_out_per_tx?,
-                max_gas_budget_mist: value.max_gas_budget_mist?,
-                max_gas_per_day_mist: value.max_gas_per_day_mist?,
-                model: value.model?,
-                network: value.network?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::SuiSignerSettings> for SuiSignerSettings {
-        fn from(value: super::SuiSignerSettings) -> Self {
-            Self {
-                allowed_calls: Ok(value.allowed_calls),
-                allowed_objects: Ok(value.allowed_objects),
-                max_coin_out_per_tx: Ok(value.max_coin_out_per_tx),
-                max_gas_budget_mist: Ok(value.max_gas_budget_mist),
-                max_gas_per_day_mist: Ok(value.max_gas_per_day_mist),
-                model: Ok(value.model),
-                network: Ok(value.network),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct SuiSignerSettingsMaxCoinOutPerTxItem {
-        amount: ::std::result::Result<u64, ::std::string::String>,
-        coin_type: ::std::result::Result<
-            super::SuiSignerSettingsMaxCoinOutPerTxItemCoinType,
-            ::std::string::String,
-        >,
-    }
-    impl ::std::default::Default for SuiSignerSettingsMaxCoinOutPerTxItem {
-        fn default() -> Self {
-            Self {
-                amount: Err("no value supplied for amount".to_string()),
-                coin_type: Err("no value supplied for coin_type".to_string()),
-            }
-        }
-    }
-    impl SuiSignerSettingsMaxCoinOutPerTxItem {
-        pub fn amount<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<u64>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.amount = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for amount: {e}"));
-            self
-        }
-        pub fn coin_type<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::SuiSignerSettingsMaxCoinOutPerTxItemCoinType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.coin_type = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for coin_type: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<SuiSignerSettingsMaxCoinOutPerTxItem>
-        for super::SuiSignerSettingsMaxCoinOutPerTxItem
-    {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: SuiSignerSettingsMaxCoinOutPerTxItem,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                amount: value.amount?,
-                coin_type: value.coin_type?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::SuiSignerSettingsMaxCoinOutPerTxItem>
-        for SuiSignerSettingsMaxCoinOutPerTxItem
-    {
-        fn from(value: super::SuiSignerSettingsMaxCoinOutPerTxItem) -> Self {
-            Self {
-                amount: Ok(value.amount),
-                coin_type: Ok(value.coin_type),
-            }
-        }
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/external/accounts/get/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.\",\n      \"properties\": {\n        \"consumer\": {\n          \"description\": \"The DID of the integration allowed to use the account.\",\n          \"maxLength\": 2048,\n          \"minLength\": 7,\n          \"pattern\": \"^did:[a-z0-9]+:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"maxTtlSeconds\": {\n          \"description\": \"The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.\",\n          \"maximum\": 3600,\n          \"minimum\": 60,\n          \"type\": \"integer\"\n        },\n        \"ratePerMinute\": {\n          \"description\": \"Issuances or signatures per minute for this binding.\",\n          \"maximum\": 600,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"scopeCeiling\": {\n          \"$ref\": \"#/$defs/CredentialScopeCeiling\",\n          \"description\": \"Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.\"\n        },\n        \"sourceCidrs\": {\n          \"description\": \"Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.\",\n          \"items\": {\n            \"maxLength\": 49,\n            \"pattern\": \"^[0-9a-fA-F:.]+/[0-9]{1,3}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"consumer\",\n        \"maxTtlSeconds\",\n        \"ratePerMinute\"\n      ],\n      \"title\": \"AccountBinding\",\n      \"type\": \"object\"\n    },\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"AccountPublicMaterial\": {\n      \"additionalProperties\": false,\n      \"description\": \"The public half of the account's key, as the provider needs it. Never a private key.\",\n      \"properties\": {\n        \"address\": {\n          \"description\": \"`sui-signer`: the Sui address the key controls.\",\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"algorithm\": {\n          \"enum\": [\n            \"ES256\",\n            \"RS256\",\n            \"Secp256r1\"\n          ],\n          \"type\": \"string\"\n        },\n        \"certificatePem\": {\n          \"description\": \"`aws-roles-anywhere`: the trust anchor's CA certificate. `azure-cert`: the certificate uploaded to the app registration.\",\n          \"maxLength\": 16384,\n          \"pattern\": \"^-----BEGIN CERTIFICATE-----[A-Za-z0-9+/=\\\\r\\\\n]+-----END CERTIFICATE-----\\\\s*$\",\n          \"type\": \"string\"\n        },\n        \"keyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of the public key's SubjectPublicKeyInfo DER.\"\n        },\n        \"pendingKeyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"During a rotation (external/accounts/keys/rotate), the staged successor key, until it is confirmed and the current key retires.\"\n        },\n        \"publicKeyJwk\": {\n          \"additionalProperties\": false,\n          \"description\": \"The public key as a JWK, with `kid`. Public members only: the schema admits no private member (`d`, `p`, `q`, `dp`, `dq`, `qi`), so a document carrying one fails validation.\",\n          \"properties\": {\n            \"alg\": {\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"crv\": {\n              \"enum\": [\n                \"P-256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"e\": {\n              \"maxLength\": 16,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"kid\": {\n              \"maxLength\": 128,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"kty\": {\n              \"enum\": [\n                \"EC\",\n                \"RSA\"\n              ],\n              \"type\": \"string\"\n            },\n            \"n\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"use\": {\n              \"const\": \"sig\",\n              \"type\": \"string\"\n            },\n            \"x\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"y\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kty\",\n            \"kid\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"keyFingerprint\"\n      ],\n      \"title\": \"AccountPublicMaterial\",\n      \"type\": \"object\"\n    },\n    \"AccountSecretInfo\": {\n      \"additionalProperties\": false,\n      \"description\": \"That a static model's secret is set, and which one. Never its value.\",\n      \"properties\": {\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it.\"\n        },\n        \"setAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"fingerprint\",\n        \"setAt\"\n      ],\n      \"title\": \"AccountSecretInfo\",\n      \"type\": \"object\"\n    },\n    \"AccountSettings\": {\n      \"description\": \"Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/AwsRolesAnywhereSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/GcpWifPinnedSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/AzureCertSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/OAuth2PrivateKeyJwtSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/S3StaticPresignSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/SuiSignerSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/StaticSecretSettings\"\n        }\n      ],\n      \"title\": \"AccountSettings\"\n    },\n    \"AccountState\": {\n      \"description\": \"`active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.\",\n      \"enum\": [\n        \"active\",\n        \"suspended\",\n        \"archived\"\n      ],\n      \"title\": \"AccountState\",\n      \"type\": \"string\"\n    },\n    \"AwsArn\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^arn:aws[a-z-]*:[a-z0-9-]+:[a-z0-9-]*:[0-9]{0,12}:[A-Za-z0-9+=,.@_/:-]+$\",\n      \"title\": \"AwsArn\",\n      \"type\": \"string\"\n    },\n    \"AwsRegion\": {\n      \"maxLength\": 32,\n      \"pattern\": \"^[a-z]{2}(-gov)?-[a-z]+-[0-9]$\",\n      \"title\": \"AwsRegion\",\n      \"type\": \"string\"\n    },\n    \"AwsRolesAnywhereSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.\",\n      \"properties\": {\n        \"bucket\": {\n          \"$ref\": \"#/$defs/ProviderBucketName\",\n          \"description\": \"The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.\"\n        },\n        \"chainedRoleArn\": {\n          \"$ref\": \"#/$defs/AwsArn\",\n          \"description\": \"When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.\"\n        },\n        \"model\": {\n          \"const\": \"aws-roles-anywhere\",\n          \"type\": \"string\"\n        },\n        \"profileArn\": {\n          \"$ref\": \"#/$defs/AwsArn\"\n        },\n        \"region\": {\n          \"$ref\": \"#/$defs/AwsRegion\"\n        },\n        \"roleArn\": {\n          \"$ref\": \"#/$defs/AwsArn\"\n        },\n        \"trustAnchorArn\": {\n          \"$ref\": \"#/$defs/AwsArn\",\n          \"description\": \"The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"region\",\n        \"profileArn\",\n        \"roleArn\",\n        \"trustAnchorArn\"\n      ],\n      \"title\": \"AwsRolesAnywhereSettings\",\n      \"type\": \"object\"\n    },\n    \"AzureCertSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.\",\n      \"properties\": {\n        \"authorityHost\": {\n          \"description\": \"Absent means `login.microsoftonline.com`.\",\n          \"maxLength\": 253,\n          \"pattern\": \"^[a-z0-9.-]+$\",\n          \"type\": \"string\"\n        },\n        \"clientId\": {\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"const\": \"azure-cert\",\n          \"type\": \"string\"\n        },\n        \"tenantId\": {\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"tokenScope\": {\n          \"description\": \"The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.\",\n          \"maxLength\": 512,\n          \"pattern\": \"^[A-Za-z0-9:/._-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"tenantId\",\n        \"clientId\",\n        \"tokenScope\"\n      ],\n      \"title\": \"AzureCertSettings\",\n      \"type\": \"object\"\n    },\n    \"CredentialScopeCeiling\": {\n      \"additionalProperties\": false,\n      \"description\": \"The widest scope a binding's consumer may request. An issuance is inside the ceiling when its `prefix` begins with one of `prefixes`, every one of its `actions` is in `actions`, and every one of its `scopes` is in `scopes`. Absent members confer nothing: a ceiling with no `prefixes` permits no storage issuance.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"prefixes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scopes\": {\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScopeCeiling\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.\",\n      \"properties\": {\n        \"bindings\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/AccountBinding\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/AccountContextId\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"egressHosts\": {\n          \"description\": \"The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress.\",\n          \"items\": {\n            \"maxLength\": 253,\n            \"pattern\": \"^[a-z0-9.-]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AccountId\"\n        },\n        \"label\": {\n          \"description\": \"Display name. Untrusted text: render it, never interpret it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastProbe\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        },\n        \"providerSetupRequired\": {\n          \"description\": \"True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.\",\n          \"type\": \"boolean\"\n        },\n        \"publicMaterial\": {\n          \"$ref\": \"#/$defs/AccountPublicMaterial\",\n          \"description\": \"Absent for the static models, which hold a secret rather than a key.\"\n        },\n        \"secret\": {\n          \"$ref\": \"#/$defs/AccountSecretInfo\",\n          \"description\": \"Static models only; absent until the secret is set.\"\n        },\n        \"settings\": {\n          \"$ref\": \"#/$defs/AccountSettings\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/AccountState\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"label\",\n        \"context\",\n        \"settings\",\n        \"state\",\n        \"bindings\",\n        \"egressHosts\",\n        \"providerSetupRequired\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ExternalAccount\",\n      \"type\": \"object\"\n    },\n    \"GcpWifPinnedSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.\",\n      \"properties\": {\n        \"bucket\": {\n          \"$ref\": \"#/$defs/ProviderBucketName\",\n          \"description\": \"The GCS bucket issuances are scoped within, by a Credential Access Boundary.\"\n        },\n        \"model\": {\n          \"const\": \"gcp-wif-pinned\",\n          \"type\": \"string\"\n        },\n        \"poolId\": {\n          \"pattern\": \"^[a-z0-9-]{4,32}$\",\n          \"type\": \"string\"\n        },\n        \"projectNumber\": {\n          \"pattern\": \"^[0-9]{1,20}$\",\n          \"type\": \"string\"\n        },\n        \"providerId\": {\n          \"pattern\": \"^[a-z0-9-]{4,32}$\",\n          \"type\": \"string\"\n        },\n        \"serviceAccount\": {\n          \"description\": \"When set, the federated token is exchanged for this service account's access token.\",\n          \"maxLength\": 254,\n          \"pattern\": \"^[a-z0-9-]+@[a-z0-9-]+\\\\.iam\\\\.gserviceaccount\\\\.com$\",\n          \"type\": \"string\"\n        },\n        \"signingAlgorithm\": {\n          \"description\": \"The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.\",\n          \"enum\": [\n            \"ES256\",\n            \"RS256\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"projectNumber\",\n        \"poolId\",\n        \"providerId\"\n      ],\n      \"title\": \"GcpWifPinnedSettings\",\n      \"type\": \"object\"\n    },\n    \"OAuth2PrivateKeyJwtSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: the host of `tokenEndpoint`, and nothing else.\",\n      \"properties\": {\n        \"audience\": {\n          \"description\": \"The assertion's `aud`. Absent means `tokenEndpoint`.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^[!-~]+$\",\n          \"type\": \"string\"\n        },\n        \"clientId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"pattern\": \"^[!-~]+$\",\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"const\": \"oauth2-private-key-jwt\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"The scopes a binding may request, the ceiling for every issuance.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"signingAlgorithm\": {\n          \"enum\": [\n            \"ES256\",\n            \"RS256\"\n          ],\n          \"type\": \"string\"\n        },\n        \"tokenEndpoint\": {\n          \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"tokenEndpoint\",\n        \"clientId\"\n      ],\n      \"title\": \"OAuth2PrivateKeyJwtSettings\",\n      \"type\": \"object\"\n    },\n    \"ProviderBucketName\": {\n      \"description\": \"A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping.\",\n      \"maxLength\": 63,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9][a-z0-9.-]*[a-z0-9]$\",\n      \"title\": \"ProviderBucketName\",\n      \"type\": \"string\"\n    },\n    \"ProviderHttpsUrl\": {\n      \"format\": \"uri\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^https://[^\\\\s\\\"'\\\\\\\\]+$\",\n      \"title\": \"ProviderHttpsUrl\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccount\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"External Accounts — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"S3StaticPresignSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.\",\n      \"properties\": {\n        \"accessKeyId\": {\n          \"description\": \"The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.\",\n          \"maxLength\": 128,\n          \"pattern\": \"^[A-Za-z0-9]+$\",\n          \"type\": \"string\"\n        },\n        \"bucket\": {\n          \"$ref\": \"#/$defs/ProviderBucketName\"\n        },\n        \"endpoint\": {\n          \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n        },\n        \"model\": {\n          \"const\": \"s3-static-presign\",\n          \"type\": \"string\"\n        },\n        \"pathStyle\": {\n          \"description\": \"Address the bucket in the path rather than the host name, as MinIO usually needs.\",\n          \"type\": \"boolean\"\n        },\n        \"region\": {\n          \"description\": \"The SigV4 signing region; `auto` for Cloudflare R2.\",\n          \"maxLength\": 64,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"endpoint\",\n        \"region\",\n        \"bucket\",\n        \"accessKeyId\"\n      ],\n      \"title\": \"S3StaticPresignSettings\",\n      \"type\": \"object\"\n    },\n    \"StaticSecretSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.\",\n      \"properties\": {\n        \"baseUrl\": {\n          \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n        },\n        \"driver\": {\n          \"description\": \"The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.\",\n          \"maxLength\": 64,\n          \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"const\": \"static-secret\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"driver\",\n        \"baseUrl\"\n      ],\n      \"title\": \"StaticSecretSettings\",\n      \"type\": \"object\"\n    },\n    \"SuiMoveCall\": {\n      \"additionalProperties\": false,\n      \"description\": \"One Move function an account's transactions may call.\",\n      \"properties\": {\n        \"function\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"package\": {\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"package\",\n        \"module\",\n        \"function\"\n      ],\n      \"title\": \"SuiMoveCall\",\n      \"type\": \"object\"\n    },\n    \"SuiSignerSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.\",\n      \"properties\": {\n        \"allowedCalls\": {\n          \"description\": \"Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SuiMoveCall\"\n          },\n          \"maxItems\": 32,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"allowedObjects\": {\n          \"description\": \"Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.\",\n          \"items\": {\n            \"pattern\": \"^0x[0-9a-f]{64}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        \"maxCoinOutPerTx\": {\n          \"description\": \"Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"amount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"coinType\": {\n                \"maxLength\": 512,\n                \"pattern\": \"^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"coinType\",\n              \"amount\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        },\n        \"maxGasBudgetMist\": {\n          \"description\": \"The largest gas budget one transaction may declare.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"maxGasPerDayMist\": {\n          \"description\": \"The total gas budget signed per rolling 24 hours.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"model\": {\n          \"const\": \"sui-signer\",\n          \"type\": \"string\"\n        },\n        \"network\": {\n          \"enum\": [\n            \"mainnet\",\n            \"testnet\",\n            \"devnet\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"network\",\n        \"allowedCalls\",\n        \"maxGasBudgetMist\",\n        \"maxGasPerDayMist\"\n      ],\n      \"title\": \"SuiSignerSettings\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/accounts/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read one external account. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"id\"\n  ],\n  \"title\": \"External Accounts — Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AccountBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.\",\n      \"properties\": {\n        \"consumer\": {\n          \"description\": \"The DID of the integration allowed to use the account.\",\n          \"maxLength\": 2048,\n          \"minLength\": 7,\n          \"pattern\": \"^did:[a-z0-9]+:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"maxTtlSeconds\": {\n          \"description\": \"The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.\",\n          \"maximum\": 3600,\n          \"minimum\": 60,\n          \"type\": \"integer\"\n        },\n        \"ratePerMinute\": {\n          \"description\": \"Issuances or signatures per minute for this binding.\",\n          \"maximum\": 600,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"scopeCeiling\": {\n          \"$ref\": \"#/$defs/CredentialScopeCeiling\",\n          \"description\": \"Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.\"\n        },\n        \"sourceCidrs\": {\n          \"description\": \"Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.\",\n          \"items\": {\n            \"maxLength\": 49,\n            \"pattern\": \"^[0-9a-fA-F:.]+/[0-9]{1,3}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"consumer\",\n        \"maxTtlSeconds\",\n        \"ratePerMinute\"\n      ],\n      \"title\": \"AccountBinding\",\n      \"type\": \"object\"\n    },\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"complete\": {\n          \"description\": \"True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.\",\n          \"type\": \"boolean\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step that ran succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"complete\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"AccountPublicMaterial\": {\n      \"additionalProperties\": false,\n      \"description\": \"The public half of the account's key, as the provider needs it. Never a private key.\",\n      \"properties\": {\n        \"address\": {\n          \"description\": \"`sui-signer`: the Sui address the key controls.\",\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"algorithm\": {\n          \"enum\": [\n            \"ES256\",\n            \"RS256\",\n            \"Secp256r1\"\n          ],\n          \"type\": \"string\"\n        },\n        \"certificatePem\": {\n          \"description\": \"`aws-roles-anywhere`: the trust anchor's CA certificate. `azure-cert`: the certificate uploaded to the app registration.\",\n          \"maxLength\": 16384,\n          \"pattern\": \"^-----BEGIN CERTIFICATE-----[A-Za-z0-9+/=\\\\r\\\\n]+-----END CERTIFICATE-----\\\\s*$\",\n          \"type\": \"string\"\n        },\n        \"keyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of the public key's SubjectPublicKeyInfo DER.\"\n        },\n        \"pendingKeyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"During a rotation (external/accounts/keys/rotate), the staged successor key, until it is confirmed and the current key retires.\"\n        },\n        \"publicKeyJwk\": {\n          \"additionalProperties\": false,\n          \"description\": \"The public key as a JWK, with `kid`. Public members only: the schema admits no private member (`d`, `p`, `q`, `dp`, `dq`, `qi`), so a document carrying one fails validation.\",\n          \"properties\": {\n            \"alg\": {\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"crv\": {\n              \"enum\": [\n                \"P-256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"e\": {\n              \"maxLength\": 16,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"kid\": {\n              \"maxLength\": 128,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"kty\": {\n              \"enum\": [\n                \"EC\",\n                \"RSA\"\n              ],\n              \"type\": \"string\"\n            },\n            \"n\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"use\": {\n              \"const\": \"sig\",\n              \"type\": \"string\"\n            },\n            \"x\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"y\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kty\",\n            \"kid\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"keyFingerprint\"\n      ],\n      \"title\": \"AccountPublicMaterial\",\n      \"type\": \"object\"\n    },\n    \"AccountSecretInfo\": {\n      \"additionalProperties\": false,\n      \"description\": \"That a static model's secret is set, and which one. Never its value.\",\n      \"properties\": {\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/SecretFingerprint\"\n        },\n        \"setAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"fingerprint\",\n        \"setAt\"\n      ],\n      \"title\": \"AccountSecretInfo\",\n      \"type\": \"object\"\n    },\n    \"AccountSettings\": {\n      \"description\": \"Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` (\\\"the `sui-signer` settings\\\"). They carry no `title`, so that every binding renders each as a plain variant of this union.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.\",\n          \"properties\": {\n            \"bucket\": {\n              \"$ref\": \"#/$defs/ProviderBucketName\",\n              \"description\": \"The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.\"\n            },\n            \"chainedRoleArn\": {\n              \"$ref\": \"#/$defs/AwsArn\",\n              \"description\": \"When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.\"\n            },\n            \"model\": {\n              \"const\": \"aws-roles-anywhere\",\n              \"type\": \"string\"\n            },\n            \"probePrefix\": {\n              \"$ref\": \"#/$defs/ProviderObjectPrefix\",\n              \"description\": \"Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.\"\n            },\n            \"profileArn\": {\n              \"$ref\": \"#/$defs/AwsArn\"\n            },\n            \"region\": {\n              \"$ref\": \"#/$defs/AwsRegion\"\n            },\n            \"roleArn\": {\n              \"$ref\": \"#/$defs/AwsArn\"\n            },\n            \"trustAnchorArn\": {\n              \"$ref\": \"#/$defs/AwsArn\",\n              \"description\": \"The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"region\",\n            \"profileArn\",\n            \"roleArn\",\n            \"trustAnchorArn\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.\",\n          \"properties\": {\n            \"bucket\": {\n              \"$ref\": \"#/$defs/ProviderBucketName\",\n              \"description\": \"The GCS bucket issuances are scoped within, by a Credential Access Boundary.\"\n            },\n            \"model\": {\n              \"const\": \"gcp-wif-pinned\",\n              \"type\": \"string\"\n            },\n            \"poolId\": {\n              \"pattern\": \"^[a-z0-9-]{4,32}$\",\n              \"type\": \"string\"\n            },\n            \"probePrefix\": {\n              \"$ref\": \"#/$defs/ProviderObjectPrefix\",\n              \"description\": \"Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.\"\n            },\n            \"projectNumber\": {\n              \"pattern\": \"^[0-9]{1,20}$\",\n              \"type\": \"string\"\n            },\n            \"providerId\": {\n              \"pattern\": \"^[a-z0-9-]{4,32}$\",\n              \"type\": \"string\"\n            },\n            \"serviceAccount\": {\n              \"description\": \"When set, the federated token is exchanged for this service account's access token.\",\n              \"maxLength\": 254,\n              \"pattern\": \"^[a-z0-9-]+@[a-z0-9-]+\\\\.iam\\\\.gserviceaccount\\\\.com$\",\n              \"type\": \"string\"\n            },\n            \"signingAlgorithm\": {\n              \"description\": \"The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.\",\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"projectNumber\",\n            \"poolId\",\n            \"providerId\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.\",\n          \"properties\": {\n            \"authorityHost\": {\n              \"description\": \"Absent means `login.microsoftonline.com`.\",\n              \"maxLength\": 253,\n              \"pattern\": \"^[a-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"clientId\": {\n              \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n              \"type\": \"string\"\n            },\n            \"model\": {\n              \"const\": \"azure-cert\",\n              \"type\": \"string\"\n            },\n            \"tenantId\": {\n              \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n              \"type\": \"string\"\n            },\n            \"tokenScope\": {\n              \"description\": \"The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.\",\n              \"maxLength\": 512,\n              \"pattern\": \"^[A-Za-z0-9:/._-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"tenantId\",\n            \"clientId\",\n            \"tokenScope\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: the host of `tokenEndpoint`, and nothing else.\",\n          \"properties\": {\n            \"audience\": {\n              \"description\": \"The assertion's `aud`. Absent means `tokenEndpoint`.\",\n              \"maxLength\": 2048,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"clientId\": {\n              \"maxLength\": 512,\n              \"minLength\": 1,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"model\": {\n              \"const\": \"oauth2-private-key-jwt\",\n              \"type\": \"string\"\n            },\n            \"scopes\": {\n              \"description\": \"The scopes a binding may request, the ceiling for every issuance.\",\n              \"items\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n                \"type\": \"string\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"signingAlgorithm\": {\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"tokenEndpoint\": {\n              \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"tokenEndpoint\",\n            \"clientId\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Issuance needs no egress: presigning is a computation inside the custodian, and the consumer uses the URL itself. The probe connects to the host of `endpoint`, which `egressHosts` therefore lists.\",\n          \"properties\": {\n            \"accessKeyId\": {\n              \"description\": \"The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.\",\n              \"maxLength\": 128,\n              \"pattern\": \"^[A-Za-z0-9]+$\",\n              \"type\": \"string\"\n            },\n            \"bucket\": {\n              \"$ref\": \"#/$defs/ProviderBucketName\"\n            },\n            \"endpoint\": {\n              \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n            },\n            \"model\": {\n              \"const\": \"s3-static-presign\",\n              \"type\": \"string\"\n            },\n            \"pathStyle\": {\n              \"description\": \"Address the bucket in the path rather than the host name, as MinIO usually needs.\",\n              \"type\": \"boolean\"\n            },\n            \"probePrefix\": {\n              \"$ref\": \"#/$defs/ProviderObjectPrefix\",\n              \"description\": \"Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.\"\n            },\n            \"region\": {\n              \"description\": \"The SigV4 signing region; `auto` for Cloudflare R2.\",\n              \"maxLength\": 64,\n              \"pattern\": \"^[a-z0-9-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"endpoint\",\n            \"region\",\n            \"bucket\",\n            \"accessKeyId\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.\",\n          \"properties\": {\n            \"allowedCalls\": {\n              \"description\": \"Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.\",\n              \"items\": {\n                \"$ref\": \"#/$defs/SuiMoveCall\"\n              },\n              \"maxItems\": 32,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"allowedObjects\": {\n              \"description\": \"Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.\",\n              \"items\": {\n                \"pattern\": \"^0x[0-9a-f]{64}$\",\n                \"type\": \"string\"\n              },\n              \"maxItems\": 32,\n              \"type\": \"array\"\n            },\n            \"maxCoinOutPerTx\": {\n              \"description\": \"Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.\",\n              \"items\": {\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"amount\": {\n                    \"minimum\": 0,\n                    \"type\": \"integer\"\n                  },\n                  \"coinType\": {\n                    \"maxLength\": 512,\n                    \"pattern\": \"^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$\",\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"coinType\",\n                  \"amount\"\n                ],\n                \"type\": \"object\"\n              },\n              \"maxItems\": 8,\n              \"type\": \"array\"\n            },\n            \"maxGasBudgetMist\": {\n              \"description\": \"The largest gas budget one transaction may declare.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"maxGasPerDayMist\": {\n              \"description\": \"The total gas budget signed per rolling 24 hours.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"model\": {\n              \"const\": \"sui-signer\",\n              \"type\": \"string\"\n            },\n            \"network\": {\n              \"enum\": [\n                \"mainnet\",\n                \"testnet\",\n                \"devnet\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"network\",\n            \"allowedCalls\",\n            \"maxGasBudgetMist\",\n            \"maxGasPerDayMist\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.\",\n          \"properties\": {\n            \"baseUrl\": {\n              \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n            },\n            \"driver\": {\n              \"description\": \"The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.\",\n              \"maxLength\": 64,\n              \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n              \"type\": \"string\"\n            },\n            \"model\": {\n              \"const\": \"static-secret\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"driver\",\n            \"baseUrl\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"AccountSettings\"\n    },\n    \"AccountState\": {\n      \"description\": \"`active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.\",\n      \"enum\": [\n        \"active\",\n        \"suspended\",\n        \"archived\"\n      ],\n      \"title\": \"AccountState\",\n      \"type\": \"string\"\n    },\n    \"AwsArn\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^arn:aws[a-z-]*:[a-z0-9-]+:[a-z0-9-]*:[0-9]{0,12}:[A-Za-z0-9+=,.@_/:-]+$\",\n      \"title\": \"AwsArn\",\n      \"type\": \"string\"\n    },\n    \"AwsRegion\": {\n      \"maxLength\": 32,\n      \"pattern\": \"^[a-z]{2}(-gov)?-[a-z]+-[0-9]$\",\n      \"title\": \"AwsRegion\",\n      \"type\": \"string\"\n    },\n    \"CredentialScopeCeiling\": {\n      \"additionalProperties\": false,\n      \"description\": \"The widest scope a binding's consumer may request. An issuance is inside the ceiling when its `prefix` begins with one of `prefixes`, every one of its `actions` is in `actions`, and every one of its `scopes` is in `scopes`. Absent members confer nothing: a ceiling with no `prefixes` permits no storage issuance.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"prefixes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scopes\": {\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScopeCeiling\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.\",\n      \"properties\": {\n        \"bindings\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/AccountBinding\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/AccountContextId\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"egressHosts\": {\n          \"description\": \"The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.\",\n          \"items\": {\n            \"maxLength\": 253,\n            \"pattern\": \"^[a-z0-9.-]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AccountId\"\n        },\n        \"label\": {\n          \"description\": \"Display name. Untrusted text: render it, never interpret it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastProbe\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        },\n        \"providerSetupRequired\": {\n          \"description\": \"True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.\",\n          \"type\": \"boolean\"\n        },\n        \"publicMaterial\": {\n          \"$ref\": \"#/$defs/AccountPublicMaterial\",\n          \"description\": \"Absent for the static models, which hold a secret rather than a key.\"\n        },\n        \"secret\": {\n          \"$ref\": \"#/$defs/AccountSecretInfo\",\n          \"description\": \"Static models only; absent until the secret is set.\"\n        },\n        \"settings\": {\n          \"$ref\": \"#/$defs/AccountSettings\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/AccountState\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"label\",\n        \"context\",\n        \"settings\",\n        \"state\",\n        \"bindings\",\n        \"egressHosts\",\n        \"providerSetupRequired\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ExternalAccount\",\n      \"type\": \"object\"\n    },\n    \"ProviderBucketName\": {\n      \"description\": \"A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping.\",\n      \"maxLength\": 63,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9][a-z0-9.-]*[a-z0-9]$\",\n      \"title\": \"ProviderBucketName\",\n      \"type\": \"string\"\n    },\n    \"ProviderHttpsUrl\": {\n      \"format\": \"uri\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^https://[^\\\\s\\\"'\\\\\\\\]+$\",\n      \"title\": \"ProviderHttpsUrl\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccount\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"External Accounts — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SecretFingerprint\": {\n      \"description\": \"Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.\",\n      \"maxLength\": 33,\n      \"pattern\": \"^hmacsha256:[A-Za-z0-9_-]{22}$\",\n      \"title\": \"SecretFingerprint\",\n      \"type\": \"string\"\n    },\n    \"SuiMoveCall\": {\n      \"additionalProperties\": false,\n      \"description\": \"One Move function an account's transactions may call.\",\n      \"properties\": {\n        \"function\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"package\": {\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"package\",\n        \"module\",\n        \"function\"\n      ],\n      \"title\": \"SuiMoveCall\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/accounts/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read one external account. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"id\"\n  ],\n  \"title\": \"External Accounts — Get — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/external/accounts/get/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.\",\n      \"properties\": {\n        \"consumer\": {\n          \"description\": \"The DID of the integration allowed to use the account.\",\n          \"maxLength\": 2048,\n          \"minLength\": 7,\n          \"pattern\": \"^did:[a-z0-9]+:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"maxTtlSeconds\": {\n          \"description\": \"The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.\",\n          \"maximum\": 3600,\n          \"minimum\": 60,\n          \"type\": \"integer\"\n        },\n        \"ratePerMinute\": {\n          \"description\": \"Issuances or signatures per minute for this binding.\",\n          \"maximum\": 600,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"scopeCeiling\": {\n          \"$ref\": \"#/$defs/CredentialScopeCeiling\",\n          \"description\": \"Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.\"\n        },\n        \"sourceCidrs\": {\n          \"description\": \"Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.\",\n          \"items\": {\n            \"maxLength\": 49,\n            \"pattern\": \"^[0-9a-fA-F:.]+/[0-9]{1,3}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"consumer\",\n        \"maxTtlSeconds\",\n        \"ratePerMinute\"\n      ],\n      \"title\": \"AccountBinding\",\n      \"type\": \"object\"\n    },\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"AccountPublicMaterial\": {\n      \"additionalProperties\": false,\n      \"description\": \"The public half of the account's key, as the provider needs it. Never a private key.\",\n      \"properties\": {\n        \"address\": {\n          \"description\": \"`sui-signer`: the Sui address the key controls.\",\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"algorithm\": {\n          \"enum\": [\n            \"ES256\",\n            \"RS256\",\n            \"Secp256r1\"\n          ],\n          \"type\": \"string\"\n        },\n        \"certificatePem\": {\n          \"description\": \"`aws-roles-anywhere`: the trust anchor's CA certificate. `azure-cert`: the certificate uploaded to the app registration.\",\n          \"maxLength\": 16384,\n          \"pattern\": \"^-----BEGIN CERTIFICATE-----[A-Za-z0-9+/=\\\\r\\\\n]+-----END CERTIFICATE-----\\\\s*$\",\n          \"type\": \"string\"\n        },\n        \"keyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of the public key's SubjectPublicKeyInfo DER.\"\n        },\n        \"pendingKeyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"During a rotation (external/accounts/keys/rotate), the staged successor key, until it is confirmed and the current key retires.\"\n        },\n        \"publicKeyJwk\": {\n          \"additionalProperties\": false,\n          \"description\": \"The public key as a JWK, with `kid`. Public members only: the schema admits no private member (`d`, `p`, `q`, `dp`, `dq`, `qi`), so a document carrying one fails validation.\",\n          \"properties\": {\n            \"alg\": {\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"crv\": {\n              \"enum\": [\n                \"P-256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"e\": {\n              \"maxLength\": 16,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"kid\": {\n              \"maxLength\": 128,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"kty\": {\n              \"enum\": [\n                \"EC\",\n                \"RSA\"\n              ],\n              \"type\": \"string\"\n            },\n            \"n\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"use\": {\n              \"const\": \"sig\",\n              \"type\": \"string\"\n            },\n            \"x\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"y\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kty\",\n            \"kid\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"keyFingerprint\"\n      ],\n      \"title\": \"AccountPublicMaterial\",\n      \"type\": \"object\"\n    },\n    \"AccountSecretInfo\": {\n      \"additionalProperties\": false,\n      \"description\": \"That a static model's secret is set, and which one. Never its value.\",\n      \"properties\": {\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it.\"\n        },\n        \"setAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"fingerprint\",\n        \"setAt\"\n      ],\n      \"title\": \"AccountSecretInfo\",\n      \"type\": \"object\"\n    },\n    \"AccountSettings\": {\n      \"description\": \"Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/AwsRolesAnywhereSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/GcpWifPinnedSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/AzureCertSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/OAuth2PrivateKeyJwtSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/S3StaticPresignSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/SuiSignerSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/StaticSecretSettings\"\n        }\n      ],\n      \"title\": \"AccountSettings\"\n    },\n    \"AccountState\": {\n      \"description\": \"`active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.\",\n      \"enum\": [\n        \"active\",\n        \"suspended\",\n        \"archived\"\n      ],\n      \"title\": \"AccountState\",\n      \"type\": \"string\"\n    },\n    \"AwsArn\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^arn:aws[a-z-]*:[a-z0-9-]+:[a-z0-9-]*:[0-9]{0,12}:[A-Za-z0-9+=,.@_/:-]+$\",\n      \"title\": \"AwsArn\",\n      \"type\": \"string\"\n    },\n    \"AwsRegion\": {\n      \"maxLength\": 32,\n      \"pattern\": \"^[a-z]{2}(-gov)?-[a-z]+-[0-9]$\",\n      \"title\": \"AwsRegion\",\n      \"type\": \"string\"\n    },\n    \"AwsRolesAnywhereSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.\",\n      \"properties\": {\n        \"bucket\": {\n          \"$ref\": \"#/$defs/ProviderBucketName\",\n          \"description\": \"The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.\"\n        },\n        \"chainedRoleArn\": {\n          \"$ref\": \"#/$defs/AwsArn\",\n          \"description\": \"When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.\"\n        },\n        \"model\": {\n          \"const\": \"aws-roles-anywhere\",\n          \"type\": \"string\"\n        },\n        \"profileArn\": {\n          \"$ref\": \"#/$defs/AwsArn\"\n        },\n        \"region\": {\n          \"$ref\": \"#/$defs/AwsRegion\"\n        },\n        \"roleArn\": {\n          \"$ref\": \"#/$defs/AwsArn\"\n        },\n        \"trustAnchorArn\": {\n          \"$ref\": \"#/$defs/AwsArn\",\n          \"description\": \"The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"region\",\n        \"profileArn\",\n        \"roleArn\",\n        \"trustAnchorArn\"\n      ],\n      \"title\": \"AwsRolesAnywhereSettings\",\n      \"type\": \"object\"\n    },\n    \"AzureCertSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.\",\n      \"properties\": {\n        \"authorityHost\": {\n          \"description\": \"Absent means `login.microsoftonline.com`.\",\n          \"maxLength\": 253,\n          \"pattern\": \"^[a-z0-9.-]+$\",\n          \"type\": \"string\"\n        },\n        \"clientId\": {\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"const\": \"azure-cert\",\n          \"type\": \"string\"\n        },\n        \"tenantId\": {\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"tokenScope\": {\n          \"description\": \"The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.\",\n          \"maxLength\": 512,\n          \"pattern\": \"^[A-Za-z0-9:/._-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"tenantId\",\n        \"clientId\",\n        \"tokenScope\"\n      ],\n      \"title\": \"AzureCertSettings\",\n      \"type\": \"object\"\n    },\n    \"CredentialScopeCeiling\": {\n      \"additionalProperties\": false,\n      \"description\": \"The widest scope a binding's consumer may request. An issuance is inside the ceiling when its `prefix` begins with one of `prefixes`, every one of its `actions` is in `actions`, and every one of its `scopes` is in `scopes`. Absent members confer nothing: a ceiling with no `prefixes` permits no storage issuance.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"prefixes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scopes\": {\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScopeCeiling\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.\",\n      \"properties\": {\n        \"bindings\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/AccountBinding\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/AccountContextId\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"egressHosts\": {\n          \"description\": \"The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress.\",\n          \"items\": {\n            \"maxLength\": 253,\n            \"pattern\": \"^[a-z0-9.-]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AccountId\"\n        },\n        \"label\": {\n          \"description\": \"Display name. Untrusted text: render it, never interpret it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastProbe\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        },\n        \"providerSetupRequired\": {\n          \"description\": \"True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.\",\n          \"type\": \"boolean\"\n        },\n        \"publicMaterial\": {\n          \"$ref\": \"#/$defs/AccountPublicMaterial\",\n          \"description\": \"Absent for the static models, which hold a secret rather than a key.\"\n        },\n        \"secret\": {\n          \"$ref\": \"#/$defs/AccountSecretInfo\",\n          \"description\": \"Static models only; absent until the secret is set.\"\n        },\n        \"settings\": {\n          \"$ref\": \"#/$defs/AccountSettings\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/AccountState\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"label\",\n        \"context\",\n        \"settings\",\n        \"state\",\n        \"bindings\",\n        \"egressHosts\",\n        \"providerSetupRequired\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ExternalAccount\",\n      \"type\": \"object\"\n    },\n    \"GcpWifPinnedSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.\",\n      \"properties\": {\n        \"bucket\": {\n          \"$ref\": \"#/$defs/ProviderBucketName\",\n          \"description\": \"The GCS bucket issuances are scoped within, by a Credential Access Boundary.\"\n        },\n        \"model\": {\n          \"const\": \"gcp-wif-pinned\",\n          \"type\": \"string\"\n        },\n        \"poolId\": {\n          \"pattern\": \"^[a-z0-9-]{4,32}$\",\n          \"type\": \"string\"\n        },\n        \"projectNumber\": {\n          \"pattern\": \"^[0-9]{1,20}$\",\n          \"type\": \"string\"\n        },\n        \"providerId\": {\n          \"pattern\": \"^[a-z0-9-]{4,32}$\",\n          \"type\": \"string\"\n        },\n        \"serviceAccount\": {\n          \"description\": \"When set, the federated token is exchanged for this service account's access token.\",\n          \"maxLength\": 254,\n          \"pattern\": \"^[a-z0-9-]+@[a-z0-9-]+\\\\.iam\\\\.gserviceaccount\\\\.com$\",\n          \"type\": \"string\"\n        },\n        \"signingAlgorithm\": {\n          \"description\": \"The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.\",\n          \"enum\": [\n            \"ES256\",\n            \"RS256\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"projectNumber\",\n        \"poolId\",\n        \"providerId\"\n      ],\n      \"title\": \"GcpWifPinnedSettings\",\n      \"type\": \"object\"\n    },\n    \"OAuth2PrivateKeyJwtSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: the host of `tokenEndpoint`, and nothing else.\",\n      \"properties\": {\n        \"audience\": {\n          \"description\": \"The assertion's `aud`. Absent means `tokenEndpoint`.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^[!-~]+$\",\n          \"type\": \"string\"\n        },\n        \"clientId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"pattern\": \"^[!-~]+$\",\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"const\": \"oauth2-private-key-jwt\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"The scopes a binding may request, the ceiling for every issuance.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"signingAlgorithm\": {\n          \"enum\": [\n            \"ES256\",\n            \"RS256\"\n          ],\n          \"type\": \"string\"\n        },\n        \"tokenEndpoint\": {\n          \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"tokenEndpoint\",\n        \"clientId\"\n      ],\n      \"title\": \"OAuth2PrivateKeyJwtSettings\",\n      \"type\": \"object\"\n    },\n    \"ProviderBucketName\": {\n      \"description\": \"A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping.\",\n      \"maxLength\": 63,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9][a-z0-9.-]*[a-z0-9]$\",\n      \"title\": \"ProviderBucketName\",\n      \"type\": \"string\"\n    },\n    \"ProviderHttpsUrl\": {\n      \"format\": \"uri\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^https://[^\\\\s\\\"'\\\\\\\\]+$\",\n      \"title\": \"ProviderHttpsUrl\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccount\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"External Accounts — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"S3StaticPresignSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.\",\n      \"properties\": {\n        \"accessKeyId\": {\n          \"description\": \"The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.\",\n          \"maxLength\": 128,\n          \"pattern\": \"^[A-Za-z0-9]+$\",\n          \"type\": \"string\"\n        },\n        \"bucket\": {\n          \"$ref\": \"#/$defs/ProviderBucketName\"\n        },\n        \"endpoint\": {\n          \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n        },\n        \"model\": {\n          \"const\": \"s3-static-presign\",\n          \"type\": \"string\"\n        },\n        \"pathStyle\": {\n          \"description\": \"Address the bucket in the path rather than the host name, as MinIO usually needs.\",\n          \"type\": \"boolean\"\n        },\n        \"region\": {\n          \"description\": \"The SigV4 signing region; `auto` for Cloudflare R2.\",\n          \"maxLength\": 64,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"endpoint\",\n        \"region\",\n        \"bucket\",\n        \"accessKeyId\"\n      ],\n      \"title\": \"S3StaticPresignSettings\",\n      \"type\": \"object\"\n    },\n    \"StaticSecretSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.\",\n      \"properties\": {\n        \"baseUrl\": {\n          \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n        },\n        \"driver\": {\n          \"description\": \"The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.\",\n          \"maxLength\": 64,\n          \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"const\": \"static-secret\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"driver\",\n        \"baseUrl\"\n      ],\n      \"title\": \"StaticSecretSettings\",\n      \"type\": \"object\"\n    },\n    \"SuiMoveCall\": {\n      \"additionalProperties\": false,\n      \"description\": \"One Move function an account's transactions may call.\",\n      \"properties\": {\n        \"function\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"package\": {\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"package\",\n        \"module\",\n        \"function\"\n      ],\n      \"title\": \"SuiMoveCall\",\n      \"type\": \"object\"\n    },\n    \"SuiSignerSettings\": {\n      \"additionalProperties\": false,\n      \"description\": \"No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.\",\n      \"properties\": {\n        \"allowedCalls\": {\n          \"description\": \"Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SuiMoveCall\"\n          },\n          \"maxItems\": 32,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"allowedObjects\": {\n          \"description\": \"Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.\",\n          \"items\": {\n            \"pattern\": \"^0x[0-9a-f]{64}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        \"maxCoinOutPerTx\": {\n          \"description\": \"Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"amount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"coinType\": {\n                \"maxLength\": 512,\n                \"pattern\": \"^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"coinType\",\n              \"amount\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        },\n        \"maxGasBudgetMist\": {\n          \"description\": \"The largest gas budget one transaction may declare.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"maxGasPerDayMist\": {\n          \"description\": \"The total gas budget signed per rolling 24 hours.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"model\": {\n          \"const\": \"sui-signer\",\n          \"type\": \"string\"\n        },\n        \"network\": {\n          \"enum\": [\n            \"mainnet\",\n            \"testnet\",\n            \"devnet\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"model\",\n        \"network\",\n        \"allowedCalls\",\n        \"maxGasBudgetMist\",\n        \"maxGasPerDayMist\"\n      ],\n      \"title\": \"SuiSignerSettings\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AccountBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.\",\n      \"properties\": {\n        \"consumer\": {\n          \"description\": \"The DID of the integration allowed to use the account.\",\n          \"maxLength\": 2048,\n          \"minLength\": 7,\n          \"pattern\": \"^did:[a-z0-9]+:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"maxTtlSeconds\": {\n          \"description\": \"The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.\",\n          \"maximum\": 3600,\n          \"minimum\": 60,\n          \"type\": \"integer\"\n        },\n        \"ratePerMinute\": {\n          \"description\": \"Issuances or signatures per minute for this binding.\",\n          \"maximum\": 600,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"scopeCeiling\": {\n          \"$ref\": \"#/$defs/CredentialScopeCeiling\",\n          \"description\": \"Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.\"\n        },\n        \"sourceCidrs\": {\n          \"description\": \"Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.\",\n          \"items\": {\n            \"maxLength\": 49,\n            \"pattern\": \"^[0-9a-fA-F:.]+/[0-9]{1,3}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"consumer\",\n        \"maxTtlSeconds\",\n        \"ratePerMinute\"\n      ],\n      \"title\": \"AccountBinding\",\n      \"type\": \"object\"\n    },\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"complete\": {\n          \"description\": \"True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.\",\n          \"type\": \"boolean\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step that ran succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"complete\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"AccountPublicMaterial\": {\n      \"additionalProperties\": false,\n      \"description\": \"The public half of the account's key, as the provider needs it. Never a private key.\",\n      \"properties\": {\n        \"address\": {\n          \"description\": \"`sui-signer`: the Sui address the key controls.\",\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"algorithm\": {\n          \"enum\": [\n            \"ES256\",\n            \"RS256\",\n            \"Secp256r1\"\n          ],\n          \"type\": \"string\"\n        },\n        \"certificatePem\": {\n          \"description\": \"`aws-roles-anywhere`: the trust anchor's CA certificate. `azure-cert`: the certificate uploaded to the app registration.\",\n          \"maxLength\": 16384,\n          \"pattern\": \"^-----BEGIN CERTIFICATE-----[A-Za-z0-9+/=\\\\r\\\\n]+-----END CERTIFICATE-----\\\\s*$\",\n          \"type\": \"string\"\n        },\n        \"keyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of the public key's SubjectPublicKeyInfo DER.\"\n        },\n        \"pendingKeyFingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"During a rotation (external/accounts/keys/rotate), the staged successor key, until it is confirmed and the current key retires.\"\n        },\n        \"publicKeyJwk\": {\n          \"additionalProperties\": false,\n          \"description\": \"The public key as a JWK, with `kid`. Public members only: the schema admits no private member (`d`, `p`, `q`, `dp`, `dq`, `qi`), so a document carrying one fails validation.\",\n          \"properties\": {\n            \"alg\": {\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"crv\": {\n              \"enum\": [\n                \"P-256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"e\": {\n              \"maxLength\": 16,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"kid\": {\n              \"maxLength\": 128,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"kty\": {\n              \"enum\": [\n                \"EC\",\n                \"RSA\"\n              ],\n              \"type\": \"string\"\n            },\n            \"n\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"use\": {\n              \"const\": \"sig\",\n              \"type\": \"string\"\n            },\n            \"x\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            },\n            \"y\": {\n              \"maxLength\": 1024,\n              \"pattern\": \"^[A-Za-z0-9_-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kty\",\n            \"kid\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"keyFingerprint\"\n      ],\n      \"title\": \"AccountPublicMaterial\",\n      \"type\": \"object\"\n    },\n    \"AccountSecretInfo\": {\n      \"additionalProperties\": false,\n      \"description\": \"That a static model's secret is set, and which one. Never its value.\",\n      \"properties\": {\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/SecretFingerprint\"\n        },\n        \"setAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"fingerprint\",\n        \"setAt\"\n      ],\n      \"title\": \"AccountSecretInfo\",\n      \"type\": \"object\"\n    },\n    \"AccountSettings\": {\n      \"description\": \"Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` (\\\"the `sui-signer` settings\\\"). They carry no `title`, so that every binding renders each as a plain variant of this union.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.\",\n          \"properties\": {\n            \"bucket\": {\n              \"$ref\": \"#/$defs/ProviderBucketName\",\n              \"description\": \"The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.\"\n            },\n            \"chainedRoleArn\": {\n              \"$ref\": \"#/$defs/AwsArn\",\n              \"description\": \"When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.\"\n            },\n            \"model\": {\n              \"const\": \"aws-roles-anywhere\",\n              \"type\": \"string\"\n            },\n            \"probePrefix\": {\n              \"$ref\": \"#/$defs/ProviderObjectPrefix\",\n              \"description\": \"Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.\"\n            },\n            \"profileArn\": {\n              \"$ref\": \"#/$defs/AwsArn\"\n            },\n            \"region\": {\n              \"$ref\": \"#/$defs/AwsRegion\"\n            },\n            \"roleArn\": {\n              \"$ref\": \"#/$defs/AwsArn\"\n            },\n            \"trustAnchorArn\": {\n              \"$ref\": \"#/$defs/AwsArn\",\n              \"description\": \"The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"region\",\n            \"profileArn\",\n            \"roleArn\",\n            \"trustAnchorArn\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.\",\n          \"properties\": {\n            \"bucket\": {\n              \"$ref\": \"#/$defs/ProviderBucketName\",\n              \"description\": \"The GCS bucket issuances are scoped within, by a Credential Access Boundary.\"\n            },\n            \"model\": {\n              \"const\": \"gcp-wif-pinned\",\n              \"type\": \"string\"\n            },\n            \"poolId\": {\n              \"pattern\": \"^[a-z0-9-]{4,32}$\",\n              \"type\": \"string\"\n            },\n            \"probePrefix\": {\n              \"$ref\": \"#/$defs/ProviderObjectPrefix\",\n              \"description\": \"Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.\"\n            },\n            \"projectNumber\": {\n              \"pattern\": \"^[0-9]{1,20}$\",\n              \"type\": \"string\"\n            },\n            \"providerId\": {\n              \"pattern\": \"^[a-z0-9-]{4,32}$\",\n              \"type\": \"string\"\n            },\n            \"serviceAccount\": {\n              \"description\": \"When set, the federated token is exchanged for this service account's access token.\",\n              \"maxLength\": 254,\n              \"pattern\": \"^[a-z0-9-]+@[a-z0-9-]+\\\\.iam\\\\.gserviceaccount\\\\.com$\",\n              \"type\": \"string\"\n            },\n            \"signingAlgorithm\": {\n              \"description\": \"The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.\",\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"projectNumber\",\n            \"poolId\",\n            \"providerId\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.\",\n          \"properties\": {\n            \"authorityHost\": {\n              \"description\": \"Absent means `login.microsoftonline.com`.\",\n              \"maxLength\": 253,\n              \"pattern\": \"^[a-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"clientId\": {\n              \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n              \"type\": \"string\"\n            },\n            \"model\": {\n              \"const\": \"azure-cert\",\n              \"type\": \"string\"\n            },\n            \"tenantId\": {\n              \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n              \"type\": \"string\"\n            },\n            \"tokenScope\": {\n              \"description\": \"The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.\",\n              \"maxLength\": 512,\n              \"pattern\": \"^[A-Za-z0-9:/._-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"tenantId\",\n            \"clientId\",\n            \"tokenScope\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: the host of `tokenEndpoint`, and nothing else.\",\n          \"properties\": {\n            \"audience\": {\n              \"description\": \"The assertion's `aud`. Absent means `tokenEndpoint`.\",\n              \"maxLength\": 2048,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"clientId\": {\n              \"maxLength\": 512,\n              \"minLength\": 1,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"model\": {\n              \"const\": \"oauth2-private-key-jwt\",\n              \"type\": \"string\"\n            },\n            \"scopes\": {\n              \"description\": \"The scopes a binding may request, the ceiling for every issuance.\",\n              \"items\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n                \"type\": \"string\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"signingAlgorithm\": {\n              \"enum\": [\n                \"ES256\",\n                \"RS256\"\n              ],\n              \"type\": \"string\"\n            },\n            \"tokenEndpoint\": {\n              \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"tokenEndpoint\",\n            \"clientId\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Issuance needs no egress: presigning is a computation inside the custodian, and the consumer uses the URL itself. The probe connects to the host of `endpoint`, which `egressHosts` therefore lists.\",\n          \"properties\": {\n            \"accessKeyId\": {\n              \"description\": \"The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.\",\n              \"maxLength\": 128,\n              \"pattern\": \"^[A-Za-z0-9]+$\",\n              \"type\": \"string\"\n            },\n            \"bucket\": {\n              \"$ref\": \"#/$defs/ProviderBucketName\"\n            },\n            \"endpoint\": {\n              \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n            },\n            \"model\": {\n              \"const\": \"s3-static-presign\",\n              \"type\": \"string\"\n            },\n            \"pathStyle\": {\n              \"description\": \"Address the bucket in the path rather than the host name, as MinIO usually needs.\",\n              \"type\": \"boolean\"\n            },\n            \"probePrefix\": {\n              \"$ref\": \"#/$defs/ProviderObjectPrefix\",\n              \"description\": \"Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.\"\n            },\n            \"region\": {\n              \"description\": \"The SigV4 signing region; `auto` for Cloudflare R2.\",\n              \"maxLength\": 64,\n              \"pattern\": \"^[a-z0-9-]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"endpoint\",\n            \"region\",\n            \"bucket\",\n            \"accessKeyId\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.\",\n          \"properties\": {\n            \"allowedCalls\": {\n              \"description\": \"Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.\",\n              \"items\": {\n                \"$ref\": \"#/$defs/SuiMoveCall\"\n              },\n              \"maxItems\": 32,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"allowedObjects\": {\n              \"description\": \"Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.\",\n              \"items\": {\n                \"pattern\": \"^0x[0-9a-f]{64}$\",\n                \"type\": \"string\"\n              },\n              \"maxItems\": 32,\n              \"type\": \"array\"\n            },\n            \"maxCoinOutPerTx\": {\n              \"description\": \"Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.\",\n              \"items\": {\n                \"additionalProperties\": false,\n                \"properties\": {\n                  \"amount\": {\n                    \"minimum\": 0,\n                    \"type\": \"integer\"\n                  },\n                  \"coinType\": {\n                    \"maxLength\": 512,\n                    \"pattern\": \"^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$\",\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"coinType\",\n                  \"amount\"\n                ],\n                \"type\": \"object\"\n              },\n              \"maxItems\": 8,\n              \"type\": \"array\"\n            },\n            \"maxGasBudgetMist\": {\n              \"description\": \"The largest gas budget one transaction may declare.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"maxGasPerDayMist\": {\n              \"description\": \"The total gas budget signed per rolling 24 hours.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"model\": {\n              \"const\": \"sui-signer\",\n              \"type\": \"string\"\n            },\n            \"network\": {\n              \"enum\": [\n                \"mainnet\",\n                \"testnet\",\n                \"devnet\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"network\",\n            \"allowedCalls\",\n            \"maxGasBudgetMist\",\n            \"maxGasPerDayMist\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.\",\n          \"properties\": {\n            \"baseUrl\": {\n              \"$ref\": \"#/$defs/ProviderHttpsUrl\"\n            },\n            \"driver\": {\n              \"description\": \"The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.\",\n              \"maxLength\": 64,\n              \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n              \"type\": \"string\"\n            },\n            \"model\": {\n              \"const\": \"static-secret\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"model\",\n            \"driver\",\n            \"baseUrl\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"AccountSettings\"\n    },\n    \"AccountState\": {\n      \"description\": \"`active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.\",\n      \"enum\": [\n        \"active\",\n        \"suspended\",\n        \"archived\"\n      ],\n      \"title\": \"AccountState\",\n      \"type\": \"string\"\n    },\n    \"AwsArn\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^arn:aws[a-z-]*:[a-z0-9-]+:[a-z0-9-]*:[0-9]{0,12}:[A-Za-z0-9+=,.@_/:-]+$\",\n      \"title\": \"AwsArn\",\n      \"type\": \"string\"\n    },\n    \"AwsRegion\": {\n      \"maxLength\": 32,\n      \"pattern\": \"^[a-z]{2}(-gov)?-[a-z]+-[0-9]$\",\n      \"title\": \"AwsRegion\",\n      \"type\": \"string\"\n    },\n    \"CredentialScopeCeiling\": {\n      \"additionalProperties\": false,\n      \"description\": \"The widest scope a binding's consumer may request. An issuance is inside the ceiling when its `prefix` begins with one of `prefixes`, every one of its `actions` is in `actions`, and every one of its `scopes` is in `scopes`. Absent members confer nothing: a ceiling with no `prefixes` permits no storage issuance.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"prefixes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scopes\": {\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScopeCeiling\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.\",\n      \"properties\": {\n        \"bindings\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/AccountBinding\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/AccountContextId\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"egressHosts\": {\n          \"description\": \"The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.\",\n          \"items\": {\n            \"maxLength\": 253,\n            \"pattern\": \"^[a-z0-9.-]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AccountId\"\n        },\n        \"label\": {\n          \"description\": \"Display name. Untrusted text: render it, never interpret it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lastProbe\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        },\n        \"providerSetupRequired\": {\n          \"description\": \"True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.\",\n          \"type\": \"boolean\"\n        },\n        \"publicMaterial\": {\n          \"$ref\": \"#/$defs/AccountPublicMaterial\",\n          \"description\": \"Absent for the static models, which hold a secret rather than a key.\"\n        },\n        \"secret\": {\n          \"$ref\": \"#/$defs/AccountSecretInfo\",\n          \"description\": \"Static models only; absent until the secret is set.\"\n        },\n        \"settings\": {\n          \"$ref\": \"#/$defs/AccountSettings\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/AccountState\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"label\",\n        \"context\",\n        \"settings\",\n        \"state\",\n        \"bindings\",\n        \"egressHosts\",\n        \"providerSetupRequired\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ExternalAccount\",\n      \"type\": \"object\"\n    },\n    \"ProviderBucketName\": {\n      \"description\": \"A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping.\",\n      \"maxLength\": 63,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9][a-z0-9.-]*[a-z0-9]$\",\n      \"title\": \"ProviderBucketName\",\n      \"type\": \"string\"\n    },\n    \"ProviderHttpsUrl\": {\n      \"format\": \"uri\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^https://[^\\\\s\\\"'\\\\\\\\]+$\",\n      \"title\": \"ProviderHttpsUrl\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccount\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"account\"\n      ],\n      \"title\": \"External Accounts — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"SecretFingerprint\": {\n      \"description\": \"Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.\",\n      \"maxLength\": 33,\n      \"pattern\": \"^hmacsha256:[A-Za-z0-9_-]{22}$\",\n      \"title\": \"SecretFingerprint\",\n      \"type\": \"string\"\n    },\n    \"SuiMoveCall\": {\n      \"additionalProperties\": false,\n      \"description\": \"One Move function an account's transactions may call.\",\n      \"properties\": {\n        \"function\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"pattern\": \"^[A-Za-z][A-Za-z0-9_]{0,127}$\",\n          \"type\": \"string\"\n        },\n        \"package\": {\n          \"pattern\": \"^0x[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"package\",\n        \"module\",\n        \"function\"\n      ],\n      \"title\": \"SuiMoveCall\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

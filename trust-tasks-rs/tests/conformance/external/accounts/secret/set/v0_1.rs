@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000010\",\n  \"type\": \"https://trusttasks.org/spec/external/accounts/secret/set/0.1#response\",\n  \"issuer\": \"did:example:custodian\",\n  \"recipient\": \"did:example:community-console\",\n  \"issuedAt\": \"2026-10-10T10:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-000000000105\",\n  \"payload\": {\n    \"fingerprint\": \"zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX\",\n    \"setAt\": \"2026-10-10T10:00:01Z\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000010\",\n  \"type\": \"https://trusttasks.org/spec/external/accounts/secret/set/0.1#response\",\n  \"issuer\": \"did:example:custodian\",\n  \"recipient\": \"did:example:community-console\",\n  \"issuedAt\": \"2026-10-10T10:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-000000000105\",\n  \"payload\": {\n    \"fingerprint\": \"hmacsha256:q3Vx9Lr2mB7cT0nY8wKe4A\",\n    \"setAt\": \"2026-10-10T10:00:01Z\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -53,6 +53,38 @@ fn rejects_invalid_examples() {
         assert!(
             !(serde_ok && schema_ok),
             "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+            i + 1,
+            note,
+            raw
+        );
+    }
+}
+/// Each `"variant": "response"` fixture in
+/// `payload.invalid-examples.json` MUST be rejected as a
+/// response payload by at least one of: serde deserialization
+/// into `Response`, or JSON-Schema validation against the
+/// `$anchor: "response"` sub-schema (validate feature).
+#[cfg(feature = "validate")]
+#[test]
+fn rejects_invalid_response_examples() {
+    use trust_tasks_rs::validate::ValidatedPayload;
+    let fixtures: &[(&str, &str)] = &[
+        (
+            "A bare digest as the fingerprint. An unkeyed hash of a secret lets anyone who reads it test guesses offline; only a SecretFingerprint, keyed at the custodian, is accepted.",
+            "{\n  \"fingerprint\": \"zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX\",\n  \"setAt\": \"2026-10-10T10:00:01Z\"\n}",
+        ),
+    ];
+    for (i, (note, raw)) in fixtures.iter().enumerate() {
+        let value: serde_json::Value = match serde_json::from_str(raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+        let schema_ok = spec::Response::validate_value(&value).is_ok();
+        assert!(
+            !(serde_ok && schema_ok),
+            "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
             i + 1,
             note,

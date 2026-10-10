@@ -100,6 +100,7 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "at",
         "ok",
+        "complete",
         "steps"
       ],
       "properties": {
@@ -109,7 +110,11 @@ export const PAYLOAD_SCHEMA = {
         },
         "ok": {
           "type": "boolean",
-          "description": "True when every step succeeded."
+          "description": "True when every step that ran succeeded."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`."
         },
         "steps": {
           "type": "array",
@@ -218,6 +223,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "required": [
         "at",
         "ok",
+        "complete",
         "steps"
       ],
       "properties": {
@@ -227,7 +233,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "ok": {
           "type": "boolean",
-          "description": "True when every step succeeded."
+          "description": "True when every step that ran succeeded."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`."
         },
         "steps": {
           "type": "array",

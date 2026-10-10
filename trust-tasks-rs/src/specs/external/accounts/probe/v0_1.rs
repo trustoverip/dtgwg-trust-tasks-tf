@@ -193,6 +193,7 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 ///  "type": "object",
 ///  "required": [
 ///    "at",
+///    "complete",
 ///    "ok",
 ///    "steps"
 ///  ],
@@ -201,8 +202,12 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 ///      "type": "string",
 ///      "format": "date-time"
 ///    },
+///    "complete": {
+///      "description": "True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.",
+///      "type": "boolean"
+///    },
 ///    "ok": {
-///      "description": "True when every step succeeded.",
+///      "description": "True when every step that ran succeeded.",
 ///      "type": "boolean"
 ///    },
 ///    "steps": {
@@ -250,7 +255,9 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 #[non_exhaustive]
 pub struct AccountProbeReport {
     pub at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///True when every step succeeded.
+    ///True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.
+    pub complete: bool,
+    ///True when every step that ran succeeded.
     pub ok: bool,
     ///In order; the first failing step ends the probe.
     pub steps: ::std::vec::Vec<AccountProbeReportStepsItem>,
@@ -763,6 +770,7 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct AccountProbeReport {
         at: ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        complete: ::std::result::Result<bool, ::std::string::String>,
         ok: ::std::result::Result<bool, ::std::string::String>,
         steps: ::std::result::Result<
             ::std::vec::Vec<super::AccountProbeReportStepsItem>,
@@ -773,6 +781,7 @@ pub mod builder {
         fn default() -> Self {
             Self {
                 at: Err("no value supplied for at".to_string()),
+                complete: Err("no value supplied for complete".to_string()),
                 ok: Err("no value supplied for ok".to_string()),
                 steps: Err("no value supplied for steps".to_string()),
             }
@@ -787,6 +796,16 @@ pub mod builder {
             self.at = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for at: {e}"));
+            self
+        }
+        pub fn complete<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.complete = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for complete: {e}"));
             self
         }
         pub fn ok<T>(mut self, value: T) -> Self
@@ -817,6 +836,7 @@ pub mod builder {
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 at: value.at?,
+                complete: value.complete?,
                 ok: value.ok?,
                 steps: value.steps?,
             })
@@ -826,6 +846,7 @@ pub mod builder {
         fn from(value: super::AccountProbeReport) -> Self {
             Self {
                 at: Ok(value.at),
+                complete: Ok(value.complete),
                 ok: Ok(value.ok),
                 steps: Ok(value.steps),
             }
@@ -1062,7 +1083,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"report\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        }\n      },\n      \"required\": [\n        \"report\"\n      ],\n      \"title\": \"External Accounts — Probe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/accounts/probe/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Prove an external account works end to end. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"id\"\n  ],\n  \"title\": \"External Accounts — Probe — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"complete\": {\n          \"description\": \"True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.\",\n          \"type\": \"boolean\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step that ran succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"complete\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"report\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        }\n      },\n      \"required\": [\n        \"report\"\n      ],\n      \"title\": \"External Accounts — Probe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/accounts/probe/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Prove an external account works end to end. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"id\"\n  ],\n  \"title\": \"External Accounts — Probe — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1072,7 +1093,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"report\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        }\n      },\n      \"required\": [\n        \"report\"\n      ],\n      \"title\": \"External Accounts — Probe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"AccountProbeReport\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"complete\": {\n          \"description\": \"True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.\",\n          \"type\": \"boolean\"\n        },\n        \"ok\": {\n          \"description\": \"True when every step that ran succeeded.\",\n          \"type\": \"boolean\"\n        },\n        \"steps\": {\n          \"description\": \"In order; the first failing step ends the probe.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"durationMs\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"ok\": {\n                \"type\": \"boolean\"\n              },\n              \"providerError\": {\n                \"description\": \"The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.\",\n                \"maxLength\": 2048,\n                \"type\": \"string\"\n              },\n              \"providerRequestId\": {\n                \"maxLength\": 256,\n                \"pattern\": \"^[!-~]+$\",\n                \"type\": \"string\"\n              },\n              \"step\": {\n                \"$ref\": \"#/$defs/AccountProbeStep\"\n              }\n            },\n            \"required\": [\n              \"step\",\n              \"ok\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"ok\",\n        \"complete\",\n        \"steps\"\n      ],\n      \"title\": \"AccountProbeReport\",\n      \"type\": \"object\"\n    },\n    \"AccountProbeStep\": {\n      \"description\": \"`sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).\",\n      \"enum\": [\n        \"sign\",\n        \"exchange\",\n        \"put\",\n        \"get\",\n        \"delete\",\n        \"decode\"\n      ],\n      \"title\": \"AccountProbeStep\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"report\": {\n          \"$ref\": \"#/$defs/AccountProbeReport\"\n        }\n      },\n      \"required\": [\n        \"report\"\n      ],\n      \"title\": \"External Accounts — Probe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -1082,7 +1103,7 @@ impl crate::RequestPayload for Payload {
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::NOT_FOUND,
-    error_codes::NOT_ACTIVE,
+    error_codes::ARCHIVED,
     error_codes::PROVIDER_UNAVAILABLE,
 ];
 /// One constant per extended error code this specification declares
@@ -1101,13 +1122,13 @@ pub mod error_codes {
         code: "external:notFound",
         retryable: false,
     };
-    /// `external:notActive`
+    /// `external:archived`
     ///
-    /// The account is `suspended` or `archived` and cannot be used.
+    /// The account is `archived`; restore it before changing or using it. See the family conventions §2.
     ///
     /// Declared `retryable: false`.
-    pub const NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "external:notActive",
+    pub const ARCHIVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "external:archived",
         retryable: false,
     };
     /// `external:providerUnavailable`

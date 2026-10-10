@@ -3,7 +3,7 @@
  * Source: specs/external/accounts/secret/set/0.1/payload.schema.json
  */
 
-import type { AccountContextId, AccountId, DigestMultibase, Ext, SealedTransferBundle } from "../../../../../_shared/components.js";
+import type { AccountContextId, AccountId, Ext, SealedTransferBundle, SecretFingerprint } from "../../../../../_shared/components.js";
 
 
 /**
@@ -16,13 +16,13 @@ export interface ExternalAccountsSecretSetPayload {
   ext?: Ext;
 }
 export interface ExternalAccountsSecretSetResponsePayload {
-  fingerprint: DigestMultibase;
+  fingerprint: SecretFingerprint;
   setAt: string;
   ext?: Ext;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AccountContextId, AccountId, DigestMultibase, Ext, SealedTransferBundle };
+export type { AccountContextId, AccountId, Ext, SealedTransferBundle, SecretFingerprint };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/external/accounts/secret/set/0.1" as const;
@@ -83,7 +83,7 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "fingerprint": {
-          "$ref": "#/$defs/DigestMultibase"
+          "$ref": "#/$defs/SecretFingerprint"
         },
         "setAt": {
           "type": "string",
@@ -104,15 +104,12 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+    "SecretFingerprint": {
+      "title": "SecretFingerprint",
       "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
+      "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$",
+      "maxLength": 33,
+      "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest."
     },
     "SealedTransferBundle": {
       "title": "SealedTransferBundle",
@@ -120,7 +117,7 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 64,
       "maxLength": 65536,
       "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$",
-      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. The recipient is the X25519 derivation of the Ed25519 key of the DID it is sealed to. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
+      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
     },
     "AccountId": {
       "title": "AccountId",
@@ -156,7 +153,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "fingerprint": {
-          "$ref": "#/$defs/DigestMultibase"
+          "$ref": "#/$defs/SecretFingerprint"
         },
         "setAt": {
           "type": "string",
@@ -177,15 +174,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+    "SecretFingerprint": {
+      "title": "SecretFingerprint",
       "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
+      "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$",
+      "maxLength": 33,
+      "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest."
     },
     "SealedTransferBundle": {
       "title": "SealedTransferBundle",
@@ -193,7 +187,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 64,
       "maxLength": 65536,
       "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$",
-      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. The recipient is the X25519 derivation of the Ed25519 key of the DID it is sealed to. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
+      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
     },
     "AccountId": {
       "title": "AccountId",

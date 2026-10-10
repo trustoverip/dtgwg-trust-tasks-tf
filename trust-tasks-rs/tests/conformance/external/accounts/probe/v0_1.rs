@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000018\",\n  \"type\": \"https://trusttasks.org/spec/external/accounts/probe/0.1#response\",\n  \"issuer\": \"did:example:custodian\",\n  \"recipient\": \"did:example:community-console\",\n  \"issuedAt\": \"2026-10-10T10:00:04Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-000000000109\",\n  \"payload\": {\n    \"report\": {\n      \"at\": \"2026-10-10T10:00:03Z\",\n      \"ok\": true,\n      \"steps\": [\n        {\n          \"step\": \"sign\",\n          \"ok\": true,\n          \"durationMs\": 4\n        },\n        {\n          \"step\": \"exchange\",\n          \"ok\": true,\n          \"durationMs\": 212,\n          \"providerRequestId\": \"7c1d9a3e-2f4b-4e6a-8b0c-1d3f5a7b9c2e\"\n        },\n        {\n          \"step\": \"put\",\n          \"ok\": true,\n          \"durationMs\": 88\n        },\n        {\n          \"step\": \"get\",\n          \"ok\": true,\n          \"durationMs\": 41\n        },\n        {\n          \"step\": \"delete\",\n          \"ok\": true,\n          \"durationMs\": 39\n        }\n      ]\n    }\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000018\",\n  \"type\": \"https://trusttasks.org/spec/external/accounts/probe/0.1#response\",\n  \"issuer\": \"did:example:custodian\",\n  \"recipient\": \"did:example:community-console\",\n  \"issuedAt\": \"2026-10-10T10:00:04Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-000000000109\",\n  \"payload\": {\n    \"report\": {\n      \"at\": \"2026-10-10T10:00:03Z\",\n      \"ok\": true,\n      \"complete\": true,\n      \"steps\": [\n        {\n          \"step\": \"sign\",\n          \"ok\": true,\n          \"durationMs\": 4\n        },\n        {\n          \"step\": \"exchange\",\n          \"ok\": true,\n          \"durationMs\": 212,\n          \"providerRequestId\": \"7c1d9a3e-2f4b-4e6a-8b0c-1d3f5a7b9c2e\"\n        },\n        {\n          \"step\": \"put\",\n          \"ok\": true,\n          \"durationMs\": 88\n        },\n        {\n          \"step\": \"get\",\n          \"ok\": true,\n          \"durationMs\": 41\n        },\n        {\n          \"step\": \"delete\",\n          \"ok\": true,\n          \"durationMs\": 39\n        }\n      ]\n    }\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -49,6 +49,38 @@ fn rejects_invalid_examples() {
         assert!(
             !(serde_ok && schema_ok),
             "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+            i + 1,
+            note,
+            raw
+        );
+    }
+}
+/// Each `"variant": "response"` fixture in
+/// `payload.invalid-examples.json` MUST be rejected as a
+/// response payload by at least one of: serde deserialization
+/// into `Response`, or JSON-Schema validation against the
+/// `$anchor: "response"` sub-schema (validate feature).
+#[cfg(feature = "validate")]
+#[test]
+fn rejects_invalid_response_examples() {
+    use trust_tasks_rs::validate::ValidatedPayload;
+    let fixtures: &[(&str, &str)] = &[
+        (
+            "A report without `complete`. Without it a probe that stopped after `exchange` reads as proof the account works end to end.",
+            "{\n  \"report\": {\n    \"at\": \"2026-10-10T10:00:03Z\",\n    \"ok\": true,\n    \"steps\": [\n      {\n        \"ok\": true,\n        \"step\": \"sign\"\n      },\n      {\n        \"ok\": true,\n        \"step\": \"exchange\"\n      }\n    ]\n  }\n}",
+        ),
+    ];
+    for (i, (note, raw)) in fixtures.iter().enumerate() {
+        let value: serde_json::Value = match serde_json::from_str(raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+        let schema_ok = spec::Response::validate_value(&value).is_ok();
+        assert!(
+            !(serde_ok && schema_ok),
+            "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
             i + 1,
             note,

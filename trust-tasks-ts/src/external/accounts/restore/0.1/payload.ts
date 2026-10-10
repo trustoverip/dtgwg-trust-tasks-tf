@@ -3,7 +3,7 @@
  * Source: specs/external/accounts/restore/0.1/payload.schema.json
  */
 
-import type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountState, AwsArn, AwsRegion, AwsRolesAnywhereSettings, AzureCertSettings, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount, GcpWifPinnedSettings, OAuth2PrivateKeyJwtSettings, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, S3StaticPresignSettings, StaticSecretSettings, SuiMoveCall, SuiSignerSettings } from "../../../../_shared/components.js";
+import type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountState, AwsArn, AwsRegion, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, SecretFingerprint, SuiMoveCall } from "../../../../_shared/components.js";
 
 
 /**
@@ -24,7 +24,7 @@ export interface ExternalAccountsRestoreResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountState, AwsArn, AwsRegion, AwsRolesAnywhereSettings, AzureCertSettings, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount, GcpWifPinnedSettings, OAuth2PrivateKeyJwtSettings, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, S3StaticPresignSettings, StaticSecretSettings, SuiMoveCall, SuiSignerSettings };
+export type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountState, AwsArn, AwsRegion, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, SecretFingerprint, SuiMoveCall };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/external/accounts/restore/0.1" as const;
@@ -161,7 +161,7 @@ export const PAYLOAD_SCHEMA = {
             "maxLength": 253,
             "pattern": "^[a-z0-9.-]+$"
           },
-          "description": "The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress."
+          "description": "The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network."
         },
         "providerSetupRequired": {
           "type": "boolean",
@@ -187,6 +187,7 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "at",
         "ok",
+        "complete",
         "steps"
       ],
       "properties": {
@@ -196,7 +197,11 @@ export const PAYLOAD_SCHEMA = {
         },
         "ok": {
           "type": "boolean",
-          "description": "True when every step succeeded."
+          "description": "True when every step that ran succeeded."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`."
         },
         "steps": {
           "type": "array",
@@ -363,8 +368,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "That a static model's secret is set, and which one. Never its value.",
       "properties": {
         "fingerprint": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it."
+          "$ref": "#/$defs/SecretFingerprint"
         },
         "setAt": {
           "type": "string",
@@ -372,15 +376,12 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+    "SecretFingerprint": {
+      "title": "SecretFingerprint",
       "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
+      "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$",
+      "maxLength": 33,
+      "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest."
     },
     "AccountPublicMaterial": {
       "title": "AccountPublicMaterial",
@@ -481,6 +482,16 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
     "AccountState": {
       "title": "AccountState",
       "type": "string",
@@ -493,56 +504,336 @@ export const PAYLOAD_SCHEMA = {
     },
     "AccountSettings": {
       "title": "AccountSettings",
-      "description": "Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.",
+      "description": "Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` (\"the `sui-signer` settings\"). They carry no `title`, so that every binding renders each as a plain variant of this union.",
       "oneOf": [
         {
-          "$ref": "#/$defs/AwsRolesAnywhereSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "region",
+            "profileArn",
+            "roleArn",
+            "trustAnchorArn"
+          ],
+          "description": "Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "aws-roles-anywhere"
+            },
+            "region": {
+              "$ref": "#/$defs/AwsRegion"
+            },
+            "trustAnchorArn": {
+              "$ref": "#/$defs/AwsArn",
+              "description": "The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup."
+            },
+            "profileArn": {
+              "$ref": "#/$defs/AwsArn"
+            },
+            "roleArn": {
+              "$ref": "#/$defs/AwsArn"
+            },
+            "chainedRoleArn": {
+              "$ref": "#/$defs/AwsArn",
+              "description": "When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour."
+            },
+            "bucket": {
+              "$ref": "#/$defs/ProviderBucketName",
+              "description": "The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes."
+            },
+            "probePrefix": {
+              "$ref": "#/$defs/ProviderObjectPrefix",
+              "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/GcpWifPinnedSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "projectNumber",
+            "poolId",
+            "providerId"
+          ],
+          "description": "Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "gcp-wif-pinned"
+            },
+            "projectNumber": {
+              "type": "string",
+              "pattern": "^[0-9]{1,20}$"
+            },
+            "poolId": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{4,32}$"
+            },
+            "providerId": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{4,32}$"
+            },
+            "serviceAccount": {
+              "type": "string",
+              "maxLength": 254,
+              "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$",
+              "description": "When set, the federated token is exchanged for this service account's access token."
+            },
+            "signingAlgorithm": {
+              "type": "string",
+              "enum": [
+                "ES256",
+                "RS256"
+              ],
+              "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256."
+            },
+            "bucket": {
+              "$ref": "#/$defs/ProviderBucketName",
+              "description": "The GCS bucket issuances are scoped within, by a Credential Access Boundary."
+            },
+            "probePrefix": {
+              "$ref": "#/$defs/ProviderObjectPrefix",
+              "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/AzureCertSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "tenantId",
+            "clientId",
+            "tokenScope"
+          ],
+          "description": "Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "azure-cert"
+            },
+            "tenantId": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "clientId": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "tokenScope": {
+              "type": "string",
+              "maxLength": 512,
+              "pattern": "^[A-Za-z0-9:/._-]+$",
+              "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`."
+            },
+            "authorityHost": {
+              "type": "string",
+              "maxLength": 253,
+              "pattern": "^[a-z0-9.-]+$",
+              "description": "Absent means `login.microsoftonline.com`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/OAuth2PrivateKeyJwtSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "tokenEndpoint",
+            "clientId"
+          ],
+          "description": "Egress: the host of `tokenEndpoint`, and nothing else.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "oauth2-private-key-jwt"
+            },
+            "tokenEndpoint": {
+              "$ref": "#/$defs/ProviderHttpsUrl"
+            },
+            "clientId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^[!-~]+$"
+            },
+            "audience": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^[!-~]+$",
+              "description": "The assertion's `aud`. Absent means `tokenEndpoint`."
+            },
+            "scopes": {
+              "type": "array",
+              "maxItems": 64,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[!#-\\[\\]-~]+$"
+              },
+              "description": "The scopes a binding may request, the ceiling for every issuance."
+            },
+            "signingAlgorithm": {
+              "type": "string",
+              "enum": [
+                "ES256",
+                "RS256"
+              ]
+            }
+          }
         },
         {
-          "$ref": "#/$defs/S3StaticPresignSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "endpoint",
+            "region",
+            "bucket",
+            "accessKeyId"
+          ],
+          "description": "Issuance needs no egress: presigning is a computation inside the custodian, and the consumer uses the URL itself. The probe connects to the host of `endpoint`, which `egressHosts` therefore lists.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "s3-static-presign"
+            },
+            "endpoint": {
+              "$ref": "#/$defs/ProviderHttpsUrl"
+            },
+            "region": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z0-9-]+$",
+              "description": "The SigV4 signing region; `auto` for Cloudflare R2."
+            },
+            "bucket": {
+              "$ref": "#/$defs/ProviderBucketName"
+            },
+            "pathStyle": {
+              "type": "boolean",
+              "description": "Address the bucket in the path rather than the host name, as MinIO usually needs."
+            },
+            "accessKeyId": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9]+$",
+              "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned."
+            },
+            "probePrefix": {
+              "$ref": "#/$defs/ProviderObjectPrefix",
+              "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/SuiSignerSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "network",
+            "allowedCalls",
+            "maxGasBudgetMist",
+            "maxGasPerDayMist"
+          ],
+          "description": "No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "sui-signer"
+            },
+            "network": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet",
+                "devnet"
+              ]
+            },
+            "allowedCalls": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 32,
+              "items": {
+                "$ref": "#/$defs/SuiMoveCall"
+              },
+              "description": "Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them."
+            },
+            "allowedObjects": {
+              "type": "array",
+              "maxItems": 32,
+              "items": {
+                "type": "string",
+                "pattern": "^0x[0-9a-f]{64}$"
+              },
+              "description": "Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept."
+            },
+            "maxGasBudgetMist": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The largest gas budget one transaction may declare."
+            },
+            "maxGasPerDayMist": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The total gas budget signed per rolling 24 hours."
+            },
+            "maxCoinOutPerTx": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "coinType",
+                  "amount"
+                ],
+                "properties": {
+                  "coinType": {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "description": "Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/StaticSecretSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "driver",
+            "baseUrl"
+          ],
+          "description": "Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "static-secret"
+            },
+            "driver": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement."
+            },
+            "baseUrl": {
+              "$ref": "#/$defs/ProviderHttpsUrl"
+            }
+          }
         }
       ]
-    },
-    "StaticSecretSettings": {
-      "title": "StaticSecretSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "driver",
-        "baseUrl"
-      ],
-      "description": "Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "static-secret"
-        },
-        "driver": {
-          "type": "string",
-          "maxLength": 64,
-          "pattern": "^[a-z0-9][a-z0-9-]*$",
-          "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement."
-        },
-        "baseUrl": {
-          "$ref": "#/$defs/ProviderHttpsUrl"
-        }
-      }
     },
     "ProviderHttpsUrl": {
       "title": "ProviderHttpsUrl",
@@ -550,85 +841,6 @@ export const PAYLOAD_SCHEMA = {
       "format": "uri",
       "maxLength": 2048,
       "pattern": "^https://[^\\s\"'\\\\]+$"
-    },
-    "SuiSignerSettings": {
-      "title": "SuiSignerSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "network",
-        "allowedCalls",
-        "maxGasBudgetMist",
-        "maxGasPerDayMist"
-      ],
-      "description": "No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "sui-signer"
-        },
-        "network": {
-          "type": "string",
-          "enum": [
-            "mainnet",
-            "testnet",
-            "devnet"
-          ]
-        },
-        "allowedCalls": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 32,
-          "items": {
-            "$ref": "#/$defs/SuiMoveCall"
-          },
-          "description": "Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them."
-        },
-        "allowedObjects": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "type": "string",
-            "pattern": "^0x[0-9a-f]{64}$"
-          },
-          "description": "Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept."
-        },
-        "maxGasBudgetMist": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The largest gas budget one transaction may declare."
-        },
-        "maxGasPerDayMist": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The total gas budget signed per rolling 24 hours."
-        },
-        "maxCoinOutPerTx": {
-          "type": "array",
-          "maxItems": 8,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "coinType",
-              "amount"
-            ],
-            "properties": {
-              "coinType": {
-                "type": "string",
-                "maxLength": 512,
-                "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
-              },
-              "amount": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          },
-          "description": "Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all."
-        }
-      }
     },
     "SuiMoveCall": {
       "title": "SuiMoveCall",
@@ -655,47 +867,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "S3StaticPresignSettings": {
-      "title": "S3StaticPresignSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "endpoint",
-        "region",
-        "bucket",
-        "accessKeyId"
-      ],
-      "description": "No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "s3-static-presign"
-        },
-        "endpoint": {
-          "$ref": "#/$defs/ProviderHttpsUrl"
-        },
-        "region": {
-          "type": "string",
-          "maxLength": 64,
-          "pattern": "^[a-z0-9-]+$",
-          "description": "The SigV4 signing region; `auto` for Cloudflare R2."
-        },
-        "bucket": {
-          "$ref": "#/$defs/ProviderBucketName"
-        },
-        "pathStyle": {
-          "type": "boolean",
-          "description": "Address the bucket in the path rather than the host name, as MinIO usually needs."
-        },
-        "accessKeyId": {
-          "type": "string",
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9]+$",
-          "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned."
-        }
-      }
-    },
     "ProviderBucketName": {
       "title": "ProviderBucketName",
       "type": "string",
@@ -703,182 +874,6 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 63,
       "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$",
       "description": "A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping."
-    },
-    "OAuth2PrivateKeyJwtSettings": {
-      "title": "OAuth2PrivateKeyJwtSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "tokenEndpoint",
-        "clientId"
-      ],
-      "description": "Egress: the host of `tokenEndpoint`, and nothing else.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "oauth2-private-key-jwt"
-        },
-        "tokenEndpoint": {
-          "$ref": "#/$defs/ProviderHttpsUrl"
-        },
-        "clientId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "pattern": "^[!-~]+$"
-        },
-        "audience": {
-          "type": "string",
-          "maxLength": 2048,
-          "pattern": "^[!-~]+$",
-          "description": "The assertion's `aud`. Absent means `tokenEndpoint`."
-        },
-        "scopes": {
-          "type": "array",
-          "maxItems": 64,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "maxLength": 256,
-            "pattern": "^[!#-\\[\\]-~]+$"
-          },
-          "description": "The scopes a binding may request, the ceiling for every issuance."
-        },
-        "signingAlgorithm": {
-          "type": "string",
-          "enum": [
-            "ES256",
-            "RS256"
-          ]
-        }
-      }
-    },
-    "AzureCertSettings": {
-      "title": "AzureCertSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "tenantId",
-        "clientId",
-        "tokenScope"
-      ],
-      "description": "Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "azure-cert"
-        },
-        "tenantId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        },
-        "clientId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        },
-        "tokenScope": {
-          "type": "string",
-          "maxLength": 512,
-          "pattern": "^[A-Za-z0-9:/._-]+$",
-          "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`."
-        },
-        "authorityHost": {
-          "type": "string",
-          "maxLength": 253,
-          "pattern": "^[a-z0-9.-]+$",
-          "description": "Absent means `login.microsoftonline.com`."
-        }
-      }
-    },
-    "GcpWifPinnedSettings": {
-      "title": "GcpWifPinnedSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "projectNumber",
-        "poolId",
-        "providerId"
-      ],
-      "description": "Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "gcp-wif-pinned"
-        },
-        "projectNumber": {
-          "type": "string",
-          "pattern": "^[0-9]{1,20}$"
-        },
-        "poolId": {
-          "type": "string",
-          "pattern": "^[a-z0-9-]{4,32}$"
-        },
-        "providerId": {
-          "type": "string",
-          "pattern": "^[a-z0-9-]{4,32}$"
-        },
-        "serviceAccount": {
-          "type": "string",
-          "maxLength": 254,
-          "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$",
-          "description": "When set, the federated token is exchanged for this service account's access token."
-        },
-        "signingAlgorithm": {
-          "type": "string",
-          "enum": [
-            "ES256",
-            "RS256"
-          ],
-          "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256."
-        },
-        "bucket": {
-          "$ref": "#/$defs/ProviderBucketName",
-          "description": "The GCS bucket issuances are scoped within, by a Credential Access Boundary."
-        }
-      }
-    },
-    "AwsRolesAnywhereSettings": {
-      "title": "AwsRolesAnywhereSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "region",
-        "profileArn",
-        "roleArn",
-        "trustAnchorArn"
-      ],
-      "description": "Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "aws-roles-anywhere"
-        },
-        "region": {
-          "$ref": "#/$defs/AwsRegion"
-        },
-        "trustAnchorArn": {
-          "$ref": "#/$defs/AwsArn",
-          "description": "The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup."
-        },
-        "profileArn": {
-          "$ref": "#/$defs/AwsArn"
-        },
-        "roleArn": {
-          "$ref": "#/$defs/AwsArn"
-        },
-        "chainedRoleArn": {
-          "$ref": "#/$defs/AwsArn",
-          "description": "When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour."
-        },
-        "bucket": {
-          "$ref": "#/$defs/ProviderBucketName",
-          "description": "The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes."
-        }
-      }
     },
     "AwsArn": {
       "title": "AwsArn",
@@ -1001,7 +996,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "maxLength": 253,
             "pattern": "^[a-z0-9.-]+$"
           },
-          "description": "The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress."
+          "description": "The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network."
         },
         "providerSetupRequired": {
           "type": "boolean",
@@ -1027,6 +1022,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "required": [
         "at",
         "ok",
+        "complete",
         "steps"
       ],
       "properties": {
@@ -1036,7 +1032,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "ok": {
           "type": "boolean",
-          "description": "True when every step succeeded."
+          "description": "True when every step that ran succeeded."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`."
         },
         "steps": {
           "type": "array",
@@ -1203,8 +1203,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "That a static model's secret is set, and which one. Never its value.",
       "properties": {
         "fingerprint": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it."
+          "$ref": "#/$defs/SecretFingerprint"
         },
         "setAt": {
           "type": "string",
@@ -1212,15 +1211,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+    "SecretFingerprint": {
+      "title": "SecretFingerprint",
       "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
+      "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$",
+      "maxLength": 33,
+      "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest."
     },
     "AccountPublicMaterial": {
       "title": "AccountPublicMaterial",
@@ -1321,6 +1317,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
     "AccountState": {
       "title": "AccountState",
       "type": "string",
@@ -1333,56 +1339,336 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "AccountSettings": {
       "title": "AccountSettings",
-      "description": "Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.",
+      "description": "Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` (\"the `sui-signer` settings\"). They carry no `title`, so that every binding renders each as a plain variant of this union.",
       "oneOf": [
         {
-          "$ref": "#/$defs/AwsRolesAnywhereSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "region",
+            "profileArn",
+            "roleArn",
+            "trustAnchorArn"
+          ],
+          "description": "Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "aws-roles-anywhere"
+            },
+            "region": {
+              "$ref": "#/$defs/AwsRegion"
+            },
+            "trustAnchorArn": {
+              "$ref": "#/$defs/AwsArn",
+              "description": "The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup."
+            },
+            "profileArn": {
+              "$ref": "#/$defs/AwsArn"
+            },
+            "roleArn": {
+              "$ref": "#/$defs/AwsArn"
+            },
+            "chainedRoleArn": {
+              "$ref": "#/$defs/AwsArn",
+              "description": "When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour."
+            },
+            "bucket": {
+              "$ref": "#/$defs/ProviderBucketName",
+              "description": "The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes."
+            },
+            "probePrefix": {
+              "$ref": "#/$defs/ProviderObjectPrefix",
+              "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/GcpWifPinnedSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "projectNumber",
+            "poolId",
+            "providerId"
+          ],
+          "description": "Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "gcp-wif-pinned"
+            },
+            "projectNumber": {
+              "type": "string",
+              "pattern": "^[0-9]{1,20}$"
+            },
+            "poolId": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{4,32}$"
+            },
+            "providerId": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{4,32}$"
+            },
+            "serviceAccount": {
+              "type": "string",
+              "maxLength": 254,
+              "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$",
+              "description": "When set, the federated token is exchanged for this service account's access token."
+            },
+            "signingAlgorithm": {
+              "type": "string",
+              "enum": [
+                "ES256",
+                "RS256"
+              ],
+              "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256."
+            },
+            "bucket": {
+              "$ref": "#/$defs/ProviderBucketName",
+              "description": "The GCS bucket issuances are scoped within, by a Credential Access Boundary."
+            },
+            "probePrefix": {
+              "$ref": "#/$defs/ProviderObjectPrefix",
+              "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/AzureCertSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "tenantId",
+            "clientId",
+            "tokenScope"
+          ],
+          "description": "Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "azure-cert"
+            },
+            "tenantId": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "clientId": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "tokenScope": {
+              "type": "string",
+              "maxLength": 512,
+              "pattern": "^[A-Za-z0-9:/._-]+$",
+              "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`."
+            },
+            "authorityHost": {
+              "type": "string",
+              "maxLength": 253,
+              "pattern": "^[a-z0-9.-]+$",
+              "description": "Absent means `login.microsoftonline.com`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/OAuth2PrivateKeyJwtSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "tokenEndpoint",
+            "clientId"
+          ],
+          "description": "Egress: the host of `tokenEndpoint`, and nothing else.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "oauth2-private-key-jwt"
+            },
+            "tokenEndpoint": {
+              "$ref": "#/$defs/ProviderHttpsUrl"
+            },
+            "clientId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^[!-~]+$"
+            },
+            "audience": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^[!-~]+$",
+              "description": "The assertion's `aud`. Absent means `tokenEndpoint`."
+            },
+            "scopes": {
+              "type": "array",
+              "maxItems": 64,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[!#-\\[\\]-~]+$"
+              },
+              "description": "The scopes a binding may request, the ceiling for every issuance."
+            },
+            "signingAlgorithm": {
+              "type": "string",
+              "enum": [
+                "ES256",
+                "RS256"
+              ]
+            }
+          }
         },
         {
-          "$ref": "#/$defs/S3StaticPresignSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "endpoint",
+            "region",
+            "bucket",
+            "accessKeyId"
+          ],
+          "description": "Issuance needs no egress: presigning is a computation inside the custodian, and the consumer uses the URL itself. The probe connects to the host of `endpoint`, which `egressHosts` therefore lists.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "s3-static-presign"
+            },
+            "endpoint": {
+              "$ref": "#/$defs/ProviderHttpsUrl"
+            },
+            "region": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z0-9-]+$",
+              "description": "The SigV4 signing region; `auto` for Cloudflare R2."
+            },
+            "bucket": {
+              "$ref": "#/$defs/ProviderBucketName"
+            },
+            "pathStyle": {
+              "type": "boolean",
+              "description": "Address the bucket in the path rather than the host name, as MinIO usually needs."
+            },
+            "accessKeyId": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9]+$",
+              "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned."
+            },
+            "probePrefix": {
+              "$ref": "#/$defs/ProviderObjectPrefix",
+              "description": "Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/SuiSignerSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "network",
+            "allowedCalls",
+            "maxGasBudgetMist",
+            "maxGasPerDayMist"
+          ],
+          "description": "No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "sui-signer"
+            },
+            "network": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet",
+                "devnet"
+              ]
+            },
+            "allowedCalls": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 32,
+              "items": {
+                "$ref": "#/$defs/SuiMoveCall"
+              },
+              "description": "Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them."
+            },
+            "allowedObjects": {
+              "type": "array",
+              "maxItems": 32,
+              "items": {
+                "type": "string",
+                "pattern": "^0x[0-9a-f]{64}$"
+              },
+              "description": "Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept."
+            },
+            "maxGasBudgetMist": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The largest gas budget one transaction may declare."
+            },
+            "maxGasPerDayMist": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The total gas budget signed per rolling 24 hours."
+            },
+            "maxCoinOutPerTx": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "coinType",
+                  "amount"
+                ],
+                "properties": {
+                  "coinType": {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "description": "Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all."
+            }
+          }
         },
         {
-          "$ref": "#/$defs/StaticSecretSettings"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "driver",
+            "baseUrl"
+          ],
+          "description": "Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.",
+          "properties": {
+            "model": {
+              "type": "string",
+              "const": "static-secret"
+            },
+            "driver": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement."
+            },
+            "baseUrl": {
+              "$ref": "#/$defs/ProviderHttpsUrl"
+            }
+          }
         }
       ]
-    },
-    "StaticSecretSettings": {
-      "title": "StaticSecretSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "driver",
-        "baseUrl"
-      ],
-      "description": "Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "static-secret"
-        },
-        "driver": {
-          "type": "string",
-          "maxLength": 64,
-          "pattern": "^[a-z0-9][a-z0-9-]*$",
-          "description": "The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement."
-        },
-        "baseUrl": {
-          "$ref": "#/$defs/ProviderHttpsUrl"
-        }
-      }
     },
     "ProviderHttpsUrl": {
       "title": "ProviderHttpsUrl",
@@ -1390,85 +1676,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "format": "uri",
       "maxLength": 2048,
       "pattern": "^https://[^\\s\"'\\\\]+$"
-    },
-    "SuiSignerSettings": {
-      "title": "SuiSignerSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "network",
-        "allowedCalls",
-        "maxGasBudgetMist",
-        "maxGasPerDayMist"
-      ],
-      "description": "No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "sui-signer"
-        },
-        "network": {
-          "type": "string",
-          "enum": [
-            "mainnet",
-            "testnet",
-            "devnet"
-          ]
-        },
-        "allowedCalls": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 32,
-          "items": {
-            "$ref": "#/$defs/SuiMoveCall"
-          },
-          "description": "Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them."
-        },
-        "allowedObjects": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "type": "string",
-            "pattern": "^0x[0-9a-f]{64}$"
-          },
-          "description": "Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept."
-        },
-        "maxGasBudgetMist": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The largest gas budget one transaction may declare."
-        },
-        "maxGasPerDayMist": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The total gas budget signed per rolling 24 hours."
-        },
-        "maxCoinOutPerTx": {
-          "type": "array",
-          "maxItems": 8,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "coinType",
-              "amount"
-            ],
-            "properties": {
-              "coinType": {
-                "type": "string",
-                "maxLength": 512,
-                "pattern": "^0x[0-9a-f]{1,64}::[A-Za-z0-9_]+::[A-Za-z0-9_]+$"
-              },
-              "amount": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          },
-          "description": "Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all."
-        }
-      }
     },
     "SuiMoveCall": {
       "title": "SuiMoveCall",
@@ -1495,47 +1702,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "S3StaticPresignSettings": {
-      "title": "S3StaticPresignSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "endpoint",
-        "region",
-        "bucket",
-        "accessKeyId"
-      ],
-      "description": "No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "s3-static-presign"
-        },
-        "endpoint": {
-          "$ref": "#/$defs/ProviderHttpsUrl"
-        },
-        "region": {
-          "type": "string",
-          "maxLength": 64,
-          "pattern": "^[a-z0-9-]+$",
-          "description": "The SigV4 signing region; `auto` for Cloudflare R2."
-        },
-        "bucket": {
-          "$ref": "#/$defs/ProviderBucketName"
-        },
-        "pathStyle": {
-          "type": "boolean",
-          "description": "Address the bucket in the path rather than the host name, as MinIO usually needs."
-        },
-        "accessKeyId": {
-          "type": "string",
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9]+$",
-          "description": "The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned."
-        }
-      }
-    },
     "ProviderBucketName": {
       "title": "ProviderBucketName",
       "type": "string",
@@ -1543,182 +1709,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "maxLength": 63,
       "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$",
       "description": "A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping."
-    },
-    "OAuth2PrivateKeyJwtSettings": {
-      "title": "OAuth2PrivateKeyJwtSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "tokenEndpoint",
-        "clientId"
-      ],
-      "description": "Egress: the host of `tokenEndpoint`, and nothing else.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "oauth2-private-key-jwt"
-        },
-        "tokenEndpoint": {
-          "$ref": "#/$defs/ProviderHttpsUrl"
-        },
-        "clientId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "pattern": "^[!-~]+$"
-        },
-        "audience": {
-          "type": "string",
-          "maxLength": 2048,
-          "pattern": "^[!-~]+$",
-          "description": "The assertion's `aud`. Absent means `tokenEndpoint`."
-        },
-        "scopes": {
-          "type": "array",
-          "maxItems": 64,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "maxLength": 256,
-            "pattern": "^[!#-\\[\\]-~]+$"
-          },
-          "description": "The scopes a binding may request, the ceiling for every issuance."
-        },
-        "signingAlgorithm": {
-          "type": "string",
-          "enum": [
-            "ES256",
-            "RS256"
-          ]
-        }
-      }
-    },
-    "AzureCertSettings": {
-      "title": "AzureCertSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "tenantId",
-        "clientId",
-        "tokenScope"
-      ],
-      "description": "Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "azure-cert"
-        },
-        "tenantId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        },
-        "clientId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        },
-        "tokenScope": {
-          "type": "string",
-          "maxLength": 512,
-          "pattern": "^[A-Za-z0-9:/._-]+$",
-          "description": "The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`."
-        },
-        "authorityHost": {
-          "type": "string",
-          "maxLength": 253,
-          "pattern": "^[a-z0-9.-]+$",
-          "description": "Absent means `login.microsoftonline.com`."
-        }
-      }
-    },
-    "GcpWifPinnedSettings": {
-      "title": "GcpWifPinnedSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "projectNumber",
-        "poolId",
-        "providerId"
-      ],
-      "description": "Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "gcp-wif-pinned"
-        },
-        "projectNumber": {
-          "type": "string",
-          "pattern": "^[0-9]{1,20}$"
-        },
-        "poolId": {
-          "type": "string",
-          "pattern": "^[a-z0-9-]{4,32}$"
-        },
-        "providerId": {
-          "type": "string",
-          "pattern": "^[a-z0-9-]{4,32}$"
-        },
-        "serviceAccount": {
-          "type": "string",
-          "maxLength": 254,
-          "pattern": "^[a-z0-9-]+@[a-z0-9-]+\\.iam\\.gserviceaccount\\.com$",
-          "description": "When set, the federated token is exchanged for this service account's access token."
-        },
-        "signingAlgorithm": {
-          "type": "string",
-          "enum": [
-            "ES256",
-            "RS256"
-          ],
-          "description": "The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256."
-        },
-        "bucket": {
-          "$ref": "#/$defs/ProviderBucketName",
-          "description": "The GCS bucket issuances are scoped within, by a Credential Access Boundary."
-        }
-      }
-    },
-    "AwsRolesAnywhereSettings": {
-      "title": "AwsRolesAnywhereSettings",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "model",
-        "region",
-        "profileArn",
-        "roleArn",
-        "trustAnchorArn"
-      ],
-      "description": "Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.",
-      "properties": {
-        "model": {
-          "type": "string",
-          "const": "aws-roles-anywhere"
-        },
-        "region": {
-          "$ref": "#/$defs/AwsRegion"
-        },
-        "trustAnchorArn": {
-          "$ref": "#/$defs/AwsArn",
-          "description": "The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup."
-        },
-        "profileArn": {
-          "$ref": "#/$defs/AwsArn"
-        },
-        "roleArn": {
-          "$ref": "#/$defs/AwsArn"
-        },
-        "chainedRoleArn": {
-          "$ref": "#/$defs/AwsArn",
-          "description": "When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour."
-        },
-        "bucket": {
-          "$ref": "#/$defs/ProviderBucketName",
-          "description": "The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes."
-        }
-      }
     },
     "AwsArn": {
       "title": "AwsArn",

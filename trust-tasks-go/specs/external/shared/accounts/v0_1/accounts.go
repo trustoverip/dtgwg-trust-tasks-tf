@@ -74,113 +74,6 @@ type ProviderBucketName = string
 // ProviderHTTPSURL ProviderHTTPSURL is defined by this specification's schema.
 type ProviderHTTPSURL = string
 
-// AwsRolesAnywhereSettings Egress: `rolesanywhere.<region>.amazonaws.com`, plus
-// `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.
-type AwsRolesAnywhereSettings struct {
-	Model  string    `json:"model"`
-	Region AwsRegion `json:"region"`
-
-	// The trust anchor holding the custodian's CA certificate. Recorded after the
-	// administrator creates it from external/accounts/setup.
-	TrustAnchorArn AwsArn `json:"trustAnchorArn"`
-	ProfileArn     AwsArn `json:"profileArn"`
-	RoleArn        AwsArn `json:"roleArn"`
-
-	// When set, every issuance chains an AssumeRole into this role carrying the downscoping
-	// session policy, for deployments whose Roles Anywhere profile cannot carry one per
-	// request. Caps a credential at one hour.
-	ChainedRoleArn *AwsArn `json:"chainedRoleArn,omitempty"`
-
-	// The S3 bucket issuances are scoped within. Required for an account whose bindings issue
-	// storage scopes.
-	Bucket *ProviderBucketName `json:"bucket,omitempty"`
-}
-
-// GcpWifPinnedSettingsSigningAlgorithm The ID-token algorithm. ES256 unless the provider
-// refuses it. Absent means ES256.
-type GcpWifPinnedSettingsSigningAlgorithm string
-
-// Values GcpWifPinnedSettingsSigningAlgorithm may take, per this specification's schema.
-const (
-	GcpWifPinnedSettingsSigningAlgorithmEs256 GcpWifPinnedSettingsSigningAlgorithm = "ES256"
-	GcpWifPinnedSettingsSigningAlgorithmRs256 GcpWifPinnedSettingsSigningAlgorithm = "RS256"
-)
-
-// GcpWifPinnedSettings Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com`
-// when `serviceAccount` is set.
-type GcpWifPinnedSettings struct {
-	Model         string `json:"model"`
-	ProjectNumber string `json:"projectNumber"`
-	PoolID        string `json:"poolId"`
-	ProviderID    string `json:"providerId"`
-
-	// When set, the federated token is exchanged for this service account's access token.
-	ServiceAccount *string `json:"serviceAccount,omitempty"`
-
-	// The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
-	SigningAlgorithm *GcpWifPinnedSettingsSigningAlgorithm `json:"signingAlgorithm,omitempty"`
-
-	// The GCS bucket issuances are scoped within, by a Credential Access Boundary.
-	Bucket *ProviderBucketName `json:"bucket,omitempty"`
-}
-
-// AzureCertSettings Egress: `login.microsoftonline.com`, or the sovereign-cloud authority
-// named in `authorityHost`.
-type AzureCertSettings struct {
-	Model    string `json:"model"`
-	TenantID string `json:"tenantId"`
-	ClientID string `json:"clientId"`
-
-	// The `scope` requested at the token endpoint, such as
-	// `https://storage.azure.com/.default`.
-	TokenScope string `json:"tokenScope"`
-
-	// Absent means `login.microsoftonline.com`.
-	AuthorityHost *string `json:"authorityHost,omitempty"`
-}
-
-// OAuth2PrivateKeyJWTSettingsSigningAlgorithm OAuth2PrivateKeyJWTSettingsSigningAlgorithm
-// is a closed set of string values.
-type OAuth2PrivateKeyJWTSettingsSigningAlgorithm string
-
-// Values OAuth2PrivateKeyJWTSettingsSigningAlgorithm may take, per this specification's schema.
-const (
-	OAuth2PrivateKeyJWTSettingsSigningAlgorithmEs256 OAuth2PrivateKeyJWTSettingsSigningAlgorithm = "ES256"
-	OAuth2PrivateKeyJWTSettingsSigningAlgorithmRs256 OAuth2PrivateKeyJWTSettingsSigningAlgorithm = "RS256"
-)
-
-// OAuth2PrivateKeyJWTSettings Egress: the host of `tokenEndpoint`, and nothing else.
-type OAuth2PrivateKeyJWTSettings struct {
-	Model         string           `json:"model"`
-	TokenEndpoint ProviderHTTPSURL `json:"tokenEndpoint"`
-	ClientID      string           `json:"clientId"`
-
-	// The assertion's `aud`. Absent means `tokenEndpoint`.
-	Audience *string `json:"audience,omitempty"`
-
-	// The scopes a binding may request, the ceiling for every issuance.
-	Scopes           *[]string                                    `json:"scopes,omitempty"`
-	SigningAlgorithm *OAuth2PrivateKeyJWTSettingsSigningAlgorithm `json:"signingAlgorithm,omitempty"`
-}
-
-// S3StaticPresignSettings No egress: presigning is a computation inside the custodian,
-// and the consumer uses the URL itself.
-type S3StaticPresignSettings struct {
-	Model    string           `json:"model"`
-	Endpoint ProviderHTTPSURL `json:"endpoint"`
-
-	// The SigV4 signing region; `auto` for Cloudflare R2.
-	Region string             `json:"region"`
-	Bucket ProviderBucketName `json:"bucket"`
-
-	// Address the bucket in the path rather than the host name, as MinIO usually needs.
-	PathStyle *bool `json:"pathStyle,omitempty"`
-
-	// The access key's identifier. Not a secret: it appears in every presigned URL. The
-	// secret half is set with external/accounts/secret/set and never returned.
-	AccessKeyID string `json:"accessKeyId"`
-}
-
 // SuiMoveCall One Move function an account's transactions may call.
 type SuiMoveCall struct {
 	Package  string `json:"package"`
@@ -188,65 +81,13 @@ type SuiMoveCall struct {
 	Function string `json:"function"`
 }
 
-// SuiSignerSettingsNetwork SuiSignerSettingsNetwork is a closed set of string values.
-type SuiSignerSettingsNetwork string
-
-// Values SuiSignerSettingsNetwork may take, per this specification's schema.
-const (
-	SuiSignerSettingsNetworkMainnet SuiSignerSettingsNetwork = "mainnet"
-	SuiSignerSettingsNetworkTestnet SuiSignerSettingsNetwork = "testnet"
-	SuiSignerSettingsNetworkDevnet  SuiSignerSettingsNetwork = "devnet"
-)
-
-// SuiSignerSettingsMaxCoinOutPerTxItem SuiSignerSettingsMaxCoinOutPerTxItem is a
-// generated payload type.
-type SuiSignerSettingsMaxCoinOutPerTxItem struct {
-	CoinType string `json:"coinType"`
-	Amount   int64  `json:"amount"`
-}
-
-// SuiSignerSettings No egress: the custodian signs and the consumer submits the
-// transaction. The allow-list, the gas caps and the coin caps are the account's whole
-// authority; a transaction outside them is refused before anything is signed.
-type SuiSignerSettings struct {
-	Model   string                   `json:"model"`
-	Network SuiSignerSettingsNetwork `json:"network"`
-
-	// Every MoveCall command in a signed transaction must name one of these. For Walrus
-	// storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and
-	// `delete_blob`, and the coin calls needed to pay for them.
-	AllowedCalls []SuiMoveCall `json:"allowedCalls"`
-
-	// Shared objects a transaction may take as input, such as the Walrus system and staking
-	// objects. Absent means any object the allowed calls accept.
-	AllowedObjects *[]string `json:"allowedObjects,omitempty"`
-
-	// The largest gas budget one transaction may declare.
-	MaxGasBudgetMist int64 `json:"maxGasBudgetMist"`
-
-	// The total gas budget signed per rolling 24 hours.
-	MaxGasPerDayMist int64 `json:"maxGasPerDayMist"`
-
-	// Per coin type, the most a single transaction may spend or transfer out of the account's
-	// address, in the coin's smallest unit. A coin type not listed may not leave the address
-	// at all.
-	MaxCoinOutPerTx *[]SuiSignerSettingsMaxCoinOutPerTxItem `json:"maxCoinOutPerTx,omitempty"`
-}
-
-// StaticSecretSettings Egress: the host of `baseUrl`. The secret is set with
-// external/accounts/secret/set and used only inside the custodian by `driver`; a provider
-// reachable only by handing the consumer the raw key is not supported.
-type StaticSecretSettings struct {
-	Model string `json:"model"`
-
-	// The custodian's driver that uses the secret: performs a login or token exchange and
-	// returns a short-lived result. A custodian refuses a driver it does not implement.
-	Driver  string           `json:"driver"`
-	BaseURL ProviderHTTPSURL `json:"baseUrl"`
-}
-
-// AccountSettings Per-model account settings, discriminated by `model`. Never a secret:
-// every value here is returned to anyone who may read the account.
+// AccountSettings Per-model account settings, discriminated by `model`: every branch is
+// an object whose `model` member is a `const`, which is what lets each generated binding
+// emit a tagged union, so an unusable setting is answered as `external:invalidSettings`
+// naming the member rather than as an unparseable payload. Never a secret: every value
+// here is returned to anyone who may read the account. Branches are referred to by their
+// `model` ("the `sui-signer` settings"). They carry no `title`, so that every binding
+// renders each as a plain variant of this union.
 type AccountSettings = json.RawMessage
 
 // ProviderObjectPrefix An object-key prefix within the account's bucket: one or more
@@ -402,12 +243,20 @@ type AccountPublicMaterial struct {
 	PendingKeyFingerprint *DigestMultibase `json:"pendingKeyFingerprint,omitempty"`
 }
 
+// SecretFingerprint Which secret is set, without being a way to test guesses at it.
+// `hmacsha256:` followed by the base64url encoding, without padding, of the first 16
+// bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian
+// holds and never discloses. Comparable only between fingerprints made by the same
+// custodian: a re-entered value can be confirmed, while the same secret at two custodians
+// gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone
+// who reads it run a dictionary against it offline; and deliberately not a
+// DigestMultibase, since multihash has no code for a keyed digest.
+type SecretFingerprint = string
+
 // AccountSecretInfo That a static model's secret is set, and which one. Never its value.
 type AccountSecretInfo struct {
-	// A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint
-	// confirms a re-entered value without being a dictionary oracle for anyone who reads it.
-	Fingerprint DigestMultibase `json:"fingerprint"`
-	SetAt       string          `json:"setAt"`
+	Fingerprint SecretFingerprint `json:"fingerprint"`
+	SetAt       string            `json:"setAt"`
 }
 
 // ExternalAccount An account as every read returns it. Contains no private key, no secret
@@ -428,9 +277,12 @@ type ExternalAccount struct {
 	Secret   *AccountSecretInfo `json:"secret,omitempty"`
 	Bindings []AccountBinding   `json:"bindings"`
 
-	// The provider hosts this account's use connects to, derived by the custodian from its
-	// settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an
-	// egress proxy can allow exactly this set. Empty for models that need no egress.
+	// The provider hosts the custodian connects to on this account's behalf, derived by the
+	// custodian from its settings: the token or session endpoints issuance uses, and the
+	// destinations external/accounts/probe dials (the object store's host, for a storage
+	// model). The custodian MUST NOT connect anywhere else on the account's behalf, so an
+	// egress proxy can allow exactly this set. Empty only for a model that neither exchanges
+	// nor probes over the network.
 	EgressHosts []string `json:"egressHosts"`
 
 	// True when the account cannot be used until its provider-side setup is redone: after a
@@ -476,8 +328,14 @@ type AccountProbeReportStepsItem struct {
 type AccountProbeReport struct {
 	At string `json:"at"`
 
-	// True when every step succeeded.
+	// True when every step that ran succeeded.
 	OK bool `json:"ok"`
+
+	// True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent)
+	// ran, so the account was exercised end to end. A probe that stopped after `exchange`
+	// because nothing named a canary prefix is `complete: false` even when `ok` is true, and
+	// does not clear `providerSetupRequired`.
+	Complete bool `json:"complete"`
 
 	// In order; the first failing step ends the probe.
 	Steps []AccountProbeReportStepsItem `json:"steps"`
@@ -518,12 +376,38 @@ type AccountSetupArtifacts struct {
 // HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF,
 // ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer
 // assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data.
-// The recipient is the X25519 derivation of the Ed25519 key of the DID it is sealed to.
-// The only form in which secret material crosses the wire in this family, in either
-// direction: the seal is what keeps a terminating proxy, a relay, a request log or a
-// debug dump of "the response" from ever holding a usable secret, whatever transport
-// carried the document.
+// Each task states the key it is sealed to: a single-use wrapping key from
+// keys/import-wrapping-key for external/accounts/secret/set, and the caller's
+// key-agreement key for external/credentials/issue. Its cleartext is an
+// ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret
+// material crosses the wire in this family, in either direction: the seal is what keeps a
+// terminating proxy, a relay, a request log or a debug dump of "the response" from ever
+// holding a usable secret, whatever transport carried the document.
 type SealedTransferBundle = string
+
+// ExternalSecretPayload The cleartext inside the sealed bundle of
+// external/accounts/secret/set. It names the account it is for, inside the seal, so that
+// a bundle captured on its way to one account cannot be replayed into another: the
+// custodian MUST refuse a bundle whose `context` or `account` differs from the request's.
+// Never appears on the wire outside a seal.
+type ExternalSecretPayload struct {
+	Context AccountContextID `json:"context"`
+	Account AccountID        `json:"account"`
+
+	// The secret itself: an access-key secret, an API token. Opaque to everything but the
+	// account's driver.
+	Secret string `json:"secret"`
+
+	// For `s3-static-presign`, the access key id the secret belongs to. When present the
+	// custodian MUST refuse a bundle whose id differs from the account's settings, so that a
+	// secret cannot be paired with the wrong key id.
+	AccessKeyID *string `json:"accessKeyId,omitempty"`
+}
+
+// ExternalCredentialPayload The cleartext inside the sealed bundle of
+// external/credentials/issue, discriminated by `kind`. Never appears on the wire outside
+// a seal, and a consumer keeps it in memory only.
+type ExternalCredentialPayload = json.RawMessage
 
 // DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
 // the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the

@@ -29,16 +29,303 @@ export type AccountId = string;
  */
 export type AccountProbeStep = "sign" | "exchange" | "put" | "get" | "delete" | "decode";
 /**
- * Per-model account settings, discriminated by `model`. Never a secret: every value here is returned to anyone who may read the account.
+ * Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` ("the `sui-signer` settings"). They carry no `title`, so that every binding renders each as a plain variant of this union.
  */
 export type AccountSettings =
-  | AwsRolesAnywhereSettings
-  | GcpWifPinnedSettings
-  | AzureCertSettings
-  | OAuth2PrivateKeyJwtSettings
-  | S3StaticPresignSettings
-  | SuiSignerSettings
-  | StaticSecretSettings;
+  | {
+      model: "aws-roles-anywhere";
+      region: AwsRegion;
+      /**
+       * The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.
+       */
+      trustAnchorArn: AwsArn;
+      profileArn: AwsArn;
+      roleArn: AwsArn;
+      /**
+       * When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.
+       */
+      chainedRoleArn?: AwsArn;
+      /**
+       * The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.
+       */
+      bucket?: ProviderBucketName;
+      /**
+       * Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+       */
+      probePrefix?: ProviderObjectPrefix;
+    }
+  | {
+      model: "gcp-wif-pinned";
+      projectNumber: string;
+      poolId: string;
+      providerId: string;
+      /**
+       * When set, the federated token is exchanged for this service account's access token.
+       */
+      serviceAccount?: string;
+      /**
+       * The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
+       */
+      signingAlgorithm?: "ES256" | "RS256";
+      /**
+       * The GCS bucket issuances are scoped within, by a Credential Access Boundary.
+       */
+      bucket?: ProviderBucketName;
+      /**
+       * Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+       */
+      probePrefix?: ProviderObjectPrefix;
+    }
+  | {
+      model: "azure-cert";
+      tenantId: string;
+      clientId: string;
+      /**
+       * The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
+       */
+      tokenScope: string;
+      /**
+       * Absent means `login.microsoftonline.com`.
+       */
+      authorityHost?: string;
+    }
+  | {
+      model: "oauth2-private-key-jwt";
+      tokenEndpoint: ProviderHttpsUrl;
+      clientId: string;
+      /**
+       * The assertion's `aud`. Absent means `tokenEndpoint`.
+       */
+      audience?: string;
+      /**
+       * The scopes a binding may request, the ceiling for every issuance.
+       *
+       * @maxItems 64
+       */
+      scopes?: string[];
+      signingAlgorithm?: "ES256" | "RS256";
+    }
+  | {
+      model: "s3-static-presign";
+      endpoint: ProviderHttpsUrl;
+      /**
+       * The SigV4 signing region; `auto` for Cloudflare R2.
+       */
+      region: string;
+      bucket: ProviderBucketName;
+      /**
+       * Address the bucket in the path rather than the host name, as MinIO usually needs.
+       */
+      pathStyle?: boolean;
+      /**
+       * The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
+       */
+      accessKeyId: string;
+      /**
+       * Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+       */
+      probePrefix?: ProviderObjectPrefix;
+    }
+  | {
+      model: "sui-signer";
+      network: "mainnet" | "testnet" | "devnet";
+      /**
+       * Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.
+       *
+       * @minItems 1
+       * @maxItems 32
+       */
+      allowedCalls: [SuiMoveCall, ...SuiMoveCall[]];
+      /**
+       * Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.
+       *
+       * @maxItems 32
+       */
+      allowedObjects?: string[];
+      /**
+       * The largest gas budget one transaction may declare.
+       */
+      maxGasBudgetMist: number;
+      /**
+       * The total gas budget signed per rolling 24 hours.
+       */
+      maxGasPerDayMist: number;
+      /**
+       * Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.
+       *
+       * @maxItems 8
+       */
+      maxCoinOutPerTx?:
+        | []
+        | [
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ];
+    }
+  | {
+      model: "static-secret";
+      /**
+       * The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
+       */
+      driver: string;
+      baseUrl: ProviderHttpsUrl;
+    };
 /**
  * `active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.
  */
@@ -151,7 +438,9 @@ export type Capability_DeviceV0_1 =
   | "room-present"
   | "room-open"
   | "key-export"
-  | "sign-sshsig";
+  | "sign-sshsig"
+  | "external-accounts-manage"
+  | "external-auth-use";
 /**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
@@ -171,7 +460,9 @@ export type Capability_DeviceV0_2 =
   | "roomPresent"
   | "roomOpen"
   | "keyExport"
-  | "signSshsig";
+  | "signSshsig"
+  | "externalAccountsManage"
+  | "externalAuthUse";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
@@ -761,9 +1052,13 @@ export type SealedEnvelope_VaultV0_2 =
   | HpkeArmoredEnvelope_VaultV0_2
   | TspMessageEnvelope_VaultV0_2;
 /**
- * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. The recipient is the X25519 derivation of the Ed25519 key of the DID it is sealed to. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
+ * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
  */
 export type SealedTransferBundle = string;
+/**
+ * Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.
+ */
+export type SecretFingerprint = string;
 /**
  * Discriminator for the secret type stored in the entry. Definitions:
  * - `password` — username + password (+ optional TOTP seed).
@@ -1303,9 +1598,13 @@ export interface AccountBinding {
 export interface AccountProbeReport {
   at: string;
   /**
-   * True when every step succeeded.
+   * True when every step that ran succeeded.
    */
   ok: boolean;
+  /**
+   * True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.
+   */
+  complete: boolean;
   /**
    * In order; the first failing step ends the probe.
    *
@@ -1730,10 +2029,7 @@ export interface AccountPublicMaterial {
  * That a static model's secret is set, and which one. Never its value.
  */
 export interface AccountSecretInfo {
-  /**
-   * A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint confirms a re-entered value without being a dictionary oracle for anyone who reads it.
-   */
-  fingerprint: DigestMultibase;
+  fingerprint: SecretFingerprint;
   setAt: string;
 }
 /**
@@ -3736,43 +4032,6 @@ export interface AutoGrantSweep {
   errors: number;
 }
 /**
- * Egress: `rolesanywhere.<region>.amazonaws.com`, plus `sts.<region>.amazonaws.com` when `chainedRoleArn` is set.
- */
-export interface AwsRolesAnywhereSettings {
-  model: "aws-roles-anywhere";
-  region: AwsRegion;
-  /**
-   * The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.
-   */
-  trustAnchorArn: AwsArn;
-  profileArn: AwsArn;
-  roleArn: AwsArn;
-  /**
-   * When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.
-   */
-  chainedRoleArn?: AwsArn;
-  /**
-   * The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.
-   */
-  bucket?: ProviderBucketName;
-}
-/**
- * Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in `authorityHost`.
- */
-export interface AzureCertSettings {
-  model: "azure-cert";
-  tenantId: string;
-  clientId: string;
-  /**
-   * The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
-   */
-  tokenScope: string;
-  /**
-   * Absent means `login.microsoftonline.com`.
-   */
-  authorityHost?: string;
-}
-/**
  * Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.
  */
 export interface BackupEnvelope {
@@ -5237,7 +5496,7 @@ export interface ExternalAccount {
    */
   bindings: AccountBinding[];
   /**
-   * The provider hosts this account's use connects to, derived by the custodian from its settings. The custodian MUST NOT connect anywhere else on this account's behalf, so an egress proxy can allow exactly this set. Empty for models that need no egress.
+   * The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.
    *
    * @maxItems 8
    */
@@ -5288,27 +5547,6 @@ export interface ForgeAccount {
    * The account's current login, as the forge reported it when last seen. Display only.
    */
   login: string;
-}
-/**
- * Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when `serviceAccount` is set.
- */
-export interface GcpWifPinnedSettings {
-  model: "gcp-wif-pinned";
-  projectNumber: string;
-  poolId: string;
-  providerId: string;
-  /**
-   * When set, the federated token is exchanged for this service account's access token.
-   */
-  serviceAccount?: string;
-  /**
-   * The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
-   */
-  signingAlgorithm?: "ES256" | "RS256";
-  /**
-   * The GCS bucket issuances are scoped within, by a Credential Access Boundary.
-   */
-  bucket?: ProviderBucketName;
 }
 /**
  * The VTC's binding to one owner on one forge.
@@ -6156,25 +6394,6 @@ export interface MonitorFilter {
    * Only events that carry an `outcome`.
    */
   failuresOnly?: boolean;
-}
-/**
- * Egress: the host of `tokenEndpoint`, and nothing else.
- */
-export interface OAuth2PrivateKeyJwtSettings {
-  model: "oauth2-private-key-jwt";
-  tokenEndpoint: ProviderHttpsUrl;
-  clientId: string;
-  /**
-   * The assertion's `aud`. Absent means `tokenEndpoint`.
-   */
-  audience?: string;
-  /**
-   * The scopes a binding may request, the ceiling for every issuance.
-   *
-   * @maxItems 64
-   */
-  scopes?: string[];
-  signingAlgorithm?: "ES256" | "RS256";
 }
 export interface PasskeyVerificationMethod {
   /**
@@ -7254,26 +7473,6 @@ export interface RotationRecord {
   cacheHorizonAt?: string;
 }
 /**
- * No egress: presigning is a computation inside the custodian, and the consumer uses the URL itself.
- */
-export interface S3StaticPresignSettings {
-  model: "s3-static-presign";
-  endpoint: ProviderHttpsUrl;
-  /**
-   * The SigV4 signing region; `auto` for Cloudflare R2.
-   */
-  region: string;
-  bucket: ProviderBucketName;
-  /**
-   * Address the bucket in the path rather than the host name, as MinIO usually needs.
-   */
-  pathStyle?: boolean;
-  /**
-   * The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
-   */
-  accessKeyId: string;
-}
-/**
  * One registered credential type, as the community stores it.
  */
 export interface SchemaEntry {
@@ -7708,17 +7907,6 @@ export interface StatePin {
    */
   version: string;
 }
-/**
- * Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set and used only inside the custodian by `driver`; a provider reachable only by handing the consumer the raw key is not supported.
- */
-export interface StaticSecretSettings {
-  model: "static-secret";
-  /**
-   * The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
-   */
-  driver: string;
-  baseUrl: ProviderHttpsUrl;
-}
 export interface StepUpProof_VaultV0_1 {
   kind: "webauthn-uv" | "push-approval" | "totp";
   /**
@@ -7769,201 +7957,6 @@ export interface SuiMoveCall {
   package: string;
   module: string;
   function: string;
-}
-/**
- * No egress: the custodian signs and the consumer submits the transaction. The allow-list, the gas caps and the coin caps are the account's whole authority; a transaction outside them is refused before anything is signed.
- */
-export interface SuiSignerSettings {
-  model: "sui-signer";
-  network: "mainnet" | "testnet" | "devnet";
-  /**
-   * Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.
-   *
-   * @minItems 1
-   * @maxItems 32
-   */
-  allowedCalls: [SuiMoveCall, ...SuiMoveCall[]];
-  /**
-   * Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.
-   *
-   * @maxItems 32
-   */
-  allowedObjects?: string[];
-  /**
-   * The largest gas budget one transaction may declare.
-   */
-  maxGasBudgetMist: number;
-  /**
-   * The total gas budget signed per rolling 24 hours.
-   */
-  maxGasPerDayMist: number;
-  /**
-   * Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.
-   *
-   * @maxItems 8
-   */
-  maxCoinOutPerTx?:
-    | []
-    | [
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ]
-    | [
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        },
-        {
-          coinType: string;
-          amount: number;
-        }
-      ];
 }
 /**
  * What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.

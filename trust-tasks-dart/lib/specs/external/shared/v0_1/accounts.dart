@@ -91,291 +91,6 @@ typedef ProviderBucketName = String;
 /// ProviderHttpsUrl, defined by this specification's schema.
 typedef ProviderHttpsUrl = String;
 
-/// Egress: `rolesanywhere.&lt;region&gt;.amazonaws.com`, plus `sts.&lt;region&gt;.amazonaws.com`
-/// when `chainedRoleArn` is set.
-class AwsRolesAnywhereSettings {
-  const AwsRolesAnywhereSettings({
-    required this.model,
-    required this.region,
-    required this.trustAnchorArn,
-    required this.profileArn,
-    required this.roleArn,
-    this.chainedRoleArn,
-    this.bucket,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory AwsRolesAnywhereSettings.fromJson(Map<String, dynamic> json) =>
-      AwsRolesAnywhereSettings(
-        model: json['model'] as String,
-        region: json['region'] as String,
-        trustAnchorArn: json['trustAnchorArn'] as String,
-        profileArn: json['profileArn'] as String,
-        roleArn: json['roleArn'] as String,
-        chainedRoleArn: json['chainedRoleArn'] as String?,
-        bucket: json['bucket'] as String?,
-      );
-
-  final String model;
-  final AwsRegion region;
-
-  /// The trust anchor holding the custodian's CA certificate. Recorded after the
-  /// administrator creates it from external/accounts/setup.
-  final AwsArn trustAnchorArn;
-  final AwsArn profileArn;
-  final AwsArn roleArn;
-
-  /// When set, every issuance chains an AssumeRole into this role carrying the
-  /// downscoping session policy, for deployments whose Roles Anywhere profile cannot
-  /// carry one per request. Caps a credential at one hour.
-  final AwsArn? chainedRoleArn;
-
-  /// The S3 bucket issuances are scoped within. Required for an account whose bindings
-  /// issue storage scopes.
-  final ProviderBucketName? bucket;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'region': region,
-        'trustAnchorArn': trustAnchorArn,
-        'profileArn': profileArn,
-        'roleArn': roleArn,
-        if (chainedRoleArn != null) 'chainedRoleArn': chainedRoleArn!,
-        if (bucket != null) 'bucket': bucket!,
-      };
-}
-
-/// The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
-///
-/// An extension type rather than an enum: a value from a newer MINOR of this
-/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
-/// Compare against the constants below, and treat anything else as unrecognised.
-extension type const GcpWifPinnedSettingsSigningAlgorithm(String value) {
-  static const GcpWifPinnedSettingsSigningAlgorithm es256 =
-      GcpWifPinnedSettingsSigningAlgorithm('ES256');
-  static const GcpWifPinnedSettingsSigningAlgorithm rs256 =
-      GcpWifPinnedSettingsSigningAlgorithm('RS256');
-
-  /// Every value this specification's schema permits.
-  static const List<GcpWifPinnedSettingsSigningAlgorithm> values =
-      <GcpWifPinnedSettingsSigningAlgorithm>[es256, rs256];
-}
-
-/// Egress: `sts.googleapis.com`, plus `iamcredentials.googleapis.com` when
-/// `serviceAccount` is set.
-class GcpWifPinnedSettings {
-  const GcpWifPinnedSettings({
-    required this.model,
-    required this.projectNumber,
-    required this.poolId,
-    required this.providerId,
-    this.serviceAccount,
-    this.signingAlgorithm,
-    this.bucket,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory GcpWifPinnedSettings.fromJson(Map<String, dynamic> json) =>
-      GcpWifPinnedSettings(
-        model: json['model'] as String,
-        projectNumber: json['projectNumber'] as String,
-        poolId: json['poolId'] as String,
-        providerId: json['providerId'] as String,
-        serviceAccount: json['serviceAccount'] as String?,
-        signingAlgorithm: json['signingAlgorithm'] == null
-            ? null
-            : GcpWifPinnedSettingsSigningAlgorithm(
-                json['signingAlgorithm'] as String),
-        bucket: json['bucket'] as String?,
-      );
-
-  final String model;
-  final String projectNumber;
-  final String poolId;
-  final String providerId;
-
-  /// When set, the federated token is exchanged for this service account's access token.
-  final String? serviceAccount;
-
-  /// The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
-  final GcpWifPinnedSettingsSigningAlgorithm? signingAlgorithm;
-
-  /// The GCS bucket issuances are scoped within, by a Credential Access Boundary.
-  final ProviderBucketName? bucket;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'projectNumber': projectNumber,
-        'poolId': poolId,
-        'providerId': providerId,
-        if (serviceAccount != null) 'serviceAccount': serviceAccount!,
-        if (signingAlgorithm != null)
-          'signingAlgorithm': signingAlgorithm!.value,
-        if (bucket != null) 'bucket': bucket!,
-      };
-}
-
-/// Egress: `login.microsoftonline.com`, or the sovereign-cloud authority named in
-/// `authorityHost`.
-class AzureCertSettings {
-  const AzureCertSettings({
-    required this.model,
-    required this.tenantId,
-    required this.clientId,
-    required this.tokenScope,
-    this.authorityHost,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory AzureCertSettings.fromJson(Map<String, dynamic> json) =>
-      AzureCertSettings(
-        model: json['model'] as String,
-        tenantId: json['tenantId'] as String,
-        clientId: json['clientId'] as String,
-        tokenScope: json['tokenScope'] as String,
-        authorityHost: json['authorityHost'] as String?,
-      );
-
-  final String model;
-  final String tenantId;
-  final String clientId;
-
-  /// The `scope` requested at the token endpoint, such as
-  /// `https://storage.azure.com/.default`.
-  final String tokenScope;
-
-  /// Absent means `login.microsoftonline.com`.
-  final String? authorityHost;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'tenantId': tenantId,
-        'clientId': clientId,
-        'tokenScope': tokenScope,
-        if (authorityHost != null) 'authorityHost': authorityHost!,
-      };
-}
-
-/// OAuth2PrivateKeyJwtSettingsSigningAlgorithm is a closed set of string values
-/// defined by this specification's schema.
-///
-/// An extension type rather than an enum: a value from a newer MINOR of this
-/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
-/// Compare against the constants below, and treat anything else as unrecognised.
-extension type const OAuth2PrivateKeyJwtSettingsSigningAlgorithm(String value) {
-  static const OAuth2PrivateKeyJwtSettingsSigningAlgorithm es256 =
-      OAuth2PrivateKeyJwtSettingsSigningAlgorithm('ES256');
-  static const OAuth2PrivateKeyJwtSettingsSigningAlgorithm rs256 =
-      OAuth2PrivateKeyJwtSettingsSigningAlgorithm('RS256');
-
-  /// Every value this specification's schema permits.
-  static const List<OAuth2PrivateKeyJwtSettingsSigningAlgorithm> values =
-      <OAuth2PrivateKeyJwtSettingsSigningAlgorithm>[es256, rs256];
-}
-
-/// Egress: the host of `tokenEndpoint`, and nothing else.
-class OAuth2PrivateKeyJwtSettings {
-  const OAuth2PrivateKeyJwtSettings({
-    required this.model,
-    required this.tokenEndpoint,
-    required this.clientId,
-    this.audience,
-    this.scopes,
-    this.signingAlgorithm,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory OAuth2PrivateKeyJwtSettings.fromJson(Map<String, dynamic> json) =>
-      OAuth2PrivateKeyJwtSettings(
-        model: json['model'] as String,
-        tokenEndpoint: json['tokenEndpoint'] as String,
-        clientId: json['clientId'] as String,
-        audience: json['audience'] as String?,
-        scopes: json['scopes'] == null
-            ? null
-            : (json['scopes'] as List<dynamic>)
-                .map((e) => e as String)
-                .toList(),
-        signingAlgorithm: json['signingAlgorithm'] == null
-            ? null
-            : OAuth2PrivateKeyJwtSettingsSigningAlgorithm(
-                json['signingAlgorithm'] as String),
-      );
-
-  final String model;
-  final ProviderHttpsUrl tokenEndpoint;
-  final String clientId;
-
-  /// The assertion's `aud`. Absent means `tokenEndpoint`.
-  final String? audience;
-
-  /// The scopes a binding may request, the ceiling for every issuance.
-  final List<String>? scopes;
-  final OAuth2PrivateKeyJwtSettingsSigningAlgorithm? signingAlgorithm;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'tokenEndpoint': tokenEndpoint,
-        'clientId': clientId,
-        if (audience != null) 'audience': audience!,
-        if (scopes != null) 'scopes': scopes!,
-        if (signingAlgorithm != null)
-          'signingAlgorithm': signingAlgorithm!.value,
-      };
-}
-
-/// No egress: presigning is a computation inside the custodian, and the consumer uses
-/// the URL itself.
-class S3StaticPresignSettings {
-  const S3StaticPresignSettings({
-    required this.model,
-    required this.endpoint,
-    required this.region,
-    required this.bucket,
-    this.pathStyle,
-    required this.accessKeyId,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory S3StaticPresignSettings.fromJson(Map<String, dynamic> json) =>
-      S3StaticPresignSettings(
-        model: json['model'] as String,
-        endpoint: json['endpoint'] as String,
-        region: json['region'] as String,
-        bucket: json['bucket'] as String,
-        pathStyle: json['pathStyle'] as bool?,
-        accessKeyId: json['accessKeyId'] as String,
-      );
-
-  final String model;
-  final ProviderHttpsUrl endpoint;
-
-  /// The SigV4 signing region; `auto` for Cloudflare R2.
-  final String region;
-  final ProviderBucketName bucket;
-
-  /// Address the bucket in the path rather than the host name, as MinIO usually needs.
-  final bool? pathStyle;
-
-  /// The access key's identifier. Not a secret: it appears in every presigned URL. The
-  /// secret half is set with external/accounts/secret/set and never returned.
-  final String accessKeyId;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'endpoint': endpoint,
-        'region': region,
-        'bucket': bucket,
-        if (pathStyle != null) 'pathStyle': pathStyle!,
-        'accessKeyId': accessKeyId,
-      };
-}
-
 /// One Move function an account's transactions may call.
 class SuiMoveCall {
   const SuiMoveCall({
@@ -403,160 +118,6 @@ class SuiMoveCall {
       };
 }
 
-/// SuiSignerSettingsNetwork is a closed set of string values defined by this
-/// specification's schema.
-///
-/// An extension type rather than an enum: a value from a newer MINOR of this
-/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
-/// Compare against the constants below, and treat anything else as unrecognised.
-extension type const SuiSignerSettingsNetwork(String value) {
-  static const SuiSignerSettingsNetwork mainnet =
-      SuiSignerSettingsNetwork('mainnet');
-  static const SuiSignerSettingsNetwork testnet =
-      SuiSignerSettingsNetwork('testnet');
-  static const SuiSignerSettingsNetwork devnet =
-      SuiSignerSettingsNetwork('devnet');
-
-  /// Every value this specification's schema permits.
-  static const List<SuiSignerSettingsNetwork> values =
-      <SuiSignerSettingsNetwork>[mainnet, testnet, devnet];
-}
-
-/// SuiSignerSettingsMaxCoinOutPerTxItem, generated from its schema.
-class SuiSignerSettingsMaxCoinOutPerTxItem {
-  const SuiSignerSettingsMaxCoinOutPerTxItem({
-    required this.coinType,
-    required this.amount,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory SuiSignerSettingsMaxCoinOutPerTxItem.fromJson(
-          Map<String, dynamic> json) =>
-      SuiSignerSettingsMaxCoinOutPerTxItem(
-        coinType: json['coinType'] as String,
-        amount: json['amount'] as int,
-      );
-
-  final String coinType;
-  final int amount;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'coinType': coinType,
-        'amount': amount,
-      };
-}
-
-/// No egress: the custodian signs and the consumer submits the transaction. The
-/// allow-list, the gas caps and the coin caps are the account's whole authority; a
-/// transaction outside them is refused before anything is signed.
-class SuiSignerSettings {
-  const SuiSignerSettings({
-    required this.model,
-    required this.network,
-    required this.allowedCalls,
-    this.allowedObjects,
-    required this.maxGasBudgetMist,
-    required this.maxGasPerDayMist,
-    this.maxCoinOutPerTx,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory SuiSignerSettings.fromJson(Map<String, dynamic> json) =>
-      SuiSignerSettings(
-        model: json['model'] as String,
-        network: SuiSignerSettingsNetwork(json['network'] as String),
-        allowedCalls: (json['allowedCalls'] as List<dynamic>)
-            .map((e) => SuiMoveCall.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        allowedObjects: json['allowedObjects'] == null
-            ? null
-            : (json['allowedObjects'] as List<dynamic>)
-                .map((e) => e as String)
-                .toList(),
-        maxGasBudgetMist: json['maxGasBudgetMist'] as int,
-        maxGasPerDayMist: json['maxGasPerDayMist'] as int,
-        maxCoinOutPerTx: json['maxCoinOutPerTx'] == null
-            ? null
-            : (json['maxCoinOutPerTx'] as List<dynamic>)
-                .map((e) => SuiSignerSettingsMaxCoinOutPerTxItem.fromJson(
-                    e as Map<String, dynamic>))
-                .toList(),
-      );
-
-  final String model;
-  final SuiSignerSettingsNetwork network;
-
-  /// Every MoveCall command in a signed transaction must name one of these. For Walrus
-  /// storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and
-  /// `delete_blob`, and the coin calls needed to pay for them.
-  final List<SuiMoveCall> allowedCalls;
-
-  /// Shared objects a transaction may take as input, such as the Walrus system and
-  /// staking objects. Absent means any object the allowed calls accept.
-  final List<String>? allowedObjects;
-
-  /// The largest gas budget one transaction may declare.
-  final int maxGasBudgetMist;
-
-  /// The total gas budget signed per rolling 24 hours.
-  final int maxGasPerDayMist;
-
-  /// Per coin type, the most a single transaction may spend or transfer out of the
-  /// account's address, in the coin's smallest unit. A coin type not listed may not
-  /// leave the address at all.
-  final List<SuiSignerSettingsMaxCoinOutPerTxItem>? maxCoinOutPerTx;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'network': network.value,
-        'allowedCalls': allowedCalls.map((e) => e.toJson()).toList(),
-        if (allowedObjects != null) 'allowedObjects': allowedObjects!,
-        'maxGasBudgetMist': maxGasBudgetMist,
-        'maxGasPerDayMist': maxGasPerDayMist,
-        if (maxCoinOutPerTx != null)
-          'maxCoinOutPerTx': maxCoinOutPerTx!.map((e) => e.toJson()).toList(),
-      };
-}
-
-/// Egress: the host of `baseUrl`. The secret is set with external/accounts/secret/set
-/// and used only inside the custodian by `driver`; a provider reachable only by
-/// handing the consumer the raw key is not supported.
-class StaticSecretSettings {
-  const StaticSecretSettings({
-    required this.model,
-    required this.driver,
-    required this.baseUrl,
-  });
-
-  /// Read this payload from a decoded JSON object.
-  factory StaticSecretSettings.fromJson(Map<String, dynamic> json) =>
-      StaticSecretSettings(
-        model: json['model'] as String,
-        driver: json['driver'] as String,
-        baseUrl: json['baseUrl'] as String,
-      );
-
-  final String model;
-
-  /// The custodian's driver that uses the secret: performs a login or token exchange and
-  /// returns a short-lived result. A custodian refuses a driver it does not implement.
-  final String driver;
-  final ProviderHttpsUrl baseUrl;
-
-  /// Serialize to a JSON-encodable map, omitting absent members.
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'model': model,
-        'driver': driver,
-        'baseUrl': baseUrl,
-      };
-}
-
-/// Per-model account settings, discriminated by `model`. Never a secret: every value
-/// here is returned to anyone who may read the account.
-typedef AccountSettings = Object?;
-
 /// An object-key prefix within the account's bucket: one or more segments of lowercase
 /// letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending
 /// with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment
@@ -568,6 +129,15 @@ typedef AccountSettings = Object?;
 /// MUST build provider policies with the provider language's own encoder, never by
 /// string interpolation.
 typedef ProviderObjectPrefix = String;
+
+/// Per-model account settings, discriminated by `model`: every branch is an object
+/// whose `model` member is a `const`, which is what lets each generated binding emit a
+/// tagged union, so an unusable setting is answered as `external:invalidSettings`
+/// naming the member rather than as an unparseable payload. Never a secret: every
+/// value here is returned to anyone who may read the account. Branches are referred to
+/// by their `model` ("the `sui-signer` settings"). They carry no `title`, so that
+/// every binding renders each as a plain variant of this union.
+typedef AccountSettings = Object?;
 
 /// `put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy
 /// or bucket-level action exists here, so none can be granted.
@@ -950,6 +520,16 @@ class AccountPublicMaterial {
       };
 }
 
+/// Which secret is set, without being a way to test guesses at it. `hmacsha256:`
+/// followed by the base64url encoding, without padding, of the first 16 bytes of
+/// HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and
+/// never discloses. Comparable only between fingerprints made by the same custodian: a
+/// re-entered value can be confirmed, while the same secret at two custodians gives
+/// unrelated fingerprints. Never a bare hash of the secret, which would let anyone who
+/// reads it run a dictionary against it offline; and deliberately not a
+/// DigestMultibase, since multihash has no code for a keyed digest.
+typedef SecretFingerprint = String;
+
 /// That a static model's secret is set, and which one. Never its value.
 class AccountSecretInfo {
   const AccountSecretInfo({
@@ -964,10 +544,7 @@ class AccountSecretInfo {
         setAt: json['setAt'] as String,
       );
 
-  /// A keyed digest of the secret (HMAC under a custodian-held key), so the fingerprint
-  /// confirms a re-entered value without being a dictionary oracle for anyone who reads
-  /// it.
-  final DigestMultibase fingerprint;
+  final SecretFingerprint fingerprint;
   final String setAt;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -1050,6 +627,7 @@ class AccountProbeReport {
   const AccountProbeReport({
     required this.at,
     required this.ok,
+    required this.complete,
     required this.steps,
   });
 
@@ -1058,6 +636,7 @@ class AccountProbeReport {
       AccountProbeReport(
         at: json['at'] as String,
         ok: json['ok'] as bool,
+        complete: json['complete'] as bool,
         steps: (json['steps'] as List<dynamic>)
             .map((e) =>
                 AccountProbeReportStepsItem.fromJson(e as Map<String, dynamic>))
@@ -1066,8 +645,14 @@ class AccountProbeReport {
 
   final String at;
 
-  /// True when every step succeeded.
+  /// True when every step that ran succeeded.
   final bool ok;
+
+  /// True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent)
+  /// ran, so the account was exercised end to end. A probe that stopped after `exchange`
+  /// because nothing named a canary prefix is `complete: false` even when `ok` is true,
+  /// and does not clear `providerSetupRequired`.
+  final bool complete;
 
   /// In order; the first failing step ends the probe.
   final List<AccountProbeReportStepsItem> steps;
@@ -1076,6 +661,7 @@ class AccountProbeReport {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'at': at,
         'ok': ok,
+        'complete': complete,
         'steps': steps.map((e) => e.toJson()).toList(),
       };
 }
@@ -1145,10 +731,12 @@ class ExternalAccount {
   final AccountSecretInfo? secret;
   final List<AccountBinding> bindings;
 
-  /// The provider hosts this account's use connects to, derived by the custodian from
-  /// its settings. The custodian MUST NOT connect anywhere else on this account's
-  /// behalf, so an egress proxy can allow exactly this set. Empty for models that need
-  /// no egress.
+  /// The provider hosts the custodian connects to on this account's behalf, derived by
+  /// the custodian from its settings: the token or session endpoints issuance uses, and
+  /// the destinations external/accounts/probe dials (the object store's host, for a
+  /// storage model). The custodian MUST NOT connect anywhere else on the account's
+  /// behalf, so an egress proxy can allow exactly this set. Empty only for a model that
+  /// neither exchanges nor probes over the network.
   final List<String> egressHosts;
 
   /// True when the account cannot be used until its provider-side setup is redone: after
@@ -1277,9 +865,60 @@ class AccountSetupArtifacts {
 /// `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF,
 /// ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer
 /// assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated
-/// data. The recipient is the X25519 derivation of the Ed25519 key of the DID it is
-/// sealed to. The only form in which secret material crosses the wire in this family,
-/// in either direction: the seal is what keeps a terminating proxy, a relay, a request
-/// log or a debug dump of "the response" from ever holding a usable secret, whatever
-/// transport carried the document.
+/// data. Each task states the key it is sealed to: a single-use wrapping key from
+/// keys/import-wrapping-key for external/accounts/secret/set, and the caller's
+/// key-agreement key for external/credentials/issue. Its cleartext is an
+/// ExternalSecretPayload or an ExternalCredentialPayload. The only form in which
+/// secret material crosses the wire in this family, in either direction: the seal is
+/// what keeps a terminating proxy, a relay, a request log or a debug dump of "the
+/// response" from ever holding a usable secret, whatever transport carried the
+/// document.
 typedef SealedTransferBundle = String;
+
+/// The cleartext inside the sealed bundle of external/accounts/secret/set. It names
+/// the account it is for, inside the seal, so that a bundle captured on its way to one
+/// account cannot be replayed into another: the custodian MUST refuse a bundle whose
+/// `context` or `account` differs from the request's. Never appears on the wire
+/// outside a seal.
+class ExternalSecretPayload {
+  const ExternalSecretPayload({
+    required this.context,
+    required this.account,
+    required this.secret,
+    this.accessKeyId,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ExternalSecretPayload.fromJson(Map<String, dynamic> json) =>
+      ExternalSecretPayload(
+        context: json['context'] as String,
+        account: json['account'] as String,
+        secret: json['secret'] as String,
+        accessKeyId: json['accessKeyId'] as String?,
+      );
+
+  final AccountContextId context;
+  final AccountId account;
+
+  /// The secret itself: an access-key secret, an API token. Opaque to everything but the
+  /// account's driver.
+  final String secret;
+
+  /// For `s3-static-presign`, the access key id the secret belongs to. When present the
+  /// custodian MUST refuse a bundle whose id differs from the account's settings, so
+  /// that a secret cannot be paired with the wrong key id.
+  final String? accessKeyId;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'context': context,
+        'account': account,
+        'secret': secret,
+        if (accessKeyId != null) 'accessKeyId': accessKeyId!,
+      };
+}
+
+/// The cleartext inside the sealed bundle of external/credentials/issue, discriminated
+/// by `kind`. Never appears on the wire outside a seal, and a consumer keeps it in
+/// memory only.
+typedef ExternalCredentialPayload = Object?;
