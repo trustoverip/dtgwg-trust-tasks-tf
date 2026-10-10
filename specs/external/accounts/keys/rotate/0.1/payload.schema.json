@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/external/accounts/keys/rotate/0.1",
+  "title": "External Accounts — Keys — Rotate — payload",
+  "description": "Rotate an external account's key: stage, confirm or abandon. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "id",
+    "phase"
+  ],
+  "properties": {
+    "context": {
+      "$ref": "../../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountContextId"
+    },
+    "id": {
+      "$ref": "../../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountId"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "stage",
+        "confirm",
+        "abandon"
+      ]
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "External Accounts — Keys — Rotate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "../../../../../external/_shared/0.1/accounts.schema.json#/$defs/ExternalAccount"
+        },
+        "setup": {
+          "$ref": "../../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountSetupArtifacts",
+          "description": "On `stage` only."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

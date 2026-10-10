@@ -1,0 +1,15 @@
+[
+  {
+    "note": "An account id with characters that could not be placed in a certificate subject or provider condition unescaped.",
+    "payload": {
+      "context": "community",
+      "id": "EU S3 \"primary\""
+    }
+  },
+  {
+    "note": "No account id.",
+    "payload": {
+      "context": "community"
+    }
+  }
+]

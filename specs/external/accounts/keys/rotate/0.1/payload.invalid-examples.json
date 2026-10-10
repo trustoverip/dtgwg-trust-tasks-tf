@@ -1,0 +1,24 @@
+[
+  {
+    "note": "A one-step rotation. Pinned models need the provider to trust the successor before the current key retires.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "phase": "replace"
+    }
+  },
+  {
+    "note": "A caller-supplied successor key; the custodian generates every account key.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "phase": "stage",
+      "publicKeyJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "AAAA",
+        "y": "AAAA"
+      }
+    }
+  }
+]

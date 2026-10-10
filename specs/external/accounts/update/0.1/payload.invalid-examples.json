@@ -1,0 +1,18 @@
+[
+  {
+    "note": "A state change smuggled into an update; state moves only through the lifecycle tasks, whose consent rules differ.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "state": "active"
+    }
+  },
+  {
+    "note": "Bindings in an update; bindings change only through bindings/grant and bindings/revoke.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "bindings": []
+    }
+  }
+]

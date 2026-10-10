@@ -1,0 +1,10 @@
+[
+  {
+    "note": "A caller-chosen canary key. The custodian names the canary itself, inside the narrowest bound prefix, so a probe cannot be used to write or overwrite an object of the caller's choosing.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "objectKey": "rooms/important/report.pdf"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "note": "Provider administrator credentials. The custodian never asks for them; the administrator applies the setup with their own.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "adminAccessKey": "AKIAEXAMPLE"
+    }
+  }
+]

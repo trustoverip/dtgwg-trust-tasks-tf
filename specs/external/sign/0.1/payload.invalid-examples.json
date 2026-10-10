@@ -1,0 +1,27 @@
+[
+  {
+    "note": "A caller-supplied digest. The custodian builds the intent message and digest itself; accepting one would make this a general signing oracle.",
+    "payload": {
+      "context": "community",
+      "account": "walrus-main",
+      "digest": "7nq4DPvmbmKmGzYrBkkVJBKyBMyUY5ft2KNi4rFfDS8Q"
+    }
+  },
+  {
+    "note": "Bytes to sign beside the transaction; additionalProperties: false keeps this task from becoming keys/sign under another name.",
+    "payload": {
+      "context": "community",
+      "account": "walrus-main",
+      "txBytes": "AAAD",
+      "payload": "aGVsbG8"
+    }
+  },
+  {
+    "note": "Transaction bytes that are not base64.",
+    "payload": {
+      "context": "community",
+      "account": "walrus-main",
+      "txBytes": "not base64!"
+    }
+  }
+]
