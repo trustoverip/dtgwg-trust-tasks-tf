@@ -1,0 +1,25 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "configId": "local-default"
+    }
+  },
+  {
+    "note": "A delete flag — a config is never deleted while a blob names it.",
+    "payload": {
+      "configId": "local-default",
+      "delete": true,
+      "reason": "Gone."
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`active` is not a state retirement produces.",
+    "payload": {
+      "configId": "local-default",
+      "state": "active",
+      "blobsRemaining": 0
+    }
+  }
+]

@@ -1,0 +1,55 @@
+[
+  {
+    "note": "No roomId — the task reads one room; enumeration is vtc/rooms/list.",
+    "payload": {}
+  },
+  {
+    "note": "A record filter — the host returns nothing derived from a room's contents.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "recordKey": "k1"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member list — the host has none, and per-member figures belong to vtc/rooms/usage.",
+    "payload": {
+      "room": {
+        "roomId": "room:z6MkRoomExample0001",
+        "ownerDid": "did:example:owner",
+        "visibility": "attributed",
+        "retentionPolicy": "chained",
+        "epoch": 7,
+        "lifecycle": "live",
+        "retentionDays": 30,
+        "createdAt": 1767225600,
+        "updatedAt": 1790000000
+      },
+      "storage": {
+        "configId": "eu-s3-primary",
+        "earlierConfigs": []
+      },
+      "limits": {
+        "limits": {
+          "filesEnabled": true
+        },
+        "roomSource": "policy",
+        "memberSource": "policy"
+      },
+      "usage": {
+        "room": {
+          "files": 0,
+          "bytes": 0,
+          "reservedBytes": 0
+        },
+        "orphans": {
+          "files": 0,
+          "bytes": 0
+        }
+      },
+      "members": [
+        "did:example:member"
+      ]
+    }
+  }
+]

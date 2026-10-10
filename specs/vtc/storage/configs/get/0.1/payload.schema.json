@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/storage/configs/get/0.1",
+  "title": "VTC Storage — Configs — Get — payload",
+  "description": "Read one storage config. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "configId"
+  ],
+  "properties": {
+    "configId": {
+      "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Storage — Configs — Get — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config",
+        "facts",
+        "assignedRooms",
+        "assignedRoomsTruncated"
+      ],
+      "properties": {
+        "config": {
+          "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfig"
+        },
+        "facts": {
+          "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigFacts"
+        },
+        "assignedRooms": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "The room's identifier, as its owner minted it."
+          }
+        },
+        "assignedRoomsTruncated": {
+          "type": "boolean"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

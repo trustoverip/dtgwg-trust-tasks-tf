@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/blobs/upload/commit/0.1",
+  "title": "Rooms Blobs — Upload — Commit — payload",
+  "description": "Complete a blob upload: reassemble it, check it against the manifest committed at begin, and store it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId"
+  ],
+  "properties": {
+    "uploadId": {
+      "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Blobs — Upload — Commit — response payload",
+      "description": "Success response to rooms/blobs/upload/commit. Type https://trusttasks.org/spec/rooms/blobs/upload/commit/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blobRef",
+        "size"
+      ],
+      "properties": {
+        "blobRef": {
+          "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/BlobRef",
+          "description": "The committed blob's name in this room: the digest of the manifest. What a record names in its `blobs` member."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The stored blob's size in ciphertext bytes, as committed in the manifest; what now counts against the member's and the room's usage."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

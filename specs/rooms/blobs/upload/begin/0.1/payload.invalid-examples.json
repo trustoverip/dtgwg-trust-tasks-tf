@@ -1,0 +1,80 @@
+[
+  {
+    "note": "No manifest — the host would have nothing to check chunks against and nothing to reserve.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-room.signature"]
+      }
+    }
+  },
+  {
+    "note": "No presentation — a host authorizes room writes from the room-issued chain only, never from an ACL of its own.",
+    "payload": {
+      "roomId": "did:example:room",
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      }
+    }
+  },
+  {
+    "note": "A chunk larger than the 256 KiB ceiling — its chunk document would not survive a 1 MiB mediator message.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-room.signature"]
+      },
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 300000,
+          "chunkCount": 1,
+          "chunkDigests": ["zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc"]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      }
+    }
+  },
+  {
+    "note": "A plaintext member in the manifest — the host is given ciphertext facts only; names belong in the sealed record.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-room.signature"]
+      },
+      "manifest": {
+        "size": 300000,
+        "name": "term-sheet.pdf",
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `missing` — a resuming member could not tell which chunks to send.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "expiresAt": "2026-10-10T11:00:01Z"
+    }
+  }
+]

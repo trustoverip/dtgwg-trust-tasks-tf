@@ -1,0 +1,49 @@
+[
+  {
+    "note": "No reason — every override is audited with one.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "target": {
+        "kind": "room"
+      },
+      "limits": {
+        "maxBytes": 10737418240
+      }
+    }
+  },
+  {
+    "note": "A per-file limit above the 1 GiB transfer ceiling, which no scope can exceed.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "target": {
+        "kind": "room"
+      },
+      "limits": {
+        "maxFileBytes": 2147483648
+      },
+      "reason": "Bigger files."
+    }
+  },
+  {
+    "note": "An unknown target kind.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "target": {
+        "kind": "owner"
+      },
+      "clear": true,
+      "reason": "Reset."
+    }
+  },
+  {
+    "note": "A reason longer than 500 characters.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "target": {
+        "kind": "room"
+      },
+      "clear": true,
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  }
+]

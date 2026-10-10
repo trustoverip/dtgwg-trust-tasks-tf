@@ -22,5 +22,6 @@ pub mod relationships;
 pub mod roles;
 pub mod rooms;
 pub mod schemas;
+pub mod storage;
 pub mod vetting;
 pub mod website;

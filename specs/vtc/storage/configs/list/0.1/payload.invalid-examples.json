@@ -1,0 +1,55 @@
+[
+  {
+    "note": "An unknown state filter.",
+    "payload": {
+      "state": "deleted"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A config carrying a secret in its settings — settings never hold one.",
+    "payload": {
+      "items": [
+        {
+          "config": {
+            "id": "eu-s3-primary",
+            "label": "EU — S3 (main account)",
+            "settings": {
+              "kind": "s3",
+              "region": "eu-west-1",
+              "bucket": "northwind-rooms-eu",
+              "secretAccessKey": "wJalrXUtnFEMI"
+            },
+            "auth": {
+              "mode": "vta-account",
+              "account": "eu-s3-primary"
+            },
+            "capacityBytes": 1099511627776,
+            "state": "active",
+            "isDefault": false,
+            "createdBy": "did:example:administrator",
+            "createdAt": "2026-10-01T09:00:00Z"
+          },
+          "facts": {
+            "rooms": 14,
+            "files": 4210,
+            "bytes": 182536110080,
+            "pendingDeleteBytes": 9437184,
+            "credential": {
+              "status": "vta-account",
+              "account": "eu-s3-primary",
+              "roomsHoldingCredentials": 3
+            },
+            "health": {
+              "lastProbeAt": "2026-10-10T06:00:00Z",
+              "lastProbeOk": true,
+              "lastPutAt": "2026-10-10T09:41:12Z",
+              "lastGetAt": "2026-10-10T09:58:40Z",
+              "lastDeleteAt": "2026-10-09T23:00:05Z"
+            }
+          }
+        }
+      ]
+    }
+  }
+]

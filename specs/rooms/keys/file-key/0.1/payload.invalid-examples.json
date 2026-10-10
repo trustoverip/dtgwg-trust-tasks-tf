@@ -1,0 +1,45 @@
+[
+  {
+    "note": "No purpose. Sealing and opening derive under different epochs — the current one, or the one the file was sealed under — and a custodian that guessed would hand a sealing caller a key members cannot use, or an opening caller a key that does not open the file.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "fileId": "q83vEjRWeJq83vEjRWeJq83vEjRWeJq83vEjRWeJq80"
+    }
+  },
+  {
+    "note": "A file identifier that is not 32 bytes. The identifier is the derivation's salt and the guarantee that no two files share a key; a short or guessable one weakens both.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "fileId": "term-sheet-v3",
+      "purpose": "open",
+      "epoch": 7
+    }
+  },
+  {
+    "note": "A purpose outside the two. `export` or `rotate` would be a different power — releasing a room-wide key — which this task deliberately cannot express.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "fileId": "q83vEjRWeJq83vEjRWeJq83vEjRWeJq83vEjRWeJq80",
+      "purpose": "export"
+    }
+  },
+  {
+    "note": "Asking for the room's storage key by name. The storage key never leaves the custodian; only a key derived for one file does.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "fileId": "q83vEjRWeJq83vEjRWeJq83vEjRWeJq83vEjRWeJq80",
+      "purpose": "open",
+      "epoch": 7,
+      "includeStorageKey": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response carrying more than one file's key. Each release covers one file, so that a key leaked from the caller exposes that file and nothing else.",
+    "payload": {
+      "key": "q83vEjRWeJq83vEjRWeJq83vEjRWeJq83vEjRWeJq80",
+      "epoch": 7,
+      "keys": ["q83vEjRWeJq83vEjRWeJq83vEjRWeJq83vEjRWeJq81"]
+    }
+  }
+]

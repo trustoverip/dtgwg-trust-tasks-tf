@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/blobs/upload/abort/0.1",
+  "title": "Rooms Blobs — Upload — Abort — payload",
+  "description": "Cancel a blob upload and release its reservation. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "uploadId"
+  ],
+  "properties": {
+    "uploadId": {
+      "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Blobs — Upload — Abort — response payload",
+      "description": "Success response to rooms/blobs/upload/abort. Type https://trusttasks.org/spec/rooms/blobs/upload/abort/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "aborted"
+      ],
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferId"
+        },
+        "aborted": {
+          "type": "boolean",
+          "description": "Whether this request ended the upload. False means it was already aborted — a success, and why abort can be retried safely."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

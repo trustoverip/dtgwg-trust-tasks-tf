@@ -1,0 +1,36 @@
+[
+  {
+    "note": "No presentation. The host answers about a room only to a party the room itself has authorized to read it; a host-side account or session is never the authority in this family.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal" }
+  },
+  {
+    "note": "Asking for another member's figures. A member reads the room's totals and their own; per-member usage is the room owner's read (rooms/usage), and an unknown member is refused rather than ignored.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response with no room totals. `usage.room` is what a member checks a file against before uploading it; a response without it cannot answer the question the task exists for.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "visibility": "attributed",
+      "epoch": 7,
+      "limits": { "filesEnabled": true },
+      "usage": {}
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A room-wide file size ceiling above 1 GiB, the transfer ceiling. No limit may promise more than the chunked transfer can carry.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "visibility": "attributed",
+      "epoch": 7,
+      "limits": { "filesEnabled": true, "room": { "maxFileBytes": 2147483648 } },
+      "usage": { "room": { "files": 0, "bytes": 0, "reservedBytes": 0 } }
+    }
+  }
+]

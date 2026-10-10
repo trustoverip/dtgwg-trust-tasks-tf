@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/usage/0.1",
+  "title": "VTC Rooms — Usage — payload",
+  "description": "A room-hosting administrator reports the storage and activity of the community's hosted rooms, grouped by room, member, storage config or day. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupBy"
+  ],
+  "properties": {
+    "groupBy": {
+      "type": "string",
+      "enum": [
+        "room",
+        "member",
+        "storageConfig",
+        "day"
+      ],
+      "description": "What each row describes. `day` is the daily history of whatever the filter selects."
+    },
+    "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Every member optional; all given apply together.",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The room's identifier, as its owner minted it."
+        },
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "One member's figures, across the `attributed` rooms selected."
+        },
+        "storageConfig": {
+          "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId"
+        },
+        "from": {
+          "type": "string",
+          "format": "date",
+          "description": "First UTC day of the range. Default: 29 days before `to`."
+        },
+        "to": {
+          "type": "string",
+          "format": "date",
+          "description": "Last UTC day of the range, inclusive. Default: today."
+        }
+      }
+    },
+    "sort": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "by"
+      ],
+      "properties": {
+        "by": {
+          "type": "string",
+          "enum": [
+            "bytes",
+            "files",
+            "uploads",
+            "downloads",
+            "egressBytes",
+            "date"
+          ]
+        },
+        "order": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        }
+      }
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Page size. The community chooses when absent (50 in the reference implementation)."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "UsageRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One group's figures. Holdings as of the read (or the end of the day, on a `day` row); activity over the range (or the day).",
+      "required": [
+        "files",
+        "bytes",
+        "reservedBytes",
+        "uploads",
+        "downloads",
+        "egressBytes"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present on a `room` row."
+        },
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "Present on a `member` row."
+        },
+        "storageConfig": {
+          "$ref": "../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId",
+          "description": "Present on a `storageConfig` row, and on a `room` row as the room's assigned config."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Present on a `day` row."
+        },
+        "files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reservedBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uploads": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "downloads": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "egressBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limits": {
+          "$ref": "../../../../rooms/_shared/0.1/blobs.schema.json#/$defs/ScopeLimits",
+          "description": "On a `room` row the room's limits, on a `member` row (one room selected) that member's."
+        },
+        "capacityBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "On a `storageConfig` row, the config's capacity when it has one."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms — Usage — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asOf",
+        "from",
+        "to",
+        "items"
+      ],
+      "properties": {
+        "asOf": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "from": {
+          "type": "string",
+          "format": "date"
+        },
+        "to": {
+          "type": "string",
+          "format": "date"
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/UsageRow"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more remain; pass it as `cursor`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "note": "No index — a download fetches one chunk at a time.",
+    "payload": {
+      "downloadId": "7a1c2e4b-5d6f-4a8b-9c0d-1e2f3a4b5c6d"
+    }
+  },
+  {
+    "note": "A BlobRef in place of a download handle — chunks are served only through a download a verified chain opened.",
+    "payload": {
+      "blobRef": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk",
+      "index": 0
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with padded standard base64 — chunks are unpadded base64url.",
+    "payload": {
+      "index": 0,
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "q83vASNFZ4k="
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without its index — a reader fetching in parallel could not place the bytes.",
+    "payload": {
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "q83vASNFZ4k"
+    }
+  }
+]

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/list/0.2",
+  "title": "Rooms Records List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `read` action at this room's scope."
+    },
+    "prefix": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Return only records whose key starts with this. On an `attributed` or `private` room keys are opaque, so a prefix is only useful where the client assigned structure to them."
+    },
+    "sinceVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Return only records changed after this version — the watermark that makes incremental sync possible. Tombstones are returned too: without them a puller learns of every create and update and never of a delete, so deleted records resurrect on the next full rebuild."
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "Opaque continuation token from a previous response. A host MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Maximum records to return. A host MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records List — response payload",
+      "description": "Success response to rooms/records/list. Type https://trusttasks.org/spec/rooms/records/list/0.2#response. Returns METADATA, never bodies: a reader fetches the handful it wants with rooms/records/get.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "records"
+      ],
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordMetadataV2"
+          }
+        },
+        "cursor": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "Present when more records remain."
+        },
+        "dataCommitment": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/DataCommitment",
+          "description": "The room's data commitment at the moment this listing was taken. OPTIONAL because a host that does not maintain the tree cannot honestly assert one, and a fabricated root is worse than an absent one — its absence says 'this host offers no completeness guarantee', which is true and useful. Present, it is signed along with the rest of the response, which is what makes it evidence rather than a claim."
+        },
+        "recordCount": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordCount",
+          "description": "How many records the room holds, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. A reader holding this listing **read to the end** with no `prefix` and no `sinceVersion` can compare its length against this; against a page, a filtered listing or a watermarked one it is a discrepancy the reader manufactured."
+        },
+        "headVersion": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/HeadVersion",
+          "description": "The room's highest assigned record version, as of `dataCommitment`. Present only beside `dataCommitment`, and computed from the same snapshot: it describes the state that root was taken over, and a head that does not belong to that root is worse than none. Without it two roots are not comparable at all: a host shown to have served two different ones answers that the room moved, and nothing contradicts it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "dependentRequired": {
+        "recordCount": [
+          "dataCommitment"
+        ],
+        "headVersion": [
+          "dataCommitment"
+        ]
+      }
+    }
+  }
+}

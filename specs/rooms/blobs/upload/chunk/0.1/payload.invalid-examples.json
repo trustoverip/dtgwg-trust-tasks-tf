@@ -1,0 +1,51 @@
+[
+  {
+    "note": "Standard base64 with padding — chunks are unpadded base64url.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "index": 0,
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "q83vASNFZ4k="
+    }
+  },
+  {
+    "note": "No restated digest — a chunk sent to the wrong index would survive until reassembly.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "index": 0,
+      "data": "q83vASNFZ4k"
+    }
+  },
+  {
+    "note": "An index past the 4096-chunk ceiling.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "index": 4096,
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "q83vASNFZ4k"
+    }
+  },
+  {
+    "note": "A room presentation on a chunk — the open upload is the authority for its chunks, so a chunk carries none.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "index": 0,
+      "digestMultibase": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+      "data": "q83vASNFZ4k",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-room.signature"]
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `stored` — an idempotent re-send and a first write must be distinguishable.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "index": 0,
+      "remainingCount": 1,
+      "expiresAt": "2026-10-10T11:05:00Z"
+    }
+  }
+]

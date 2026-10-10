@@ -1,0 +1,26 @@
+[
+  {
+    "note": "No upload id.",
+    "payload": {}
+  },
+  {
+    "note": "An upload id that is not a UUID — handles are host-generated and opaque, never derived.",
+    "payload": {
+      "uploadId": "my-upload"
+    }
+  },
+  {
+    "note": "A BlobRef supplied by the producer — the host computes it from the committed manifest, never takes it on trust.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "blobRef": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `blobRef` — the member could not name the blob in a record.",
+    "payload": {
+      "size": 300000
+    }
+  }
+]
