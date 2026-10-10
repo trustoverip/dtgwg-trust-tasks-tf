@@ -4,6 +4,7 @@ pub mod backfill;
 pub mod browse;
 pub mod chain;
 pub mod commit;
+pub mod file_key;
 pub mod key_package;
 pub mod list;
 pub mod open;

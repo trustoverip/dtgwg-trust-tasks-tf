@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/blobs/get/0.1",
+  "title": "Rooms Blobs — Get — payload",
+  "description": "Open a download of one blob committed in a data room: the host returns its ciphertext manifest and a handle for fetching its chunks. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation",
+    "blobRef"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "maxLength": 2048,
+      "description": "The room the blob belongs to. The host verifies the presentation against credentials this identifier issued."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `read` action at this room's scope. Its leaf's subject must be the party the host authenticated for this request."
+    },
+    "blobRef": {
+      "$ref": "../../../_shared/0.1/blobs.schema.json#/$defs/BlobRef",
+      "description": "The blob to fetch, as the record's `blobs` member names it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Blobs — Get — response payload",
+      "description": "Success response to rooms/blobs/get. Type https://trusttasks.org/spec/rooms/blobs/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest",
+        "downloadId",
+        "expiresAt"
+      ],
+      "properties": {
+        "manifest": {
+          "$ref": "../../../_shared/0.1/blobs.schema.json#/$defs/BlobManifest",
+          "description": "The ciphertext manifest committed at upload. A reader MUST check that its digest equals the requested BlobRef before relying on it, and every chunk against it on arrival."
+        },
+        "downloadId": {
+          "$ref": "../../../_shared/0.1/blobs.schema.json#/$defs/TransferId"
+        },
+        "expiresAt": {
+          "$ref": "../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

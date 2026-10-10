@@ -1,0 +1,13 @@
+[
+  {
+    "note": "No configId.",
+    "payload": {}
+  },
+  {
+    "note": "A request to include the credential — no task returns one.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "includeCredential": true
+    }
+  }
+]

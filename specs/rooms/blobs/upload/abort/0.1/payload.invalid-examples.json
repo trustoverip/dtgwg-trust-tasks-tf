@@ -1,0 +1,19 @@
+[
+  {
+    "note": "No upload id.",
+    "payload": {}
+  },
+  {
+    "note": "A room id in place of an upload id — abort cancels one upload, never every upload in a room.",
+    "payload": {
+      "roomId": "did:example:room"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `aborted` — a retried abort and a first abort must be distinguishable.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a"
+    }
+  }
+]

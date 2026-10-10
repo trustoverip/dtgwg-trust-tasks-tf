@@ -1,0 +1,15 @@
+[
+  {
+    "note": "No presentation — listing a room is authorized by the room-issued chain only.",
+    "payload": { "roomId": "did:example:room" }
+  },
+  {
+    "variant": "response",
+    "note": "A row whose blobs entry is not a multibase digest — a BlobRef is the digest of the blob's manifest, never a storage path or URL.",
+    "payload": {
+      "records": [
+        { "key": "9f2c1a7e", "version": 3, "updatedAt": "2026-10-10T10:00:00Z", "blobs": ["rooms/3f9a/blob.bin"] }
+      ]
+    }
+  }
+]

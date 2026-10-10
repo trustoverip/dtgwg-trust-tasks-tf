@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/usage/0.1",
+  "title": "Rooms Usage — payload",
+  "description": "A room's owner reads how much each member who has added files is using, against their allowance. Authorized by the room's own credentials: a chain conferring `admin` at the room's scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "presentation"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier. The host verifies the presentation against credentials issued by this identifier."
+    },
+    "presentation": {
+      "$ref": "../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `admin` action at this room's scope."
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Opaque continuation from a previous response's `nextCursor`. Omit for the first page."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "Most entries to return. The host chooses when omitted, and may return fewer."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "MemberUsage": {
+      "title": "MemberUsage",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["member", "usage", "limits"],
+      "properties": {
+        "member": {
+          "type": "string",
+          "pattern": "^did:[a-z0-9]+:.+$",
+          "maxLength": 2048,
+          "description": "The member's DID: the subject at the room end of the chains they presented when uploading. Uploads by a member's agents are counted here, under the member."
+        },
+        "usage": {
+          "$ref": "../../_shared/0.1/blobs.schema.json#/$defs/Usage"
+        },
+        "limits": {
+          "$ref": "../../_shared/0.1/blobs.schema.json#/$defs/ScopeLimits",
+          "description": "The limits that apply to this member in this room: their override if one is set, else the room's per-member default."
+        },
+        "overridden": {
+          "type": "boolean",
+          "description": "True when `limits` is an override set for this member rather than the room's default."
+        },
+        "lastUploadAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this member last committed a blob in the room."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Usage — response payload",
+      "description": "Success response to rooms/usage. Type https://trusttasks.org/spec/rooms/usage/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "members"],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "description": "The room this describes."
+        },
+        "members": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "$ref": "#/$defs/MemberUsage" },
+          "description": "One entry per member who holds or has reserved storage in the room, or holds an override. Not a roster: a member who has never added a file does not appear, because the host has never been told about them."
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Present exactly when more entries remain."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

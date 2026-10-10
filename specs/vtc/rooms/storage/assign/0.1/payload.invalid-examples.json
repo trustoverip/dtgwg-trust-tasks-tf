@@ -1,0 +1,26 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "configId": "eu-s3-primary"
+    }
+  },
+  {
+    "note": "A config id with uppercase letters.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "configId": "EU-S3",
+      "reason": "Move."
+    }
+  },
+  {
+    "note": "A move-existing-files flag — moving blobs is vtc/rooms/storage/migrate, parked separately.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "configId": "eu-s3-primary",
+      "reason": "Move.",
+      "migrate": true
+    }
+  }
+]

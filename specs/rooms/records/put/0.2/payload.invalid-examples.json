@@ -1,0 +1,54 @@
+[
+  {
+    "note": "Two blobs on one record. A record carries at most one file in 0.2; `blobs` is an array so that several is a later minor version, not something a host may accept today without a sealed body that can describe more than one file.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "sealed": { "ciphertext": "Yw", "nonce": "bg", "epoch": 7 },
+      "blobs": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+        "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+      ]
+    }
+  },
+  {
+    "note": "An empty `blobs` array. A record with no file omits the member; an empty array would be a second spelling of absence that a host and a producer could disagree about when deciding whether a rewrite releases the previous version's blob.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "sealed": { "ciphertext": "Yw", "nonce": "bg", "epoch": 7 },
+      "blobs": []
+    }
+  },
+  {
+    "note": "A blob named by a bare hex SHA-256 rather than a multibase multihash. A BlobRef is self-describing so that the hash can change without a schema revision; a hex string hard-codes one algorithm into the wire contract.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "sealed": { "ciphertext": "Yw", "nonce": "bg", "epoch": 7 },
+      "blobs": ["3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55"]
+    }
+  },
+  {
+    "note": "The file's manifest sent in the clear beside the record. Everything that describes a file is sealed inside the record body, signed by its author; the host gets only the reference, and an unknown member is refused rather than stored.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "sealed": { "ciphertext": "Yw", "nonce": "bg", "epoch": 7 },
+      "blobs": ["zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"],
+      "file": { "name": "term sheet.pdf" }
+    }
+  },
+  {
+    "note": "No presentation. Authority comes from the room's own credentials on every write; a host never authorizes from a session or a list of its own.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "key": "giXFLTGBdnnQJRoIsktuIg",
+      "sealed": { "ciphertext": "Yw", "nonce": "bg", "epoch": 7 }
+    }
+  }
+]

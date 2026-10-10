@@ -1,0 +1,38 @@
+[
+  {
+    "note": "No presentation — a host serves a room's blobs only to a room-issued chain conferring `read`.",
+    "payload": {
+      "roomId": "did:example:room",
+      "blobRef": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk"
+    }
+  },
+  {
+    "note": "No room — a blob is looked up in one room, never across rooms.",
+    "payload": {
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-room.signature"]
+      },
+      "blobRef": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk"
+    }
+  },
+  {
+    "note": "A BlobRef in hex — BlobRefs are multibase-encoded multihashes.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-room.signature"]
+      },
+      "blobRef": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the manifest — the reader could verify neither the blob nor its chunks.",
+    "payload": {
+      "downloadId": "7a1c2e4b-5d6f-4a8b-9c0d-1e2f3a4b5c6d",
+      "expiresAt": "2026-10-10T12:10:00Z"
+    }
+  }
+]

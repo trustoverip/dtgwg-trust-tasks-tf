@@ -289,6 +289,143 @@ class RecordMetadata {
       };
 }
 
+/// A cryptographic digest as a multibase-encoded multihash — the encoding the W3C
+/// Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one
+/// `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash
+/// algorithm in-band, so the value is self-describing and the wire format survives an
+/// algorithm change without a schema revision; multibase does the same for the base
+/// encoding, so a verifier never infers base58 from base64url by context. A bare hex
+/// string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract
+/// and is non-conforming here. This definition constrains the *encoding only*. What
+/// the digest is computed over is stated by each referencing field, because it differs
+/// legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS)
+/// canonicalization, while a digest over an opaque artifact is taken over its bytes. A
+/// field whose input is a JSON document and which does not name a canonicalization is
+/// not reproducible. Restricted to the two multibase headers W3C Controlled
+/// Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u`
+/// (base64url-no-pad). CID permits others but states that "interoperability is not
+/// guaranteed between implementations using such values", and a registry whose purpose
+/// is interoperability should not mint digests a conforming verifier may be unable to
+/// read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I
+/// and l, and an earlier permissive pattern let three published examples carry digests
+/// that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with
+/// `did:key` and `did:webvh`.
+typedef DigestMultibase = String;
+
+/// The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC
+/// 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented.
+/// Content addressing over ciphertext, never plaintext, so a BlobRef says nothing
+/// about what the file contains, and two uploads of one file have different BlobRefs
+/// (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot
+/// be correlated by the files they share. Compared as decoded multihash bytes, never
+/// as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema
+/// states it and RFC 8785 canonicalizes it, never over any binding's generated type:
+/// two bindings that model the manifest as distinct types still compute the same
+/// BlobRef from the same JSON.
+typedef BlobRef = DigestMultibase;
+
+/// Curation state. `retracted` is a tombstone: the body is gone, the key and version
+/// remain so incremental sync converges and the audit chain stays intact.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RecordMetadataV2Status(String value) {
+  static const RecordMetadataV2Status active = RecordMetadataV2Status('active');
+  static const RecordMetadataV2Status deprecated =
+      RecordMetadataV2Status('deprecated');
+  static const RecordMetadataV2Status retracted =
+      RecordMetadataV2Status('retracted');
+
+  /// Every value this specification's schema permits.
+  static const List<RecordMetadataV2Status> values = <RecordMetadataV2Status>[
+    active,
+    deprecated,
+    retracted
+  ];
+}
+
+/// What `rooms/records/list/0.2` returns: `RecordMetadata` plus `blobs`. A separate
+/// definition, not a change to `RecordMetadata`, so that `rooms/records/list/0.1`
+/// keeps the exact shape it published. Never the body.
+class RecordMetadataV2 {
+  const RecordMetadataV2({
+    required this.key,
+    required this.version,
+    this.epoch,
+    this.status,
+    required this.updatedAt,
+    this.title,
+    this.description,
+    this.author,
+    this.blobs,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordMetadataV2.fromJson(Map<String, dynamic> json) =>
+      RecordMetadataV2(
+        key: json['key'] as String,
+        version: json['version'] as int,
+        epoch: json['epoch'] as int?,
+        status: json['status'] == null
+            ? null
+            : RecordMetadataV2Status(json['status'] as String),
+        updatedAt: json['updatedAt'] as String,
+        title: json['title'] as String?,
+        description: json['description'] as String?,
+        author: json['author'] as String?,
+        blobs: json['blobs'] == null
+            ? null
+            : (json['blobs'] as List<dynamic>).map((e) => e as String).toList(),
+      );
+
+  /// The record's key within the room. On `attributed` and `private` rooms this MUST be
+  /// opaque — a random identifier, never a descriptive slug. A key reading
+  /// `decision/acquire-northwind` defeats the encryption sitting beside it; structured
+  /// naming belongs inside the sealed body.
+  final String key;
+
+  /// Server-assigned, monotonic per room.
+  final int version;
+
+  /// The epoch the record was sealed under. Absent on an `open` room.
+  final int? epoch;
+
+  /// Curation state. `retracted` is a tombstone: the body is gone, the key and version
+  /// remain so incremental sync converges and the audit chain stays intact.
+  final RecordMetadataV2Status? status;
+  final String updatedAt;
+
+  /// Present only on an `open` room; sealed with the body otherwise.
+  final String? title;
+
+  /// Present only on an `open` room; sealed with the body otherwise.
+  final String? description;
+
+  /// The member who wrote it. Present on `open` and `attributed`; on `private` the
+  /// author is inside the sealed body, where only members can read it.
+  final String? author;
+
+  /// The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent
+  /// when it names none, when it is retracted, and on records written by put 0.1.
+  /// Cleartext on every tier, as on the write, so a listing discloses which records
+  /// carry files, never anything about the files beyond the blobs' sizes.
+  final List<BlobRef>? blobs;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'key': key,
+        'version': version,
+        if (epoch != null) 'epoch': epoch!,
+        if (status != null) 'status': status!.value,
+        'updatedAt': updatedAt,
+        if (title != null) 'title': title!,
+        if (description != null) 'description': description!,
+        if (author != null) 'author': author!,
+        if (blobs != null) 'blobs': blobs!,
+      };
+}
+
 /// Curation state. Committed rather than left out because a host that could flip
 /// `active` to `retracted` would retract a record without touching a byte of it.
 ///
@@ -421,29 +558,6 @@ class CommittedRecord {
         if (cleartext != null) 'cleartext': cleartext!,
       };
 }
-
-/// A cryptographic digest as a multibase-encoded multihash — the encoding the W3C
-/// Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one
-/// `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash
-/// algorithm in-band, so the value is self-describing and the wire format survives an
-/// algorithm change without a schema revision; multibase does the same for the base
-/// encoding, so a verifier never infers base58 from base64url by context. A bare hex
-/// string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract
-/// and is non-conforming here. This definition constrains the *encoding only*. What
-/// the digest is computed over is stated by each referencing field, because it differs
-/// legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS)
-/// canonicalization, while a digest over an opaque artifact is taken over its bytes. A
-/// field whose input is a JSON document and which does not name a canonicalization is
-/// not reproducible. Restricted to the two multibase headers W3C Controlled
-/// Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u`
-/// (base64url-no-pad). CID permits others but states that "interoperability is not
-/// guaranteed between implementations using such values", and a registry whose purpose
-/// is interoperability should not mint digests a conforming verifier may be unable to
-/// read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I
-/// and l, and an earlier permissive pattern let three published examples carry digests
-/// that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with
-/// `did:key` and `did:webvh`.
-typedef DigestMultibase = String;
 
 /// The root of the room's record tree — a host's commitment to *which records the room
 /// holds*, as distinct from what any one of them says. A room's records are already

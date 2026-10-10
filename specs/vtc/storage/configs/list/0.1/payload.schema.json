@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/storage/configs/list/0.1",
+  "title": "VTC Storage — Configs — List — payload",
+  "description": "Page through the community's storage configs. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "state": {
+      "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/ConfigState"
+    },
+    "kind": {
+      "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageKind"
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Page size. The community chooses when absent (50 in the reference implementation)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ConfigItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One config and what it holds.",
+      "required": [
+        "config",
+        "facts"
+      ],
+      "properties": {
+        "config": {
+          "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfig"
+        },
+        "facts": {
+          "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigFacts"
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Storage — Configs — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/ConfigItem"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more remain; pass it as `cursor`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

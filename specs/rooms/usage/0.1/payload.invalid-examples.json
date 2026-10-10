@@ -1,0 +1,39 @@
+[
+  {
+    "note": "No presentation. Per-member usage is the room owner's read, proved by a chain conferring `admin` that the room issued; the host's own administrators read it through the host's operator task, never through this one.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal" }
+  },
+  {
+    "note": "A page size of zero. A request for no entries is not a probe the host should answer; `limit` starts at 1.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "limit": 0
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An entry naming a member by something other than a DID. Usage is charged to the root subject of a room-issued chain, which is a DID; a display name or an account handle is host state this family never relies on.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "members": [
+        { "member": "alice", "usage": { "files": 1, "bytes": 10, "reservedBytes": 0 }, "limits": {} }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An entry carrying a file name. The host never learns file names — they are sealed — and a usage report must not imply otherwise.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "members": [
+        {
+          "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+          "usage": { "files": 1, "bytes": 10, "reservedBytes": 0 },
+          "limits": {},
+          "largestFile": "Northwind term sheet v3.pdf"
+        }
+      ]
+    }
+  }
+]

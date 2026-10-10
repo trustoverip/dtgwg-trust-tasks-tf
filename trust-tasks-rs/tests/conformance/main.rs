@@ -1015,6 +1015,28 @@ mod registry {
 }
 #[cfg(feature = "rooms")]
 mod rooms {
+    mod blobs {
+        mod chunk {
+            mod v0_1;
+        }
+        mod get {
+            mod v0_1;
+        }
+        mod upload {
+            mod abort {
+                mod v0_1;
+            }
+            mod begin {
+                mod v0_1;
+            }
+            mod chunk {
+                mod v0_1;
+            }
+            mod commit {
+                mod v0_1;
+            }
+        }
+    }
     mod create {
         mod v0_1;
     }
@@ -1032,6 +1054,9 @@ mod rooms {
             mod v0_1;
         }
     }
+    mod info {
+        mod v0_1;
+    }
     mod keys {
         mod backfill {
             mod v0_1;
@@ -1040,6 +1065,9 @@ mod rooms {
             mod v0_1;
         }
         mod chain {
+            mod v0_1;
+        }
+        mod file_key {
             mod v0_1;
         }
         mod list {
@@ -1069,6 +1097,20 @@ mod rooms {
         mod register {
             mod v0_1;
         }
+    }
+    mod records {
+        mod get {
+            mod v0_2;
+        }
+        mod list {
+            mod v0_2;
+        }
+        mod put {
+            mod v0_2;
+        }
+    }
+    mod usage {
+        mod v0_1;
     }
 }
 #[cfg(feature = "sync")]
@@ -1881,7 +1923,26 @@ mod vtc {
         }
     }
     mod rooms {
+        mod get {
+            mod v0_1;
+        }
+        mod limits {
+            mod set {
+                mod v0_1;
+            }
+        }
         mod list {
+            mod v0_1;
+        }
+        mod storage {
+            mod assign {
+                mod v0_1;
+            }
+            mod migrate {
+                mod v0_1;
+            }
+        }
+        mod usage {
             mod v0_1;
         }
     }
@@ -1914,6 +1975,33 @@ mod vtc {
         }
         mod show {
             mod v0_1;
+        }
+    }
+    mod storage {
+        mod configs {
+            mod create {
+                mod v0_1;
+            }
+            mod get {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod probe {
+                mod v0_1;
+            }
+            mod retire {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+        }
+        mod credentials {
+            mod set {
+                mod v0_1;
+            }
         }
     }
     mod vetting {

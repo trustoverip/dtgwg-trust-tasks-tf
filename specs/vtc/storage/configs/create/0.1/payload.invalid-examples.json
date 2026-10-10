@@ -1,0 +1,66 @@
+[
+  {
+    "note": "A secret in the S3 settings — credentials never travel in settings.",
+    "payload": {
+      "id": "eu-s3-primary",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu",
+        "secretAccessKey": "wJalrXUtnFEMI"
+      },
+      "auth": {
+        "mode": "ambient"
+      },
+      "reason": "New bucket."
+    }
+  },
+  {
+    "note": "vta-account authentication without the account.",
+    "payload": {
+      "id": "eu-s3-primary",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "vta-account"
+      },
+      "reason": "New bucket."
+    }
+  },
+  {
+    "note": "A plain-HTTP Walrus relay.",
+    "payload": {
+      "id": "walrus-main",
+      "label": "Walrus",
+      "settings": {
+        "kind": "walrus",
+        "relayUrl": "http://relay.walrus.example",
+        "aggregatorUrl": "https://aggregator.walrus.example",
+        "epochs": 26,
+        "extendBeforeEpochs": 2
+      },
+      "auth": {
+        "mode": "vta-account",
+        "account": "walrus-signer"
+      },
+      "reason": "Walrus."
+    }
+  },
+  {
+    "note": "A relative local root.",
+    "payload": {
+      "id": "local-default",
+      "label": "Local",
+      "settings": {
+        "kind": "local",
+        "root": "data/rooms"
+      },
+      "reason": "Local."
+    }
+  }
+]

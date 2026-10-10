@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/info/0.1",
+  "title": "Rooms Info — payload",
+  "description": "A member asks a room's host what it holds about the room: its tier, its current epoch, the limits the host applies to its files, and how much of them the room and the member have used.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "presentation"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room's identifier. The host verifies the presentation against credentials issued by this identifier, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `read` action at this room's scope."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Info — response payload",
+      "description": "Success response to rooms/info. Type https://trusttasks.org/spec/rooms/info/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "visibility", "epoch", "limits", "usage"],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "description": "The room this describes, echoed so a response cannot be mistaken for another room's."
+        },
+        "visibility": {
+          "$ref": "../../_shared/0.1/room.schema.json#/$defs/Visibility"
+        },
+        "retentionPolicy": {
+          "$ref": "../../_shared/0.1/room.schema.json#/$defs/RetentionPolicy",
+          "description": "Absent means `chained`, as everywhere in this family."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The room's current epoch as the host knows it: the one a record or file must be sealed under to be accepted now."
+        },
+        "limits": {
+          "$ref": "../../_shared/0.1/blobs.schema.json#/$defs/RoomLimits",
+          "description": "The limits the host applies to this room, after any override for the room and capped by the host-wide ceiling. `member` here is the room's default per-member allowance; the presenter's own, which may differ, is under `usage.member.limits`."
+        },
+        "usage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["room"],
+          "properties": {
+            "room": {
+              "$ref": "../../_shared/0.1/blobs.schema.json#/$defs/Usage",
+              "description": "The room as a whole."
+            },
+            "member": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["usage", "limits"],
+              "description": "The presenter's own use and allowance: charged to the subject at the root of the presented chain, so an agent sees its member's figures. Absent on a `private` room, where the host does not know which member is asking.",
+              "properties": {
+                "usage": {
+                  "$ref": "../../_shared/0.1/blobs.schema.json#/$defs/Usage"
+                },
+                "limits": {
+                  "$ref": "../../_shared/0.1/blobs.schema.json#/$defs/ScopeLimits",
+                  "description": "The limits that apply to this member in this room: an override set for them by the host's administrators if there is one, else the room's per-member default."
+                }
+              }
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
