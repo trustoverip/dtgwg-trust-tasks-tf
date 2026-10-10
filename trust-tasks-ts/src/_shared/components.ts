@@ -17,6 +17,320 @@
  */
 export type AcceptsCriterionId = string;
 /**
+ * The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.
+ */
+export type AccountContextId = string;
+/**
+ * The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.
+ */
+export type AccountId = string;
+/**
+ * `sign`: the custodian signed its assertion, session request or test transaction. `exchange`: the provider issued a credential for it. `put`, `get`, `delete`: one canary object at the narrowest scope of the account's bindings. `decode`: for `sui-signer`, a built test transaction passed the allow-list (it is never submitted).
+ */
+export type AccountProbeStep = "sign" | "exchange" | "put" | "get" | "delete" | "decode";
+/**
+ * Per-model account settings, discriminated by `model`: every branch is an object whose `model` member is a `const`, which is what lets each generated binding emit a tagged union, so an unusable setting is answered as `external:invalidSettings` naming the member rather than as an unparseable payload. Never a secret: every value here is returned to anyone who may read the account. Branches are referred to by their `model` ("the `sui-signer` settings"). They carry no `title`, so that every binding renders each as a plain variant of this union.
+ */
+export type AccountSettings =
+  | {
+      model: "aws-roles-anywhere";
+      region: AwsRegion;
+      /**
+       * The trust anchor holding the custodian's CA certificate. Recorded after the administrator creates it from external/accounts/setup.
+       */
+      trustAnchorArn: AwsArn;
+      profileArn: AwsArn;
+      roleArn: AwsArn;
+      /**
+       * When set, every issuance chains an AssumeRole into this role carrying the downscoping session policy, for deployments whose Roles Anywhere profile cannot carry one per request. Caps a credential at one hour.
+       */
+      chainedRoleArn?: AwsArn;
+      /**
+       * The S3 bucket issuances are scoped within. Required for an account whose bindings issue storage scopes.
+       */
+      bucket?: ProviderBucketName;
+      /**
+       * Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+       */
+      probePrefix?: ProviderObjectPrefix;
+    }
+  | {
+      model: "gcp-wif-pinned";
+      projectNumber: string;
+      poolId: string;
+      providerId: string;
+      /**
+       * When set, the federated token is exchanged for this service account's access token.
+       */
+      serviceAccount?: string;
+      /**
+       * The ID-token algorithm. ES256 unless the provider refuses it. Absent means ES256.
+       */
+      signingAlgorithm?: "ES256" | "RS256";
+      /**
+       * The GCS bucket issuances are scoped within, by a Credential Access Boundary.
+       */
+      bucket?: ProviderBucketName;
+      /**
+       * Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+       */
+      probePrefix?: ProviderObjectPrefix;
+    }
+  | {
+      model: "azure-cert";
+      tenantId: string;
+      clientId: string;
+      /**
+       * The `scope` requested at the token endpoint, such as `https://storage.azure.com/.default`.
+       */
+      tokenScope: string;
+      /**
+       * Absent means `login.microsoftonline.com`.
+       */
+      authorityHost?: string;
+    }
+  | {
+      model: "oauth2-private-key-jwt";
+      tokenEndpoint: ProviderHttpsUrl;
+      clientId: string;
+      /**
+       * The assertion's `aud`. Absent means `tokenEndpoint`.
+       */
+      audience?: string;
+      /**
+       * The scopes a binding may request, the ceiling for every issuance.
+       *
+       * @maxItems 64
+       */
+      scopes?: string[];
+      signingAlgorithm?: "ES256" | "RS256";
+    }
+  | {
+      model: "s3-static-presign";
+      endpoint: ProviderHttpsUrl;
+      /**
+       * The SigV4 signing region; `auto` for Cloudflare R2.
+       */
+      region: string;
+      bucket: ProviderBucketName;
+      /**
+       * Address the bucket in the path rather than the host name, as MinIO usually needs.
+       */
+      pathStyle?: boolean;
+      /**
+       * The access key's identifier. Not a secret: it appears in every presigned URL. The secret half is set with external/accounts/secret/set and never returned.
+       */
+      accessKeyId: string;
+      /**
+       * Where external/accounts/probe writes its canary when no binding names a narrower prefix. Lets a new account be probed before anything is bound to it. Absent, a probe of an account with no bindings stops after `exchange` and reports `complete: false`.
+       */
+      probePrefix?: ProviderObjectPrefix;
+    }
+  | {
+      model: "sui-signer";
+      network: "mainnet" | "testnet" | "devnet";
+      /**
+       * Every MoveCall command in a signed transaction must name one of these. For Walrus storage: the system package's `register_blob`, `certify_blob`, `extend_blob` and `delete_blob`, and the coin calls needed to pay for them.
+       *
+       * @minItems 1
+       * @maxItems 32
+       */
+      allowedCalls: [SuiMoveCall, ...SuiMoveCall[]];
+      /**
+       * Shared objects a transaction may take as input, such as the Walrus system and staking objects. Absent means any object the allowed calls accept.
+       *
+       * @maxItems 32
+       */
+      allowedObjects?: string[];
+      /**
+       * The largest gas budget one transaction may declare.
+       */
+      maxGasBudgetMist: number;
+      /**
+       * The total gas budget signed per rolling 24 hours.
+       */
+      maxGasPerDayMist: number;
+      /**
+       * Per coin type, the most a single transaction may spend or transfer out of the account's address, in the coin's smallest unit. A coin type not listed may not leave the address at all.
+       *
+       * @maxItems 8
+       */
+      maxCoinOutPerTx?:
+        | []
+        | [
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ]
+        | [
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            },
+            {
+              coinType: string;
+              amount: number;
+            }
+          ];
+    }
+  | {
+      model: "static-secret";
+      /**
+       * The custodian's driver that uses the secret: performs a login or token exchange and returns a short-lived result. A custodian refuses a driver it does not implement.
+       */
+      driver: string;
+      baseUrl: ProviderHttpsUrl;
+    };
+/**
+ * `active`: usable by its bindings. `suspended`: every issuance and signature is refused at once; management reads continue; resumable. `archived`: hidden from default listings, refused for use, restorable. Deletion removes the record.
+ */
+export type AccountState = "active" | "suspended" | "archived";
+/**
  * The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
  */
 export type AccountType = "standard" | "admin" | "rootAdmin" | "mediator";
@@ -67,9 +381,24 @@ export type AuditAction =
   | "adminAdd"
   | "adminStrip";
 /**
+ * How the account authenticates to its provider. Every model pins the custodian's verification material in the provider's own account, uploaded once, so no model requires the custodian to be reachable from the internet. `aws-roles-anywhere`: the custodian is the certificate authority of an IAM Roles Anywhere trust anchor, and signs CreateSession with a short-lived end-entity certificate it issued to the account's own key. `gcp-wif-pinned`: a Workload Identity Federation pool provider holds an uploaded JWKS; the custodian signs an ID token and exchanges it at Google's STS. `azure-cert`: a certificate uploaded to an Entra app registration; the custodian signs an RFC 7523 client assertion. `oauth2-private-key-jwt`: the same RFC 7523 client authentication against any token endpoint that registered the custodian's public key. `s3-static-presign`: an access-key pair for an S3-compatible store that cannot federate; the custodian presigns per-object URLs and never releases the key. `sui-signer`: a Sui address derived from the custodian's key; the custodian signs only allow-listed transactions. `static-secret`: an API key or token used inside the custodian by a named driver; last resort, never released.
+ *
+ * Plain OpenID Connect discovery federation is deliberately absent. It works by the provider fetching the issuer's JWKS from a public URL, which either makes the custodian reachable from the internet or makes whoever hosts a copy of the JWKS able to mint credentials for every federated role.
+ */
+export type AuthModel =
+  | "aws-roles-anywhere"
+  | "gcp-wif-pinned"
+  | "azure-cert"
+  | "oauth2-private-key-jwt"
+  | "s3-static-presign"
+  | "sui-signer"
+  | "static-secret";
+/**
  * An explicit authority scope — used for both the act scope and the approve scope of an entry. Exactly one of three shapes, discriminated by `scope`: `all`, `none`, or `contexts` with a NON-EMPTY list. The empty list is not a fourth shape: it is invalid, so a serializer that drops or empties the list produces a document that fails validation rather than one that silently means something else.
  */
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
+export type AwsArn = string;
+export type AwsRegion = string;
 /**
  * The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.
  */
@@ -113,7 +442,9 @@ export type Capability_DeviceV0_1 =
   | "room-present"
   | "room-open"
   | "key-export"
-  | "sign-sshsig";
+  | "sign-sshsig"
+  | "external-accounts-manage"
+  | "external-auth-use";
 /**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
@@ -133,7 +464,9 @@ export type Capability_DeviceV0_2 =
   | "roomPresent"
   | "roomOpen"
   | "keyExport"
-  | "signSshsig";
+  | "signSshsig"
+  | "externalAccountsManage"
+  | "externalAuthUse";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
@@ -592,6 +925,19 @@ export type Provenance =
       derivedAt: string;
     };
 /**
+ * A bucket name as S3 and GCS accept it. Validated rather than free so that it can be placed in a provider policy without escaping.
+ */
+export type ProviderBucketName = string;
+export type ProviderHttpsUrl = string;
+/**
+ * `put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.
+ */
+export type ProviderObjectAction = "put" | "get" | "delete";
+/**
+ * An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.
+ */
+export type ProviderObjectPrefix = string;
+/**
  * What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.
  */
 export type Purpose = "login";
@@ -753,6 +1099,14 @@ export type SealedEnvelope_VaultV0_2 =
   | DidcommAuthcryptEnvelope_VaultV0_2
   | HpkeArmoredEnvelope_VaultV0_2
   | TspMessageEnvelope_VaultV0_2;
+/**
+ * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
+ */
+export type SealedTransferBundle = string;
+/**
+ * Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.
+ */
+export type SecretFingerprint = string;
 /**
  * Discriminator for the secret type stored in the entry. Definitions:
  * - `password` — username + password (+ optional TOTP seed).
@@ -1246,6 +1600,1662 @@ export interface Account {
    * Lifetime counters the mediator keeps for this account. Present only when the request set `includeStats`.
    */
   stats?: AccountStats;
+}
+/**
+ * Who may use an account, and how far. One binding per consumer per account. A binding is checked before anything is signed: the caller must be `consumer`, proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL must not exceed `maxTtlSeconds`; and the binding's rate must not be exhausted.
+ */
+export interface AccountBinding {
+  /**
+   * The DID of the integration allowed to use the account.
+   */
+  consumer: string;
+  /**
+   * Required for storage and OAuth models; absent for `sui-signer`, whose ceiling is the account's own allow-list and caps.
+   */
+  scopeCeiling?: CredentialScopeCeiling;
+  /**
+   * The longest credential lifetime the consumer may request. 900 (15 minutes) is RECOMMENDED; the ceiling is one hour.
+   */
+  maxTtlSeconds: number;
+  /**
+   * Issuances or signatures per minute for this binding.
+   */
+  ratePerMinute: number;
+  /**
+   * Where the provider supports it (`aws:SourceIp`), issued credentials are pinned to these networks, so a credential lifted from the consumer is useless elsewhere.
+   *
+   * @maxItems 16
+   */
+  sourceCidrs?:
+    | []
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ];
+  grantedAt?: string;
+}
+export interface AccountProbeReport {
+  at: string;
+  /**
+   * True when every step that ran succeeded.
+   */
+  ok: boolean;
+  /**
+   * True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.
+   */
+  complete: boolean;
+  /**
+   * In order; the first failing step ends the probe.
+   *
+   * @maxItems 8
+   */
+  steps:
+    | []
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ];
+}
+/**
+ * The public half of the account's key, as the provider needs it. Never a private key.
+ */
+export interface AccountPublicMaterial {
+  algorithm: "ES256" | "RS256" | "Secp256r1";
+  /**
+   * Digest of the public key's SubjectPublicKeyInfo DER.
+   */
+  keyFingerprint: DigestMultibase;
+  /**
+   * The public key as a JWK, with `kid`. Public members only: the schema admits no private member (`d`, `p`, `q`, `dp`, `dq`, `qi`), so a document carrying one fails validation.
+   */
+  publicKeyJwk?: {
+    kty: "EC" | "RSA";
+    crv?: "P-256";
+    x?: string;
+    y?: string;
+    n?: string;
+    e?: string;
+    kid: string;
+    alg?: "ES256" | "RS256";
+    use?: "sig";
+  };
+  /**
+   * `aws-roles-anywhere`: the trust anchor's CA certificate. `azure-cert`: the certificate uploaded to the app registration.
+   */
+  certificatePem?: string;
+  /**
+   * `sui-signer`: the Sui address the key controls.
+   */
+  address?: string;
+  /**
+   * During a rotation (external/accounts/keys/rotate), the staged successor key, until it is confirmed and the current key retires.
+   */
+  pendingKeyFingerprint?: DigestMultibase;
+}
+/**
+ * That a static model's secret is set, and which one. Never its value.
+ */
+export interface AccountSecretInfo {
+  fingerprint: SecretFingerprint;
+  setAt: string;
+}
+/**
+ * What an administrator does at the provider to make an account usable, generated by the custodian from the account's settings, public material and bindings. Public material and policy only: never a private key or secret, and the custodian never asks for the provider's administrator credentials.
+ */
+export interface AccountSetupArtifacts {
+  model: AuthModel;
+  /**
+   * @maxItems 16
+   */
+  artifacts:
+    | []
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ]
+    | [
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        },
+        {
+          /**
+           * File name to save it under: `trust-anchor.pem`, `jwks.json`, `permissions-policy.json`, `crl.pem`.
+           */
+          name: string;
+          mediaType: string;
+          content: string;
+        }
+      ];
+  /**
+   * @maxItems 32
+   */
+  steps: {
+    description: string;
+    /**
+     * A provider CLI command (`aws rolesanywhere create-trust-anchor …`, `gcloud iam workload-identity-pools providers create-oidc … --jwk-json-path`, `az ad app credential reset --cert …`), referring to artifacts by `name`.
+     */
+    command?: string;
+  }[];
 }
 /**
  * What an account has sent and received over its lifetime, as the mediator counted it. Every member is optional: a mediator reports what it keeps, and a counter absent from a response was not kept rather than zero. Counters survive restarts and are not reset by reading them; removing an account discards them.
@@ -2733,6 +4743,52 @@ export interface CredentialSchema {
   [k: string]: unknown | undefined;
 }
 /**
+ * What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.
+ */
+export interface CredentialScope {
+  prefix?: ProviderObjectPrefix;
+  /**
+   * @minItems 1
+   * @maxItems 3
+   */
+  actions?:
+    | [ProviderObjectAction]
+    | [ProviderObjectAction, ProviderObjectAction]
+    | [ProviderObjectAction, ProviderObjectAction, ProviderObjectAction];
+  /**
+   * `s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.
+   */
+  objectKey?: string;
+  /**
+   * `oauth2-private-key-jwt` only: the OAuth scopes requested.
+   *
+   * @maxItems 64
+   */
+  scopes?: string[];
+}
+/**
+ * The widest scope a binding's consumer may request. An issuance is inside the ceiling when its `prefix` begins with one of `prefixes`, every one of its `actions` is in `actions`, and every one of its `scopes` is in `scopes`. Absent members confer nothing: a ceiling with no `prefixes` permits no storage issuance.
+ */
+export interface CredentialScopeCeiling {
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  prefixes?: [ProviderObjectPrefix, ...ProviderObjectPrefix[]];
+  /**
+   * @minItems 1
+   * @maxItems 3
+   */
+  actions?:
+    | [ProviderObjectAction]
+    | [ProviderObjectAction, ProviderObjectAction]
+    | [ProviderObjectAction, ProviderObjectAction, ProviderObjectAction];
+  /**
+   * @maxItems 64
+   */
+  scopes?: string[];
+}
+/**
  * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
  */
 export interface CredentialState {
@@ -3550,6 +5606,53 @@ export interface Exposure {
  */
 export interface Ext {
   [k: string]: unknown | undefined;
+}
+/**
+ * An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.
+ */
+export interface ExternalAccount {
+  id: AccountId;
+  /**
+   * Display name. Untrusted text: render it, never interpret it.
+   */
+  label: string;
+  context: AccountContextId;
+  settings: AccountSettings;
+  state: AccountState;
+  /**
+   * Absent for the static models, which hold a secret rather than a key.
+   */
+  publicMaterial?: AccountPublicMaterial;
+  /**
+   * Static models only; absent until the secret is set.
+   */
+  secret?: AccountSecretInfo;
+  /**
+   * @maxItems 256
+   */
+  bindings: AccountBinding[];
+  /**
+   * The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.
+   *
+   * @maxItems 8
+   */
+  egressHosts:
+    | []
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.
+   */
+  providerSetupRequired: boolean;
+  lastProbe?: AccountProbeReport;
+  createdAt: string;
+  updatedAt: string;
 }
 /**
  * One displayed value, with where it comes from and how to render it.
@@ -6230,6 +8333,14 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * One Move function an account's transactions may call.
+ */
+export interface SuiMoveCall {
+  package: string;
+  module: string;
+  function: string;
 }
 /**
  * What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.

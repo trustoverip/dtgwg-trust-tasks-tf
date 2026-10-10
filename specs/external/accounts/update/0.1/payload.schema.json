@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/external/accounts/update/0.1",
+  "title": "External Accounts — Update — payload",
+  "description": "Change an external account's label or settings. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "id"
+  ],
+  "properties": {
+    "context": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountContextId"
+    },
+    "id": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountId"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "settings": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountSettings"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "External Accounts — Update — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/ExternalAccount"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

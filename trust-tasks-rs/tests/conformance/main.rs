@@ -531,6 +531,70 @@ mod did_management {
         }
     }
 }
+#[cfg(feature = "external")]
+mod external {
+    mod accounts {
+        mod archive {
+            mod v0_1;
+        }
+        mod bindings {
+            mod grant {
+                mod v0_1;
+            }
+            mod revoke {
+                mod v0_1;
+            }
+        }
+        mod create {
+            mod v0_1;
+        }
+        mod delete {
+            mod v0_1;
+        }
+        mod get {
+            mod v0_1;
+        }
+        mod keys {
+            mod rotate {
+                mod v0_1;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod probe {
+            mod v0_1;
+        }
+        mod restore {
+            mod v0_1;
+        }
+        mod resume {
+            mod v0_1;
+        }
+        mod secret {
+            mod set {
+                mod v0_1;
+            }
+        }
+        mod setup {
+            mod v0_1;
+        }
+        mod suspend {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+    }
+    mod credentials {
+        mod issue {
+            mod v0_1;
+        }
+    }
+    mod sign {
+        mod v0_1;
+    }
+}
 #[cfg(feature = "git-ns")]
 mod git_ns {
     mod account {

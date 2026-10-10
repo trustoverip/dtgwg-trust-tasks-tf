@@ -1,0 +1,10 @@
+[
+  {
+    "note": "A state member. Restore lands in `suspended` only; `active` is reached through resume.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "state": "suspended"
+    }
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "note": "A caller-chosen canary key. The custodian names the canary itself, inside the narrowest bound prefix, so a probe cannot be used to write or overwrite an object of the caller's choosing.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "objectKey": "rooms/important/report.pdf"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A report without `complete`. Without it a probe that stopped after `exchange` reads as proof the account works end to end.",
+    "payload": {
+      "report": {
+        "at": "2026-10-10T10:00:03Z",
+        "ok": true,
+        "steps": [
+          {
+            "step": "sign",
+            "ok": true
+          },
+          {
+            "step": "exchange",
+            "ok": true
+          }
+        ]
+      }
+    }
+  }
+]

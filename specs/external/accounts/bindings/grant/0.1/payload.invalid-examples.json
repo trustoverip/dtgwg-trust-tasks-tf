@@ -1,0 +1,54 @@
+[
+  {
+    "note": "A credential lifetime above the one-hour ceiling.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "binding": {
+        "consumer": "did:example:community",
+        "maxTtlSeconds": 86400,
+        "ratePerMinute": 60
+      }
+    }
+  },
+  {
+    "note": "A wildcard prefix. Prefixes are literal segment paths so they cannot break out of a provider policy (CVE-2026-42811 class).",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "binding": {
+        "consumer": "did:example:community",
+        "scopeCeiling": {
+          "prefixes": [
+            "*"
+          ],
+          "actions": [
+            "get"
+          ]
+        },
+        "maxTtlSeconds": 900,
+        "ratePerMinute": 60
+      }
+    }
+  },
+  {
+    "note": "A list action. Only put, get and delete exist, so a bucket cannot be enumerated through a binding.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "binding": {
+        "consumer": "did:example:community",
+        "scopeCeiling": {
+          "prefixes": [
+            "rooms/"
+          ],
+          "actions": [
+            "list"
+          ]
+        },
+        "maxTtlSeconds": 900,
+        "ratePerMinute": 60
+      }
+    }
+  }
+]

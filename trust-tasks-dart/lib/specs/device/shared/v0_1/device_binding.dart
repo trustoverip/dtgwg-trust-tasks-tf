@@ -93,6 +93,9 @@ extension type const Capability(String value) {
   static const Capability roomOpen = Capability('room-open');
   static const Capability keyExport = Capability('key-export');
   static const Capability signSshsig = Capability('sign-sshsig');
+  static const Capability externalAccountsManage =
+      Capability('external-accounts-manage');
+  static const Capability externalAuthUse = Capability('external-auth-use');
 
   /// Every value this specification's schema permits.
   static const List<Capability> values = <Capability>[
@@ -111,7 +114,9 @@ extension type const Capability(String value) {
     roomPresent,
     roomOpen,
     keyExport,
-    signSshsig
+    signSshsig,
+    externalAccountsManage,
+    externalAuthUse
   ];
 }
 

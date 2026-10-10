@@ -1,0 +1,10 @@
+[
+  {
+    "note": "A state member. The target state is the task, not a parameter, so suspend cannot be used to set any other state.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "state": "suspended"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "note": "A state member; the target state is the task.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "state": "active"
+    }
+  }
+]

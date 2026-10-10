@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/external/sign/0.1",
+  "title": "External — Sign — payload",
+  "description": "Have a sui-signer external account sign an allow-listed Sui transaction. The custodian builds the digest; no caller-supplied digest or bytes-to-sign are accepted. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "account",
+    "txBytes"
+  ],
+  "properties": {
+    "context": {
+      "$ref": "../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountContextId"
+    },
+    "account": {
+      "$ref": "../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountId"
+    },
+    "txBytes": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 174764,
+      "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+      "description": "The unsigned transaction: BCS-encoded Sui `TransactionData`, standard base64 as Sui tooling emits it. Bounded at 128 KiB decoded, Sui's own transaction size limit."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "External — Sign — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signature",
+        "digest"
+      ],
+      "properties": {
+        "signature": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+          "description": "Sui serialized signature, base64: the scheme flag (0x02 for secp256r1), the 64-byte signature and the 33-byte compressed public key."
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 64,
+          "pattern": "^[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The transaction digest the custodian computed, base58 as Sui displays it, so the caller can match it to the transaction it submits."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

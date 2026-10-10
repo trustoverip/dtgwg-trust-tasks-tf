@@ -1,0 +1,22 @@
+[
+  {
+    "note": "No context — accounts are owned by a context, and act scope there is what authorizes the read.",
+    "payload": {
+      "state": "active"
+    }
+  },
+  {
+    "note": "A model the family does not define. Plain OIDC discovery federation is excluded on purpose (conventions §3).",
+    "payload": {
+      "context": "community",
+      "model": "oidc-discovery"
+    }
+  },
+  {
+    "note": "A page size above the ceiling.",
+    "payload": {
+      "context": "community",
+      "limit": 1000
+    }
+  }
+]

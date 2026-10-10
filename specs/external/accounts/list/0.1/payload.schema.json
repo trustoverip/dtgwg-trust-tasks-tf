@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/external/accounts/list/0.1",
+  "title": "External Accounts — List — payload",
+  "description": "List the external accounts in a context. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context"
+  ],
+  "properties": {
+    "context": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountContextId"
+    },
+    "state": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountState",
+      "description": "Only accounts in this state. Absent means `active` and `suspended`."
+    },
+    "model": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AuthModel"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Opaque; quote the previous page's `nextCursor`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "External Accounts — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accounts"
+      ],
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/ExternalAccount"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

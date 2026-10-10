@@ -988,6 +988,108 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/timeseries/0.1#response" => <crate::specs::did_management::stats::timeseries::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/archive/0.1" => <crate::specs::external::accounts::archive::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/archive/0.1#response" => <crate::specs::external::accounts::archive::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/grant/0.1" => <crate::specs::external::accounts::bindings::grant::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/grant/0.1#response" => <crate::specs::external::accounts::bindings::grant::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/revoke/0.1" => <crate::specs::external::accounts::bindings::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/revoke/0.1#response" => <crate::specs::external::accounts::bindings::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/create/0.1" => <crate::specs::external::accounts::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/create/0.1#response" => <crate::specs::external::accounts::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/delete/0.1" => <crate::specs::external::accounts::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/delete/0.1#response" => <crate::specs::external::accounts::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/get/0.1" => <crate::specs::external::accounts::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/get/0.1#response" => <crate::specs::external::accounts::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/keys/rotate/0.1" => <crate::specs::external::accounts::keys::rotate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/keys/rotate/0.1#response" => <crate::specs::external::accounts::keys::rotate::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/list/0.1" => <crate::specs::external::accounts::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/list/0.1#response" => <crate::specs::external::accounts::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/probe/0.1" => <crate::specs::external::accounts::probe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/probe/0.1#response" => <crate::specs::external::accounts::probe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/restore/0.1" => <crate::specs::external::accounts::restore::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/restore/0.1#response" => <crate::specs::external::accounts::restore::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/resume/0.1" => <crate::specs::external::accounts::resume::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/resume/0.1#response" => <crate::specs::external::accounts::resume::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/secret/set/0.1" => <crate::specs::external::accounts::secret::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/secret/set/0.1#response" => <crate::specs::external::accounts::secret::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/setup/0.1" => <crate::specs::external::accounts::setup::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/setup/0.1#response" => <crate::specs::external::accounts::setup::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/suspend/0.1" => <crate::specs::external::accounts::suspend::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/suspend/0.1#response" => <crate::specs::external::accounts::suspend::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/update/0.1" => <crate::specs::external::accounts::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/update/0.1#response" => <crate::specs::external::accounts::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.1" => <crate::specs::external::credentials::issue::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.1#response" => <crate::specs::external::credentials::issue::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/sign/0.1" => <crate::specs::external::sign::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/sign/0.1#response" => <crate::specs::external::sign::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "git-ns")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/git-ns/account/link/0.1" => <crate::specs::git_ns::account::link::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -5250,6 +5352,115 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::did_management::stats::timeseries::v0_1::Payload,
             >())
         }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/archive/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::archive::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/grant/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::bindings::grant::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::bindings::revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/create/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::create::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/delete/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::delete::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::external::accounts::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/keys/rotate/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::keys::rotate::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::external::accounts::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/probe/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::external::accounts::probe::v0_1::Payload,
+        >()),
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/restore/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::restore::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/resume/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::resume::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/secret/set/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::secret::set::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/setup/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::external::accounts::setup::v0_1::Payload,
+        >()),
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/suspend/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::suspend::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/update/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::accounts::update::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::credentials::issue::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/sign/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::external::sign::v0_1::Payload,
+        >()),
         #[cfg(feature = "git-ns")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/git-ns/account/link/0.1" => Some(crate::SpecPolicy::of::<
@@ -9234,6 +9445,91 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => {
             Some(crate::specs::did_management::stats::timeseries::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/archive/0.1" => {
+            Some(crate::specs::external::accounts::archive::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/grant/0.1" => {
+            Some(crate::specs::external::accounts::bindings::grant::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/bindings/revoke/0.1" => {
+            Some(crate::specs::external::accounts::bindings::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/create/0.1" => {
+            Some(crate::specs::external::accounts::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/delete/0.1" => {
+            Some(crate::specs::external::accounts::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/get/0.1" => {
+            Some(crate::specs::external::accounts::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/keys/rotate/0.1" => {
+            Some(crate::specs::external::accounts::keys::rotate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/list/0.1" => {
+            Some(crate::specs::external::accounts::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/probe/0.1" => {
+            Some(crate::specs::external::accounts::probe::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/restore/0.1" => {
+            Some(crate::specs::external::accounts::restore::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/resume/0.1" => {
+            Some(crate::specs::external::accounts::resume::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/secret/set/0.1" => {
+            Some(crate::specs::external::accounts::secret::set::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/setup/0.1" => {
+            Some(crate::specs::external::accounts::setup::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/suspend/0.1" => {
+            Some(crate::specs::external::accounts::suspend::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/accounts/update/0.1" => {
+            Some(crate::specs::external::accounts::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.1" => {
+            Some(crate::specs::external::credentials::issue::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/sign/0.1" => {
+            Some(crate::specs::external::sign::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "git-ns")]
         #[cfg(not(test))]

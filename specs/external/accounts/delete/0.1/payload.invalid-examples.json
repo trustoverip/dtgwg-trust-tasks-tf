@@ -1,0 +1,10 @@
+[
+  {
+    "note": "A force flag. An account is deleted only after being archived; there is no shortcut.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "force": true
+    }
+  }
+]

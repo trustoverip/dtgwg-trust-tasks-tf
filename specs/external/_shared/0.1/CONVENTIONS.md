@@ -1,0 +1,152 @@
+# external — family conventions
+
+This document captures what holds for **every** specification under `external/`. Individual
+specifications reference it rather than restating it; conformance is anchored here.
+
+An **external account** is an identity at a third party — a cloud provider, an object store,
+a blockchain, a SaaS API — held by a **key custodian** for a context. Integrations bound to it
+use it only in the ways it allows and get back only something short-lived. The shapes are in
+[`accounts.schema.json`](accounts.schema.json).
+
+## 1. Five rules
+
+1. **No long-lived bearer secret leaves the custodian.** A consumer receives credentials that
+   expire in minutes, and only inside a sealed-transfer bundle (`SealedTransferBundle`). A private key,
+   a static secret, or a credential issued to someone else is returned by no task in this
+   family, to any caller, in any member — reads included.
+2. **Verification material is pinned at the provider, never fetched.** Every account model
+   puts the custodian's public material in the provider's own account, uploaded once by an
+   administrator from `external/accounts/setup`: a certificate-authority certificate, a JWKS,
+   a certificate, a registered public key. No model requires the custodian to be reachable
+   from the internet; see §3.
+3. **The custodian builds what it signs.** Every signature in this family is over input the
+   custodian constructed itself from validated parameters — an X.509 certificate, a CRL, a
+   CreateSession request, a client assertion, a SigV4 canonical request, a Sui intent message.
+   No task accepts caller-supplied bytes or a caller-supplied digest to sign. A task that did
+   would make this family a general signing oracle under a narrower name.
+4. **Least privilege at three layers.** The provider's trust policy pins the account's
+   identity. The account's **binding** pins which integration may use it and the widest scope
+   it may ask for. Each **issuance** is downscoped further, by the custodian, to the one prefix,
+   object or operation requested. The custodian performs the provider exchange itself so that
+   the third layer is its enforcement rather than the consumer's promise.
+5. **Changing an account takes other people; taking authority away takes one.** See §4.
+
+## 2. Family error codes
+
+These conditions mean the same thing in every specification that can reach them, so they are
+named once here under the `external` family namespace
+([SPEC §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications) rule 2). Every
+specification that can reach one **MUST** list it in its `errorCodes`.
+
+| Code | Meaning | Retryable |
+|---|---|---|
+| `external:notFound` | No account with this id exists in the named context **that the caller may see**, or the named context does not exist. Conflates an unknown account with one the caller has no standing to read, so existence is not confirmed to a stranger. | no |
+| `external:alreadyExists` | An account in the context already carries this id. | no |
+| `external:invalidSettings` | The settings are well-formed against the schema but unusable: a model change on update, a value inconsistent with another, a driver or network the custodian does not implement. `details.member` names the member. | no |
+| `external:notActive` | The account is `suspended` or `archived`, so it cannot be used. Answered by the use tasks (`external/credentials/issue`, `external/sign`, and `external/accounts/probe` on a suspended account's behalf), and only to a bound consumer or a manager. | no |
+| `external:archived` | The account is `archived`, and the task changes or uses it: `update`, `secret/set`, `bindings/grant`, `keys/rotate`, `probe`, and a lifecycle task for which `archived` is not a starting state (`suspend`, `resume`). Restore it first. Reads still answer. | no |
+| `external:notBound` | The caller is not the consumer of any binding on this account. | no |
+| `external:rateLimited` | The binding's rate is exhausted. `details.retryAfterSeconds` says when to try again. | yes |
+| `external:providerSetupRequired` | The account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret, or while a rotation awaits confirmation. | no |
+| `external:providerRefused` | The provider refused the custodian's request. `details.providerError` carries the provider's words, verbatim, truncated and with any credential removed. | no |
+| `external:providerUnavailable` | The provider could not be reached or did not answer in time. | yes |
+
+Refusing a caller who lacks the capability a task needs is the framework's own
+`permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)); no specification in this
+family declares a namespaced equivalent. A task naming a context the custodian does not have
+is answered `external:notFound`: the framework defines no standard not-found code, and
+conflating an unknown context with one the caller cannot see keeps its existence from a
+stranger.
+
+## 3. Network exposure
+
+A custodian holding external accounts **MUST NOT** need any inbound connection from the
+internet to use them: no fixed address, no public URL, no HTTP route a provider calls. Every
+task in this family reaches the custodian the way its other Trust Tasks do, over a transport on
+which the custodian can be reached without exposing an address of its own (TSP or DIDComm
+through a mediator it connected to). Revocation lists for `aws-roles-anywhere` are generated by
+the custodian and **pushed** to the provider by an administrator; nothing is fetched from it.
+
+Outbound, a custodian connects only to the hosts an account's `egressHosts` names, and only on
+that account's behalf, so an egress proxy can allow exactly that set. `egressHosts` covers both
+issuance and `external/accounts/probe`: issuing from `s3-static-presign` needs no egress, since
+presigning is a computation, but probing it dials the object store, so the store's host is
+listed. `sui-signer` needs none at all: its probe builds a test transaction and never submits
+it.
+
+**Plain OpenID Connect discovery federation is not an account model**, and an implementation
+**MUST NOT** add it under another name. It works by the provider fetching the issuer's JWKS
+from a public URL. That requires either an inbound public endpoint on the custodian, which this
+section forbids, or a copy hosted elsewhere, which makes whoever can edit that copy able to
+mint credentials for every federated role. Every provider the models cover has a pinned
+alternative.
+
+## 4. Capabilities and consent
+
+- The two capabilities are registered as device capabilities `externalAccountsManage` and
+  `externalAuthUse` (`external-accounts-manage`, `external-auth-use` in the 0.1 casing) in
+  [`device/_shared`](../../../device/_shared/0.2/device-binding.schema.json), so an agent can be
+  granted one without `sign`, which would confer strictly more.
+- **`external-accounts-manage`**, in the account's context, authorizes the
+  `external/accounts/*` tasks. **`external-auth-use`**, in the account's context, authorizes
+  `external/credentials/issue` and `external/sign`, and only for a caller that is also the
+  consumer of a binding on the account. Both are read from the caller's access-control entry at
+  the custodian at execution time, through the entry's act scope: an entry with no contexts is
+  unrestricted only for an administrator role and authorizes nothing for any other.
+- Gating these tasks on **consent** is **RECOMMENDED operator policy**:
+  `external/accounts/create`, `update`, `secret/set`, `bindings/grant`, `keys/rotate` (stage),
+  `resume` and `delete`. A custodian **MAY** ship these as defaults; whether they are enforced
+  is the operator's approvals configuration, which may be off, and a specification cannot
+  assume it is on. That is why each task's own checks never depend on consent having happened.
+  Where it is enforced, consent is the `task-consent/request` ceremony: approvers — the
+  context's administrators other than the requester — each decide with a
+  `task-consent/decision` signed **by their own DID**. A decision counts for the DID that
+  signed it and never for the party that delivered it, so a relayer (a community console
+  carrying an administrator's request, say) can propose a change and relay decisions, but can
+  never make one.
+- `external/accounts/suspend` and `external/accounts/bindings/revoke` **MUST NOT** require
+  consent. Taking authority away has to be immediate and possible for one person alone.
+- A relayer carrying a request for a person **SHOULD** say whom in the document's `ext`, so the
+  custodian's audit trail and the relayer's can be correlated. That statement is informational:
+  the custodian authorizes the document's signer.
+
+## 5. Keys and backup
+
+- Account keys are generated **by the custodian**. No task accepts key material from a caller.
+  P-256 keys are derived in the owning context's key space at a path the custodian records on
+  the account; RSA keys (for providers that refuse ES256) are generated and stored wrapped.
+- A backup of the custodian carries every account's record. It does **not** carry wrapped RSA
+  keys or static secrets: a portable backup and its password would otherwise be a way to take
+  them. After a restore those accounts report `providerSetupRequired` until rotated or
+  re-entered.
+
+## 6. Sealed payloads
+
+Secret material crosses the wire in this family only inside a `SealedTransferBundle`, and only
+in two places:
+
+- **`external/accounts/secret/set`**, inward. The manager's client seals an
+  `ExternalSecretPayload` to a **single-use wrapping key** the custodian issued through
+  [`keys/import-wrapping-key`](../../../keys/import-wrapping-key/0.1/spec.md), never to the
+  custodian's DID. The wrapping key's private half lives in the custodian's memory for minutes
+  and opens one bundle, so a captured bundle cannot be replayed, and a later compromise of the
+  custodian's DID key opens nothing recorded earlier. The payload names its context and account
+  inside the seal, and a bundle naming another account is refused.
+- **`external/credentials/issue`**, outward. The custodian seals an
+  `ExternalCredentialPayload` to the caller's **key-agreement key**: for a `did:key`, the X25519
+  derivation of its Ed25519 key; otherwise the first X25519 `keyAgreement` verification method
+  of the caller's resolved DID document. The bundle's producer assertion is `PinnedOnly`, and
+  its anchor is the response document's REQUIRED proof, which covers the armor and so its
+  digest: the consumer trusts the bundle because the custodian signed the document carrying it.
+
+Secret fingerprints are `SecretFingerprint`: keyed under a custodian-held key, never a bare
+hash.
+
+## 7. Audit
+
+A custodian **SHOULD** write one audit row per issuance and per signature — account, binding,
+consumer, the downscoped scope or the decoded calls, expiry, and the provider's request id so a
+provider-side log entry can be traced to it — and **MUST NOT** write the credential or any
+secret into it. Every management task, decision and refusal is audited like any other Trust
+Task; a refusal for a binding or scope violation is what a compromised consumer looks like and
+**SHOULD** be raised as a security alert.

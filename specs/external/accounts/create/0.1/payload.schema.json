@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/external/accounts/create/0.1",
+  "title": "External Accounts — Create — payload",
+  "description": "Create an external account; the custodian generates its key. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context",
+    "id",
+    "label",
+    "settings"
+  ],
+  "properties": {
+    "context": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountContextId"
+    },
+    "id": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountId"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Display name."
+    },
+    "settings": {
+      "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/AccountSettings"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "External Accounts — Create — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "../../../../external/_shared/0.1/accounts.schema.json#/$defs/ExternalAccount"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
