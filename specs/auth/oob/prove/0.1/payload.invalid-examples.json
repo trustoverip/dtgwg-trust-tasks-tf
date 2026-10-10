@@ -34,7 +34,7 @@
         "browser": "Chrome",
         "os": "macOS",
         "createdAt": "2026-10-10T10:00:00Z",
-        "sameNetwork": "same",
+        "sameNetwork": true,
         "ip": "203.0.113.7"
       },
       "identifiedAs": "did:web:alice.example"
@@ -42,7 +42,7 @@
   },
   {
     "variant": "response",
-    "note": "sameNetwork is one of same | different | unknown.",
+    "note": "sameNetwork is true, false or \"unknown\" — any other string is rejected.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
       "service": {

@@ -7,13 +7,17 @@
     "Purpose": {
       "title": "Purpose",
       "type": "string",
-      "enum": ["login"],
+      "enum": [
+        "login"
+      ],
       "description": "What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit."
     },
     "Mode": {
       "title": "Mode",
       "type": "string",
-      "enum": ["scan"],
+      "enum": [
+        "scan"
+      ],
       "description": "How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names."
     },
     "RequestId": {
@@ -50,7 +54,10 @@
       "title": "Service",
       "type": "object",
       "additionalProperties": false,
-      "required": ["did", "name"],
+      "required": [
+        "did",
+        "name"
+      ],
       "properties": {
         "did": {
           "type": "string",
@@ -70,15 +77,28 @@
     },
     "SameNetwork": {
       "title": "SameNetwork",
-      "type": "string",
-      "enum": ["same", "different", "unknown"],
-      "description": "Whether the starter's request and the approver's prove came from the same egress network, as the service saw them. `unknown` when the service cannot tell. The service compares addresses; it never discloses them."
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string",
+          "const": "unknown"
+        }
+      ],
+      "description": "Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them."
     },
     "Requester": {
       "title": "Requester",
       "type": "object",
       "additionalProperties": false,
-      "required": ["location", "browser", "os", "createdAt", "sameNetwork"],
+      "required": [
+        "location",
+        "browser",
+        "os",
+        "createdAt",
+        "sameNetwork"
+      ],
       "properties": {
         "location": {
           "type": "string",

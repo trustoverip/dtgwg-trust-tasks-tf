@@ -105,7 +105,7 @@ The lock entitles its holder to attempt one proof. Membership, read from the ser
 - **`identify`** — a complete signed `auth/oob/identify/0.1` document, verified over its members as received.
 - **Step 2** (response) — step 1's `requestId`, `service`, `origin`, `purpose` and `decisionDeadline`, plus:
   - **`sessionKey`** — the starter key `K_b`;
-  - **`requester`** — `location` (city and country, or `unknown`), `browser` (family), `os`, `createdAt`, and `sameNetwork` (`same`, `different` or `unknown`);
+  - **`requester`** — `location` (city and country, or `unknown`), `browser` (family), `os`, `createdAt`, and `sameNetwork` (`true`, `false` or `"unknown"`);
   - **`identifiedAs`** — the DID that issued the identify.
 
 ## Request
@@ -182,7 +182,7 @@ The service answers with step 2, signed by its `assertionMethod` key. The payloa
       "browser": "Chrome",
       "os": "macOS",
       "createdAt": "2026-10-10T10:00:00Z",
-      "sameNetwork": "same"
+      "sameNetwork": true
     },
     "identifiedAs": "did:web:alice.example"
   },
