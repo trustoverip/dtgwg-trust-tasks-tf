@@ -40,6 +40,9 @@ retention:
   class: transient
   rationale: "The oracle derives the key on demand and keeps nothing but an audit line. The caller holds it for the duration of one encryption or decryption and discards it."
 errorCodes:
+  - code: rooms/keys/file-key:noGroup
+    meaning: "The oracle holds no group for this room: its principal is not a member, has not yet processed a welcome, or has left. The framework defines no standard not-found code, so this one is declared."
+    retryable: false
   - code: rooms/keys/file-key:unknownEpoch
     meaning: "The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain."
     retryable: false
@@ -120,7 +123,7 @@ A conforming **oracle** (`recipient`) **MUST**:
 1. Refuse a caller its principal has not authorized to open files for this room with the
    standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), as
    `rooms/keys/open` does; this specification declares no task-specific code for it. An
-   oracle that holds no group for the room answers the standard `notFound`.
+   oracle that holds no group for the room answers `rooms/keys/file-key:noGroup`.
 2. Refuse with `malformedRequest` a `seal` request carrying `epoch`, an `open` request
    without one, and an `epoch` it cannot represent. Epochs are unsigned 64-bit on the wire;
    an oracle holding epochs in a narrower type **MUST** refuse an out-of-range value rather
