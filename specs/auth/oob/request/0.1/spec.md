@@ -148,7 +148,7 @@ The service answers with the request's handle and claim deadline. The payload is
   "issuedAt": "2026-10-10T10:00:00Z",
   "payload": {
     "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
-    "claimDeadline": "2026-10-10T10:02:00Z"
+    "claimDeadline": 1791626520
   }
 }
 ```

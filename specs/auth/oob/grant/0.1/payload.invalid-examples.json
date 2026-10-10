@@ -1,18 +1,54 @@
 [
   {
     "note": "An `ext` member is refused — the grant is closed, so a user-verified signature covers exactly these members.",
-    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "decision": "approve", "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "origin": "https://members.community.example", "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR", "notAfter": "2026-10-10T18:00:00Z", "ext": { "org.example": { "scope": "admin" } } }
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "notAfter": 1791655200,
+      "ext": {
+        "org.example": {
+          "scope": "admin"
+        }
+      }
+    }
   },
   {
     "note": "Unknown decision value — only approve and decline are defined.",
-    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "decision": "approveForever", "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "origin": "https://members.community.example", "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR", "notAfter": "2026-10-10T18:00:00Z" }
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "decision": "approveForever",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "notAfter": 1791655200
+    }
   },
   {
     "note": "contextDigest as bare hex is non-conforming — DigestMultibase requires a multibase header.",
-    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "decision": "approve", "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "origin": "https://members.community.example", "contextDigest": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "notAfter": "2026-10-10T18:00:00Z" }
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "contextDigest": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "notAfter": 1791655200
+    }
   },
   {
     "note": "Missing contextDigest — a grant not bound to what the member saw is refused.",
-    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "decision": "approve", "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp", "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK", "origin": "https://members.community.example", "notAfter": "2026-10-10T18:00:00Z" }
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "decision": "approve",
+      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+      "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "origin": "https://members.community.example",
+      "notAfter": 1791655200
+    }
   }
 ]

@@ -94,12 +94,14 @@ compare-and-set, so only one caller can make it.
    `prove` responses are attestations the approver relies on (and the grant
    cites by digest), and are signed with the service's `assertionMethod` key
    ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)).
-5. **No caching.** Every response, including every error, is sent with
+5. **Times.** `claimDeadline`, `decisionDeadline` and the grant's and redeem's
+   `notAfter` are integer UTC epoch seconds, the unit of the trigger link's `_exp`.
+6. **No caching.** Every response, including every error, is sent with
    `Cache-Control: no-store` where the transport has such a header.
-6. **Generic failures.** A non-member and a bad signature at `prove` or
+7. **Generic failures.** A non-member and a bad signature at `prove` or
    `respond` get the same `auth/oob:notAuthorized`, so the family cannot be used
    to probe membership.
-7. **Rate limits.** A service applies per-network limits on `request`, `claim`
+8. **Rate limits.** A service applies per-network limits on `request`, `claim`
    and `prove`, caps pending requests per network, and allows one open `redeem`
    poll per request. Refusals use `auth/oob:rateLimited`.
 

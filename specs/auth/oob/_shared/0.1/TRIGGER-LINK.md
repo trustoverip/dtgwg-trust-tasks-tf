@@ -23,14 +23,14 @@ https://<link host>/t#_from=<service DID>&_id=<requestId>&_exp=<claimDeadline>&_
 |---|---|
 | `_from` | The service's DID: the `recipient` of the `auth/oob/request` that opened the request. Percent-encode `&`, `=`, `#` and `%`, and nothing else. |
 | `_id` | The `requestId` from the `auth/oob/request` response, as received (VTI-LNK-033, VTI-LNK-103). |
-| `_exp` | The `claimDeadline` from the same response, as UTC epoch seconds. VTI-LNK-100 caps it at 300 s after the code is made; this family recommends 120 s. |
+| `_exp` | The `claimDeadline` from the same response, unchanged (both are integer UTC epoch seconds). VTI-LNK-100 caps it at 300 s after the code is made; this family recommends 120 s. |
 | `_type` | The `sign-in` flow, `/vti/flow/sign-in/0.1` (path form, VTI-LNK-042). |
 
 The **link host** is configuration, defaulting to `link.trustoverip.org`, and
 **MUST NOT** be on the portal's own domain (VTI-LNK-084). The link carries
 nothing else: no endpoint, no purpose and no origin. A reader takes the
 transport from the service's verified DID document (VTI-LNK-053) and selects
-the service's existing Trust Task HTTPS service by `type`.
+the service's Trust Task HTTPS service by `type` — `TrustTaskHTTPS` — never by `id`.
 
 The producer emits ASCII only and stays within the size budget of VTI-LNK-081
 at QR error-correction level M. Render rules — level M, no logo, a quiet zone
@@ -45,6 +45,10 @@ link host's association opens the wallet; on a desktop with a browser plugin the
 plugin handles the click; with neither, the click lands on the link host's page
 for people with no wallet (VTI-LNK-091). Pages that carry the link follow
 VTI-LNK-082.
+
+When the page becomes hidden (`visibilitychange`), the starter hides the code
+but does not cancel the request, and keeps polling `auth/oob/redeem`: on a
+phone, tapping the code hides the tab, and the sign-in must survive that.
 
 ## 3. The service's DID document
 

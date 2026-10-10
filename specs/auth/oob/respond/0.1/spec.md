@@ -126,7 +126,7 @@ The approver (`issuer`, the lock key) delivers the grant to the service (`recipi
         "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
         "origin": "https://members.community.example",
         "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
-        "notAfter": "2026-10-10T18:00:00Z"
+        "notAfter": 1791655200
       },
       "proof": {
         "type": "DataIntegrityProof",

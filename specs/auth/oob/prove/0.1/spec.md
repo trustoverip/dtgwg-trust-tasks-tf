@@ -175,7 +175,7 @@ The service answers with step 2, signed by its `assertionMethod` key. The payloa
     "service": { "did": "did:web:community.example", "name": "Example Community" },
     "origin": "https://members.community.example",
     "purpose": "login",
-    "decisionDeadline": "2026-10-10T10:02:40Z",
+    "decisionDeadline": 1791626560,
     "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
     "requester": {
       "location": "Sydney, Australia",

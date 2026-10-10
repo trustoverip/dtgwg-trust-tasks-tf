@@ -5,14 +5,25 @@
   "description": "The member's decision on one out-of-band request, as an attestation: \"let this starter key act as me at this origin until notAfter, having seen this context\", or a decline. Issued by the DID that proved membership and signed by its VTA for `assertionMethod`, only after user verification. Never sent on its own, only carried inside auth/oob/respond. Closed: additionalProperties false and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["requestId", "decision", "sessionKey", "approverKey", "origin", "contextDigest", "notAfter"],
+  "required": [
+    "requestId",
+    "decision",
+    "sessionKey",
+    "approverKey",
+    "origin",
+    "contextDigest",
+    "notAfter"
+  ],
   "properties": {
     "requestId": {
       "$ref": "../../_shared/0.1/oob.schema.json#/$defs/RequestId"
     },
     "decision": {
       "type": "string",
-      "enum": ["approve", "decline"],
+      "enum": [
+        "approve",
+        "decline"
+      ],
       "description": "The member's decision. A decline still names the context it declines, and needs no user verification."
     },
     "sessionKey": {
@@ -29,12 +40,12 @@
     },
     "contextDigest": {
       "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
-      "description": "SHA-256 multihash, multibase-encoded, over the RFC 8785 (JCS) canonical form of the signed step 2 response document (the auth/oob/prove response), proof included. Binds the decision to exactly what the member was shown."
+      "description": "SHA-256 multihash over the RFC 8785 (JCS) canonical form of the signed step 2 response document (the auth/oob/prove response), proof included, written as multibase. Producers emit base58btc (`z…`). Binds the decision to exactly what the member was shown."
     },
     "notAfter": {
-      "type": "string",
-      "format": "date-time",
-      "description": "The latest instant the session key may act as the issuer. The service ends the session at the earlier of this and its own session limit."
+      "type": "integer",
+      "minimum": 0,
+      "description": "The latest instant the session key may act as the issuer, as integer UTC epoch seconds. The service ends the session at the earlier of this and its own session limit."
     }
   }
 }

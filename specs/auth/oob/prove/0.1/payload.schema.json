@@ -48,9 +48,9 @@
           "$ref": "../../_shared/0.1/oob.schema.json#/$defs/Purpose"
         },
         "decisionDeadline": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Unchanged from step 1."
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unchanged from step 1 (integer UTC epoch seconds)."
         },
         "sessionKey": {
           "$ref": "../../_shared/0.1/oob.schema.json#/$defs/OobKey",

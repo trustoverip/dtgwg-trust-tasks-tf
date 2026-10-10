@@ -70,7 +70,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the wallet with the member's VTA):
 
-1. **MUST** set `issuer` to the DID that proved membership (`identifiedAs` in step 2), `recipient` to the service DID, `sessionKey` and `origin` from step 2, `approverKey` to the lock key, and `contextDigest` to the SHA-256 multihash, multibase-encoded, of the [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) canonical form of the signed step 2 response document, proof included.
+1. **MUST** set `issuer` to the DID that proved membership (`identifiedAs` in step 2), `recipient` to the service DID, `sessionKey` and `origin` from step 2, `approverKey` to the lock key, and `contextDigest` to the SHA-256 multihash, in base58btc multibase (`z…`), of the [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) canonical form of the signed step 2 response document, proof included.
 2. **MUST** sign with a key the issuer's DID document lists under `assertionMethod`, with `proofPurpose: assertionMethod`.
 3. A signing VTA, for `decision: approve`, **MUST** require a `consent/decision` signed by the requesting device's user-verification key whose payload digest equals the digest of the unsigned grant; **MUST** refuse unless `issuer` is the principal of the vault entry used and `recipient` is the DID that entry targets; and **MUST NOT** sign the same grant `id` twice.
 4. **MUST NOT** send the document on its own.
@@ -79,7 +79,7 @@ A conforming **consumer** (the service, executing `auth/oob/respond`):
 
 1. **MUST NOT** act on a grant received on its own, and **SHOULD** answer one with `unsupportedType`.
 2. **MUST** verify the embedded grant as a Trust Task document in its own right ([SPEC §7.2](/SPEC.md#72-consumer-requirements)) — recipient is itself, fresh, `id` new — with its proof checked against the issuer's **`assertionMethod`** relationship.
-3. **MUST** require `issuer` to equal the request's identified DID, `approverKey` the lock, `sessionKey` the starter key, `origin` the request's origin, and `contextDigest` the stored digest of the signed step 2.
+3. **MUST** require `issuer` to equal the request's identified DID, `approverKey` the lock, `sessionKey` the starter key, `origin` the request's origin, and `contextDigest` the stored digest of the signed step 2, comparing the decoded multihash rather than the multibase text.
 
 ## Authorization
 
@@ -92,7 +92,7 @@ The grant is a delegation by the member: it is the authority, for one session, f
 - **`approverKey`** — the lock key `K_a`.
 - **`origin`** — the portal origin at which the session key may act.
 - **`contextDigest`** — the digest of the signed step 2 response, binding the decision to what the member saw.
-- **`notAfter`** — the latest instant the session key may act as the issuer.
+- **`notAfter`** — the latest instant the session key may act as the issuer, in integer epoch seconds.
 
 ## Request
 
@@ -114,7 +114,7 @@ The approving identity (`issuer`) addresses the service (`recipient`); the walle
     "approverKey": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
     "origin": "https://members.community.example",
     "contextDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
-    "notAfter": "2026-10-10T18:00:00Z"
+    "notAfter": 1791655200
   },
   "proof": {
     "type": "DataIntegrityProof",

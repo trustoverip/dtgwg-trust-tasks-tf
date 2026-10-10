@@ -54,8 +54,16 @@ errorCodes:
           type: string
           pattern: "^[0-9]{2}$"
   - code: auth/oob/redeem:declined
-    meaning: The request was declined or cancelled and will not be approved.
+    meaning: The request was declined or cancelled and will not be approved. `details.state` says which.
     retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: [state]
+      properties:
+        state:
+          type: string
+          enum: [declined, cancelled]
   - code: auth/oob:notStarter
     meaning: The redeem is not signed by the request's starter key.
     retryable: false
@@ -104,9 +112,9 @@ A conforming **service**:
 
 1. **MUST** require the issuer to equal the starter key and the proof to verify, else `auth/oob:notStarter`.
 2. Before approval, **SHOULD** hold the call for up to 25 s, with at most one open poll per request, and then answer `auth/oob/redeem:pending` with `details.state`, and `details.matchNumber` once the request is claimed. Only the starter key's holder ever receives the number.
-3. For a declined or cancelled request, **MUST** answer `auth/oob/redeem:declined`; for an expired or consumed one, `auth/oob:requestExpired`.
-4. For an approved request, **MUST** move it to `consumed` in one compare-and-set, check membership again, and create the session: subject the grant's issuer, `sessionKey` the starter key, `amr` `["did", "oob", "uv"]`, ending at the earlier of the grant's `notAfter` and the service's session limit.
-5. Over HTTPS, **MUST** deliver the session credential as `Secure; HttpOnly; SameSite=Lax` cookies and **MUST NOT** put tokens in the body.
+3. For a declined or cancelled request, **MUST** answer `auth/oob/redeem:declined` with `details.state` `declined` or `cancelled`; for an expired or consumed one, `auth/oob:requestExpired`.
+4. For an approved request, **MUST** move it to `consumed` in one compare-and-set, check membership again, and create the session: subject the grant's issuer, session key the starter key, `amr` `["did", "oob", "uv"]`, ending at the earlier of the grant's `notAfter` and the service's session limit.
+5. **MUST** answer with `{ subject, displayName, notAfter, amr }` describing that session, `notAfter` in integer epoch seconds. Over HTTPS, **MUST** deliver the session itself as `Secure; HttpOnly; SameSite=Lax` cookies and **MUST NOT** put tokens in the body.
 
 ## Authorization
 
@@ -115,8 +123,10 @@ Two things together: the member's grant, which names the starter key ([`auth/oob
 ## Definitions
 
 - **`requestId`** — the request being redeemed.
-- **`session`** (response) — an [`auth/_shared/0.3`](../../../_shared/0.3/session.schema.json) `Session`: subject the approving DID, `sessionKey` the starter key.
+- **`subject`** (response) — the approving DID, now the session's subject. The session's key is the starter key.
 - **`displayName`** (response) — a name for the signed-in identity, for the confirmation step.
+- **`notAfter`** (response) — when the session ends, in integer epoch seconds.
+- **`amr`** (response) — the session's authentication methods, `["did", "oob", "uv"]`.
 
 ## Request
 
@@ -160,15 +170,29 @@ On an approved request the service answers with the session. The payload is the 
   "recipient": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
   "issuedAt": "2026-10-10T10:01:32Z",
   "payload": {
-    "session": {
-      "id": "sess_7f3c1a",
-      "subject": "did:web:alice.example",
-      "issuedAt": "2026-10-10T10:01:32Z",
-      "expiresAt": "2026-10-10T18:00:00Z",
-      "amr": ["did", "oob", "uv"],
-      "sessionKey": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp"
-    },
-    "displayName": "Alice"
+    "subject": "did:web:alice.example",
+    "displayName": "Alice",
+    "notAfter": 1791655200,
+    "amr": ["did", "oob", "uv"]
+  }
+}
+```
+
+### The member cancelled
+
+```json
+{
+  "id": "urn:uuid:af607182-93a4-4ebf-9021-4c5d6e7f8a04",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.5",
+  "threadId": "urn:uuid:af607182-93a4-4ebf-9021-4c5d6e7f8a01",
+  "issuer": "did:web:community.example",
+  "recipient": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
+  "issuedAt": "2026-10-10T10:00:51Z",
+  "payload": {
+    "code": "auth/oob/redeem:declined",
+    "message": "The sign-in was cancelled.",
+    "retryable": false,
+    "details": { "state": "cancelled" }
   }
 }
 ```
@@ -196,7 +220,7 @@ On an approved request the service answers with the session. The payload is the 
 
 ### Data carried
 
-The request carries a handle. The success response carries the session record (identifiers and times, no credential) and a display name; the credential itself travels as HttpOnly cookies. The `pending` error carries the state and, once claimed, the match number — to the starter key's holder only.
+The request carries a handle. The success response carries the subject, a display name, the end time and the authentication methods (no credential); the credential itself travels as HttpOnly cookies. The `pending` error carries the state and, once claimed, the match number — to the starter key's holder only.
 
 ### Correlation
 

@@ -157,7 +157,7 @@ The service answers with step 1, signed by its `assertionMethod` key. The payloa
     "service": { "did": "did:web:community.example", "name": "Example Community" },
     "origin": "https://members.community.example",
     "purpose": "login",
-    "decisionDeadline": "2026-10-10T10:02:40Z"
+    "decisionDeadline": 1791626560
   },
   "proof": {
     "type": "DataIntegrityProof",

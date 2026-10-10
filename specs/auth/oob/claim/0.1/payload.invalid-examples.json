@@ -5,22 +5,32 @@
   },
   {
     "note": "requestId with characters outside unpadded base64url (padding `=`) must be rejected.",
-    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg==" }
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg=="
+    }
   },
   {
     "note": "Unknown member — additionalProperties: false rejects an approver-supplied identity in the claim; the member's DID is not revealed until prove.",
-    "payload": { "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg", "subject": "did:web:alice.example" }
+    "payload": {
+      "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
+      "subject": "did:web:alice.example"
+    }
   },
   {
     "variant": "response",
     "note": "Step 1 must contain nothing about the starter — a `requester` member is rejected by additionalProperties: false.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
-      "service": { "did": "did:web:community.example", "name": "Example Community" },
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
       "origin": "https://members.community.example",
       "purpose": "login",
-      "decisionDeadline": "2026-10-10T10:03:00Z",
-      "requester": { "location": "Sydney, Australia" }
+      "decisionDeadline": 1791626560,
+      "requester": {
+        "location": "Sydney, Australia"
+      }
     }
   },
   {
@@ -28,10 +38,13 @@
     "note": "An origin with a path is not an origin.",
     "payload": {
       "requestId": "q3Vt7mXo9LwA2bR5cJ8kNg",
-      "service": { "did": "did:web:community.example", "name": "Example Community" },
+      "service": {
+        "did": "did:web:community.example",
+        "name": "Example Community"
+      },
       "origin": "https://members.community.example/login",
       "purpose": "login",
-      "decisionDeadline": "2026-10-10T10:03:00Z"
+      "decisionDeadline": 1791626560
     }
   }
 ]
