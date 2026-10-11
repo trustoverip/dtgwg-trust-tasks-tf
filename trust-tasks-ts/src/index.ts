@@ -736,6 +736,8 @@ export * as VtcJoinRequestsSubmit_v0_2 from "./vtc/join-requests/submit/0.2/payl
 export * as VtcJoinRequestsSubmit_v0_3 from "./vtc/join-requests/submit/0.3/payload.js";
 export * as VtcJoinRequestsSupplement_v0_1 from "./vtc/join-requests/supplement/0.1/payload.js";
 export * as VtcJoinRequestsVettingShow_v0_1 from "./vtc/join-requests/vetting/show/0.1/payload.js";
+export * as VtcJoinRequestsWalletSessionStart_v0_1 from "./vtc/join-requests/wallet-session/start/0.1/payload.js";
+export * as VtcJoinRequestsWalletSessionStatus_v0_1 from "./vtc/join-requests/wallet-session/status/0.1/payload.js";
 export * as VtcJoinRequestsWithdraw_v0_1 from "./vtc/join-requests/withdraw/0.1/payload.js";
 export * as VtcMembersAdminRemove_v0_1 from "./vtc/members/admin-remove/0.1/payload.js";
 export * as VtcMembersAuthorityReducedNotice_v0_1 from "./vtc/members/authority-reduced-notice/0.1/payload.js";

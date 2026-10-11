@@ -1770,6 +1770,14 @@ mod vtc {
                 mod v0_1;
             }
         }
+        mod wallet_session {
+            mod start {
+                mod v0_1;
+            }
+            mod status {
+                mod v0_1;
+            }
+        }
         mod withdraw {
             mod v0_1;
         }

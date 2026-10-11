@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/join-requests/wallet-session/start/0.1",
+  "title": "VTC Join-Requests Wallet Session Start — payload",
+  "description": "An applicant asks the community to open an OpenID4VP 1.0 presentation session for one of its join criteria, so that a wallet which cannot sign Trust Tasks can present credentials as evidence for the applicant's join. The applicant is the document proof's signer, not a payload member. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "criterion"
+  ],
+  "properties": {
+    "criterion": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+      "description": "The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest/0.3 published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read."
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion."
+    },
+    "clientIdPrefix": {
+      "type": "string",
+      "enum": [
+        "decentralized_identifier",
+        "x509_hash"
+      ],
+      "description": "The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`, as swiyu wallets expect) or an X.509 certificate (`x509_hash`, as EUDI wallets expect). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default. A community holding no verifier identity of the requested kind refuses with `verifierNotConfigured`."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Join-Requests Wallet Session Start — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "walletUri",
+        "clientId",
+        "dcqlQuery",
+        "expiresAt"
+      ],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128,
+          "description": "Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it."
+        },
+        "walletUri": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others."
+        },
+        "clientId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name."
+        },
+        "dcqlQuery": {
+          "type": "object",
+          "description": "The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the session closes if no wallet has answered it. Minutes, not hours."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+[
+  { "note": "`criterion` is REQUIRED — a session must be bound to one criterion version, or the community has no published query to ask the wallet for.", "payload": { "requestId": "r1" } },
+  { "note": "`criterion` is a DigestMultibase (the manifest's `requirementsDigest`), not a bare label — a criterion named by a free-form id does not pin the query the applicant read.", "payload": { "criterion": "residence" } },
+  { "note": "`clientIdPrefix` carries OpenID4VP's own values verbatim; a re-cased or unknown prefix must not be guessed at.", "payload": { "criterion": "zQmaf3wtkysZWg8vCzdetBwzjiHACZz8JAxTVr4W66chiXV", "clientIdPrefix": "decentralizedIdentifier" } },
+  { "note": "`x509_san_dns` is a real OpenID4VP prefix but not one this version lets an applicant request.", "payload": { "criterion": "zQmaf3wtkysZWg8vCzdetBwzjiHACZz8JAxTVr4W66chiXV", "clientIdPrefix": "x509_san_dns" } },
+  { "note": "The applicant is the proof signer; an `applicantDid` member must not be accepted, or a payload could name somebody else.", "payload": { "criterion": "zQmaf3wtkysZWg8vCzdetBwzjiHACZz8JAxTVr4W66chiXV", "applicantDid": "did:example:someone-else" } },
+  { "note": "Response: `walletUri` is REQUIRED — a session the applicant cannot hand to a wallet is unusable.", "variant": "response", "payload": { "sessionId": "q7Xw2LmN9pRt4VbK8sYc3Hd6", "clientId": "x509_hash:abc", "dcqlQuery": { "credentials": [] }, "expiresAt": "2026-10-11T09:10:01Z" } },
+  { "note": "Response: a short `sessionId` cannot carry the 128 bits of entropy that make it unguessable.", "variant": "response", "payload": { "sessionId": "abc", "walletUri": "openid4vp://?client_id=x&request_uri=y", "clientId": "x509_hash:abc", "dcqlQuery": { "credentials": [] }, "expiresAt": "2026-10-11T09:10:01Z" } },
+  { "note": "Response: `dcqlQuery` is a DCQL object, not a string reference.", "variant": "response", "payload": { "sessionId": "q7Xw2LmN9pRt4VbK8sYc3Hd6", "walletUri": "openid4vp://?client_id=x&request_uri=y", "clientId": "x509_hash:abc", "dcqlQuery": "residence", "expiresAt": "2026-10-11T09:10:01Z" } }
+]

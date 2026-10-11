@@ -13,4 +13,5 @@ pub mod submit;
 pub mod submit_receipt;
 pub mod supplement;
 pub mod vetting;
+pub mod wallet_session;
 pub mod withdraw;
