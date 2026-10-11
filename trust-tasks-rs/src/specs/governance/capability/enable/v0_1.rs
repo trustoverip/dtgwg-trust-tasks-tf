@@ -1764,6 +1764,7 @@ pub mod error_codes {
     pub const UNKNOWN_CAPABILITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "governance/capability/enable:unknownCapability",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `governance/capability/enable:alreadyEnabled`
     ///
@@ -1773,6 +1774,7 @@ pub mod error_codes {
     pub const ALREADY_ENABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "governance/capability/enable:alreadyEnabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `governance/capability/enable:configInvalid`
     ///
@@ -1782,5 +1784,6 @@ pub mod error_codes {
     pub const CONFIG_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "governance/capability/enable:configInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

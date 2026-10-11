@@ -229,7 +229,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "type": "string"
 ///    },
 ///    "sinceEpoch": {
-///      "description": "\nThe epoch this member is at. The host returns the commits **above** it, in order.\n\nA member asks for what they are missing rather than for a count, because only they know where they are — a host that guessed would be guessing from the last time it saw them, which on a `private` room is a thing it should not be tracking.",
+///      "description": "The epoch this member is at. The host returns the commits **above** it, in order.\n\nA member asks for what they are missing rather than for a count, because only they know where they are — a host that guessed would be guessing from the last time it saw them, which on a `private` room is a thing it should not be tracking.",
 ///      "type": "integer",
 ///      "minimum": 0.0
 ///    }
@@ -308,7 +308,7 @@ impl Payload {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "roomEpoch": {
-///      "description": "\nThe epoch the room is at now.\n\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.",
+///      "description": "The epoch the room is at now.\n\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.",
 ///      "type": "integer",
 ///      "minimum": 1.0
 ///    },
@@ -809,6 +809,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/commits:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/epoch/commits:chainTooDeep`
     ///
@@ -818,5 +819,6 @@ pub mod error_codes {
     pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/commits:chainTooDeep",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1722,6 +1722,7 @@ pub mod error_codes {
     pub const TOKEN_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/refresh:tokenNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/refresh:tokenExpired`
     ///
@@ -1731,6 +1732,7 @@ pub mod error_codes {
     pub const TOKEN_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/refresh:tokenExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/refresh:tokenRevoked`
     ///
@@ -1740,15 +1742,20 @@ pub mod error_codes {
     pub const TOKEN_REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/refresh:tokenRevoked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/refresh:scopeWideningRefused`
     ///
     /// The requested scope exceeds the original session's scope. Refresh MUST NOT broaden privilege.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SCOPE_WIDENING_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/refresh:scopeWideningRefused",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"offending\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/refresh:sessionKeyProofRequired`
     ///
@@ -1758,6 +1765,7 @@ pub mod error_codes {
     pub const SESSION_KEY_PROOF_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/refresh:sessionKeyProofRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/refresh:sessionLifetimeExceeded`
     ///
@@ -1767,5 +1775,6 @@ pub mod error_codes {
     pub const SESSION_LIFETIME_EXCEEDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/refresh:sessionLifetimeExceeded",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

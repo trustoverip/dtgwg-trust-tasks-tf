@@ -946,5 +946,6 @@ pub mod error_codes {
     pub const INSTANCE_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/registry/admin-register:instanceExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

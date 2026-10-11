@@ -531,5 +531,6 @@ pub mod error_codes {
     pub const NO_SIGNING_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/invite:noSigningKey",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

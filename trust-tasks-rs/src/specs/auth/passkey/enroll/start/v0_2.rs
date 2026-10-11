@@ -93,7 +93,7 @@ pub mod error {
 ///      }
 ///    },
 ///    "extensions": {
-///      "description": "\nClient extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
+///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
 ///      "type": "object"
 ///    },
 ///    "pubKeyCredParams": {
@@ -1190,7 +1190,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTran
 ///      "type": "string"
 ///    },
 ///    "extensions": {
-///      "description": "\nClient extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
+///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
 ///      "type": "object"
 ///    },
 ///    "rpId": {
@@ -2618,9 +2618,13 @@ pub mod error_codes {
     /// The subject already has the maximum number of passkeys this auth service is configured to bind. `details.limit` MAY carry the cap.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const MAX_CREDENTIALS_REACHED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/start:maxCredentialsReached",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"limit\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/passkey/enroll/start:enrollmentNotSupported`
     ///
@@ -2630,6 +2634,7 @@ pub mod error_codes {
     pub const ENROLLMENT_NOT_SUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/start:enrollmentNotSupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/start:reauthUnavailable`
     ///
@@ -2639,5 +2644,6 @@ pub mod error_codes {
     pub const REAUTH_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/start:reauthUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

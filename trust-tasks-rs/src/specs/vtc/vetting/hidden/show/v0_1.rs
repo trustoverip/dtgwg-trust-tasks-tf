@@ -2889,5 +2889,6 @@ pub mod error_codes {
     pub const NO_SUCH_CRITERION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/show:noSuchCriterion",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1983,6 +1983,7 @@ pub mod error_codes {
     pub const DOES_NOT_VERIFY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vetting/attestation:doesNotVerify",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vetting/attestation:unknownSuite`
     ///
@@ -1992,6 +1993,7 @@ pub mod error_codes {
     pub const UNKNOWN_SUITE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vetting/attestation:unknownSuite",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vetting/attestation:notForThisApplication`
     ///
@@ -2001,5 +2003,6 @@ pub mod error_codes {
     pub const NOT_FOR_THIS_APPLICATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vetting/attestation:notForThisApplication",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

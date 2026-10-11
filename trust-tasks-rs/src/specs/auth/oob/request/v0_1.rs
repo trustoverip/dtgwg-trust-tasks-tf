@@ -627,6 +627,7 @@ pub mod error_codes {
     pub const PURPOSE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob/request:purposeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob/request:modeUnsupported`
     ///
@@ -636,6 +637,7 @@ pub mod error_codes {
     pub const MODE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob/request:modeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:keyUnsupported`
     ///
@@ -645,14 +647,19 @@ pub mod error_codes {
     pub const KEY_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:keyUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:rateLimited`
     ///
     /// The starter's network has hit the service's limit on requests or on pending requests. `details.retryAfter` MAY give seconds until a retry.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfter\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

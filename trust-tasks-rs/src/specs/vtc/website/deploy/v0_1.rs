@@ -734,14 +734,19 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/deploy:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/deploy:bundleRefused`
     ///
     /// The bundle cannot be published: it is not a gzip-compressed tar, an entry's path escapes the site root or names a hidden or blocklisted file, or it expands past the community's decompression limit. Checked on every entry before anything is extracted, so a refused bundle changes nothing. `details.reason` classifies it.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const BUNDLE_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/deploy:bundleRefused",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":1,\"properties\":{\"reason\":{\"enum\":[\"notTarGz\",\"unsafePath\",\"tooLargeExpanded\"],\"type\":\"string\"}},\"required\":[\"reason\"],\"type\":\"object\"}",
+        ),
     };
 }

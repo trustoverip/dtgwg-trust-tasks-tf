@@ -1266,5 +1266,6 @@ pub mod error_codes {
     pub const LISTING_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/servers/reconcile:listingUnavailable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

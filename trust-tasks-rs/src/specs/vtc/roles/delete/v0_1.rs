@@ -537,6 +537,7 @@ pub mod error_codes {
     pub const BUILT_IN_ROLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/delete:builtInRole",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/roles/delete:notFound`
     ///
@@ -546,14 +547,19 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/roles/delete:inUse`
     ///
     /// At least one ACL entry holds the role. Move each holder to another role (acl/change-role) or revoke it first; a held role is never deleted out from under its holders.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const IN_USE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/delete:inUse",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"holders\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"holders\"],\"type\":\"object\"}",
+        ),
     };
 }

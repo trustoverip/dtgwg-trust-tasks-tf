@@ -39,7 +39,7 @@ The act axis and the approve axis are independent and a consumer MUST resolve th
 /// ```json
 ///{
 ///  "title": "AclEntry",
-///  "description": "\nOne access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
+///  "description": "One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
 ///  "type": "object",
 ///  "required": [
 ///    "act",

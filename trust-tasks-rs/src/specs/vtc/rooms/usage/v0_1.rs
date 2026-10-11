@@ -2146,9 +2146,13 @@ pub mod error_codes {
     /// `from` is after `to`, the range is longer than 400 days, or it begins before the community's oldest retained day. `details.earliest` states the oldest day it holds.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_RANGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/usage:invalidRange",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"earliest\":{\"format\":\"date\",\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vtc/rooms/usage:memberUsageUnavailable`
     ///
@@ -2158,6 +2162,7 @@ pub mod error_codes {
     pub const MEMBER_USAGE_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/usage:memberUsageUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/usage:invalidCursor`
     ///
@@ -2167,5 +2172,6 @@ pub mod error_codes {
     pub const INVALID_CURSOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/usage:invalidCursor",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

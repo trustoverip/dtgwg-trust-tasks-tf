@@ -501,7 +501,7 @@ A closure inside this definition would defeat that. Both `additionalProperties` 
 /// ```json
 ///{
 ///  "title": "IssuedCredentialBase",
-///  "description": "\nThe members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\n\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.",
+///  "description": "The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.\n\nA closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.",
 ///  "type": "object",
 ///  "required": [
 ///    "credential",
@@ -782,7 +782,7 @@ Composed from the shared IssuedCredential rather than restating it: that definit
 /// ```json
 ///{
 ///  "title": "Response",
-///  "description": "\nThe success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
+///  "description": "The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nComposed from the shared IssuedCredential rather than restating it: that definition is the issuance receipt every issuer returns, and duplicating it here let the two drift silently. `unevaluatedProperties` closes the object after the `allOf` is applied, which is what makes the composition possible at all — `additionalProperties` is evaluated per-subschema against the whole object and would reject `supersedes` and `ext`.",
 ///  "type": "object",
 ///  "required": [
 ///    "credential",
@@ -1343,6 +1343,7 @@ pub mod error_codes {
     pub const HOLDER_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:holderInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/issue:scopeEmpty`
     ///
@@ -1352,15 +1353,20 @@ pub mod error_codes {
     pub const SCOPE_EMPTY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:scopeEmpty",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/issue:validityTooLong`
     ///
     /// The requested validity exceeds the issuer's maximum.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VALIDITY_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:validityTooLong",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"maxSeconds\":{\"type\":\"integer\"},\"requestedSeconds\":{\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vta/credentials/issue:stepUpRequired`
     ///
@@ -1370,6 +1376,7 @@ pub mod error_codes {
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/issue:profileViolation`
     ///
@@ -1379,5 +1386,6 @@ pub mod error_codes {
     pub const PROFILE_VIOLATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:profileViolation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

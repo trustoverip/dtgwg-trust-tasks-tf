@@ -1364,24 +1364,33 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/app-state/list:filterConflict`
     ///
     /// The supplied combination of members is not answerable — `sinceVersion` without `namespace`, or `sinceVersion` with `includeDeleted` set to false.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const FILTER_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/list:filterConflict",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"sinceVersionRequiresNamespace\",\"changeFeedCannotExcludeDeleted\"],\"type\":\"string\"}},\"required\":[\"reason\"],\"type\":\"object\"}",
+        ),
     };
     /// `vta/app-state/list:watermarkTooOld`
     ///
     /// The supplied `sinceVersion` predates the oldest tombstone the maintainer still retains, so a change feed from it would omit deletions and the consumer's copy would not converge. The consumer must rebuild from a snapshot rather than resume.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const WATERMARK_TOO_OLD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/list:watermarkTooOld",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"highWatermark\":{\"minimum\":1,\"type\":\"integer\"},\"oldestRetainedVersion\":{\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vta/app-state/list:cursorInvalid`
     ///
@@ -1391,5 +1400,6 @@ pub mod error_codes {
     pub const CURSOR_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/list:cursorInvalid",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

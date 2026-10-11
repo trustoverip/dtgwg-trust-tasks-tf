@@ -2081,6 +2081,7 @@ pub mod error_codes {
     pub const CHALLENGE_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:challengeUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-response:challengeExpired`
     ///
@@ -2090,6 +2091,7 @@ pub mod error_codes {
     pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:challengeExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-response:subjectMismatch`
     ///
@@ -2099,6 +2101,7 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:subjectMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-response:approverUnauthorized`
     ///
@@ -2108,6 +2111,7 @@ pub mod error_codes {
     pub const APPROVER_UNAUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:approverUnauthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-response:acrUnsatisfied`
     ///
@@ -2117,15 +2121,20 @@ pub mod error_codes {
     pub const ACR_UNSATISFIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:acrUnsatisfied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-response:assertionInvalid`
     ///
     /// The WebAuthn assertion carried in `evidence` failed verification. `details.reason` carries a machine-readable hint.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ASSERTION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:assertionInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"challenge_mismatch\",\"origin_mismatch\",\"rp_id_mismatch\",\"signature_invalid\",\"counter_regressed\",\"credential_unknown\",\"user_handle_mismatch\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/step-up/approve-response:noGate`
     ///
@@ -2135,5 +2144,6 @@ pub mod error_codes {
     pub const NO_GATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-response:noGate",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -510,6 +510,7 @@ pub mod error_codes {
     pub const POLICY_UNSATISFIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit:policyUnsatisfied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/submit:presentationInvalid`
     ///
@@ -519,5 +520,6 @@ pub mod error_codes {
     pub const PRESENTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit:presentationInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

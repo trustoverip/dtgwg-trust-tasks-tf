@@ -385,6 +385,7 @@ pub mod error_codes {
     pub const CONTEXT_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/memory/delete:contextForbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/memory/delete:notFound`
     ///
@@ -394,5 +395,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/memory/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

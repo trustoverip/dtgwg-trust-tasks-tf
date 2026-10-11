@@ -1249,6 +1249,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/namespace/bind:alreadyBound`
     ///
@@ -1258,6 +1259,7 @@ pub mod error_codes {
     pub const ALREADY_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/namespace/bind:alreadyBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/namespace/bind:noBridge`
     ///
@@ -1267,5 +1269,6 @@ pub mod error_codes {
     pub const NO_BRIDGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/namespace/bind:noBridge",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

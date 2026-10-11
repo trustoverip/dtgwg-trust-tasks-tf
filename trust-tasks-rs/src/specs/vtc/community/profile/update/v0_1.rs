@@ -41,7 +41,7 @@ So reads get this and updates keep CommunityProfile. The split is the point — 
 /// ```json
 ///{
 ///  "title": "CommunityProfileView",
-///  "description": "\nA community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\n\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\n\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.",
+///  "description": "A community profile **as read**: every member of CommunityProfile, plus the immutable identity a reader needs and an update must never set.\n\nCommunityProfile is the update-facing view and omits `communityDid` on purpose, so that a patch cannot re-point a community's identity. That is right for a payload and wrong for a response: a client holding a profile has no other way to learn which DID to verify that community's credentials against, and `community/profile/show` returning the update-facing view left the one member a consumer most needs undefined.\n\nSo reads get this and updates keep CommunityProfile. The split is the point — the immutability of `communityDid` is enforced by it being absent from the payload, not by prose asking implementers not to honour it.",
 ///  "type": "object",
 ///  "required": [
 ///    "communityDid",
@@ -1145,7 +1145,7 @@ Every member is a declaration, not an enforcement: what a community actually acc
 /// ```json
 ///{
 ///  "title": "PersonhoodGovernance",
-///  "description": "\nA community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
+///  "description": "A community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
 ///  "type": "object",
 ///  "properties": {
 ///    "acceptedIdvps": {
@@ -1972,5 +1972,6 @@ pub mod error_codes {
     pub const VALIDATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/community/profile/update:validationFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

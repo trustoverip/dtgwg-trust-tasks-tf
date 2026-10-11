@@ -789,6 +789,7 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/did/enable:not_owner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/did/enable:not_disabled`
     ///
@@ -798,6 +799,7 @@ pub mod error_codes {
     pub const NOT_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/did/enable:not_disabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management:unknown_domain`
     ///
@@ -807,5 +809,6 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknown_domain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -259,7 +259,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "commit": {
-///      "description": "\nThe MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.",
+///      "description": "The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.",
 ///      "type": "string",
 ///      "maxLength": 262144
 ///    },
@@ -344,7 +344,7 @@ OPTIONAL, because a room whose members are all online when it commits needs no r
 ///
 /// ```json
 ///{
-///  "description": "\nThe MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.",
+///  "description": "The MLS commit that produced this epoch, base64url, for the host to relay to members who were not online to receive it.\n\nCarried **here** for the same reason `link` is: minting is the moment the committer holds it, and a separate publish task would be a second chance to forget. A room that advances without leaving the commit somewhere fetchable **forks** — every member who missed the delivery is left at an epoch the room has moved past, holding keys that open nothing new.\n\n**Opaque to the host, and that is why this is safe on every tier.** A commit is ciphertext plus a leaf index; it names nobody. That is the difference from a Welcome, which the host is deliberately kept off the path of because it names the party joining. A host relaying commits learns that the room moved, which it already knew from `epoch`.\n\nOPTIONAL, because a room whose members are all online when it commits needs no relay and a host that stores one is storing it for nobody. A host **MUST NOT** replace a commit it already holds for an epoch: the first one published is the one members may already have applied, and a second would fork the very group it was meant to keep together.",
 ///  "type": "string",
 ///  "maxLength": 262144
 ///}
@@ -901,6 +901,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/mint:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/epoch/mint:nonSequential`
     ///
@@ -910,6 +911,7 @@ pub mod error_codes {
     pub const NON_SEQUENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/mint:nonSequential",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/epoch/mint:chainTooDeep`
     ///
@@ -919,5 +921,6 @@ pub mod error_codes {
     pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/mint:chainTooDeep",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

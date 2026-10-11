@@ -674,5 +674,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "registry/record/update:not_found",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

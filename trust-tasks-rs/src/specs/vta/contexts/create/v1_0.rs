@@ -1057,5 +1057,6 @@ pub mod error_codes {
     pub const PARENT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/create:parentNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1079,6 +1079,7 @@ pub mod error_codes {
     pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/approve-request:subjectUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `consent/approve-request:scopeUnsupported`
     ///
@@ -1088,6 +1089,7 @@ pub mod error_codes {
     pub const SCOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/approve-request:scopeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `consent/approve-request:challengeReplayed`
     ///
@@ -1097,5 +1099,6 @@ pub mod error_codes {
     pub const CHALLENGE_REPLAYED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/approve-request:challengeReplayed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

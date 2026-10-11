@@ -1063,6 +1063,7 @@ pub mod error_codes {
     pub const ROOM_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/migrate:roomNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/storage/migrate:configNotActive`
     ///
@@ -1072,14 +1073,19 @@ pub mod error_codes {
     pub const CONFIG_NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/migrate:configNotActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/storage/migrate:capacityExceeded`
     ///
     /// The assigned config's capacity cannot hold the blobs to be moved. `details` states the capacity, its current use and the bytes to move.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CAPACITY_EXCEEDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/migrate:capacityExceeded",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capacityBytes\":{\"minimum\":0,\"type\":\"integer\"},\"requestedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"usedBytes\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"capacityBytes\",\"usedBytes\",\"requestedBytes\"],\"type\":\"object\"}",
+        ),
     };
 }

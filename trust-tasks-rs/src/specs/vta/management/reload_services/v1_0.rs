@@ -422,5 +422,6 @@ pub mod error_codes {
     pub const RELOAD_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/management/reload-services:reloadFailed",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

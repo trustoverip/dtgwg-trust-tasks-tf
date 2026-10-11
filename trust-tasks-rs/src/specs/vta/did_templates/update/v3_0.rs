@@ -63,7 +63,7 @@ pub mod error {
 ///      "type": "object"
 ///    },
 ///    "keys": {
-///      "description": "\nThe keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.",
+///      "description": "The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.",
 ///      "type": "object",
 ///      "minProperties": 1,
 ///      "additionalProperties": {
@@ -746,7 +746,7 @@ impl<'de> ::serde::Deserialize<'de> for DidTemplateName {
 ///      "type": "object"
 ///    },
 ///    "keys": {
-///      "description": "\nThe keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.",
+///      "description": "The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.",
 ///      "type": "object",
 ///      "minProperties": 1,
 ///      "additionalProperties": {
@@ -2657,5 +2657,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/did-templates/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

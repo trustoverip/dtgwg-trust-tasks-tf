@@ -793,6 +793,7 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "registry/record/put:alreadyExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `registry/record/put:notFound`
     ///
@@ -802,5 +803,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "registry/record/put:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

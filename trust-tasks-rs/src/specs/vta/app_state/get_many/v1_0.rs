@@ -1138,14 +1138,19 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/app-state/get-many:duplicateKey`
     ///
     /// The `keys` array contains the same key more than once. Refused rather than deduplicated, because a caller that sent a duplicate did not mean to.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DUPLICATE_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/get-many:duplicateKey",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"keys\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

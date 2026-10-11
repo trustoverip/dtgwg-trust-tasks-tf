@@ -1303,6 +1303,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/decision:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `consent/decision:challengeMismatch`
     ///
@@ -1312,6 +1313,7 @@ pub mod error_codes {
     pub const CHALLENGE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/decision:challengeMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `consent/decision:subjectInvalid`
     ///
@@ -1321,5 +1323,6 @@ pub mod error_codes {
     pub const SUBJECT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/decision:subjectInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

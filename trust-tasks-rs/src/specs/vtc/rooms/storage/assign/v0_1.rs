@@ -783,6 +783,7 @@ pub mod error_codes {
     pub const ROOM_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/assign:roomNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/storage/assign:configNotFound`
     ///
@@ -792,6 +793,7 @@ pub mod error_codes {
     pub const CONFIG_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/assign:configNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/storage/assign:configNotActive`
     ///
@@ -801,6 +803,7 @@ pub mod error_codes {
     pub const CONFIG_NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/assign:configNotActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/storage/assign:credentialRequired`
     ///
@@ -810,5 +813,6 @@ pub mod error_codes {
     pub const CREDENTIAL_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/storage/assign:credentialRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

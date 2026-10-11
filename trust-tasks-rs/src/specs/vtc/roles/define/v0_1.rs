@@ -621,7 +621,7 @@ CUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community 
 /// ```json
 ///{
 ///  "title": "RoleDefinition",
-///  "description": "\nOne administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\n\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\n\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \"everything\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\n\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\n\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.",
+///  "description": "One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\n\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\n\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \"everything\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\n\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\n\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.",
 ///  "type": "object",
 ///  "required": [
 ///    "approveScope",
@@ -1498,6 +1498,7 @@ pub mod error_codes {
     pub const BUILT_IN_ROLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/define:builtInRole",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/roles/define:exists`
     ///
@@ -1507,6 +1508,7 @@ pub mod error_codes {
     pub const EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/define:exists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/roles/define:notFound`
     ///
@@ -1516,32 +1518,45 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/define:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/roles/define:unknownCapability`
     ///
     /// A capability in `ceiling` or `approveScope` is not in the VTC's capability registry.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNKNOWN_CAPABILITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/define:unknownCapability",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/roles/define:additiveCapability`
     ///
     /// The ceiling names a capability the registry classes as additive. An additive capability is one no role implies; naming it in a ceiling would let a granter without unrestricted authority confer it.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ADDITIVE_CAPABILITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/define:additiveCapability",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/roles/define:exceedsDefinerAuthority`
     ///
     /// The ceiling or approve ceiling names a capability (or a qualifier wider than one) that the administrators whose authority defines the role do not themselves hold, or may not themselves approve.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const EXCEEDS_DEFINER_AUTHORITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/roles/define:exceedsDefinerAuthority",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
 }

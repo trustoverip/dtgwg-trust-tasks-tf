@@ -799,6 +799,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/rollback:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/rollback:conflict`
     ///
@@ -808,6 +809,7 @@ pub mod error_codes {
     pub const CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/rollback:conflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/rollback:notAuthorized`
     ///
@@ -817,5 +819,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/rollback:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -984,5 +984,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/approver-list:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

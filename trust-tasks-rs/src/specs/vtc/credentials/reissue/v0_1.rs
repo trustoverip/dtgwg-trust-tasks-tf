@@ -1160,6 +1160,7 @@ pub mod error_codes {
     pub const CAUSE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/credentials/reissue:causeNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/credentials/reissue:noSoundAttestationKey`
     ///
@@ -1169,5 +1170,6 @@ pub mod error_codes {
     pub const NO_SOUND_ATTESTATION_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/credentials/reissue:noSoundAttestationKey",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

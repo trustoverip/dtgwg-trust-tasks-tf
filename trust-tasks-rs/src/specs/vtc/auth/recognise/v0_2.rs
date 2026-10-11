@@ -154,7 +154,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "presentation": {
-///      "description": "\nA holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.\n\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.",
+///      "description": "A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.\n\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.",
 ///      "type": "object"
 ///    }
 ///  },
@@ -623,6 +623,7 @@ pub mod error_codes {
     pub const CREDENTIAL_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise:credentialInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/auth/recognise:issuerNotRecognised`
     ///
@@ -632,6 +633,7 @@ pub mod error_codes {
     pub const ISSUER_NOT_RECOGNISED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise:issuerNotRecognised",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/auth/recognise:roleNotMapped`
     ///
@@ -641,5 +643,6 @@ pub mod error_codes {
     pub const ROLE_NOT_MAPPED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise:roleNotMapped",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

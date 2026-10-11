@@ -865,17 +865,25 @@ pub mod error_codes {
     /// The submitted `path` violates the host's path grammar (length bounds, character set, reserved roots).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_PATH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/did/check-name:invalidPath",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"path\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `did-management:unknownDomain`
     ///
     /// The submitted `domain` is not a known hosting domain on this consumer. See [the category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknownDomain",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"activeDomains\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"domain\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
 }

@@ -1081,5 +1081,6 @@ pub mod error_codes {
     pub const INVALID_WINDOW: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/report:invalidWindow",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

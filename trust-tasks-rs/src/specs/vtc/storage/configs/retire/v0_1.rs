@@ -660,15 +660,20 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/retire:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/storage/configs/retire:roomsAssigned`
     ///
     /// Rooms are still assigned to the config. Assign each to another config first (vtc/rooms/storage/assign). `details.rooms` is the count.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ROOMS_ASSIGNED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/retire:roomsAssigned",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"rooms\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"rooms\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/storage/configs/retire:isDefault`
     ///
@@ -678,5 +683,6 @@ pub mod error_codes {
     pub const IS_DEFAULT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/retire:isDefault",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

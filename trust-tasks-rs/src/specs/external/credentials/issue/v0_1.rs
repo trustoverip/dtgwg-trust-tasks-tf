@@ -1213,6 +1213,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:notActive`
     ///
@@ -1222,6 +1223,7 @@ pub mod error_codes {
     pub const NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:notBound`
     ///
@@ -1231,6 +1233,7 @@ pub mod error_codes {
     pub const NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/credentials/issue:scopeOutsideCeiling`
     ///
@@ -1240,24 +1243,33 @@ pub mod error_codes {
     pub const SCOPE_OUTSIDE_CEILING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/credentials/issue:scopeOutsideCeiling",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/credentials/issue:ttlTooLong`
     ///
     /// `ttlSeconds` exceeds the binding's `maxTtlSeconds`. `details.maxTtlSeconds` states it.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const TTL_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/credentials/issue:ttlTooLong",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"maxTtlSeconds\":{\"minimum\":60,\"type\":\"integer\"}},\"required\":[\"maxTtlSeconds\"],\"type\":\"object\"}",
+        ),
     };
     /// `external:rateLimited`
     ///
     /// The binding's rate is exhausted. `details.retryAfterSeconds` says when to try again.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfterSeconds\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"retryAfterSeconds\"],\"type\":\"object\"}",
+        ),
     };
     /// `external:providerSetupRequired`
     ///
@@ -1267,15 +1279,20 @@ pub mod error_codes {
     pub const PROVIDER_SETUP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:providerSetupRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:providerRefused`
     ///
     /// The provider refused the custodian's request. `details.providerError` carries the provider's words, verbatim, truncated, with any credential removed.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const PROVIDER_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:providerRefused",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"providerError\":{\"maxLength\":2048,\"type\":\"string\"},\"providerRequestId\":{\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"providerError\"],\"type\":\"object\"}",
+        ),
     };
     /// `external:providerUnavailable`
     ///
@@ -1285,6 +1302,7 @@ pub mod error_codes {
     pub const PROVIDER_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:providerUnavailable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/credentials/issue:notBrokered`
     ///
@@ -1294,6 +1312,7 @@ pub mod error_codes {
     pub const NOT_BROKERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/credentials/issue:notBrokered",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/credentials/issue:noKeyAgreement`
     ///
@@ -1303,5 +1322,6 @@ pub mod error_codes {
     pub const NO_KEY_AGREEMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/credentials/issue:noKeyAgreement",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

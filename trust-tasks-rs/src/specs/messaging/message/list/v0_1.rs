@@ -1299,5 +1299,6 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/list:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -643,6 +643,7 @@ pub mod error_codes {
     pub const NOT_ADMINISTRATOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/events/subscribe:notAdministrator",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/admin/events/subscribe:streamUnavailable`
     ///
@@ -652,6 +653,7 @@ pub mod error_codes {
     pub const STREAM_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/events/subscribe:streamUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/admin/events/subscribe:tooManyStreams`
     ///
@@ -661,5 +663,6 @@ pub mod error_codes {
     pub const TOO_MANY_STREAMS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/events/subscribe:tooManyStreams",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

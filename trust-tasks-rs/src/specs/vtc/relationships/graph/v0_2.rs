@@ -147,7 +147,7 @@ One edge between a **pair** of identifiers, carrying every half published betwee
 /// ```json
 ///{
 ///  "title": "GraphEdge",
-///  "description": "\nOne edge between a **pair** of identifiers, carrying every half published between them.\n\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.",
+///  "description": "One edge between a **pair** of identifiers, carrying every half published between them.\n\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.",
 ///  "type": "object",
 ///  "required": [
 ///    "complete",
@@ -279,7 +279,7 @@ Body-free on purpose — the graph shows the shape of the trust network, not cre
 /// ```json
 ///{
 ///  "title": "GraphHalf",
-///  "description": "\nOne published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\n\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.",
+///  "description": "One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\n\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.",
 ///  "type": "object",
 ///  "required": [
 ///    "createdAt",
@@ -302,7 +302,7 @@ Body-free on purpose — the graph shows the shape of the trust network, not cre
 ///      "pattern": "^did:"
 ///    },
 ///    "personaDid": {
-///      "description": "\nThe persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.",
+///      "description": "The persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.",
 ///      "type": [
 ///        "string",
 ///        "null"
@@ -497,7 +497,7 @@ The one place deliberate correlation becomes visible: two pairwise halves carryi
 ///
 /// ```json
 ///{
-///  "description": "\nThe persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.",
+///  "description": "The persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.",
 ///  "type": "string",
 ///  "pattern": "^did:|^$"
 ///}

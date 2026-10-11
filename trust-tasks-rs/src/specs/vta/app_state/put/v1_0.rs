@@ -1002,24 +1002,33 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/app-state/put:versionConflict`
     ///
     /// The `expectedVersion` precondition failed. The details carry the maintainer's current version and value, so the caller can resolve without a re-read.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/put:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"currentDeleted\":{\"type\":\"boolean\"},\"currentValue\":{},\"currentVersion\":{\"minimum\":1,\"type\":\"integer\"},\"reason\":{\"enum\":[\"versionMismatch\",\"recordExists\",\"recordAbsent\"],\"type\":\"string\"}},\"required\":[\"reason\"],\"type\":\"object\"}",
+        ),
     };
     /// `vta/app-state/put:valueTooLarge`
     ///
     /// The value exceeds the maintainer's documented per-record cap. The details carry both the cap and the actual size, so the caller learns how far over it is rather than only that it failed.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VALUE_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/put:valueTooLarge",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"actualBytes\":{\"minimum\":0,\"type\":\"integer\"},\"limitBytes\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"limitBytes\",\"actualBytes\"],\"type\":\"object\"}",
+        ),
     };
     /// `vta/app-state/put:notFound`
     ///
@@ -1029,5 +1038,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/put:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -516,6 +516,10 @@ struct ErrorCodeDecl {
     meaning: String,
     /// The declared `retryable`.
     retryable: bool,
+    /// The declared `detailsSchema`, the JSON Schema an error's `details`
+    /// member conforms to (SPEC §7.3 item 9). As written in the front matter
+    /// until [`read_error_codes`] resolves its cross-file `$ref`s.
+    details_schema: Option<Value>,
     /// The constant's identifier inside the generated `error_codes` module —
     /// the local part in SCREAMING_SNAKE_CASE.
     ident: String,
@@ -546,8 +550,29 @@ fn read_error_codes(spec: &Spec) -> Result<Vec<ErrorCodeDecl>> {
     }
     let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    error_code_decls(&spec.slug, &value)
-        .with_context(|| format!("errorCodes in {}", spec_md_path.display()))
+    let mut decls = error_code_decls(&spec.slug, &value)
+        .with_context(|| format!("errorCodes in {}", spec_md_path.display()))?;
+
+    // A `detailsSchema` may `$ref` a shared schema file relative to the spec
+    // (the step-up challenge in `vault/*`). The registry build inlines those
+    // for its own readers; the constant must be self-contained for the same
+    // reason `PAYLOAD_SCHEMA` is — a consumer validating against it has no base
+    // URI to resolve a relative ref against.
+    let spec_dir = spec_md_path
+        .parent()
+        .ok_or_else(|| anyhow!("{} has no parent", spec_md_path.display()))?;
+    for decl in &mut decls {
+        if let Some(schema) = decl.details_schema.as_mut() {
+            resolve_cross_file_refs(schema, spec_dir).with_context(|| {
+                format!(
+                    "errorCodes[{:?}].detailsSchema in {}",
+                    decl.code,
+                    spec_md_path.display()
+                )
+            })?;
+        }
+    }
+    Ok(decls)
 }
 
 /// The `errorCodes` declarations in parsed front matter `value`, for the spec
@@ -599,6 +624,18 @@ fn error_code_decls(slug: &str, value: &serde_yaml::Value) -> Result<Vec<ErrorCo
             .join("\n")
             .trim()
             .to_string();
+        let details_schema = match entry.get("detailsSchema") {
+            None => None,
+            Some(schema) if schema.is_mapping() => Some(
+                serde_json::to_value(schema)
+                    .with_context(|| format!("errorCodes[{code:?}].detailsSchema"))?,
+            ),
+            Some(_) => {
+                return Err(anyhow!(
+                    "errorCodes[{code:?}].detailsSchema is not an object (SPEC §7.3 item 9)"
+                ));
+            }
+        };
 
         let (namespace, local) = code
             .split_once(':')
@@ -635,6 +672,7 @@ fn error_code_decls(slug: &str, value: &serde_yaml::Value) -> Result<Vec<ErrorCo
             code: code.to_string(),
             meaning,
             retryable,
+            details_schema,
             ident,
         });
     }
@@ -987,6 +1025,58 @@ fn clean_generated_tree(out_root: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Make every multi-paragraph doc attribute in a generated module safe for
+/// rustdoc.
+///
+/// A doc attribute whose text spans lines is printed as `/**{text}*/` — the
+/// first line flush against the opening delimiter, every continuation line
+/// carrying the indentation of whatever item it documents once rustfmt has run.
+/// rustdoc strips only the whitespace *common* to all lines of a doc comment,
+/// and the un-indented first line makes that common prefix empty. An item four
+/// spaces deep therefore has its second and later paragraphs read as
+/// **indented code blocks**, which rustdoc then compiles as Rust doctests and
+/// fails on.
+///
+/// It bit `trust-task-next-step/0.1` and `trust-ceremony-receipt/0.1` through
+/// multi-paragraph `description`s. It bit again through a titled inline
+/// `oneOf` branch: typify documents an enum variant as `"{title}\n\n{description}"`
+/// (`metadata_title_and_description`), so a one-paragraph description became
+/// two paragraphs that no schema contained, and 77 doctests failed. A pass over
+/// the schema's `description`s cannot see text typify assembles itself, so the
+/// fix is applied to what typify emits instead.
+///
+/// The fix is to start such a doc on its own line. Every line then carries the
+/// item's indentation, the common prefix is non-empty, rustdoc strips it, and
+/// the paragraphs render as prose. Applied only where a blank line exists, so
+/// single-paragraph docs are untouched.
+fn indent_safe_docs(file: &mut syn::File) {
+    use syn::visit_mut::VisitMut;
+
+    struct IndentSafe;
+    impl VisitMut for IndentSafe {
+        fn visit_attribute_mut(&mut self, attr: &mut syn::Attribute) {
+            if !attr.path().is_ident("doc") {
+                return;
+            }
+            let syn::Meta::NameValue(nv) = &mut attr.meta else {
+                return;
+            };
+            let syn::Expr::Lit(syn::ExprLit {
+                lit: syn::Lit::Str(text),
+                ..
+            }) = &mut nv.value
+            else {
+                return;
+            };
+            let value = text.value();
+            if value.contains("\n\n") && !value.starts_with('\n') {
+                *text = syn::LitStr::new(&format!("\n{value}"), text.span());
+            }
+        }
+    }
+    IndentSafe.visit_file_mut(file);
+}
+
 /// Generate one spec's module, returning the path to write it to and its
 /// contents — **without touching the filesystem**.
 ///
@@ -995,45 +1085,6 @@ fn clean_generated_tree(out_root: &Path) -> Result<()> {
 /// existing tree exactly as it was. It used to write as it went, after the
 /// clean: one malformed `payload.invalid-examples.json` then left 300+ files
 /// deleted and the workspace uncompilable, and the only symptom was a
-/// Make multi-paragraph `description`s safe for rustdoc.
-///
-/// typify emits a description as `/**{text}` — the first line flush against the
-/// opening delimiter, every continuation line carrying the indentation of
-/// whatever item it documents. rustdoc strips only the whitespace *common* to
-/// all lines of a doc comment, and the un-indented first line makes that common
-/// prefix empty. A field four spaces deep therefore has its second and later
-/// paragraphs read as **indented code blocks**, which rustdoc then compiles as
-/// Rust doctests and fails on.
-///
-/// It bit `trust-task-next-step/0.1` and again `trust-ceremony-receipt/0.1`,
-/// each time as a `cargo test` failure pointing at generated code rather than at
-/// the schema that caused it.
-///
-/// The fix is to start such a description on its own line. Every line then
-/// carries the item's indentation, the common prefix is non-empty, rustdoc
-/// strips it, and the paragraphs render as prose. Applied only where a blank
-/// line exists, so single-paragraph descriptions are untouched.
-fn indent_safe_descriptions(value: &mut Value) {
-    match value {
-        Value::Object(map) => {
-            if let Some(Value::String(desc)) = map.get_mut("description") {
-                if desc.contains("\n\n") && !desc.starts_with('\n') {
-                    desc.insert(0, '\n');
-                }
-            }
-            for (_, v) in map.iter_mut() {
-                indent_safe_descriptions(v);
-            }
-        }
-        Value::Array(items) => {
-            for v in items.iter_mut() {
-                indent_safe_descriptions(v);
-            }
-        }
-        _ => {}
-    }
-}
-
 /// downstream `cargo fmt` error about an unresolvable module — pointing
 /// nowhere near the file at fault.
 fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
@@ -1088,10 +1139,6 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
             serde_json::to_string_pretty(&Value::Object(doc)).map(|s| s + "\n")
         })
         .transpose()?;
-
-    // After `raw` is captured: this rewrites descriptions for rustdoc's benefit
-    // only, and SCHEMA_JSON must keep the descriptions the registry publishes.
-    indent_safe_descriptions(&mut schema);
 
     let has_response = normalize_titles(&mut schema)?;
     // typify (0.5) expects Draft-07 `definitions` rather than 2020-12 `$defs`.
@@ -1179,6 +1226,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
         )
     })?;
     apply_non_exhaustive(&mut parsed);
+    indent_safe_docs(&mut parsed);
     let formatted = prettyplease::unparse(&parsed);
 
     let conformance = render_conformance_file(spec, &examples, &invalid_examples, has_response)
@@ -1691,15 +1739,31 @@ fn render_error_codes(error_codes: &[ErrorCodeDecl]) -> TokenStream {
         let head = format!(" `{code}`");
         let meaning_lines: Vec<String> = d.meaning.lines().map(|l| format!(" {l}")).collect();
         let retry_doc = format!(" Declared `retryable: {retryable}`.");
+        let (details_doc, details_schema) = match &d.details_schema {
+            Some(schema) => {
+                // Compact: the constant is read by a validator, not a person,
+                // and the spec page renders the schema for people.
+                let json =
+                    serde_json::to_string(schema).expect("a serde_json::Value always serializes");
+                (
+                    Some(" Declares a `detailsSchema` for the error's `details` member."),
+                    quote! { ::core::option::Option::Some(#json) },
+                )
+            }
+            None => (None, quote! { ::core::option::Option::None }),
+        };
+        let details_doc = details_doc.into_iter();
         quote! {
             #[doc = #head]
             #[doc = ""]
             #(#[doc = #meaning_lines])*
             #[doc = ""]
             #[doc = #retry_doc]
+            #(#[doc = #details_doc])*
             pub const #ident: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
                 code: #code,
                 retryable: #retryable,
+                details_schema: #details_schema,
             };
         }
     });
@@ -2791,6 +2855,82 @@ mod desugar_oneof_tests {
 mod error_code_tests {
     use super::*;
 
+    #[test]
+    fn a_details_schema_is_carried_and_its_absence_is_none() {
+        let out = decls(
+            "rooms/keys/file-key",
+            r#"
+errorCodes:
+  - code: rooms/keys/file-key:unknownEpoch
+    meaning: x
+    retryable: false
+    detailsSchema:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, enum: [notDelivered, beyondChain] }
+        heldEpoch: { type: integer, minimum: 1 }
+  - code: rooms/keys/file-key:noGroup
+    meaning: y
+    retryable: false
+"#,
+        )
+        .unwrap();
+        assert_eq!(
+            out[0].details_schema,
+            Some(json!({
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                    "reason": { "type": "string", "enum": ["notDelivered", "beyondChain"] },
+                    "heldEpoch": { "type": "integer", "minimum": 1 }
+                }
+            }))
+        );
+        assert_eq!(out[1].details_schema, None);
+    }
+
+    #[test]
+    fn a_details_schema_that_is_not_an_object_is_refused() {
+        let err = decls(
+            "keys/revoke",
+            "errorCodes:\n  - code: keys/revoke:notFound\n    meaning: x\n    retryable: false\n    detailsSchema: true\n",
+        )
+        .unwrap_err();
+        assert!(
+            err.to_string().contains("detailsSchema is not an object"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_constant_carries_its_details_schema_or_none() {
+        let with = ErrorCodeDecl {
+            code: "rooms/keys/file-key:unknownEpoch".into(),
+            meaning: "x".into(),
+            retryable: false,
+            details_schema: Some(json!({ "type": "object" })),
+            ident: "UNKNOWN_EPOCH".into(),
+        };
+        let without = ErrorCodeDecl {
+            code: "rooms/keys/file-key:noGroup".into(),
+            details_schema: None,
+            ident: "NO_GROUP".into(),
+            ..with.clone()
+        };
+        let out = render_error_codes(&[with, without]).to_string();
+        assert!(
+            out.contains(
+                r#"details_schema : :: core :: option :: Option :: Some ("{\"type\":\"object\"}")"#
+            ),
+            "{out}"
+        );
+        assert!(
+            out.contains("details_schema : :: core :: option :: Option :: None"),
+            "{out}"
+        );
+    }
+
     fn decls(slug: &str, yaml: &str) -> Result<Vec<ErrorCodeDecl>> {
         let value: serde_yaml::Value = serde_yaml::from_str(yaml).unwrap();
         error_code_decls(slug, &value)
@@ -2902,5 +3042,69 @@ errorCodes:
         let out = render_error_codes(&[]).to_string();
         assert!(out.contains("pub const ERROR_CODES"));
         assert!(!out.contains("mod error_codes"));
+    }
+}
+
+#[cfg(test)]
+mod indent_safe_doc_tests {
+    use super::*;
+
+    fn docs_after(source: &str) -> Vec<String> {
+        let mut file: syn::File = syn::parse_str(source).unwrap();
+        indent_safe_docs(&mut file);
+        let mut docs = Vec::new();
+        let syn::Item::Enum(e) = &file.items[0] else {
+            panic!("expected an enum");
+        };
+        for attr in e
+            .attrs
+            .iter()
+            .chain(e.variants.iter().flat_map(|v| v.attrs.iter()))
+        {
+            if let syn::Meta::NameValue(nv) = &attr.meta {
+                if let syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Str(s),
+                    ..
+                }) = &nv.value
+                {
+                    docs.push(s.value());
+                }
+            }
+        }
+        docs
+    }
+
+    /// The shape typify gives a titled inline `oneOf` branch: title, blank
+    /// line, description. Unrepaired, rustdoc read the description as an
+    /// indented code block and compiled it as a doctest.
+    #[test]
+    fn a_titled_variant_doc_starts_on_its_own_line() {
+        let docs = docs_after(
+            r#"
+            #[doc = "An account's settings."]
+            pub enum Settings {
+                #[doc = "Settings for aws\n\nEgress: `sts.<region>.amazonaws.com`."]
+                Aws { region: String },
+            }
+            "#,
+        );
+        assert_eq!(
+            docs,
+            [
+                "An account's settings.",
+                "\nSettings for aws\n\nEgress: `sts.<region>.amazonaws.com`.",
+            ]
+        );
+    }
+
+    #[test]
+    fn a_doc_already_on_its_own_line_is_left_alone() {
+        let docs = docs_after(
+            r#"
+            #[doc = "\nOne.\n\nTwo."]
+            pub enum E { A }
+            "#,
+        );
+        assert_eq!(docs, ["\nOne.\n\nTwo."]);
     }
 }

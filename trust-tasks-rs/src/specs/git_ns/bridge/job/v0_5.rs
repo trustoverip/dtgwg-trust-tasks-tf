@@ -2458,6 +2458,7 @@ pub mod error_codes {
     pub const UNKNOWN_NAMESPACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownNamespace",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/bridge/job:notCapable`
     ///
@@ -2467,6 +2468,7 @@ pub mod error_codes {
     pub const NOT_CAPABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/bridge/job:notCapable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/bridge/job:jobIdReused`
     ///
@@ -2476,5 +2478,6 @@ pub mod error_codes {
     pub const JOB_ID_REUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/bridge/job:jobIdReused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

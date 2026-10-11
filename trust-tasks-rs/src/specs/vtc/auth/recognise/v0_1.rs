@@ -644,6 +644,7 @@ pub mod error_codes {
     pub const CREDENTIAL_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise:credentialInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/auth/recognise:issuerNotRecognised`
     ///
@@ -653,6 +654,7 @@ pub mod error_codes {
     pub const ISSUER_NOT_RECOGNISED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise:issuerNotRecognised",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/auth/recognise:roleNotMapped`
     ///
@@ -662,5 +664,6 @@ pub mod error_codes {
     pub const ROLE_NOT_MAPPED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise:roleNotMapped",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

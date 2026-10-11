@@ -303,6 +303,7 @@ pub mod error_codes {
     pub const UNOPENABLE_BUNDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/issue:unopenableBundle",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `credential-exchange/issue:unsupportedFormat`
     ///
@@ -312,5 +313,6 @@ pub mod error_codes {
     pub const UNSUPPORTED_FORMAT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/issue:unsupportedFormat",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

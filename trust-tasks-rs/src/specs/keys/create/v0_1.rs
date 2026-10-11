@@ -757,7 +757,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "internal": {
-///      "description": "\nAbsent is the same as `false`, and this member deliberately declares no JSON Schema `default`: a declared default is materialised by generated bindings, so an absent `internal` would reappear as an explicit `false` on re-serialisation and break round-trip idempotence for every existing request document. Request a key generated from the maintainer's CSPRNG rather than derived from a seed. Such a key is reproducible from nothing: it is not recoverable from a recovery phrase, and a maintainer offering it SHOULD exclude it from backup and export. A consumer asks for this when the key's value lies in being unexportable — the maintainer can sign with it and nothing can take it away — and accepts that losing the maintainer's storage destroys it permanently.\n\nA maintainer that cannot mint such a key MUST reject the request rather than silently return a derived one, because the consumer's whole reason for asking is a property the derived key does not have. Consumers MUST confirm the outcome by reading `origin` on the returned record, which is `internal` iff the request was honoured; a maintainer that ignored an unrecognised member returns `derived`, and that difference is the consumer's only reliable signal.",
+///      "description": "Absent is the same as `false`, and this member deliberately declares no JSON Schema `default`: a declared default is materialised by generated bindings, so an absent `internal` would reappear as an explicit `false` on re-serialisation and break round-trip idempotence for every existing request document. Request a key generated from the maintainer's CSPRNG rather than derived from a seed. Such a key is reproducible from nothing: it is not recoverable from a recovery phrase, and a maintainer offering it SHOULD exclude it from backup and export. A consumer asks for this when the key's value lies in being unexportable — the maintainer can sign with it and nothing can take it away — and accepts that losing the maintainer's storage destroys it permanently.\n\nA maintainer that cannot mint such a key MUST reject the request rather than silently return a derived one, because the consumer's whole reason for asking is a property the derived key does not have. Consumers MUST confirm the outcome by reading `origin` on the returned record, which is `internal` iff the request was honoured; a maintainer that ignored an unrecognised member returns `derived`, and that difference is the consumer's only reliable signal.",
 ///      "type": "boolean"
 ///    },
 ///    "keyId": {
@@ -1480,6 +1480,7 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:alreadyExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys:invalidArgument`
     ///
@@ -1489,5 +1490,6 @@ pub mod error_codes {
     pub const INVALID_ARGUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:invalidArgument",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

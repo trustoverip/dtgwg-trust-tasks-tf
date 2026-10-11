@@ -510,6 +510,7 @@ pub mod error_codes {
     pub const DID_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/revoke:didNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/passkey-vms/revoke:fragmentNotFound`
     ///
@@ -519,5 +520,6 @@ pub mod error_codes {
     pub const FRAGMENT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/revoke:fragmentNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

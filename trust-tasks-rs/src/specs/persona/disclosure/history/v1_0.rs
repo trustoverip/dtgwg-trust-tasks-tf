@@ -41,7 +41,7 @@ The `x:` prefix is an open extension namespace and is not decoration. The closes
 /// ```json
 ///{
 ///  "title": "ClaimType",
-///  "description": "\nThe vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
+///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
 ///  "type": "string",
 ///  "maxLength": 128,
 ///  "minLength": 1,
@@ -541,7 +541,7 @@ The distinction between the first two and the last two is of kind, not degree: o
 /// ```json
 ///{
 ///  "title": "ProofRung",
-///  "description": "\nHow strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
+///  "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
 ///  "type": "string",
 ///  "enum": [
 ///    "predicate",
@@ -1922,5 +1922,6 @@ pub mod error_codes {
     pub const CURSOR_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/disclosure/history:cursorInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

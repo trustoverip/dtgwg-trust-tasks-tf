@@ -4279,6 +4279,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:keyNotFound`
     ///
@@ -4288,6 +4289,7 @@ pub mod error_codes {
     pub const KEY_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:keyNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:versionConflict`
     ///
@@ -4297,6 +4299,7 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:previewStale`
     ///
@@ -4306,6 +4309,7 @@ pub mod error_codes {
     pub const PREVIEW_STALE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:previewStale",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:stepUpRequired`
     ///
@@ -4315,6 +4319,7 @@ pub mod error_codes {
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:wouldEmptyRole`
     ///
@@ -4324,6 +4329,7 @@ pub mod error_codes {
     pub const WOULD_EMPTY_ROLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:wouldEmptyRole",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:notKeyRoleIdentity`
     ///
@@ -4333,6 +4339,7 @@ pub mod error_codes {
     pub const NOT_KEY_ROLE_IDENTITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:notKeyRoleIdentity",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/keys/retire:notYetActive`
     ///
@@ -4342,5 +4349,6 @@ pub mod error_codes {
     pub const NOT_YET_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/keys/retire:notYetActive",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

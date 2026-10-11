@@ -444,6 +444,7 @@ pub mod error_codes {
     pub const NOT_INVITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/welcome:notInvited",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/welcome:alreadyJoined`
     ///
@@ -453,6 +454,7 @@ pub mod error_codes {
     pub const ALREADY_JOINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/welcome:alreadyJoined",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/welcome:welcomeInvalid`
     ///
@@ -462,5 +464,6 @@ pub mod error_codes {
     pub const WELCOME_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/welcome:welcomeInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

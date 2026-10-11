@@ -901,5 +901,6 @@ pub mod error_codes {
     pub const UNKNOWN_LINK: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/account/link-status:unknownLink",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

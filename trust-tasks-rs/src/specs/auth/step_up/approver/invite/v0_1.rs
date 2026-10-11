@@ -792,6 +792,7 @@ pub mod error_codes {
     pub const SELF_INVITE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/invite:selfInvite",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/invite:subjectUnknown`
     ///
@@ -801,14 +802,19 @@ pub mod error_codes {
     pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/invite:subjectUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/invite:ttlTooLong`
     ///
     /// `ttl` exceeds 24 hours or the relying party's own lower cap. `details.maxTtl` MAY state the cap in seconds.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const TTL_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/invite:ttlTooLong",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"maxTtl\":{\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

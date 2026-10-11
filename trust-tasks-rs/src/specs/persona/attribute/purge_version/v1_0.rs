@@ -683,5 +683,6 @@ pub mod error_codes {
     pub const CURRENT_VERSION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/attribute/purge-version:currentVersion",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

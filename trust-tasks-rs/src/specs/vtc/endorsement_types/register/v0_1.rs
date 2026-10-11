@@ -890,6 +890,7 @@ pub mod error_codes {
     pub const RESERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsement-types/register:reserved",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/endorsement-types/register:exists`
     ///
@@ -899,6 +900,7 @@ pub mod error_codes {
     pub const EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsement-types/register:exists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/endorsement-types/register:invalidUri`
     ///
@@ -908,5 +910,6 @@ pub mod error_codes {
     pub const INVALID_URI: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsement-types/register:invalidUri",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

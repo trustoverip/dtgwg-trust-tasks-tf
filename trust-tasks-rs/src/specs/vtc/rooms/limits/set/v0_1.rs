@@ -1687,15 +1687,20 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/limits/set:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/limits/set:aboveCeiling`
     ///
     /// A `maxFileBytes` exceeds the community's host-wide ceiling. `details` names the measure and the ceiling. Limits are never raised past it, here or by policy.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ABOVE_CEILING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/limits/set:aboveCeiling",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"ceiling\":{\"minimum\":0,\"type\":\"integer\"},\"measure\":{\"enum\":[\"maxFileBytes\",\"maxBytes\",\"maxFiles\"],\"type\":\"string\"}},\"required\":[\"measure\",\"ceiling\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/rooms/limits/set:memberLimitsUnavailable`
     ///
@@ -1705,6 +1710,7 @@ pub mod error_codes {
     pub const MEMBER_LIMITS_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/limits/set:memberLimitsUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/rooms/limits/set:invalidCombination`
     ///
@@ -1714,5 +1720,6 @@ pub mod error_codes {
     pub const INVALID_COMBINATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/rooms/limits/set:invalidCombination",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

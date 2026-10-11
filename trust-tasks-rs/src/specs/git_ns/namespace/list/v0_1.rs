@@ -2722,5 +2722,6 @@ pub mod error_codes {
     pub const NOT_ADMINISTRATOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/namespace/list:notAdministrator",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -525,7 +525,7 @@ The counterpart to IssuedCredential: both concern a credential's lifecycle at it
 /// ```json
 ///{
 ///  "title": "RevocationReceipt",
-///  "description": "\nThe receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \"I revoked it now\" from \"it was already gone\".\n\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.",
+///  "description": "The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \"I revoked it now\" from \"it was already gone\".\n\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.",
 ///  "type": "object",
 ///  "required": [
 ///    "credentialId",
@@ -809,6 +809,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsements/revoke:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/endorsements/revoke:alreadyRevoked`
     ///
@@ -818,5 +819,6 @@ pub mod error_codes {
     pub const ALREADY_REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsements/revoke:alreadyRevoked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

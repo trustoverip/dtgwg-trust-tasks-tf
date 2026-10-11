@@ -1796,5 +1796,6 @@ pub mod error_codes {
     pub const FILTER_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/usage:filterConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -691,6 +691,7 @@ pub mod error_codes {
     pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/register:hostUnreachable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/owner/register:hostRefused`
     ///
@@ -700,5 +701,6 @@ pub mod error_codes {
     pub const HOST_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/register:hostRefused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

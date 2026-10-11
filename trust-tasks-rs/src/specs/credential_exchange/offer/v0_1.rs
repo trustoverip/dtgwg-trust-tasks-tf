@@ -262,5 +262,6 @@ pub mod error_codes {
     pub const UNSUPPORTED_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/offer:unsupportedCredential",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

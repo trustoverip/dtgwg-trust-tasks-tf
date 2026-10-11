@@ -527,5 +527,6 @@ pub mod error_codes {
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/admin-session:invalidToken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

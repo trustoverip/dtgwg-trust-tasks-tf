@@ -1103,6 +1103,7 @@ pub mod error_codes {
     pub const UNKNOWN_NAMESPACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownNamespace",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:namespaceNotBound`
     ///
@@ -1112,6 +1113,7 @@ pub mod error_codes {
     pub const NAMESPACE_NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:namespaceNotBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:selfGrantNotAllowed`
     ///
@@ -1121,6 +1123,7 @@ pub mod error_codes {
     pub const SELF_GRANT_NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:selfGrantNotAllowed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:membersOnly`
     ///
@@ -1130,6 +1133,7 @@ pub mod error_codes {
     pub const MEMBERS_ONLY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:membersOnly",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -1139,6 +1143,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/namespace/reseat:notHeadless`
     ///
@@ -1148,5 +1153,6 @@ pub mod error_codes {
     pub const NOT_HEADLESS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/namespace/reseat:notHeadless",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

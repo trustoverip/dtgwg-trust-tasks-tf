@@ -678,5 +678,6 @@ pub mod error_codes {
     pub const UNSUPPORTED_FORGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/account/link:unsupportedForge",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

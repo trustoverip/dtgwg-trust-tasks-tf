@@ -1019,6 +1019,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/invite/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/invite/update:inviteLapsed`
     ///
@@ -1028,6 +1029,7 @@ pub mod error_codes {
     pub const INVITE_LAPSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/invite/update:inviteLapsed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/invite/update:roleNotAllowed`
     ///
@@ -1037,5 +1039,6 @@ pub mod error_codes {
     pub const ROLE_NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/invite/update:roleNotAllowed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

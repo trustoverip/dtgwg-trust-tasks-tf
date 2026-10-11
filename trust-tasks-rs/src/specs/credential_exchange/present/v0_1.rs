@@ -291,6 +291,7 @@ pub mod error_codes {
     pub const STALE_NONCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/present:staleNonce",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `credential-exchange/present:audienceMismatch`
     ///
@@ -300,5 +301,6 @@ pub mod error_codes {
     pub const AUDIENCE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/present:audienceMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1254,6 +1254,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys/set-exportability:notPermittedForThisKey`
     ///
@@ -1263,5 +1264,6 @@ pub mod error_codes {
     pub const NOT_PERMITTED_FOR_THIS_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys/set-exportability:notPermittedForThisKey",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

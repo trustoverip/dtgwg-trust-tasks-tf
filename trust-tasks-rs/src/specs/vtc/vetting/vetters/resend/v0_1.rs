@@ -432,5 +432,6 @@ pub mod error_codes {
     pub const NOT_GRANTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/resend:notGranted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

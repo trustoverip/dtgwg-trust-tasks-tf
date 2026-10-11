@@ -504,5 +504,6 @@ pub mod error_codes {
     pub const NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/renew:notMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

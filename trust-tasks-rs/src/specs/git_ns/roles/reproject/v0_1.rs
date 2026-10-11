@@ -646,6 +646,7 @@ pub mod error_codes {
     pub const UNKNOWN_NAMESPACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownNamespace",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:namespaceNotBound`
     ///
@@ -655,6 +656,7 @@ pub mod error_codes {
     pub const NAMESPACE_NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:namespaceNotBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:unknownRepo`
     ///
@@ -664,6 +666,7 @@ pub mod error_codes {
     pub const UNKNOWN_REPO: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownRepo",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:repoNotActive`
     ///
@@ -673,6 +676,7 @@ pub mod error_codes {
     pub const REPO_NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:repoNotActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -682,6 +686,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/roles/reproject:manualMode`
     ///
@@ -691,6 +696,7 @@ pub mod error_codes {
     pub const MANUAL_MODE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/roles/reproject:manualMode",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/roles/reproject:noForgeAccess`
     ///
@@ -700,5 +706,6 @@ pub mod error_codes {
     pub const NO_FORGE_ACCESS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/roles/reproject:noForgeAccess",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -433,7 +433,7 @@ The four are not reducible to a pending/decided pair. `refer` and `requestMore` 
 /// ```json
 ///{
 ///  "title": "VerdictEffect",
-///  "description": "\nWhat the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.",
+///  "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.",
 ///  "type": "string",
 ///  "enum": [
 ///    "allow",
@@ -522,7 +522,7 @@ Every member is optional at the schema level and which ones are meaningful depen
 /// ```json
 ///{
 ///  "title": "VerdictWith",
-///  "description": "\nThe effect-dependent detail of a verdict.\n\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.",
+///  "description": "The effect-dependent detail of a verdict.\n\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.",
 ///  "type": "object",
 ///  "properties": {
 ///    "bundleRef": {
@@ -1399,6 +1399,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/supplement:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/supplement:notAwaitingEvidence`
     ///
@@ -1408,6 +1409,7 @@ pub mod error_codes {
     pub const NOT_AWAITING_EVIDENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/supplement:notAwaitingEvidence",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/supplement:alreadyDecided`
     ///
@@ -1417,5 +1419,6 @@ pub mod error_codes {
     pub const ALREADY_DECIDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/supplement:alreadyDecided",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

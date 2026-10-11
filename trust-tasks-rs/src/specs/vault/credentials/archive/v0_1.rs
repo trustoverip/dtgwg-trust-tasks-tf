@@ -714,6 +714,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/archive:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/credentials/archive:notActive`
     ///
@@ -723,5 +724,6 @@ pub mod error_codes {
     pub const NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/archive:notActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

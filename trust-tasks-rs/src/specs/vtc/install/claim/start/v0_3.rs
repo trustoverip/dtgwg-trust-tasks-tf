@@ -937,6 +937,7 @@ pub mod error_codes {
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/start:invalidToken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/start:tokenNamesNoDid`
     ///
@@ -946,5 +947,6 @@ pub mod error_codes {
     pub const TOKEN_NAMES_NO_DID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/start:tokenNamesNoDid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

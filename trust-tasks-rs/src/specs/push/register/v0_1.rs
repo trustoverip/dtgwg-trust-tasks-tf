@@ -1271,6 +1271,7 @@ pub mod error_codes {
     pub const UNSUPPORTED_PLATFORM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/register:unsupported_platform",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `push/register:invalid_registration`
     ///
@@ -1280,5 +1281,6 @@ pub mod error_codes {
     pub const INVALID_REGISTRATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/register:invalid_registration",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

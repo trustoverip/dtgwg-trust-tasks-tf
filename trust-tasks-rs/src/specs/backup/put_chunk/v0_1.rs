@@ -259,7 +259,7 @@ Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 nor
 /// ```json
 ///{
 ///  "title": "DigestMultibase",
-///  "description": "\nA cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
 ///  "examples": [
 ///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
 ///  ],
@@ -884,6 +884,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/put-chunk:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/put-chunk:chunkOutOfRange`
     ///
@@ -893,15 +894,20 @@ pub mod error_codes {
     pub const CHUNK_OUT_OF_RANGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/put-chunk:chunkOutOfRange",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/put-chunk:digestMismatch`
     ///
     /// `digestMultibase` does not equal the manifest's digest for `index`, or `data` does not hash to it. Nothing is stored, and a chunk already held at `index` is left untouched. `details.expectedDigestMultibase` restates the manifest entry so the producer can tell a wrong index from corrupted bytes.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/put-chunk:digestMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"}},\"additionalProperties\":false,\"properties\":{\"expectedDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\"}},\"required\":[\"expectedDigestMultibase\"],\"type\":\"object\"}",
+        ),
     };
     /// `backup/put-chunk:chunkSizeMismatch`
     ///
@@ -911,6 +917,7 @@ pub mod error_codes {
     pub const CHUNK_SIZE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/put-chunk:chunkSizeMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/put-chunk:terminalState`
     ///
@@ -920,5 +927,6 @@ pub mod error_codes {
     pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/put-chunk:terminalState",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

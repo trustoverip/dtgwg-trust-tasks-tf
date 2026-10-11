@@ -857,5 +857,6 @@ pub mod error_codes {
     pub const PERMISSION_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/graph:permissionDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

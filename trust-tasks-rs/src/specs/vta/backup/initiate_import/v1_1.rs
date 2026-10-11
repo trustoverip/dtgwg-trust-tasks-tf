@@ -211,7 +211,7 @@ Consistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expecte
 /// ```json
 ///{
 ///  "title": "ChunkManifest",
-///  "description": "\nThe terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\n\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.",
+///  "description": "The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\n\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.",
 ///  "type": "object",
 ///  "required": [
 ///    "chunkCount",
@@ -461,7 +461,7 @@ Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 nor
 /// ```json
 ///{
 ///  "title": "DigestMultibase",
-///  "description": "\nA cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
 ///  "examples": [
 ///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
 ///  ],
@@ -1838,6 +1838,7 @@ pub mod error_codes {
     pub const UNSUPPORTED_ALGORITHM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:unsupportedAlgorithm",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:invalidDigest`
     ///
@@ -1847,6 +1848,7 @@ pub mod error_codes {
     pub const INVALID_DIGEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:invalidDigest",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:invalidManifest`
     ///
@@ -1856,15 +1858,20 @@ pub mod error_codes {
     pub const INVALID_MANIFEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:invalidManifest",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:chunkSizeUnacceptable`
     ///
     /// The manifest's `chunkSize` is within the normative bound but larger than the recipient accepts over the transport in use. `details.maxChunkSize` names the largest it does accept; the producer re-divides and asks again.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CHUNK_SIZE_UNACCEPTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:chunkSizeUnacceptable",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"maxChunkSize\":{\"maximum\":262144,\"minimum\":16384,\"type\":\"integer\"}},\"required\":[\"maxChunkSize\"],\"type\":\"object\"}",
+        ),
     };
     /// `vta/backup/initiate-import:transportUnavailable`
     ///
@@ -1874,6 +1881,7 @@ pub mod error_codes {
     pub const TRANSPORT_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:transportUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:tooManyOpenBundles`
     ///
@@ -1883,5 +1891,6 @@ pub mod error_codes {
     pub const TOO_MANY_OPEN_BUNDLES: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:tooManyOpenBundles",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

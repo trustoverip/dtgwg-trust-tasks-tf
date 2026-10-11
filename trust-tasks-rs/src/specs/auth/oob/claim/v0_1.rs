@@ -929,6 +929,7 @@ pub mod error_codes {
     pub const ALREADY_CLAIMED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob/claim:alreadyClaimed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:requestNotFound`
     ///
@@ -938,6 +939,7 @@ pub mod error_codes {
     pub const REQUEST_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:requestExpired`
     ///
@@ -947,6 +949,7 @@ pub mod error_codes {
     pub const REQUEST_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:keyUnsupported`
     ///
@@ -956,14 +959,19 @@ pub mod error_codes {
     pub const KEY_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:keyUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:rateLimited`
     ///
     /// The approver's network has hit the service's claim limit. `details.retryAfter` MAY give seconds until a retry.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfter\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

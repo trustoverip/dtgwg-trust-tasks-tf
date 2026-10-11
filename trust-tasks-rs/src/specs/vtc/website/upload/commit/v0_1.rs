@@ -1192,15 +1192,20 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/upload/commit:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/upload/commit:incomplete`
     ///
     /// Chunks are missing. `details.remainingCount` says how many.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INCOMPLETE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/upload/commit:incomplete",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":1,\"properties\":{\"remainingCount\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"remainingCount\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/website/upload/commit:digestMismatch`
     ///
@@ -1210,6 +1215,7 @@ pub mod error_codes {
     pub const DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/upload/commit:digestMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/upload/commit:preconditionFailed`
     ///
@@ -1219,6 +1225,7 @@ pub mod error_codes {
     pub const PRECONDITION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/upload/commit:preconditionFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/upload/commit:pathRefused`
     ///
@@ -1228,6 +1235,7 @@ pub mod error_codes {
     pub const PATH_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/upload/commit:pathRefused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/upload/commit:singleFileWritesDisabled`
     ///
@@ -1237,5 +1245,6 @@ pub mod error_codes {
     pub const SINGLE_FILE_WRITES_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/upload/commit:singleFileWritesDisabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

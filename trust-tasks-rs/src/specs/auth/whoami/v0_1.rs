@@ -191,7 +191,7 @@ impl Payload {
 ///  ],
 ///  "properties": {
 ///    "capabilities": {
-///      "description": "\nThe capabilities the auth service holds for the producer, resolved as they would be enforced — a role's own set, narrowed by anything the entry narrows, plus any capability granted to the entry by name.\n\nEffective rather than stored, because the question a consumer is asking is \"what may I do\", and an entry that narrows nothing means everything its role implies. Returning the stored list would answer a different question and read as empty for the commonest case.\n\nWhy it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.\n\nThis member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it.",
+///      "description": "The capabilities the auth service holds for the producer, resolved as they would be enforced — a role's own set, narrowed by anything the entry narrows, plus any capability granted to the entry by name.\n\nEffective rather than stored, because the question a consumer is asking is \"what may I do\", and an entry that narrows nothing means everything its role implies. Returning the stored list would answer a different question and read as empty for the commonest case.\n\nWhy it belongs beside `roles` and `scopes`: a consumer that can only see those cannot tell whether a caller holds a capability its role does not imply, so it must either refuse the caller — locking out a grant the service would honour — or offer the action and let the service refuse. Neither is a good answer to a question the service can simply answer.\n\nThis member says what the producer MAY DO. It carries nothing about who they are: no attribute, no value, no identity content. See the persona conventions on naming identity versus carrying it.",
 ///      "type": "array",
 ///      "items": {
 ///        "type": "string",
@@ -1059,5 +1059,6 @@ pub mod error_codes {
     pub const NO_SESSION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/whoami:noSession",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -434,14 +434,19 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/schemas/delete:inUse`
     ///
     /// A registered Accepts criterion references this type in its DCQL query. Deleting it would leave that criterion unevaluable; delete or re-register the criterion first. `details.criterionIds` MAY list up to 16 of them.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const IN_USE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/delete:inUse",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":1,\"properties\":{\"criterionIds\":{\"items\":{\"maxLength\":128,\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

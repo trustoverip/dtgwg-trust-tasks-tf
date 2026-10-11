@@ -503,6 +503,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/contexts/delete:notEmpty`
     ///
@@ -512,5 +513,6 @@ pub mod error_codes {
     pub const NOT_EMPTY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/delete:notEmpty",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -549,6 +549,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/replica/domain/purge:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/replica/domain/purge:stalePurge`
     ///
@@ -558,5 +559,6 @@ pub mod error_codes {
     pub const STALE_PURGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/replica/domain/purge:stalePurge",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

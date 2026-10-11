@@ -408,6 +408,7 @@ pub mod error_codes {
     pub const CONTEXT_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/memory/put:contextForbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/memory/put:valueTooLarge`
     ///
@@ -417,5 +418,6 @@ pub mod error_codes {
     pub const VALUE_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/memory/put:valueTooLarge",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

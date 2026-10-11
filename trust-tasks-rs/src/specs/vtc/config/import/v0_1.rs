@@ -39,7 +39,7 @@ Distinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-
 /// ```json
 ///{
 ///  "title": "CommunityProfileSnapshot",
-///  "description": "\nA community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\n\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.",
+///  "description": "A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\n\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.",
 ///  "type": "object",
 ///  "required": [
 ///    "communityDid",
@@ -534,7 +534,7 @@ This document is designed to survive a round-trip through a file. An operator ex
 /// ```json
 ///{
 ///  "title": "ConfigExportDocument",
-///  "description": "\nA community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\n\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.",
+///  "description": "A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\n\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.",
 ///  "type": "object",
 ///  "required": [
 ///    "configOverrides",
@@ -608,7 +608,7 @@ One field an import would change, or did.
 /// ```json
 ///{
 ///  "title": "ConfigFieldChange",
-///  "description": "\nOne field an import would change, or did.\n\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \"leave the live value alone\" rather than \"clear it\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.",
+///  "description": "One field an import would change, or did.\n\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \"leave the live value alone\" rather than \"clear it\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.",
 ///  "type": "object",
 ///  "required": [
 ///    "key"
@@ -894,7 +894,7 @@ Every member is a declaration, not an enforcement: what a community actually acc
 /// ```json
 ///{
 ///  "title": "PersonhoodGovernance",
-///  "description": "\nA community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
+///  "description": "A community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
 ///  "type": "object",
 ///  "properties": {
 ///    "acceptedIdvps": {
@@ -2225,6 +2225,7 @@ pub mod error_codes {
     pub const COMMUNITY_DID_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/config/import:communityDidMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/config/import:unsupportedSchemaVersion`
     ///
@@ -2234,5 +2235,6 @@ pub mod error_codes {
     pub const UNSUPPORTED_SCHEMA_VERSION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/config/import:unsupportedSchemaVersion",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

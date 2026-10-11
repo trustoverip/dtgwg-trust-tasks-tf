@@ -1176,6 +1176,7 @@ pub mod error_codes {
     pub const KEY_NOT_ISSUER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:keyNotIssuer",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:selfDelegation`
     ///
@@ -1185,6 +1186,7 @@ pub mod error_codes {
     pub const SELF_DELEGATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:selfDelegation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:keyHoldsStanding`
     ///
@@ -1194,6 +1196,7 @@ pub mod error_codes {
     pub const KEY_HOLDS_STANDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:keyHoldsStanding",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:alreadyEnrolled`
     ///
@@ -1203,6 +1206,7 @@ pub mod error_codes {
     pub const ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:alreadyEnrolled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:keyRevoked`
     ///
@@ -1212,6 +1216,7 @@ pub mod error_codes {
     pub const KEY_REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:keyRevoked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:expiryInPast`
     ///
@@ -1221,15 +1226,20 @@ pub mod error_codes {
     pub const EXPIRY_IN_PAST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:expiryInPast",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:tooManyKeys`
     ///
     /// The identity already holds as many active delegations as the consumer allows, and the enrolment names no `replaces`. Enrol again naming one of them in `replaces`, or revoke one (auth/signing-key/revoke) first. `details.maxActiveKeys` MAY state the cap. `details.activeKeys` lists the identity's active delegations so the holder can choose one to replace; a consumer MUST NOT include it unless it has accepted this enrolment's authority evidence (Conformance item 8).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const TOO_MANY_KEYS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:tooManyKeys",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":2,\"properties\":{\"activeKeys\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"deviceLabel\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lastUsedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"signingKeyDid\":{\"maxLength\":256,\"pattern\":\"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"signingKeyDid\",\"createdAt\",\"expiresAt\"],\"type\":\"object\"},\"maxItems\":16,\"type\":\"array\"},\"maxActiveKeys\":{\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/signing-key/enroll:authorizationInvalid`
     ///
@@ -1239,6 +1249,7 @@ pub mod error_codes {
     pub const AUTHORIZATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:authorizationInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:replaceNotFound`
     ///
@@ -1248,5 +1259,6 @@ pub mod error_codes {
     pub const REPLACE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:replaceNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

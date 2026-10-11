@@ -825,6 +825,7 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/vmc:subjectMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/vmc:notAMember`
     ///
@@ -834,6 +835,7 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/vmc:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/vmc:invalidCredential`
     ///
@@ -843,6 +845,7 @@ pub mod error_codes {
     pub const INVALID_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/vmc:invalidCredential",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/vmc:requestNotFound`
     ///
@@ -852,6 +855,7 @@ pub mod error_codes {
     pub const REQUEST_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/vmc:requestNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/vmc:requestNotApproved`
     ///
@@ -861,6 +865,7 @@ pub mod error_codes {
     pub const REQUEST_NOT_APPROVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/vmc:requestNotApproved",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/vmc:requestApplicantMismatch`
     ///
@@ -870,5 +875,6 @@ pub mod error_codes {
     pub const REQUEST_APPLICANT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/vmc:requestApplicantMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

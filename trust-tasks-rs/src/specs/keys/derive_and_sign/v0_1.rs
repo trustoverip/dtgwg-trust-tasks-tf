@@ -716,5 +716,6 @@ pub mod error_codes {
     pub const INVALID_ARGUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:invalidArgument",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -599,5 +599,6 @@ pub mod error_codes {
     pub const REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "witness/session:refused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

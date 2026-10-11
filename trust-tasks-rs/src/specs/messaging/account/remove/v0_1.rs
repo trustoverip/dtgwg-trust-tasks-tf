@@ -459,6 +459,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/remove:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/account/remove:protectedAccount`
     ///
@@ -468,5 +469,6 @@ pub mod error_codes {
     pub const PROTECTED_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/remove:protectedAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

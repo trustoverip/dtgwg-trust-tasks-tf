@@ -762,5 +762,6 @@ pub mod error_codes {
     pub const NOT_LINKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/account/unlink:notLinked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

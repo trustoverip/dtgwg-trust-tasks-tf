@@ -713,5 +713,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/purge:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

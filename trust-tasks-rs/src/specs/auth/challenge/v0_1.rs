@@ -731,14 +731,19 @@ pub mod error_codes {
     pub const SUBJECT_NOT_RECOGNIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/challenge:subjectNotRecognized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/challenge:rateLimited`
     ///
     /// The producer (by source identifier — IP, DID, or both) has exceeded the issuer's challenge-issuance budget. The producer SHOULD back off; details.retryAfter MAY carry a seconds-until-retry hint.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/challenge:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfter\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

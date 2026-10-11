@@ -1124,6 +1124,7 @@ pub mod error_codes {
     pub const KEY_NOT_ISSUER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:keyNotIssuer",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:selfDelegation`
     ///
@@ -1133,6 +1134,7 @@ pub mod error_codes {
     pub const SELF_DELEGATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:selfDelegation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:keyHoldsStanding`
     ///
@@ -1142,6 +1144,7 @@ pub mod error_codes {
     pub const KEY_HOLDS_STANDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:keyHoldsStanding",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:alreadyEnrolled`
     ///
@@ -1151,6 +1154,7 @@ pub mod error_codes {
     pub const ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:alreadyEnrolled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:keyRevoked`
     ///
@@ -1160,6 +1164,7 @@ pub mod error_codes {
     pub const KEY_REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:keyRevoked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:expiryInPast`
     ///
@@ -1169,14 +1174,19 @@ pub mod error_codes {
     pub const EXPIRY_IN_PAST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:expiryInPast",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/signing-key/enroll:tooManyKeys`
     ///
     /// The identity already holds as many active delegations as the consumer allows. Revoke one (auth/signing-key/revoke) before enrolling another. `details.maxActiveKeys` MAY state the cap.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const TOO_MANY_KEYS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/signing-key/enroll:tooManyKeys",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":1,\"properties\":{\"maxActiveKeys\":{\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

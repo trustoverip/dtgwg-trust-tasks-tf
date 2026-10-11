@@ -554,6 +554,7 @@ pub mod error_codes {
     pub const DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/request:declined",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/relationships/request:notMember`
     ///
@@ -563,5 +564,6 @@ pub mod error_codes {
     pub const NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/request:notMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -548,5 +548,6 @@ pub mod error_codes {
     pub const NOT_HIDDEN_VETTING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/pcs-challenge:notHiddenVetting",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

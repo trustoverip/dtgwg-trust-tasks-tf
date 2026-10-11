@@ -110,3 +110,58 @@ mod index {
         assert_eq!(error_codes_for(&format!("{WITHDRAW}#response")), None);
     }
 }
+
+/// A code that declares no `detailsSchema` says so, rather than carrying an
+/// empty schema that would accept anything and look like a declaration.
+#[test]
+fn a_code_without_a_details_schema_carries_none() {
+    assert_eq!(withdraw::error_codes::NOT_FOUND.details_schema, None);
+}
+
+#[cfg(feature = "validate")]
+mod details {
+    use serde_json::json;
+    use trust_tasks_rs::specs::rooms::keys::file_key::v0_1 as file_key;
+    use trust_tasks_rs::specs::vault::release::v0_2 as release;
+    use trust_tasks_rs::specs::vtc::join_requests::withdraw::v0_1 as withdraw;
+
+    /// The emitter checks what it builds against the specification's schema,
+    /// not a copy of it.
+    #[test]
+    fn details_are_checked_against_the_declared_schema() {
+        let unknown_epoch = file_key::error_codes::UNKNOWN_EPOCH;
+        assert!(unknown_epoch.details_schema.is_some());
+        unknown_epoch
+            .check_details(&json!({ "reason": "notDelivered", "heldEpoch": 2 }))
+            .unwrap();
+        unknown_epoch
+            .check_details(&json!({ "reason": "beyondChain", "earliestEpoch": 2 }))
+            .unwrap();
+        assert!(unknown_epoch
+            .check_details(&json!({ "reason": "lost" }))
+            .is_err());
+        assert!(unknown_epoch.check_details(&json!({})).is_err());
+        assert!(unknown_epoch
+            .check_details(&json!({ "reason": "notDelivered", "extra": true }))
+            .is_err());
+    }
+
+    /// `vault/release:stepUpRequired` declares its details as a `$ref` into a
+    /// shared schema file. The constant carries it resolved, so it compiles
+    /// with no base URI and still refuses what the shared shape refuses.
+    #[test]
+    fn a_details_schema_written_as_a_shared_ref_is_self_contained() {
+        let step_up = release::error_codes::STEP_UP_REQUIRED;
+        let schema = step_up.details_schema.unwrap();
+        assert!(!schema.contains(".schema.json"), "{schema}");
+        assert!(step_up.check_details(&json!({})).is_err());
+        assert!(step_up.check_details(&json!({ "unexpected": 1 })).is_err());
+    }
+
+    #[test]
+    fn a_code_without_a_details_schema_constrains_nothing() {
+        withdraw::error_codes::NOT_FOUND
+            .check_details(&json!({ "anything": [1, 2, 3] }))
+            .unwrap();
+    }
+}

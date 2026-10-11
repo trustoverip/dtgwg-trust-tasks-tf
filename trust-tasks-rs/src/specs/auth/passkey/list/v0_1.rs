@@ -681,5 +681,6 @@ pub mod error_codes {
     pub const PASSKEYS_NOT_SUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/list:passkeysNotSupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -41,7 +41,7 @@ The `x:` prefix is an open extension namespace and is not decoration. The closes
 /// ```json
 ///{
 ///  "title": "ClaimType",
-///  "description": "\nThe vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
+///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
 ///  "type": "string",
 ///  "maxLength": 128,
 ///  "minLength": 1,
@@ -1401,7 +1401,7 @@ Other values are the holder's or the producer's own and carry no meaning a maint
 /// ```json
 ///{
 ///  "title": "Slot",
-///  "description": "\nA role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets.",
+///  "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets.",
 ///  "type": "string",
 ///  "pattern": "^[a-z][A-Za-z0-9]{0,31}$"
 ///}
@@ -2362,18 +2362,26 @@ pub mod error_codes {
     /// A held claim names an attribute the pool does not hold. The details name the offending `attributeId`s. Nothing is written.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNRESOLVED_REFERENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:unresolvedReference",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"attributeIds\":{\"items\":{\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\"}},\"required\":[\"attributeIds\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/profile/compose:duplicateSlot`
     ///
     /// Two claims carry the same `slot`. The details name the slot. Nothing is written.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DUPLICATE_SLOT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:duplicateSlot",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"slot\":{\"type\":\"string\"}},\"required\":[\"slot\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/profile/compose:noPersonaHere`
     ///
@@ -2383,15 +2391,20 @@ pub mod error_codes {
     pub const NO_PERSONA_HERE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:noPersonaHere",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/profile/compose:personaAmbiguous`
     ///
     /// `wear` was set and the holder has several personas in `contextId`. The details name them. Nothing is written.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const PERSONA_AMBIGUOUS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:personaAmbiguous",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"personaDids\":{\"items\":{\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"}},\"required\":[\"personaDids\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/profile/compose:wearAndPersona`
     ///
@@ -2401,6 +2414,7 @@ pub mod error_codes {
     pub const WEAR_AND_PERSONA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:wearAndPersona",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/profile/compose:untilNotFuture`
     ///
@@ -2410,6 +2424,7 @@ pub mod error_codes {
     pub const UNTIL_NOT_FUTURE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:untilNotFuture",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/profile/compose:labelWithoutPersona`
     ///
@@ -2419,5 +2434,6 @@ pub mod error_codes {
     pub const LABEL_WITHOUT_PERSONA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/compose:labelWithoutPersona",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

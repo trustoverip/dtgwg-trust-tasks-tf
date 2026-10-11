@@ -627,6 +627,7 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknownDomain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/domain/assign:unknownInstance`
     ///
@@ -636,5 +637,6 @@ pub mod error_codes {
     pub const UNKNOWN_INSTANCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/domain/assign:unknownInstance",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

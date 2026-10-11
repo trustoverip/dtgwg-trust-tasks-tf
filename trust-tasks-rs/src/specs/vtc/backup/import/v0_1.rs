@@ -1707,5 +1707,6 @@ pub mod error_codes {
     pub const DECRYPTION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/backup/import:decryptionFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

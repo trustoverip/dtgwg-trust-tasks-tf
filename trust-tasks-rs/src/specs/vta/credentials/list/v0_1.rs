@@ -1373,5 +1373,6 @@ pub mod error_codes {
     pub const CURSOR_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/list:cursorInvalid",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

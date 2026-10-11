@@ -51,6 +51,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import Ajv from "ajv/dist/2020.js";
 import { discoverSpecs as discoverSpecsShared } from "./lib/specs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -233,8 +234,8 @@ function rustPolicy(src, ident) {
 
 /**
  * The declared error codes a generated Rust module ships, in `ERROR_CODES`
- * order, as `{ code, retryable }`. `null` when the module has no
- * `ERROR_CODES` at all.
+ * order, as `{ code, retryable, detailsSchema }` (`detailsSchema` parsed, or
+ * `null` for `None`). `null` when the module has no `ERROR_CODES` at all.
  *
  * Read off the slice and resolved through the `error_codes` submodule's
  * constants, so a constant that exists but is left out of the slice — or a
@@ -245,12 +246,96 @@ function rustErrorCodes(src) {
   if (!slice) return null;
   const consts = new Map();
   const constRe =
-    /pub const ([A-Z][A-Z0-9_]*): crate::DeclaredErrorCode = crate::DeclaredErrorCode \{\s*code:\s*"([^"]+)",\s*retryable:\s*(true|false),?\s*\}/g;
-  for (const m of src.matchAll(constRe)) consts.set(m[1], { code: m[2], retryable: m[3] === "true" });
+    /pub const ([A-Z][A-Z0-9_]*): crate::DeclaredErrorCode = crate::DeclaredErrorCode \{([\s\S]*?)\n\s*\};/g;
+  for (const m of src.matchAll(constRe)) {
+    const body = m[2];
+    const code = /\bcode:\s*"([^"]+)"/.exec(body);
+    const retryable = /\bretryable:\s*(true|false)/.exec(body);
+    const details = /\bdetails_schema:\s*::core::option::Option::(?:None|Some\(\s*("(?:[^"\\]|\\.)*")\s*,?\s*\))/.exec(body);
+    let detailsSchema;
+    try {
+      detailsSchema = details && details[1] ? JSON.parse(rustStringLiteral(details[1])) : details ? null : undefined;
+    } catch (e) {
+      detailsSchema = `<unparseable details_schema: ${e.message}>`;
+    }
+    consts.set(m[1], {
+      code: code ? code[1] : null,
+      retryable: retryable ? retryable[1] === "true" : null,
+      detailsSchema,
+    });
+  }
   return [...slice[1].matchAll(/error_codes::([A-Z][A-Z0-9_]*)/g)].map(
     (m) => consts.get(m[1]) ?? { code: `<unresolved error_codes::${m[1]}>`, retryable: null },
   );
 }
+
+/** The value of a Rust string literal, `"…"` with its escapes. */
+function rustStringLiteral(lit) {
+  return lit.slice(1, -1).replace(/\\(u\{([0-9a-fA-F]+)\}|x([0-9a-fA-F]{2})|.)/g, (_, esc, uni, hex) => {
+    if (uni) return String.fromCodePoint(parseInt(uni, 16));
+    if (hex) return String.fromCharCode(parseInt(hex, 16));
+    const simple = { n: "\n", r: "\r", t: "\t", "0": "\0", "\\": "\\", '"': '"', "'": "'" }[esc];
+    if (simple === undefined) throw new Error(`unknown escape \\${esc}`);
+    return simple;
+  });
+}
+
+/**
+ * A front-matter `detailsSchema` with every `$ref` into a shared schema file
+ * replaced by the fragment it names, resolved against the file it appears in —
+ * the inlining scripts/build-registry.mjs publishes. Re-derived here rather
+ * than imported, for the reason in the header note.
+ */
+function inlineFileRefs(node, baseDir, depth = 0) {
+  if (Array.isArray(node)) return node.map((n) => inlineFileRefs(n, baseDir, depth));
+  if (!node || typeof node !== "object") return node;
+  if (typeof node.$ref === "string" && !node.$ref.startsWith("#")) {
+    if (depth > 8) throw new Error(`$ref nesting too deep at ${node.$ref}`);
+    const [file, frag = ""] = node.$ref.split("#");
+    const target = path.resolve(baseDir, file);
+    const doc = JSON.parse(fs.readFileSync(target, "utf8"));
+    const fragment = pointer(doc, frag);
+    if (fragment === undefined) throw new Error(`${node.$ref} names no fragment`);
+    const { $ref, ...siblings } = node;
+    return { ...inlineFileRefs(fragment, path.dirname(target), depth + 1), ...siblings };
+  }
+  return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, inlineFileRefs(v, baseDir, depth)]));
+}
+
+/**
+ * A self-contained schema with its local `#/$defs/<name>` refs replaced by the
+ * definitions they name and the root `$defs` dropped — the shape the generator
+ * splices into, flattened back so it compares with `inlineFileRefs`'s output.
+ */
+function inlineLocalDefs(schema) {
+  const defs = schema?.$defs ?? {};
+  const walk = (node, depth) => {
+    if (Array.isArray(node)) return node.map((n) => walk(n, depth));
+    if (!node || typeof node !== "object") return node;
+    const local = typeof node.$ref === "string" && /^#\/\$defs\/([^/]+)$/.exec(node.$ref);
+    if (local && local[1] in defs && depth <= 8) {
+      const { $ref, ...siblings } = node;
+      return { ...walk(defs[local[1]], depth + 1), ...walk(siblings, depth) };
+    }
+    return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, walk(v, depth)]));
+  };
+  const { $defs, ...rest } = schema;
+  return walk(rest, 0);
+}
+
+function pointer(doc, frag) {
+  if (!frag) return doc;
+  let cur = doc;
+  for (const raw of frag.replace(/^\//, "").split("/")) {
+    const key = decodeURIComponent(raw).replace(/~1/g, "/").replace(/~0/g, "~");
+    if (cur == null || !(key in cur)) return undefined;
+    cur = cur[key];
+  }
+  return cur;
+}
+
+// Formats are not checked: this compiles each schema, it validates no instance.
+const detailsAjv = new Ajv({ strict: false, allErrors: true, validateFormats: false });
 
 /**
  * The `MAX_DOCUMENT_BYTES` a generated Rust `impl crate::Payload for <ident>`
@@ -498,6 +583,7 @@ const seenRs = new Set();
 const seenGo = new Set();
 const seenDart = new Set();
 let rustErrorCodesChecked = 0;
+let rustDetailsSchemasChecked = 0;
 let rustSizeBoundsChecked = 0;
 
 /** Every hand-written Rust source, concatenated, for the RUST_HAND_WRITTEN check. */
@@ -734,9 +820,10 @@ for (const spec of specs) {
     // generator, for the reason in the header note.
     const expectedCodes = (meta.errorCodes || []).map((c) => ({ code: c.code, retryable: c.retryable }));
     const rustCodes = rustErrorCodes(rs.src);
+    const rustCodesOnly = rustCodes && rustCodes.map(({ code, retryable }) => ({ code, retryable }));
     if (!rustCodes) {
       fail(where, `the Rust module exports no ERROR_CODES — the specification's declared error codes are unreachable.`);
-    } else if (stableJson(rustCodes) !== stableJson(expectedCodes)) {
+    } else if (stableJson(rustCodesOnly) !== stableJson(expectedCodes)) {
       fail(
         where,
         `Rust ERROR_CODES is ${JSON.stringify(rustCodes)}, but the front matter declares ` +
@@ -745,6 +832,49 @@ for (const spec of specs) {
       );
     } else {
       rustErrorCodesChecked += rustCodes.length;
+
+      // Each code's `detailsSchema`: the Rust constant must carry the schema
+      // the front matter declares — its shared-file refs inlined — and none
+      // where it declares none, and what it carries must compile with no base
+      // URI, which is the property a consumer validating `details` relies on.
+      for (const [i, declared] of (meta.errorCodes || []).entries()) {
+        const got = rustCodes[i].detailsSchema;
+        const label = `${declared.code} details_schema`;
+        if (got === undefined) {
+          fail(where, `${label}: the Rust constant has no details_schema member the check can read.`);
+          continue;
+        }
+        if (!declared.detailsSchema) {
+          if (got !== null) fail(where, `${label} is Some, but the front matter declares no detailsSchema.`);
+          continue;
+        }
+        if (got === null) {
+          fail(where, `${label} is None, but the front matter declares a detailsSchema (SPEC §7.3 item 9).`);
+          continue;
+        }
+        if (typeof got === "string") {
+          fail(where, `${label}: ${got}`);
+          continue;
+        }
+        let want;
+        try {
+          want = inlineFileRefs(declared.detailsSchema, spec.dir);
+        } catch (e) {
+          fail(where, `${label}: the front matter's detailsSchema does not resolve: ${e.message}`);
+          continue;
+        }
+        if (stableJson(inlineLocalDefs(got)) !== stableJson(want)) {
+          fail(where, `${label} differs from the detailsSchema the front matter declares.`);
+          continue;
+        }
+        try {
+          detailsAjv.compile(got);
+        } catch (e) {
+          fail(where, `${label} does not compile on its own: ${e.message}`);
+          continue;
+        }
+        rustDetailsSchemasChecked += 1;
+      }
     }
 
     // Front matter `maxDocumentBytes`: the per-type document size bound a
@@ -1018,7 +1148,7 @@ if (problems.length > 0) {
 console.log(
   `Bindings conformance: ${specs.length} specifications checked against ` +
     `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
-    `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes ` +
+    `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes (${rustDetailsSchemasChecked} with a detailsSchema) ` +
     `match Rust ERROR_CODES; ${rustSizeBoundsChecked} declared document size bounds match Rust ` +
     `MAX_DOCUMENT_BYTES.`,
 );

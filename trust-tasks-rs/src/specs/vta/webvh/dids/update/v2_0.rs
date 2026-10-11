@@ -2302,6 +2302,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/update:versionConflict`
     ///
@@ -2311,6 +2312,7 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/update:invalidDocument`
     ///
@@ -2320,15 +2322,20 @@ pub mod error_codes {
     pub const INVALID_DOCUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:invalidDocument",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/update:keyMembersManaged`
     ///
     /// The document changes `verificationMethod`, a verification relationship or `keyRoles`. Keys change only through the key-role tasks; `details.members` names the members that differ.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const KEY_MEMBERS_MANAGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:keyMembersManaged",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"members\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vta/webvh/dids:previewStale`
     ///
@@ -2338,6 +2345,7 @@ pub mod error_codes {
     pub const PREVIEW_STALE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:previewStale",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:stepUpRequired`
     ///
@@ -2347,6 +2355,7 @@ pub mod error_codes {
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:preRotationRequired`
     ///
@@ -2356,6 +2365,7 @@ pub mod error_codes {
     pub const PRE_ROTATION_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:preRotationRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:notKeyRoleIdentity`
     ///
@@ -2365,5 +2375,6 @@ pub mod error_codes {
     pub const NOT_KEY_ROLE_IDENTITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:notKeyRoleIdentity",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

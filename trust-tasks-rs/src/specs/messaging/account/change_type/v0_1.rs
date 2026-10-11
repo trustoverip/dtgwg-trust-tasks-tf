@@ -1874,6 +1874,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/change-type:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/account/change-type:rootAdminRequired`
     ///
@@ -1883,5 +1884,6 @@ pub mod error_codes {
     pub const ROOT_ADMIN_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/change-type:rootAdminRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

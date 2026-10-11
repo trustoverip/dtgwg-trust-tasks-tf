@@ -916,9 +916,13 @@ pub mod error_codes {
     /// A position is beyond the end of the face's entries. The details carry the face's entry count. Nothing is written.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ENTRY_OUT_OF_RANGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/attribute/promote:entryOutOfRange",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"entryCount\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"entryCount\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/attribute/promote:versionConflict`
     ///
@@ -928,5 +932,6 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/attribute/promote:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

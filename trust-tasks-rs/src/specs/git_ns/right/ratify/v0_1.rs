@@ -1461,6 +1461,7 @@ pub mod error_codes {
     pub const ESCALATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:escalation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -1470,6 +1471,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/right/ratify:notBreakGlass`
     ///
@@ -1479,6 +1481,7 @@ pub mod error_codes {
     pub const NOT_BREAK_GLASS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/ratify:notBreakGlass",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/right/ratify:recordChanged`
     ///
@@ -1488,6 +1491,7 @@ pub mod error_codes {
     pub const RECORD_CHANGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/ratify:recordChanged",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/right/ratify:selfRatification`
     ///
@@ -1497,5 +1501,6 @@ pub mod error_codes {
     pub const SELF_RATIFICATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/ratify:selfRatification",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

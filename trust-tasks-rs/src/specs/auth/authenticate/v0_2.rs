@@ -1791,6 +1791,7 @@ pub mod error_codes {
     pub const CHALLENGE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/authenticate:challengeNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/authenticate:challengeExpired`
     ///
@@ -1800,6 +1801,7 @@ pub mod error_codes {
     pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/authenticate:challengeExpired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/authenticate:challengeMismatch`
     ///
@@ -1809,6 +1811,7 @@ pub mod error_codes {
     pub const CHALLENGE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/authenticate:challengeMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/authenticate:subjectMismatch`
     ///
@@ -1818,23 +1821,32 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/authenticate:subjectMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/authenticate:scopeDenied`
     ///
     /// One or more requested scopes were refused by the consumer's authorization policy. `details.refused` MAY enumerate the denied scopes.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SCOPE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/authenticate:scopeDenied",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"refused\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/authenticate:sessionKeyUnsupported`
     ///
     /// The consumer does not support the key type or DID method of the requested `sessionKey` (for example, a `did:key` encoding a curve the consumer's verifier does not implement) and refuses the request rather than silently authenticating without the binding. `details.requested` MAY echo the offending `sessionKey`.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SESSION_KEY_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/authenticate:sessionKeyUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"requested\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
 }

@@ -685,14 +685,19 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/delete:versionConflict`
     ///
     /// An `expectedVersion` was supplied and does not match the current version.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/delete:versionConflict",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"currentVersion\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

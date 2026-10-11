@@ -1929,6 +1929,7 @@ pub mod error_codes {
     pub const AUTH_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/login/finish:authNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/login/finish:authExpired`
     ///
@@ -1938,6 +1939,7 @@ pub mod error_codes {
     pub const AUTH_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/login/finish:authExpired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/login/finish:credentialUnknown`
     ///
@@ -1947,15 +1949,20 @@ pub mod error_codes {
     pub const CREDENTIAL_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/login/finish:credentialUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/login/finish:assertionInvalid`
     ///
     /// The WebAuthn assertion failed verification. `details.reason` carries a machine-readable hint.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ASSERTION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/login/finish:assertionInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"challenge_mismatch\",\"origin_mismatch\",\"rp_id_mismatch\",\"signature_invalid\",\"counter_regressed\",\"user_handle_mismatch\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/passkey/login/finish:stepUpSessionNotFound`
     ///
@@ -1965,5 +1972,6 @@ pub mod error_codes {
     pub const STEP_UP_SESSION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/login/finish:stepUpSessionNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

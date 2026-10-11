@@ -211,7 +211,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "beforeEpoch": {
-///      "description": "\nDrop every rung *below* this epoch, so the chain walks back no further than it.\n\n`minimum: 2` because pruning below epoch 1 would drop nothing and asking to is a caller that has misunderstood the direction — the chain walks backwards, and epoch 1 is where it ends.",
+///      "description": "Drop every rung *below* this epoch, so the chain walks back no further than it.\n\n`minimum: 2` because pruning below epoch 1 would drop nothing and asking to is a caller that has misunderstood the direction — the chain walks backwards, and epoch 1 is where it ends.",
 ///      "type": "integer",
 ///      "minimum": 2.0
 ///    },
@@ -684,6 +684,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/prune:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/epoch/prune:notAhead`
     ///
@@ -693,6 +694,7 @@ pub mod error_codes {
     pub const NOT_AHEAD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/prune:notAhead",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/epoch/prune:chainTooDeep`
     ///
@@ -702,5 +704,6 @@ pub mod error_codes {
     pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/prune:chainTooDeep",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

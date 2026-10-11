@@ -1403,6 +1403,7 @@ pub mod error_codes {
     pub const PATH_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/create:pathTaken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/create:templateNotFound`
     ///
@@ -1412,5 +1413,6 @@ pub mod error_codes {
     pub const TEMPLATE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/create:templateNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -823,6 +823,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/delete:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/message/delete:rootAdminRequired`
     ///
@@ -832,5 +833,6 @@ pub mod error_codes {
     pub const ROOT_ADMIN_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/delete:rootAdminRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -715,5 +715,6 @@ pub mod error_codes {
     pub const NOT_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/heartbeat:notRegistered",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -41,7 +41,7 @@ The `x:` prefix is an open extension namespace and is not decoration. The closes
 /// ```json
 ///{
 ///  "title": "ClaimType",
-///  "description": "\nThe vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
+///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
 ///  "type": "string",
 ///  "maxLength": 128,
 ///  "minLength": 1,
@@ -311,7 +311,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///        ],
 ///        "properties": {
 ///          "inline": {
-///            "description": "\nA value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
+///            "description": "A value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
 ///            "type": "object",
 ///            "required": [
 ///              "type",
@@ -469,7 +469,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 ///  ],
 ///  "properties": {
 ///    "inline": {
-///      "description": "\nA value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
+///      "description": "A value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
 ///      "type": "object",
 ///      "required": [
 ///        "type",
@@ -525,7 +525,7 @@ Adding a `provenance` member to this object would therefore be a privilege escal
 ///
 /// ```json
 ///{
-///  "description": "\nA value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
+///  "description": "A value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
 ///  "type": "object",
 ///  "required": [
 ///    "type",
@@ -920,7 +920,7 @@ Other values are the holder's or the producer's own and carry no meaning a maint
 /// ```json
 ///{
 ///  "title": "Slot",
-///  "description": "\nA role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets.",
+///  "description": "A role a profile entry plays within its profile, so a consumer can find it without guessing from its claim type. A profile MAY hold several entries of one type — a legal name and a display name, two phone numbers — and only a slot says which answers a given question. Unique within a profile.\n\nWell-known slots:\n\n- `displayName` — what this face calls itself. The entry a consumer renders as the face's name to anyone it is shown to. Distinct from the profile's own `name`, which is the holder's private label and never disclosed.\n- `primaryEmail`, `primaryPhone`, `primaryAddress` — the entry to use where a counterparty asks for one of a kind and the profile holds several.\n- `avatar` — the image this face presents.\n\nOther values are the holder's or the producer's own and carry no meaning a maintainer interprets.",
 ///  "type": "string",
 ///  "pattern": "^[a-z][A-Za-z0-9]{0,31}$"
 ///}
@@ -1658,14 +1658,19 @@ pub mod error_codes {
     pub const REFERENCE_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/local/profile/put:referenceNotPermitted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/local/profile/put:duplicateSlot`
     ///
     /// Two entries carry the same `slot`. The details name the slot. A slot answers one question with one entry, so the profile is not written.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DUPLICATE_SLOT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/local/profile/put:duplicateSlot",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"slot\":{\"type\":\"string\"}},\"required\":[\"slot\"],\"type\":\"object\"}",
+        ),
     };
 }

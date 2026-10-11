@@ -1024,6 +1024,7 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/set:not_owner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/set:name_reserved`
     ///
@@ -1033,6 +1034,7 @@ pub mod error_codes {
     pub const NAME_RESERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/set:name_reserved",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/set:name_taken`
     ///
@@ -1042,6 +1044,7 @@ pub mod error_codes {
     pub const NAME_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/set:name_taken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/set:also_known_as_mismatch`
     ///
@@ -1051,6 +1054,7 @@ pub mod error_codes {
     pub const ALSO_KNOWN_AS_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/set:also_known_as_mismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/set:invalid_did_data`
     ///
@@ -1060,6 +1064,7 @@ pub mod error_codes {
     pub const INVALID_DID_DATA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/set:invalid_did_data",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management:unknown_domain`
     ///
@@ -1069,5 +1074,6 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknown_domain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

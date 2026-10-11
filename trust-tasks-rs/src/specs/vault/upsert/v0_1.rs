@@ -323,7 +323,7 @@ M2A is the only implementation today; this is also the canonical default for new
 /// ```json
 ///{
 ///  "title": "DidcommAuthcryptEnvelope",
-///  "description": "\nDIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
+///  "description": "DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
 ///  "type": "object",
 ///  "required": [
 ///    "envelope",
@@ -543,7 +543,7 @@ No open-source implementation reads this yet outside vta-sdk's `sealed_transfer`
 /// ```json
 ///{
 ///  "title": "HpkeArmoredEnvelope",
-///  "description": "\nOpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
+///  "description": "OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`did-signed` / `attested` / `pinned-only`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
 ///  "type": "object",
 ///  "required": [
 ///    "armored",
@@ -4487,6 +4487,7 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/upsert:notFound`
     ///
@@ -4496,24 +4497,33 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/upsert:versionConflict`
     ///
     /// An `expectedVersion` was supplied and does not match the current version. The consumer SHOULD re-read the entry (vault/get) and retry the upsert with the up-to-date version.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:versionConflict",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"currentVersion\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/upsert:sealedSecretInvalid`
     ///
     /// The sealedSecret envelope failed verification (digest mismatch, signature invalid, recipient key unknown, or armor malformed).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SEALED_SECRET_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:sealedSecretInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"armor_malformed\",\"recipient_key_unknown\",\"signature_invalid\",\"digest_mismatch\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/upsert:secretRequired`
     ///
@@ -4523,15 +4533,20 @@ pub mod error_codes {
     pub const SECRET_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:secretRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/upsert:envelopeUnsupported`
     ///
     /// The `sealedSecret.envelope` kind is not one the maintainer implements (e.g. a TSP message arriving at a maintainer that only speaks `didcomm-authcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` to learn which envelope kinds the maintainer accepts.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:envelopeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"receivedEnvelope\":{\"type\":\"string\"},\"supportedEnvelopes\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/upsert:contextChangeForbidden`
     ///
@@ -4541,5 +4556,6 @@ pub mod error_codes {
     pub const CONTEXT_CHANGE_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:contextChangeForbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

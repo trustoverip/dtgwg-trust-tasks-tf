@@ -1025,6 +1025,7 @@ pub mod error_codes {
     pub const PERMISSION_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/list:permissionDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/relationships/list:notFound`
     ///
@@ -1034,5 +1035,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/list:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

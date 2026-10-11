@@ -465,5 +465,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/pending/approve:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

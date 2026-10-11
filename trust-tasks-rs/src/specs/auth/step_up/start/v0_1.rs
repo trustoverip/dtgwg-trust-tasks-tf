@@ -1145,6 +1145,7 @@ pub mod error_codes {
     pub const SESSION_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/start:sessionUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/start:notNeeded`
     ///
@@ -1154,6 +1155,7 @@ pub mod error_codes {
     pub const NOT_NEEDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/start:notNeeded",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/start:rateLimited`
     ///
@@ -1163,5 +1165,6 @@ pub mod error_codes {
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/start:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

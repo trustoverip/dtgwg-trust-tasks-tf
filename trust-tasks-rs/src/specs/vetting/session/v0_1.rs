@@ -41,7 +41,7 @@ The `x:` prefix is an open extension namespace and is not decoration. The closes
 /// ```json
 ///{
 ///  "title": "ClaimType",
-///  "description": "\nThe vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
+///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
 ///  "type": "string",
 ///  "maxLength": 128,
 ///  "minLength": 1,
@@ -420,7 +420,7 @@ Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 nor
 /// ```json
 ///{
 ///  "title": "DigestMultibase",
-///  "description": "\nA cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
 ///  "examples": [
 ///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
 ///  ],
@@ -2787,6 +2787,7 @@ pub mod error_codes {
     pub const UNKNOWN_REQUEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vetting/session:unknownRequest",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vetting/session:claimUnavailable`
     ///
@@ -2796,6 +2797,7 @@ pub mod error_codes {
     pub const CLAIM_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vetting/session:claimUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vetting/session:matchCodeMismatch`
     ///
@@ -2805,5 +2807,6 @@ pub mod error_codes {
     pub const MATCH_CODE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vetting/session:matchCodeMismatch",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

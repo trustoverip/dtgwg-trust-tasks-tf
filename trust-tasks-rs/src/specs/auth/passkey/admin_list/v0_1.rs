@@ -1060,6 +1060,7 @@ pub mod error_codes {
     pub const NOT_ADMINISTRATOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/admin-list:notAdministrator",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/admin-list:subjectNotMember`
     ///
@@ -1069,6 +1070,7 @@ pub mod error_codes {
     pub const SUBJECT_NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/admin-list:subjectNotMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/admin-list:subjectUnknown`
     ///
@@ -1078,6 +1080,7 @@ pub mod error_codes {
     pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/admin-list:subjectUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/admin-list:purposeNotSupported`
     ///
@@ -1087,5 +1090,6 @@ pub mod error_codes {
     pub const PURPOSE_NOT_SUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/admin-list:purposeNotSupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

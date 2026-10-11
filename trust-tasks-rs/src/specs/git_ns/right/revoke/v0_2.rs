@@ -1044,6 +1044,7 @@ pub mod error_codes {
     pub const ESCALATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:escalation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:lastOwner`
     ///
@@ -1053,6 +1054,7 @@ pub mod error_codes {
     pub const LAST_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:lastOwner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:lastAdmin`
     ///
@@ -1062,6 +1064,7 @@ pub mod error_codes {
     pub const LAST_ADMIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:lastAdmin",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -1071,6 +1074,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/right/revoke:notGranted`
     ///
@@ -1080,5 +1084,6 @@ pub mod error_codes {
     pub const NOT_GRANTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/revoke:notGranted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

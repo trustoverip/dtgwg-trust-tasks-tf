@@ -1188,6 +1188,7 @@ pub mod error_codes {
     pub const TRANSPORT_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-export:transportUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-export:weakPassword`
     ///
@@ -1197,6 +1198,7 @@ pub mod error_codes {
     pub const WEAK_PASSWORD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-export:weakPassword",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-export:unsupportedAlgorithm`
     ///
@@ -1206,6 +1208,7 @@ pub mod error_codes {
     pub const UNSUPPORTED_ALGORITHM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-export:unsupportedAlgorithm",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-export:tooManyOpenBundles`
     ///
@@ -1215,5 +1218,6 @@ pub mod error_codes {
     pub const TOO_MANY_OPEN_BUNDLES: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-export:tooManyOpenBundles",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

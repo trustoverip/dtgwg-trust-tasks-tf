@@ -836,6 +836,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:notActive`
     ///
@@ -845,6 +846,7 @@ pub mod error_codes {
     pub const NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:notBound`
     ///
@@ -854,15 +856,20 @@ pub mod error_codes {
     pub const NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:rateLimited`
     ///
     /// The binding's rate is exhausted. `details.retryAfterSeconds` says when to try again.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfterSeconds\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"retryAfterSeconds\"],\"type\":\"object\"}",
+        ),
     };
     /// `external/sign:notSignOnly`
     ///
@@ -872,6 +879,7 @@ pub mod error_codes {
     pub const NOT_SIGN_ONLY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:notSignOnly",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/sign:undecodable`
     ///
@@ -881,6 +889,7 @@ pub mod error_codes {
     pub const UNDECODABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:undecodable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/sign:senderMismatch`
     ///
@@ -890,15 +899,20 @@ pub mod error_codes {
     pub const SENDER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:senderMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/sign:callNotAllowed`
     ///
     /// A command calls a Move function, or uses a command kind, the account does not allow. `details` names the first one.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CALL_NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:callNotAllowed",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"commandIndex\":{\"minimum\":0,\"type\":\"integer\"},\"commandKind\":{\"maxLength\":64,\"type\":\"string\"},\"function\":{\"maxLength\":128,\"type\":\"string\"},\"module\":{\"maxLength\":128,\"type\":\"string\"},\"package\":{\"maxLength\":66,\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `external/sign:objectNotAllowed`
     ///
@@ -908,6 +922,7 @@ pub mod error_codes {
     pub const OBJECT_NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:objectNotAllowed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/sign:gasBudgetExceeded`
     ///
@@ -917,6 +932,7 @@ pub mod error_codes {
     pub const GAS_BUDGET_EXCEEDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:gasBudgetExceeded",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/sign:coinOutExceeded`
     ///
@@ -926,6 +942,7 @@ pub mod error_codes {
     pub const COIN_OUT_EXCEEDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:coinOutExceeded",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/sign:wrongNetwork`
     ///
@@ -935,5 +952,6 @@ pub mod error_codes {
     pub const WRONG_NETWORK: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/sign:wrongNetwork",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

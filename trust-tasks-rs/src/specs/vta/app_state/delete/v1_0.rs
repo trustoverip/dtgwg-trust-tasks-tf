@@ -962,14 +962,19 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/app-state/delete:versionConflict`
     ///
     /// The `expectedVersion` precondition failed. The details carry the maintainer's current version and value, so the caller can see the edit it was about to discard.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/delete:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"currentDeleted\":{\"type\":\"boolean\"},\"currentValue\":{},\"currentVersion\":{\"minimum\":1,\"type\":\"integer\"},\"reason\":{\"enum\":[\"versionMismatch\",\"recordAbsent\",\"createOnlyNotApplicable\"],\"type\":\"string\"}},\"required\":[\"reason\"],\"type\":\"object\"}",
+        ),
     };
 }

@@ -841,6 +841,7 @@ pub mod error_codes {
     pub const INVITE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/start:inviteNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/start:inviteExpired`
     ///
@@ -850,6 +851,7 @@ pub mod error_codes {
     pub const INVITE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/start:inviteExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/start:inviteVoided`
     ///
@@ -859,6 +861,7 @@ pub mod error_codes {
     pub const INVITE_VOIDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/start:inviteVoided",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/start:notInvitedSubject`
     ///
@@ -868,14 +871,19 @@ pub mod error_codes {
     pub const NOT_INVITED_SUBJECT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/start:notInvitedSubject",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/start:codeMismatch`
     ///
     /// The claim code is wrong. `details.attemptsRemaining` MAY state how many wrong codes remain before the invite is voided.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CODE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/start:codeMismatch",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"attemptsRemaining\":{\"maximum\":4,\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

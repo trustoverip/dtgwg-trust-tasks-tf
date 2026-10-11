@@ -2206,15 +2206,20 @@ pub mod error_codes {
     pub const NO_PENDING_ENROLMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/register:noPendingEnrolment",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `device/register:attestationFailed`
     ///
     /// The supplied device attestation could not be verified against the platform's attestation infrastructure.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ATTESTATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/register:attestationFailed",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"signature_invalid\",\"untrusted_root\",\"stale\",\"rooted_device\",\"unsupported_attestation_kind\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `device/register:alreadyRegistered`
     ///
@@ -2224,6 +2229,7 @@ pub mod error_codes {
     pub const ALREADY_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/register:alreadyRegistered",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `device/register:hpkeKeyInvalid`
     ///
@@ -2233,5 +2239,6 @@ pub mod error_codes {
     pub const HPKE_KEY_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/register:hpkeKeyInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1221,6 +1221,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/get:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/message/get:unknownMessage`
     ///
@@ -1230,6 +1231,7 @@ pub mod error_codes {
     pub const UNKNOWN_MESSAGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/get:unknownMessage",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/message/get:rootAdminRequired`
     ///
@@ -1239,14 +1241,19 @@ pub mod error_codes {
     pub const ROOT_ADMIN_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/get:rootAdminRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/message/get:messageTooLarge`
     ///
     /// The stored message exceeds the 10 MiB this task can carry. It is refused rather than truncated; it remains in the queue and can still be listed or deleted.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const MESSAGE_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/message/get:messageTooLarge",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"size\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"size\"],\"type\":\"object\"}",
+        ),
     };
 }

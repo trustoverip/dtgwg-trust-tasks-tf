@@ -252,7 +252,7 @@ M2A is the only implementation today; this is also the canonical default for new
 /// ```json
 ///{
 ///  "title": "DidcommAuthcryptEnvelope",
-///  "description": "\nDIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
+///  "description": "DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
 ///  "type": "object",
 ///  "required": [
 ///    "envelope",
@@ -368,7 +368,7 @@ Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 nor
 /// ```json
 ///{
 ///  "title": "DigestMultibase",
-///  "description": "\nA cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
 ///  "examples": [
 ///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
 ///  ],
@@ -562,7 +562,7 @@ No open-source implementation reads this yet outside vta-sdk's `sealed_transfer`
 /// ```json
 ///{
 ///  "title": "HpkeArmoredEnvelope",
-///  "description": "\nOpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
+///  "description": "OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
 ///  "type": "object",
 ///  "required": [
 ///    "armored",
@@ -4305,6 +4305,7 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/upsert:notFound`
     ///
@@ -4314,24 +4315,33 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/upsert:versionConflict`
     ///
     /// An `expectedVersion` was supplied and does not match the current version. The consumer SHOULD re-read the entry (vault/get) and retry the upsert with the up-to-date version.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:versionConflict",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"currentVersion\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/upsert:sealedSecretInvalid`
     ///
     /// The sealedSecret envelope failed verification (digest mismatch, signature invalid, recipient key unknown, or armor malformed).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SEALED_SECRET_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:sealedSecretInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"armor_malformed\",\"recipient_key_unknown\",\"signature_invalid\",\"digest_mismatch\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/upsert:secretRequired`
     ///
@@ -4341,15 +4351,20 @@ pub mod error_codes {
     pub const SECRET_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:secretRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/upsert:envelopeUnsupported`
     ///
     /// The `sealedSecret.envelope` kind is not one the maintainer implements (e.g. a TSP message arriving at a maintainer that only speaks `didcommAuthcrypt`). Producers SHOULD consult `trust-task-discovery/0.1` to learn which envelope kinds the maintainer accepts.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:envelopeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"receivedEnvelope\":{\"type\":\"string\"},\"supportedEnvelopes\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/upsert:contextChangeForbidden`
     ///
@@ -4359,5 +4374,6 @@ pub mod error_codes {
     pub const CONTEXT_CHANGE_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/upsert:contextChangeForbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -389,6 +389,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/identity/retire:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/identity/retire:current`
     ///
@@ -398,5 +399,6 @@ pub mod error_codes {
     pub const CURRENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/identity/retire:current",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

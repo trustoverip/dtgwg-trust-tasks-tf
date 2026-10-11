@@ -369,7 +369,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAttributesItemType {
 ///      "minLength": 1
 ///    },
 ///    "verdict": {
-///      "description": "\nWhat the community decided about this submission.\n\n`0.1` returned `status: \"pending\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.",
+///      "description": "What the community decided about this submission.\n\n`0.1` returned `status: \"pending\"` — a constant, which could express only one of the four outcomes a submission actually has. A policy that admits outright, refuses outright, or asks for more evidence had to be reported as 'pending' or not at all.",
 ///      "$ref": "#/definitions/Verdict"
 ///    }
 ///  },
@@ -517,7 +517,7 @@ The four are not reducible to a pending/decided pair. `refer` and `requestMore` 
 /// ```json
 ///{
 ///  "title": "VerdictEffect",
-///  "description": "\nWhat the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.",
+///  "description": "What the policy decided.\n\n`allow` — admitted. `deny` — refused, terminally for this submission. `refer` — parked for a human or quorum decision; the applicant is neither in nor out. `requestMore` — the policy cannot decide yet and names what further evidence it needs.\n\nThe four are not reducible to a pending/decided pair. `refer` and `requestMore` are both 'not decided', but they place the next action with different parties: `refer` waits on the community, `requestMore` waits on the applicant. A consumer that cannot tell them apart cannot tell a user whether to wait or to act.",
 ///  "type": "string",
 ///  "enum": [
 ///    "allow",
@@ -606,7 +606,7 @@ Every member is optional at the schema level and which ones are meaningful depen
 /// ```json
 ///{
 ///  "title": "VerdictWith",
-///  "description": "\nThe effect-dependent detail of a verdict.\n\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.",
+///  "description": "The effect-dependent detail of a verdict.\n\nEvery member is optional at the schema level and which ones are meaningful depends on `effect`: `role` / `obligations` / `bundleRef` on `allow`, `code` / `reason` on `deny`, `queue` / `reason` on `refer`, `needs` / `presentationDefinition` on `requestMore`. The dependency is stated here rather than enforced by `if`/`then` per effect, so that the shape stays a single flat object a generated type can carry without a discriminated union per family — a deliberate trade of schema strictness for implementability, and the reason a consumer MUST branch on `effect` rather than on which members happen to be present.",
 ///  "type": "object",
 ///  "properties": {
 ///    "bundleRef": {
@@ -1553,6 +1553,7 @@ pub mod error_codes {
     pub const POLICY_UNSATISFIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit:policyUnsatisfied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/submit:presentationInvalid`
     ///
@@ -1562,23 +1563,32 @@ pub mod error_codes {
     pub const PRESENTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit:presentationInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/submit:attributesMissing`
     ///
     /// The manifest's `requestedAttributes` marks an attribute required and `attributes` does not answer it. The details name the missing types so the applicant can supply them and resubmit.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ATTRIBUTES_MISSING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit:attributesMissing",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"types\":{\"items\":{\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"types\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/join-requests/submit:attributesUnrequested`
     ///
     /// An entry in `attributes` names a type the manifest does not request. Refused rather than stored, so a client that over-shares cannot leave an applicant's data with a community that never asked for it. The details name the types.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ATTRIBUTES_UNREQUESTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit:attributesUnrequested",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"types\":{\"items\":{\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"types\"],\"type\":\"object\"}",
+        ),
     };
 }

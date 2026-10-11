@@ -616,6 +616,7 @@ pub mod error_codes {
     pub const PERMISSION_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/reject:permissionDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/reject:notFound`
     ///
@@ -625,6 +626,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/reject:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/reject:notPending`
     ///
@@ -634,5 +636,6 @@ pub mod error_codes {
     pub const NOT_PENDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/reject:notPending",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

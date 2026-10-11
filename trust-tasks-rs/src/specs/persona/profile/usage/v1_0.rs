@@ -149,7 +149,7 @@ A context-local face has no reach: it lives in its context and is worn there by 
 /// ```json
 ///{
 ///  "title": "FaceReach",
-///  "description": "\nWhere a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
+///  "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
 ///  "oneOf": [
 ///    {
 ///      "type": "object",

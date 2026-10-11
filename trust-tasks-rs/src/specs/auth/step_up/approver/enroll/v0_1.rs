@@ -986,6 +986,7 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:subjectMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/enroll:noFactorHeld`
     ///
@@ -995,6 +996,7 @@ pub mod error_codes {
     pub const NO_FACTOR_HELD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:noFactorHeld",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/enroll:statementInvalid`
     ///
@@ -1004,6 +1006,7 @@ pub mod error_codes {
     pub const STATEMENT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:statementInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/enroll:approverNotDistinct`
     ///
@@ -1013,6 +1016,7 @@ pub mod error_codes {
     pub const APPROVER_NOT_DISTINCT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:approverNotDistinct",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/enroll:approverAlreadyBound`
     ///
@@ -1022,6 +1026,7 @@ pub mod error_codes {
     pub const APPROVER_ALREADY_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:approverAlreadyBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/enroll:tooManyApprovers`
     ///
@@ -1031,6 +1036,7 @@ pub mod error_codes {
     pub const TOO_MANY_APPROVERS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:tooManyApprovers",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/enroll:replaceNotFound`
     ///
@@ -1040,5 +1046,6 @@ pub mod error_codes {
     pub const REPLACE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/enroll:replaceNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

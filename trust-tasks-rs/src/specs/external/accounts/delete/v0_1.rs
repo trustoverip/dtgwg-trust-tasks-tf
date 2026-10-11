@@ -649,6 +649,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/delete:invalidTransition`
     ///
@@ -658,5 +659,6 @@ pub mod error_codes {
     pub const INVALID_TRANSITION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/delete:invalidTransition",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

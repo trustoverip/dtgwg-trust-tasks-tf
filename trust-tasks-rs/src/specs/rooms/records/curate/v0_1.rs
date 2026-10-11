@@ -1034,6 +1034,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/curate:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/curate:versionConflict`
     ///
@@ -1043,6 +1044,7 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/curate:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/curate:alreadyRetracted`
     ///
@@ -1052,6 +1054,7 @@ pub mod error_codes {
     pub const ALREADY_RETRACTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/curate:alreadyRetracted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/curate:roomNotLive`
     ///
@@ -1061,5 +1064,6 @@ pub mod error_codes {
     pub const ROOM_NOT_LIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/curate:roomNotLive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -717,6 +717,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/restore:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/credentials/restore:notDeleted`
     ///
@@ -726,6 +727,7 @@ pub mod error_codes {
     pub const NOT_DELETED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/restore:notDeleted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/credentials/restore:graceExpired`
     ///
@@ -735,5 +737,6 @@ pub mod error_codes {
     pub const GRACE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/restore:graceExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

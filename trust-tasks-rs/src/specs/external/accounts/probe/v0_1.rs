@@ -1121,6 +1121,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:archived`
     ///
@@ -1130,6 +1131,7 @@ pub mod error_codes {
     pub const ARCHIVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:archived",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:providerUnavailable`
     ///
@@ -1139,5 +1141,6 @@ pub mod error_codes {
     pub const PROVIDER_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:providerUnavailable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

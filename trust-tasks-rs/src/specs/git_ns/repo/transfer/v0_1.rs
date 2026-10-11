@@ -2041,6 +2041,7 @@ pub mod error_codes {
     pub const UNKNOWN_REPO: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownRepo",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:repoNotActive`
     ///
@@ -2050,6 +2051,7 @@ pub mod error_codes {
     pub const REPO_NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:repoNotActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -2059,6 +2061,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/repo/transfer:notOwner`
     ///
@@ -2068,6 +2071,7 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/repo/transfer:notOwner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/repo/transfer:selfTransfer`
     ///
@@ -2077,5 +2081,6 @@ pub mod error_codes {
     pub const SELF_TRANSFER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/repo/transfer:selfTransfer",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

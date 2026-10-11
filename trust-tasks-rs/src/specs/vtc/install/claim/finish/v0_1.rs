@@ -810,6 +810,7 @@ pub mod error_codes {
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:invalidToken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:registrationMismatch`
     ///
@@ -819,6 +820,7 @@ pub mod error_codes {
     pub const REGISTRATION_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:registrationMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:bindingInvalid`
     ///
@@ -828,5 +830,6 @@ pub mod error_codes {
     pub const BINDING_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:bindingInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

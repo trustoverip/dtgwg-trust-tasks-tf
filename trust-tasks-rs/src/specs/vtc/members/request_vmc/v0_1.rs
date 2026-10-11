@@ -530,5 +530,6 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/request-vmc:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1875,14 +1875,19 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/change-queue-limits:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/account/change-queue-limits:selfChangeDenied`
     ///
     /// A standard account that lacks the relevant selfManage*QueueLimit capability attempted to change its own queue limit.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SELF_CHANGE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/change-queue-limits:selfChangeDenied",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"deniedLimits\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

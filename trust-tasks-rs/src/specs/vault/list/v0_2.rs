@@ -3501,15 +3501,20 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/list:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/list:filterConflict`
     ///
     /// The supplied filter combination is invalid (e.g. both `usedSince` and `neverUsed` set).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const FILTER_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/list:filterConflict",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"used_since_with_never_used\",\"page_size_above_ceiling\",\"cursor_invalid\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/list:cursorInvalid`
     ///
@@ -3519,5 +3524,6 @@ pub mod error_codes {
     pub const CURSOR_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/list:cursorInvalid",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -194,7 +194,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTran
 ///      "type": "string"
 ///    },
 ///    "extensions": {
-///      "description": "\nClient extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
+///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
 ///      "type": "object"
 ///    },
 ///    "rpId": {
@@ -1651,6 +1651,7 @@ pub mod error_codes {
     pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-request:subjectUnknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-request:methodUnsupported`
     ///
@@ -1660,6 +1661,7 @@ pub mod error_codes {
     pub const METHOD_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-request:methodUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-request:userDeclined`
     ///
@@ -1669,6 +1671,7 @@ pub mod error_codes {
     pub const USER_DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-request:userDeclined",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approve-request:rateLimited`
     ///
@@ -1678,5 +1681,6 @@ pub mod error_codes {
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approve-request:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

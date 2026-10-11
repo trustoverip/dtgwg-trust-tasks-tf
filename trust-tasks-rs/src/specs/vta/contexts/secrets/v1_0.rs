@@ -855,6 +855,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/secrets:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/contexts/secrets:notReleasable`
     ///
@@ -864,5 +865,6 @@ pub mod error_codes {
     pub const NOT_RELEASABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/secrets:notReleasable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

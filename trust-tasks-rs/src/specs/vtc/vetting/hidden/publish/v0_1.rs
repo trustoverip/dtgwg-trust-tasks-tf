@@ -3138,6 +3138,7 @@ pub mod error_codes {
     pub const NO_SUCH_CRITERION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:noSuchCriterion",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/hidden/publish:noVetting`
     ///
@@ -3147,6 +3148,7 @@ pub mod error_codes {
     pub const NO_VETTING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:noVetting",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/hidden/publish:approverNotSigner`
     ///
@@ -3156,6 +3158,7 @@ pub mod error_codes {
     pub const APPROVER_NOT_SIGNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:approverNotSigner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/hidden/publish:approverInEvent`
     ///
@@ -3165,6 +3168,7 @@ pub mod error_codes {
     pub const APPROVER_IN_EVENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:approverInEvent",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/hidden/publish:signerChanged`
     ///
@@ -3174,6 +3178,7 @@ pub mod error_codes {
     pub const SIGNER_CHANGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:signerChanged",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/hidden/publish:otherCriterion`
     ///
@@ -3183,5 +3188,6 @@ pub mod error_codes {
     pub const OTHER_CRITERION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:otherCriterion",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

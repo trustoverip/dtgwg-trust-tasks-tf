@@ -517,6 +517,7 @@ pub mod error_codes {
     pub const INVALID_NAME: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/check:invalidName",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management:unknownDomain`
     ///
@@ -526,5 +527,6 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknownDomain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

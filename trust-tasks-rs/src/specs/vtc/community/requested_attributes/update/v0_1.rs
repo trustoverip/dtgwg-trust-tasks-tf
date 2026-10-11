@@ -678,8 +678,12 @@ pub mod error_codes {
     /// The same claim `type` appears more than once. Two answers to one question is no answer; ask for each attribute once.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DUPLICATE_TYPE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/community/requested-attributes/update:duplicateType",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":1,\"properties\":{\"type\":{\"maxLength\":128,\"type\":\"string\"}},\"required\":[\"type\"],\"type\":\"object\"}",
+        ),
     };
 }

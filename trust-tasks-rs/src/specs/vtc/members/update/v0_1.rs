@@ -1537,6 +1537,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/update:adminRoleForbidden`
     ///
@@ -1546,5 +1547,6 @@ pub mod error_codes {
     pub const ADMIN_ROLE_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/update:adminRoleForbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

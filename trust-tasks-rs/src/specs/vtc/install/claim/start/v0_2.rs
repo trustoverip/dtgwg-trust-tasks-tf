@@ -151,7 +151,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  ],
 ///  "properties": {
 ///    "claimSecret": {
-///      "description": "\nA short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.",
+///      "description": "A short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.",
 ///      "type": "string",
 ///      "minLength": 1
 ///    },
@@ -206,7 +206,7 @@ Optional in the schema because a maintainer may issue tokens without one — but
 ///
 /// ```json
 ///{
-///  "description": "\nA short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.",
+///  "description": "A short code the operator receives **out of band**, alongside the install URL but through a separate channel.\n\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\n\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.",
 ///  "type": "string",
 ///  "minLength": 1
 ///}
@@ -635,5 +635,6 @@ pub mod error_codes {
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/start:invalidToken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

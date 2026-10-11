@@ -674,5 +674,6 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "registry/record/create:already_exists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

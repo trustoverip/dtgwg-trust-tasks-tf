@@ -825,5 +825,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/admin-remove:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

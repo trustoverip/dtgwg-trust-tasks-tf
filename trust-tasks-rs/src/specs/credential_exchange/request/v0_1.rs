@@ -265,6 +265,7 @@ pub mod error_codes {
     pub const INVALID_PROOF: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/request:invalidProof",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `credential-exchange/request:unknownOffer`
     ///
@@ -274,5 +275,6 @@ pub mod error_codes {
     pub const UNKNOWN_OFFER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/request:unknownOffer",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

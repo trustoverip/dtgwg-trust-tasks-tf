@@ -590,9 +590,13 @@ pub mod error_codes {
     /// The attribute is referenced by at least one profile and `cascade` was not set. The details name the referring profiles so the holder can decide between editing those profiles and cascading.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const REFERENCED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/attribute/delete:referenced",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"profileIds\":{\"items\":{\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"}},\"required\":[\"profileIds\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/attribute/delete:versionConflict`
     ///
@@ -602,5 +606,6 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/attribute/delete:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

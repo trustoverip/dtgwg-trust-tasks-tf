@@ -39,7 +39,7 @@ The act axis and the approve axis are independent and a consumer MUST resolve th
 /// ```json
 ///{
 ///  "title": "AclEntry",
-///  "description": "\nOne access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
+///  "description": "One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
 ///  "type": "object",
 ///  "required": [
 ///    "act",
@@ -3489,6 +3489,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/update:roleChangeNotPermitted`
     ///
@@ -3498,6 +3499,7 @@ pub mod error_codes {
     pub const ROLE_CHANGE_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:roleChangeNotPermitted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/update:narrowingNotPermitted`
     ///
@@ -3507,33 +3509,46 @@ pub mod error_codes {
     pub const NARROWING_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:narrowingNotPermitted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/update:invalidActScope`
     ///
     /// The replacement act or approve scope cannot be held at this maintainer — it names a context the maintainer does not hold, or uses the `contexts` shape at a maintainer without contexts.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_ACT_SCOPE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:invalidActScope",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"member\":{\"enum\":[\"act\",\"approve\"],\"type\":\"string\"},\"offendingContexts\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"member\"],\"type\":\"object\"}",
+        ),
     };
     /// `acl/update:unknownCapability`
     ///
     /// A capability in the replacement `capabilities` or `approveCapabilities` is not in the maintainer's capability registry.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNKNOWN_CAPABILITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:unknownCapability",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `acl/update:capabilityOutsideCeiling`
     ///
     /// A non-additive capability in the replacement set lies outside the ceiling of the entry's role.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CAPABILITY_OUTSIDE_CEILING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:capabilityOutsideCeiling",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"role\":{\"type\":\"string\"}},\"required\":[\"role\",\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `acl/update:additiveRequiresUnrestricted`
     ///
@@ -3543,15 +3558,20 @@ pub mod error_codes {
     pub const ADDITIVE_REQUIRES_UNRESTRICTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:additiveRequiresUnrestricted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/update:additiveWithinCeiling`
     ///
     /// A capability is marked `additive` although the role's ceiling already includes it.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ADDITIVE_WITHIN_CEILING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:additiveWithinCeiling",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `acl/update:approveWiderThanGranter`
     ///
@@ -3561,14 +3581,19 @@ pub mod error_codes {
     pub const APPROVE_WIDER_THAN_GRANTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:approveWiderThanGranter",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/update:delegationExceedsGranter`
     ///
     /// The amended entry would hold authority the amending party does not hold — on act scope, a capability or its qualifier, the key filter, or expiry.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DELEGATION_EXCEEDS_GRANTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/update:delegationExceedsGranter",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"axes\":{\"items\":{\"enum\":[\"act\",\"capabilities\",\"keys\",\"expiresAt\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"axes\"],\"type\":\"object\"}",
+        ),
     };
 }

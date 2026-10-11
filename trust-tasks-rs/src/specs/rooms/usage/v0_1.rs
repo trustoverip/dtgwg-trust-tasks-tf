@@ -1282,6 +1282,7 @@ pub mod error_codes {
     pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/usage:chainTooDeep",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/usage:notAvailable`
     ///
@@ -1291,5 +1292,6 @@ pub mod error_codes {
     pub const NOT_AVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/usage:notAvailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

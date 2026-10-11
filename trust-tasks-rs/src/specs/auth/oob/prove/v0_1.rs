@@ -1585,6 +1585,7 @@ pub mod error_codes {
     pub const NUMBER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob/prove:numberMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:notClaimant`
     ///
@@ -1594,6 +1595,7 @@ pub mod error_codes {
     pub const NOT_CLAIMANT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:notClaimant",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:requestExpired`
     ///
@@ -1603,6 +1605,7 @@ pub mod error_codes {
     pub const REQUEST_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:notAuthorized`
     ///
@@ -1612,14 +1615,19 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:rateLimited`
     ///
     /// The approver's network has hit the service's prove limit. `details.retryAfter` MAY give seconds until a retry.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfter\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

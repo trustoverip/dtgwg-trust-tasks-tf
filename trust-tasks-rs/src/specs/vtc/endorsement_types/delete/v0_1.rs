@@ -506,14 +506,19 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsement-types/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/endorsement-types/delete:inUse`
     ///
     /// Something still references this type — a live endorsement of it, an admission criterion requiring statements of it, or both. `details` says which, and a consumer that can determine both SHOULD report both rather than making the caller clear one and discover the other.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const IN_USE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsement-types/delete:inUse",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"criteria\":{\"description\":\"Identifiers of the admission criteria requiring statements of this type. Absent when the consumer has no criteria concept.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"liveEndorsements\":{\"description\":\"Count of unrevoked endorsements of this type. Absent when the consumer keeps no endorsement store of its own.\",\"minimum\":1,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

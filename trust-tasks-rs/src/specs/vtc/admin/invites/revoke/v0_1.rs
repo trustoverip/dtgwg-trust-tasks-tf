@@ -503,6 +503,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/invites/revoke:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/admin/invites/revoke:alreadyConsumed`
     ///
@@ -512,5 +513,6 @@ pub mod error_codes {
     pub const ALREADY_CONSUMED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/invites/revoke:alreadyConsumed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

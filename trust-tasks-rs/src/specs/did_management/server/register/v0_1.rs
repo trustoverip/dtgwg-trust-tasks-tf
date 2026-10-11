@@ -890,5 +890,6 @@ pub mod error_codes {
     pub const FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/server/register:forbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

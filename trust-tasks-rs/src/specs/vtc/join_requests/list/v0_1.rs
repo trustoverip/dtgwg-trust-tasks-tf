@@ -185,7 +185,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///      "maxItems": 32
 ///    },
 ///    "decision": {
-///      "description": "\nWhy this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
+///      "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
 ///      "type": [
 ///        "object",
 ///        "null"
@@ -520,7 +520,7 @@ Distinct from `policyDecision`, which records the community's internal verdict: 
 ///
 /// ```json
 ///{
-///  "description": "\nWhy this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
+///  "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
 ///  "type": "object",
 ///  "required": [
 ///    "code",

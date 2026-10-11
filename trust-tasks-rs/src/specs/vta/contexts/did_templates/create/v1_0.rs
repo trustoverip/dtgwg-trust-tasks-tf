@@ -1445,6 +1445,7 @@ pub mod error_codes {
     pub const DUPLICATE_NAME: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/did-templates/create:duplicateName",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/contexts/did-templates/create:contextNotFound`
     ///
@@ -1454,5 +1455,6 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/contexts/did-templates/create:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

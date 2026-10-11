@@ -1200,5 +1200,6 @@ pub mod error_codes {
     pub const DID_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/enroll-challenge:didNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

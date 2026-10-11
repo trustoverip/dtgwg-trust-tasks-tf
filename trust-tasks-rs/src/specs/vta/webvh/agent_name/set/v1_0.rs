@@ -563,5 +563,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/agent-name/set:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

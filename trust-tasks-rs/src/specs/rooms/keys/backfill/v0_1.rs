@@ -513,6 +513,7 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/backfill:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/backfill:hostUnreachable`
     ///
@@ -522,6 +523,7 @@ pub mod error_codes {
     pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/backfill:hostUnreachable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/backfill:hostRefused`
     ///
@@ -531,5 +533,6 @@ pub mod error_codes {
     pub const HOST_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/backfill:hostRefused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -611,5 +611,6 @@ pub mod error_codes {
     pub const LOCATION_TAKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/register-with-server:locationTaken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }
