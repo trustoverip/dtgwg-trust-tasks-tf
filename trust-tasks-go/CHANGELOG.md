@@ -11,6 +11,32 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.6.0 — 2026-10-11
+
+
+### Specifications
+
+- **rooms**: An unauthorized room request is refused with the standard permissionDenied (#743)
+
+Thirteen rooms specifications (create, epoch/{commits,mint,prune},
+  keys/open, keys/present 0.1 and 0.2, owner/{claim,transfer},
+  records/{curate,get,list,put} 0.1) declared a task-specific
+  `<slug>:notAuthorized` for a failure the framework already names: an
+  authorization refusal is the standard `permissionDenied` (SPEC §7.2, §8.3).
+  The extended code shadowed it, so a consumer switching on
+  `permissionDenied` never matched it, and a party that did not recognise it
+  degraded it to `taskFailed` (§8.5), a worse signal than the code it
+  duplicated. The later rooms specifications (records/put 0.2 onward) already
+  use the standard code, as the reference room host does for every version.
+
+  Each withdrawn declaration's condition is kept as one sentence at the end of
+  the specification's Conformance section, naming `permissionDenied`. Same
+  correction as `vta/app-state:permissionDenied` in 0.11.3.
+
+  Breaking for trust-tasks-rs: the thirteen `error_codes::NOT_AUTHORIZED`
+  constants are removed from the generated rooms modules. A consumer emitting
+  one should emit `StandardCode::PermissionDenied` instead.
+
 ## 0.5.9 — 2026-10-10
 
 

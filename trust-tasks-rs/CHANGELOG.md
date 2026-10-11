@@ -31,6 +31,69 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.28.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.8...trust-tasks-rs-v0.28.0) — 2026-10-11
+
+
+### Added
+
+- **rs**: Declared error codes carry their detailsSchema, and a titled variant no longer generates doctests ([#742](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/742))
+
+Two trust-tasks-codegen defects found while implementing rooms/keys/file-key
+  and external/* against the generated types.
+
+  DeclaredErrorCode gains `details_schema: Option<&'static str>`: the JSON
+  Schema a specification declares for an error's `details` (SPEC §7.3 item 9),
+  or None. A `$ref` into a shared schema file is resolved and carried inline,
+  with the same resolver PAYLOAD_SCHEMA uses, so the text compiles with no base
+  URI. With the `validate` feature, `DeclaredErrorCode::check_details` checks a
+  `details` value against it. An emitter previously had to hand-copy the schema
+  to test what it sends, and the copy drifted silently when the specification
+  changed. The struct is #[non_exhaustive], so adding the field is not breaking.
+
+  check-bindings now compares each code's details_schema with the front matter
+  (shared-file refs inlined, as the registry publishes them), refuses Some where
+  none is declared and None where one is, and compiles every one with ajv: all
+  195 agree.
+
+  The doc fix: typify documents an enum variant as "{title}\n\n{description}",
+  so a titled inline oneOf branch got a two-paragraph doc that no schema
+  contained. Printed as /**…*/ with its first line flush against the opener,
+  rustdoc read the second paragraph as an indented code block and compiled it as
+  a doctest; titling the AccountSettings branches of external/_shared broke 77.
+  The description-only pre-pass could not see text typify assembles itself, so
+  it is replaced by a pass over every #[doc] attribute typify emits, which starts
+  a multi-paragraph doc on its own line. Verified by titling those branches: 77
+  failures before, none after. The regenerated tree differs only in the doc-
+  embedded schemas, which no longer carry the stray leading "\n" the old pass
+  wrote into `description`.
+
+
+
+### Specifications
+
+- **rooms**: An unauthorized room request is refused with the standard permissionDenied ([#743](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/743))
+
+Thirteen rooms specifications (create, epoch/{commits,mint,prune},
+  keys/open, keys/present 0.1 and 0.2, owner/{claim,transfer},
+  records/{curate,get,list,put} 0.1) declared a task-specific
+  `<slug>:notAuthorized` for a failure the framework already names: an
+  authorization refusal is the standard `permissionDenied` (SPEC §7.2, §8.3).
+  The extended code shadowed it, so a consumer switching on
+  `permissionDenied` never matched it, and a party that did not recognise it
+  degraded it to `taskFailed` (§8.5), a worse signal than the code it
+  duplicated. The later rooms specifications (records/put 0.2 onward) already
+  use the standard code, as the reference room host does for every version.
+
+  Each withdrawn declaration's condition is kept as one sentence at the end of
+  the specification's Conformance section, naming `permissionDenied`. Same
+  correction as `vta/app-state:permissionDenied` in 0.11.3.
+
+  Breaking for trust-tasks-rs: the thirteen `error_codes::NOT_AUTHORIZED`
+  constants are removed from the generated rooms modules. A consumer emitting
+  one should emit `StandardCode::PermissionDenied` instead.
+
+
+
 ## [0.27.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.27.7...trust-tasks-rs-v0.27.8) — 2026-10-10
 
 
