@@ -43,9 +43,6 @@ retention:
   class: transient
   rationale: "The task returns existing state and stores nothing of its own."
 errorCodes:
-  - code: rooms/records/get:notAuthorized
-    meaning: "The presentation does not confer `read` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/records/get:notFound
     meaning: "No record with that key in this room."
     retryable: false
@@ -103,6 +100,8 @@ A host **SHOULD** record reads on `open` and `attributed` rooms. Reads of shared
 are the interesting event — but such a log is itself a record of who was interested in
 what, so it warrants a stated retention period of its own rather than inheriting a general
 one.
+
+A presentation that does not confer `read` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## The data commitment
 

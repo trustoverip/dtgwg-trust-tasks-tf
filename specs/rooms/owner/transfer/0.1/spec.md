@@ -40,9 +40,6 @@ retention:
   class: durable
   rationale: "The recorded owner persists; it is who the host addresses about lifecycle."
 errorCodes:
-  - code: rooms/owner/transfer:notAuthorized
-    meaning: "The presentation does not confer `admin` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/owner/transfer:notAMember
     meaning: "The host could independently establish that the incoming owner is not a member, and so could not renew what they are being given. A host with no basis to judge does not raise this."
     retryable: false
@@ -77,6 +74,8 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 ## Conformance
 
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
+
+A presentation that does not confer `admin` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Behaviour
 

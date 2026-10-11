@@ -637,8 +637,7 @@ impl crate::RequestPayload for Payload {
 }
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
-pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
-    &[error_codes::NOT_AUTHORIZED, error_codes::NOT_A_MEMBER];
+pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::NOT_A_MEMBER];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
 ///
@@ -646,16 +645,6 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
-    /// `rooms/owner/transfer:notAuthorized`
-    ///
-    /// The presentation does not confer `admin` at this room's scope, or its chain does not reach the room.
-    ///
-    /// Declared `retryable: false`.
-    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "rooms/owner/transfer:notAuthorized",
-        retryable: false,
-        details_schema: ::core::option::Option::None,
-    };
     /// `rooms/owner/transfer:notAMember`
     ///
     /// The host could independently establish that the incoming owner is not a member, and so could not renew what they are being given. A host with no basis to judge does not raise this.

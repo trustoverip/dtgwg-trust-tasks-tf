@@ -40,9 +40,6 @@ retention:
   class: transient
   rationale: "The task returns existing state and stores nothing of its own."
 errorCodes:
-  - code: rooms/epoch/commits:notAuthorized
-    meaning: "The presentation does not confer `read` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/epoch/commits:chainTooDeep
     meaning: "The authority chain exceeds the maximum of 8 links."
     retryable: false
@@ -69,6 +66,8 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
+
+A presentation that does not confer `read` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Why a host may relay a commit when it may not relay a Welcome
 

@@ -41,9 +41,6 @@ retention:
   class: durable
   rationale: "The epoch is part of the room's durable state and determines which records a given key can open."
 errorCodes:
-  - code: rooms/epoch/mint:notAuthorized
-    meaning: "The presentation does not confer `admin` at this room's scope."
-    retryable: false
   - code: rooms/epoch/mint:nonSequential
     meaning: "The epoch is not exactly one greater than the current one."
     retryable: false
@@ -125,6 +122,8 @@ Where `link` is present, a conforming consumer **MUST** reject the request unles
 epoch. Where it is absent, a host **MUST** advance the epoch anyway: an absent link is a
 room's stated choice, and a host that refused would be enforcing a policy it was never
 told.
+
+A presentation that does not confer `admin` at the room's scope is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Security & Privacy
 

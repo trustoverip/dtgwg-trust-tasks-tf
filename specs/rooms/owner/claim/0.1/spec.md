@@ -49,9 +49,6 @@ errorCodes:
   - code: rooms/owner/claim:notAMember
     meaning: "The claimant presented no valid membership credential for this room, and so could not renew what they are claiming."
     retryable: false
-  - code: rooms/owner/claim:notAuthorized
-    meaning: "The presentation does not verify against this room, or its chain does not reach it."
-    retryable: false
 related:
   - rooms/owner/transfer
   - rooms/epoch/mint
@@ -75,6 +72,8 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 ## Conformance
 
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
+
+A presentation that does not verify against the room, or whose chain does not reach it, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Behaviour
 

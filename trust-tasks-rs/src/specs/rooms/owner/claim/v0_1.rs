@@ -640,7 +640,6 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::NOT_NOMINATED,
     error_codes::ROOM_STILL_LIVE,
     error_codes::NOT_A_MEMBER,
-    error_codes::NOT_AUTHORIZED,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -676,16 +675,6 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/claim:notAMember",
-        retryable: false,
-        details_schema: ::core::option::Option::None,
-    };
-    /// `rooms/owner/claim:notAuthorized`
-    ///
-    /// The presentation does not verify against this room, or its chain does not reach it.
-    ///
-    /// Declared `retryable: false`.
-    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "rooms/owner/claim:notAuthorized",
         retryable: false,
         details_schema: ::core::option::Option::None,
     };

@@ -772,7 +772,6 @@ impl crate::RequestPayload for Payload {
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::ALREADY_EXISTS,
     error_codes::VISIBILITY_NOT_PERMITTED,
-    error_codes::NOT_AUTHORIZED,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -798,16 +797,6 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const VISIBILITY_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/create:visibilityNotPermitted",
-        retryable: false,
-        details_schema: ::core::option::Option::None,
-    };
-    /// `rooms/create:notAuthorized`
-    ///
-    /// The caller may not create rooms on this host.
-    ///
-    /// Declared `retryable: false`.
-    pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-        code: "rooms/create:notAuthorized",
         retryable: false,
         details_schema: ::core::option::Option::None,
     };

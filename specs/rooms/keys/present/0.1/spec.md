@@ -42,9 +42,6 @@ retention:
   class: transient
   rationale: "The task returns a result and stores nothing; an oracle that cached plaintext would create a second copy of the room outside the room."
 errorCodes:
-  - code: rooms/keys/present:notAuthorized
-    meaning: "The caller is not authorized to present for this room, or not for this action."
-    retryable: false
   - code: rooms/keys/present:actionNotHeld
     meaning: "The principal's own credentials do not confer the requested action."
     retryable: false
@@ -78,6 +75,8 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 ## Conformance
 
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
+
+A caller who is not authorized to present for the room, or not for that action, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Security & Privacy
 

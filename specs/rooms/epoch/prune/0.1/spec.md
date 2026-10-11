@@ -45,9 +45,6 @@ retention:
   rationale: >-
     The task removes state and stores nothing of its own beyond whatever audit entry the host keeps.
 errorCodes:
-  - code: rooms/epoch/prune:notAuthorized
-    meaning: "The presentation does not confer `admin` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/epoch/prune:notAhead
     meaning: "`beforeEpoch` is at or above the room's current epoch, which would drop the chain a member needs to read anything at all. `details.epoch` names the room's current one."
     retryable: false
@@ -75,6 +72,8 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
+
+A presentation that does not confer `admin` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## What is actually destroyed, and what is not
 

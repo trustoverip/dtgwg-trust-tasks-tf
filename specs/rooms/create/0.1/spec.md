@@ -47,9 +47,6 @@ errorCodes:
   - code: rooms/create:visibilityNotPermitted
     meaning: "The host's governance does not permit rooms of this visibility."
     retryable: false
-  - code: rooms/create:notAuthorized
-    meaning: "The caller may not create rooms on this host."
-    retryable: false
 related:
   - rooms/epoch/mint
   - rooms/records/put
@@ -113,6 +110,8 @@ epoch link presented for a room whose policy is `fromJoin` rather than storing o
 declared it would not have. Silently discarding it instead would let a producer believe the
 room's history was being retained when it was not, which is the failure this member exists
 to make explicit.
+
+A caller who may not create rooms on this host is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Security & Privacy
 

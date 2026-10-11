@@ -42,9 +42,6 @@ retention:
   class: transient
   rationale: "The task returns existing state and stores nothing of its own."
 errorCodes:
-  - code: rooms/records/list:notAuthorized
-    meaning: "The presentation does not confer `read` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/records/list:invalidCursor
     meaning: "The cursor was not issued by this host, or has expired."
     retryable: false
@@ -81,6 +78,8 @@ A conforming **consumer** (the host) **MUST** apply the chain rules of
 [`rooms/records/put`](../../put/0.1/spec.md); **MUST** return retracted records to a caller
 supplying `sinceVersion`, so that a deletion propagates; **MUST NOT** accept a cursor it did
 not issue; and **MUST NOT** return record bodies from this task.
+
+A presentation that does not confer `read` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## The data commitment
 

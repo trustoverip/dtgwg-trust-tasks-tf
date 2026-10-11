@@ -42,9 +42,6 @@ retention:
   class: durable
   rationale: "A record persists until a member overwrites it or retracts it; outliving the session that wrote it is the point of the task."
 errorCodes:
-  - code: rooms/records/put:notAuthorized
-    meaning: "The presentation does not confer `write` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/records/put:versionConflict
     meaning: "`expectedVersion` did not match. The response carries the current version and record."
     retryable: false
@@ -122,6 +119,8 @@ A conforming host **MUST NOT** require a session or account of its own as a cond
 serving a `private` room. Authorizing by session would record which member acted on every
 operation, and a period of such records reconstructs the membership the tier exists to
 withhold — without breaking any cryptography.
+
+A presentation that does not confer `write` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Security & Privacy
 

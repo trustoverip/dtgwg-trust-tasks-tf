@@ -41,9 +41,6 @@ retention:
   class: durable
   rationale: "A tombstone is retained deliberately — the key and version remain so incremental sync converges. Erasing it is a separate, higher-trust act."
 errorCodes:
-  - code: rooms/records/curate:notAuthorized
-    meaning: "The presentation does not confer `curate` at this room's scope, or its chain does not reach the room."
-    retryable: false
   - code: rooms/records/curate:versionConflict
     meaning: "`expectedVersion` did not match. The response carries the current version."
     retryable: false
@@ -87,6 +84,8 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 ## Conformance
 
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
+
+A presentation that does not confer `curate` at the room's scope, or whose chain does not reach the room, is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 ## Behaviour
 
