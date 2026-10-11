@@ -11,6 +11,83 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.24.2 — 2026-10-11
+
+
+### Added
+
+- **keys**: Sign-jws and sign-csr — protocol signatures from a VTA-held key (#749)
+
+A custodian that hardens keys/sign frames every payload under its own
+  opaque signing domain (vti.vta.opaque-signing.v1 || 0x00 || payload), so
+  nothing signed there verifies as a protocol signature. That is the point
+  of the hardening, and it also means nobody can obtain a usable JWS or a
+  certificate request for a custodian-held key. A community server acting
+  as an OpenID4VP verifier for swiyu and EUDI wallets needs both: a signed
+  request object (typ oauth-authz-req+jwt) and proof-of-possession JWTs,
+  and a PKCS#10 request to obtain an EUDI relying-party access certificate.
+
+  Two narrow tasks where the custodian builds the protocol bytes itself, so
+  the key stays custodian-held and the custodian signs only what it built:
+
+  - keys/sign-jws/0.1: the producer sends header members and a payload
+    (a JSON object, or payloadBase64Url); the custodian sets alg from the
+    key type (EdDSA, ES256, ES256K, ML-DSA-44/65), refuses alg, crit, b64,
+    jwk, jku and x5u, checks an x5c leaf against the key, serialises both
+    halves with RFC 8785 and signs the bare JWS signing input. Audited by a
+    digest of the signing input, never the payload.
+  - keys/sign-csr/0.1: the producer names the subject as ordered typed
+    attributes from a closed set and optional subject alternative names;
+    the custodian builds the CertificationRequestInfo from those and the
+    key's own public key (P-256 with ecdsa-with-SHA256, or Ed25519) and
+    returns the PEM request with the key's multibase public key. No
+    extension but subjectAltName is ever requested.
+
+  Registers the signJws and signCsr device capabilities (sign-jws and
+  sign-csr in 0.1). A custodian must not require sign for either; one that
+  frames keys/sign under its own domain should not accept sign in their
+  place, since its sign grant cannot yield a JWS or CSR.
+
+  Bindings regenerated (Rust, TS, Go, Dart); no version bumps.
+
+  Refs OpenVTC/verifiable-trust-infrastructure#1988
+
+
+
+### Specifications
+
+- **rooms**: Define the sealed record body, signed by its author and bound to its location (#747)
+
+* spec(rooms): define the sealed record body, signed by its author and bound to its location
+
+  records/put 0.2 already relied on "the sealed body the author signed" to
+  detect a substituted blob, and blobs.schema.json defined the body's `file`
+  member, but nothing defined the body itself. Without it, two clients cannot
+  read each other's records, and nobody can check the signature.
+
+  SealedRecordBody (rooms/_shared/0.1/room.schema.json) is the JSON inside
+  SealedRecord.ciphertext on attributed and private rooms:
+
+  - the open tier's title, description, body and tags;
+  - an optional `file` (FileManifest);
+  - `author`;
+  - a Data Integrity proof by `author` (eddsa-jcs-2022, or ecdsa-jcs-2019 for
+    a hardware-backed signer).
+
+  Readers MUST verify the proof and MUST refuse a record that fails it, not show
+  it with a warning.
+
+  The body also signs its own location (roomId, key, version). The AEAD binds
+  those against the host, but any member can open and re-seal a record. Without
+  the signed location, a member could copy another member's body to a new key
+  or version, and on a private room, where the host records no author, readers
+  would attribute it to the original author. On attributed rooms, readers also
+  check `author` against the author the host recorded.
+
+  records/put 0.2 and keys/seal 0.1 point at the definition. keys/seal says a
+  key holder seals what it is given and never signs for the writer. No payload
+  or response schema changes, so no version moves and no generated type changes.
+
 ## 0.24.1 — 2026-10-11
 
 

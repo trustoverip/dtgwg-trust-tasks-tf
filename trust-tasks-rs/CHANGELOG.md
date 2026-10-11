@@ -31,6 +31,49 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.29.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.28.1...trust-tasks-rs-v0.29.0) — 2026-10-11
+
+
+### Added
+
+- **keys**: Sign-jws and sign-csr — protocol signatures from a VTA-held key ([#749](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/749))
+
+A custodian that hardens keys/sign frames every payload under its own
+  opaque signing domain (vti.vta.opaque-signing.v1 || 0x00 || payload), so
+  nothing signed there verifies as a protocol signature. That is the point
+  of the hardening, and it also means nobody can obtain a usable JWS or a
+  certificate request for a custodian-held key. A community server acting
+  as an OpenID4VP verifier for swiyu and EUDI wallets needs both: a signed
+  request object (typ oauth-authz-req+jwt) and proof-of-possession JWTs,
+  and a PKCS#10 request to obtain an EUDI relying-party access certificate.
+
+  Two narrow tasks where the custodian builds the protocol bytes itself, so
+  the key stays custodian-held and the custodian signs only what it built:
+
+  - keys/sign-jws/0.1: the producer sends header members and a payload
+    (a JSON object, or payloadBase64Url); the custodian sets alg from the
+    key type (EdDSA, ES256, ES256K, ML-DSA-44/65), refuses alg, crit, b64,
+    jwk, jku and x5u, checks an x5c leaf against the key, serialises both
+    halves with RFC 8785 and signs the bare JWS signing input. Audited by a
+    digest of the signing input, never the payload.
+  - keys/sign-csr/0.1: the producer names the subject as ordered typed
+    attributes from a closed set and optional subject alternative names;
+    the custodian builds the CertificationRequestInfo from those and the
+    key's own public key (P-256 with ecdsa-with-SHA256, or Ed25519) and
+    returns the PEM request with the key's multibase public key. No
+    extension but subjectAltName is ever requested.
+
+  Registers the signJws and signCsr device capabilities (sign-jws and
+  sign-csr in 0.1). A custodian must not require sign for either; one that
+  frames keys/sign under its own domain should not accept sign in their
+  place, since its sign grant cannot yield a JWS or CSR.
+
+  Bindings regenerated (Rust, TS, Go, Dart); no version bumps.
+
+  Refs OpenVTC/verifiable-trust-infrastructure#1988
+
+
+
 ## [0.28.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.28.0...trust-tasks-rs-v0.28.1) — 2026-10-11
 
 
