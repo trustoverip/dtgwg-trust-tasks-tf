@@ -1,0 +1,104 @@
+[
+  {
+    "note": "Neither `payload` nor `payloadBase64Url` — a JWS with no payload is not what this task signs, and a custodian that defaulted one would be choosing what the key vouches for.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "header": { "typ": "oauth-authz-req+jwt" }
+    }
+  },
+  {
+    "note": "Both `payload` and `payloadBase64Url` — exactly one is allowed, so the custodian never has to pick which of two payloads the producer meant to sign.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "payload": { "nonce": "q8vTt3yN5mQ0aW2f" },
+      "payloadBase64Url": "eyJub25jZSI6InE4dlR0M3lONW1RMGFXMmYifQ"
+    }
+  },
+  {
+    "note": "Missing `keyId` — the custodian chooses `alg` from the key, so without one there is nothing to sign with and no algorithm to set.",
+    "payload": {
+      "payload": { "nonce": "q8vTt3yN5mQ0aW2f" }
+    }
+  },
+  {
+    "note": "A top-level `algorithm` member — the producer cannot name the algorithm (keys/sign's shape). `additionalProperties: false` keeps it out; an `alg` inside `header` is refused by the custodian as headerMemberForbidden.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "algorithm": "ES256",
+      "payload": { "nonce": "q8vTt3yN5mQ0aW2f" }
+    }
+  },
+  {
+    "note": "A `signingInput` member carrying raw bytes to sign — the generic oracle's shape. The custodian builds the signing input itself; additionalProperties: false is what keeps this task from becoming keys/sign under another name.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "signingInput": "ZXlKaGJHY2lPaUpGVXpJMU5pSjkuZXlKdWIyNWpaU0k2SW5FNGRsUjBNM2xPTlcxUk1HRlhNbVlpZlE"
+    }
+  },
+  {
+    "note": "`payload` as a string rather than a JSON object — a non-JSON payload goes in `payloadBase64Url`, so the custodian never guesses whether a string is JSON text or bytes.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "payload": "{\"nonce\":\"q8vTt3yN5mQ0aW2f\"}"
+    }
+  },
+  {
+    "note": "`payloadBase64Url` in standard base64 with padding — the pattern refuses `+`, `/` and `=`.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "payloadBase64Url": "aGVsbG8+d29ybGQ/IQ=="
+    }
+  },
+  {
+    "note": "`header` as an array rather than an object — a JOSE header is a JSON object.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "header": [{ "typ": "oauth-authz-req+jwt" }],
+      "payload": { "nonce": "q8vTt3yN5mQ0aW2f" }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "payload": { "nonce": "q8vTt3yN5mQ0aW2f" },
+      "ext": { "no-dots": {} }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `jws` — the one member the task exists to return.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "alg": "ES256"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response `alg` outside the closed set — `none` is never a value a custodian chooses.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "alg": "none",
+      "jws": "eyJhbGciOiJub25lIn0.eyJub25jZSI6InE4dlR0M3lONW1RMGFXMmYifQ.c2ln"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A JWS with an empty signature segment — an unsigned token is not a response to a signing request, and the pattern requires three non-empty segments.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "alg": "ES256",
+      "jws": "eyJhbGciOiJFUzI1NiJ9.eyJub25jZSI6InE4dlR0M3lONW1RMGFXMmYifQ."
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response smuggling key material beside the JWS — additionalProperties: false on the response is what makes 'never the private key' checkable.",
+    "payload": {
+      "keyId": "verifier-p256",
+      "alg": "ES256",
+      "jws": "eyJhbGciOiJFUzI1NiJ9.eyJub25jZSI6InE4dlR0M3lONW1RMGFXMmYifQ.c2ln",
+      "privateKey": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc"
+    }
+  }
+]

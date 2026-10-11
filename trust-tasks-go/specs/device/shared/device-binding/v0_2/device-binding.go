@@ -117,6 +117,8 @@ const (
 	CapabilityRoomOpen               Capability = "roomOpen"
 	CapabilityKeyExport              Capability = "keyExport"
 	CapabilitySignSshsig             Capability = "signSshsig"
+	CapabilitySignJWS                Capability = "signJws"
+	CapabilitySignCsr                Capability = "signCsr"
 	CapabilityExternalAccountsManage Capability = "externalAccountsManage"
 	CapabilityExternalAuthUse        Capability = "externalAuthUse"
 )

@@ -218,6 +218,8 @@ export const PAYLOAD_SCHEMA = {
         "roomOpen",
         "keyExport",
         "signSshsig",
+        "signJws",
+        "signCsr",
         "externalAccountsManage",
         "externalAuthUse"
       ],
@@ -550,6 +552,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "roomOpen",
         "keyExport",
         "signSshsig",
+        "signJws",
+        "signCsr",
         "externalAccountsManage",
         "externalAuthUse"
       ],

@@ -93,6 +93,8 @@ extension type const Capability(String value) {
   static const Capability roomOpen = Capability('room-open');
   static const Capability keyExport = Capability('key-export');
   static const Capability signSshsig = Capability('sign-sshsig');
+  static const Capability signJws = Capability('sign-jws');
+  static const Capability signCsr = Capability('sign-csr');
   static const Capability externalAccountsManage =
       Capability('external-accounts-manage');
   static const Capability externalAuthUse = Capability('external-auth-use');
@@ -115,6 +117,8 @@ extension type const Capability(String value) {
     roomOpen,
     keyExport,
     signSshsig,
+    signJws,
+    signCsr,
     externalAccountsManage,
     externalAuthUse
   ];

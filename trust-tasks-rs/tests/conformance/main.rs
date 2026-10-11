@@ -789,6 +789,12 @@ mod keys {
     mod sign {
         mod v0_1;
     }
+    mod sign_csr {
+        mod v0_1;
+    }
+    mod sign_jws {
+        mod v0_1;
+    }
     mod sign_sshsig {
         mod v0_1;
     }

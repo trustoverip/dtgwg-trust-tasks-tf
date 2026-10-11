@@ -1,0 +1,133 @@
+[
+  {
+    "note": "Missing required `subject` — a certificate request names who is to be certified, and a custodian that defaulted one would be choosing the name on the producer's behalf.",
+    "payload": {
+      "keyId": "eudi-access-p256"
+    }
+  },
+  {
+    "note": "Empty `subject` — an empty distinguished name would make the subject alternative name the only identity, which RFC 5280 handles with a critical extension this task never requests.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": []
+    }
+  },
+  {
+    "note": "`subject` as a DN string — the custodian never parses a distinguished name; the structured attribute list is what lets it encode exactly what was asked.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": "CN=Example Community Verifier,O=Example Community e.V.,C=DE"
+    }
+  },
+  {
+    "note": "An attribute type outside the closed set (passing an OID through) — each type's encoding is fixed by the specification, so an unknown one cannot be encoded on trust.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "2.5.4.12", "value": "Verifier" }]
+    }
+  },
+  {
+    "note": "A lower-cased attribute short name — these are externally owned names carried verbatim (`CN`, not `cn`).",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "cn", "value": "Example Community Verifier" }]
+    }
+  },
+  {
+    "note": "An attribute with an empty value — X.520 attribute values are never empty.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "" }]
+    }
+  },
+  {
+    "note": "A multi-valued RDN smuggled as an extra member — each element is one single-valued RDN.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier", "also": { "type": "O", "value": "Example Community e.V." } }]
+    }
+  },
+  {
+    "note": "A raw DER CertificationRequestInfo to sign — the generic oracle's shape. additionalProperties: false is what keeps the custodian building the request itself.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "certificationRequestInfo": "MIIBNgIBADB4MQswCQYDVQQGEwJERQ"
+    }
+  },
+  {
+    "note": "A requested extension — extensions come from the CA, and only the subject alternative name is ever requested.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "extensions": [{ "oid": "2.5.29.19", "critical": true, "value": "MAMBAf8" }]
+    }
+  },
+  {
+    "note": "A wildcard dNSName — this task requests exact host names only.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "subjectAltNames": { "dns": ["*.community.example"] }
+    }
+  },
+  {
+    "note": "An unknown subjectAltNames kind (`ip`) — the set of kinds is closed.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "subjectAltNames": { "ip": ["192.0.2.1"] }
+    }
+  },
+  {
+    "note": "An empty `subjectAltNames` object — present means at least one name; absent means none.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "subjectAltNames": {}
+    }
+  },
+  {
+    "note": "A URI with a space — uniformResourceIdentifier entries are printable ASCII without spaces.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "subjectAltNames": { "uri": ["https://verifier.community.example/a path"] }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "subject": [{ "type": "CN", "value": "Example Community Verifier" }],
+      "ext": { "no-dots": {} }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `publicKey` — the producer confirms the request is for the key it meant from this member.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "csr": "-----BEGIN CERTIFICATE REQUEST-----\nMIIBjzCCATYCAQAw\n-----END CERTIFICATE REQUEST-----\n"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A bare base64 DER rather than PEM `CERTIFICATE REQUEST` armour.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "csr": "MIIBjzCCATYCAQAweDELMAkGA1UEBhMCREUx",
+      "publicKey": "zDnaezKfW1F36Bc3ranfFMiPJXexoqUeHSYLeQwGns4npGdh3"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response smuggling key material beside the request — additionalProperties: false on the response is what makes 'never the private key' checkable.",
+    "payload": {
+      "keyId": "eudi-access-p256",
+      "csr": "-----BEGIN CERTIFICATE REQUEST-----\nMIIBjzCCATYCAQAw\n-----END CERTIFICATE REQUEST-----\n",
+      "publicKey": "zDnaezKfW1F36Bc3ranfFMiPJXexoqUeHSYLeQwGns4npGdh3",
+      "privateKey": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc"
+    }
+  }
+]

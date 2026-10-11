@@ -139,6 +139,8 @@
         "roomOpen",
         "keyExport",
         "signSshsig",
+        "signJws",
+        "signCsr",
         "externalAccountsManage",
         "externalAuthUse"
       ],

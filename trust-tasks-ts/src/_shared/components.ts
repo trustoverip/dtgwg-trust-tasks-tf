@@ -443,6 +443,8 @@ export type Capability_DeviceV0_1 =
   | "room-open"
   | "key-export"
   | "sign-sshsig"
+  | "sign-jws"
+  | "sign-csr"
   | "external-accounts-manage"
   | "external-auth-use";
 /**
@@ -465,6 +467,8 @@ export type Capability_DeviceV0_2 =
   | "roomOpen"
   | "keyExport"
   | "signSshsig"
+  | "signJws"
+  | "signCsr"
   | "externalAccountsManage"
   | "externalAuthUse";
 /**

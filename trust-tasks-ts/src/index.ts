@@ -306,6 +306,8 @@ export * as KeysRename_v0_1 from "./keys/rename/0.1/payload.js";
 export * as KeysRevoke_v0_1 from "./keys/revoke/0.1/payload.js";
 export * as KeysSetExportability_v0_1 from "./keys/set-exportability/0.1/payload.js";
 export * as KeysShow_v0_1 from "./keys/show/0.1/payload.js";
+export * as KeysSignCsr_v0_1 from "./keys/sign-csr/0.1/payload.js";
+export * as KeysSignJws_v0_1 from "./keys/sign-jws/0.1/payload.js";
 export * as KeysSignSshsig_v0_1 from "./keys/sign-sshsig/0.1/payload.js";
 export * as KeysSign_v0_1 from "./keys/sign/0.1/payload.js";
 export * as MediatorOpsShared_v0_1 from "./messaging/_shared/0.1/mediator-ops.js";
