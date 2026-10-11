@@ -31,6 +31,26 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.30.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.29.0...trust-tasks-rs-v0.30.0) — 2026-10-11
+
+
+### Specifications
+
+- **rooms**: Rooms/info and rooms/usage require a proof, like every other rooms/* task ([#750](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/750))
+
+Both said a proof was RECOMMENDED, on the reasoning that the room-issued chain
+  is "bound to whoever the host authenticated". A room operation carries no
+  session, so the only party a host can authenticate is the proof's signer. The
+  chain's leaf must be that party. Without a proof there is nobody to bind it
+  to, and the presentation becomes a bearer token. Every other rooms/* task
+  already requires a proof for this reason. A host implementing the chain rule
+  refuses an unsigned info or usage request anyway, so the RECOMMENDED was
+  already unworkable.
+
+  Breaking for a producer that sent these unsigned. Both specs are drafts.
+
+
+
 ## [0.29.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.28.1...trust-tasks-rs-v0.29.0) — 2026-10-11
 
 
