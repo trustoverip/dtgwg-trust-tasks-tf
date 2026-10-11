@@ -11,6 +11,42 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.6.1 — 2026-10-11
+
+
+### Added
+
+- **vtc**: Wallet presentation sessions for a join — start and status (#745)
+
+A VTC is becoming an OpenID4VP 1.0 verifier so that a swiyu or EUDI wallet
+  can present an SD-JWT VC as evidence for a community join. Such a wallet has
+  no DID agent: it cannot sign a Trust Task or receive a pushed document, and
+  speaks only OpenID4VP over HTTPS.
+
+  vtc/join-requests/wallet-session/start/0.1 lets the applicant, who does sign
+  Trust Tasks, begin that exchange on the wallet's behalf. It opens a
+  short-lived session bound to the proof signer, to one criterion version
+  (named by the manifest's requirementsDigest, as submit/0.3 names it) and
+  optionally to an existing join request, and returns the wallet invocation
+  URI, the prefixed client_id the key-binding JWT will name, and the
+  criterion's published DCQL query unchanged. The wallet-facing request_uri
+  (signed JAR, RFC 9101) and response_uri (direct_post.jwt) are OpenID4VP's
+  wire and outside the task.
+
+  vtc/join-requests/wallet-session/status/0.1 lets the applicant read the
+  outcome: the session state, and once presented, whether the query was
+  satisfied, the holder key and which credentials were presented — never
+  claim values — or, when refused, why. Only the applicant who began the
+  session can read it.
+
+  The wallet's presentation becomes evidence on the applicant's join, never
+  the applicant's identity: the holder key is recorded beside the applicant
+  DID, not instead of it.
+
+  Companion specification change: trustoverip/dtgwg-vti-spec#60
+  (foreign-protocol interfaces, VTI-OPS-095–099; VTI-CRD-024/025).
+  Tracking: OpenVTC/verifiable-trust-infrastructure#1988.
+
 ## 0.6.0 — 2026-10-11
 
 
