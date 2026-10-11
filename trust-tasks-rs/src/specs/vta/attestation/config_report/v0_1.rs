@@ -946,6 +946,7 @@ pub mod error_codes {
     pub const NOT_ATTESTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/config-report:notAttested",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/attestation/config-report:noConfigSnapshot`
     ///
@@ -955,6 +956,7 @@ pub mod error_codes {
     pub const NO_CONFIG_SNAPSHOT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/config-report:noConfigSnapshot",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/attestation/config-report:evidenceUnavailable`
     ///
@@ -964,5 +966,6 @@ pub mod error_codes {
     pub const EVIDENCE_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/config-report:evidenceUnavailable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -39,7 +39,7 @@ The act axis and the approve axis are independent and a consumer MUST resolve th
 /// ```json
 ///{
 ///  "title": "AclEntry",
-///  "description": "\nOne access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
+///  "description": "One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
 ///  "type": "object",
 ///  "required": [
 ///    "act",
@@ -3173,44 +3173,64 @@ pub mod error_codes {
     /// The fromRole or toRole string is not part of the ACL maintainer's role vocabulary.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ROLE_NOT_RECOGNIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/change-role:roleNotRecognized",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"knownRoles\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"offendingRole\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `acl/change-role:stateMismatch`
     ///
     /// The subject's current role does not match payload.fromRole; the change was based on stale state.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const STATE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/change-role:stateMismatch",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"currentRole\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `acl/change-role:capabilityOutsideCeiling`
     ///
     /// The entry lists a non-additive capability (to hold or to approve) that the new role's ceiling does not include. Narrow the entry with acl/update/0.2 first; the role change is refused rather than dropping the capability.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CAPABILITY_OUTSIDE_CEILING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/change-role:capabilityOutsideCeiling",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"role\":{\"type\":\"string\"}},\"required\":[\"role\",\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `acl/change-role:additiveWithinCeiling`
     ///
     /// The entry holds an additive capability that the new role's ceiling includes, so it would no longer be additive. Re-grant it as an ordinary capability with acl/update/0.2 first.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ADDITIVE_WITHIN_CEILING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/change-role:additiveWithinCeiling",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"capabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"capabilities\"],\"type\":\"object\"}",
+        ),
     };
     /// `acl/change-role:delegationExceedsGranter`
     ///
     /// Under the new role the entry would hold authority the changing authority does not hold itself — typically because an axis stated as `ceiling` now reaches capabilities the changer lacks.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DELEGATION_EXCEEDS_GRANTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/change-role:delegationExceedsGranter",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"axes\":{\"items\":{\"enum\":[\"capabilities\",\"approveCapabilities\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"axes\"],\"type\":\"object\"}",
+        ),
     };
 }

@@ -414,6 +414,7 @@ pub mod error_codes {
     pub const EPOCH_GAP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/commit:epochGap",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/commit:notAMember`
     ///
@@ -423,6 +424,7 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/commit:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/commit:commitInvalid`
     ///
@@ -432,5 +434,6 @@ pub mod error_codes {
     pub const COMMIT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/commit:commitInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

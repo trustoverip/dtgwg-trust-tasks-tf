@@ -528,5 +528,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/key/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

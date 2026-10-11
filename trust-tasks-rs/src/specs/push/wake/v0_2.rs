@@ -680,6 +680,7 @@ pub mod error_codes {
     pub const UNKNOWN_HANDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/wake:unknownHandle",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `push/wake:notAllowed`
     ///
@@ -689,6 +690,7 @@ pub mod error_codes {
     pub const NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/wake:notAllowed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `push/wake:tokenUnregistered`
     ///
@@ -698,5 +700,6 @@ pub mod error_codes {
     pub const TOKEN_UNREGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/wake:tokenUnregistered",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

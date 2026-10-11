@@ -1926,5 +1926,6 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/add:alreadyExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

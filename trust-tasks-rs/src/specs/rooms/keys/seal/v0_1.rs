@@ -614,5 +614,6 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/seal:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

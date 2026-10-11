@@ -541,6 +541,7 @@ pub mod error_codes {
     pub const NOT_MANAGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/rollback:notManaged",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/rollback:generationNotFound`
     ///
@@ -550,5 +551,6 @@ pub mod error_codes {
     pub const GENERATION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/rollback:generationNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

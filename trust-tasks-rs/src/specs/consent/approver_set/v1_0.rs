@@ -810,6 +810,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/approver-set:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `consent/approver-set:invalidBinding`
     ///
@@ -819,5 +820,6 @@ pub mod error_codes {
     pub const INVALID_BINDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/approver-set:invalidBinding",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

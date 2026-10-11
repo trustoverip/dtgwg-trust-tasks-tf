@@ -606,6 +606,7 @@ pub mod error_codes {
     pub const INVALID_ARGUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:invalidArgument",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys/sign:failedPrecondition`
     ///
@@ -615,5 +616,6 @@ pub mod error_codes {
     pub const FAILED_PRECONDITION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys/sign:failedPrecondition",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

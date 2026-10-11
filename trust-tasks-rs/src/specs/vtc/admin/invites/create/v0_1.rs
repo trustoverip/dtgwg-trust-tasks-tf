@@ -861,5 +861,6 @@ pub mod error_codes {
     pub const TTL_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/invites/create:ttlTooLong",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

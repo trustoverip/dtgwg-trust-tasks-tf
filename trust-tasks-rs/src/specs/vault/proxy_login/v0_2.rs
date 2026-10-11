@@ -272,7 +272,7 @@ M2A is the only implementation today; this is also the canonical default for new
 /// ```json
 ///{
 ///  "title": "DidcommAuthcryptEnvelope",
-///  "description": "\nDIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
+///  "description": "DIDComm v2 authcrypt JWE (ECDH-1PU + A256CBC-HS512, X25519/P-256 key agreement). Sender authentication is the JWE's `skid` — the producer's DID#keyAgreement. The maintainer's keyAgreement key is the recipient. Cleartext is JCS-canonical JSON of the variant's payload type.\n\nM2A is the only implementation today; this is also the canonical default for new code.",
 ///  "type": "object",
 ///  "required": [
 ///    "envelope",
@@ -492,7 +492,7 @@ No open-source implementation reads this yet outside vta-sdk's `sealed_transfer`
 /// ```json
 ///{
 ///  "title": "HpkeArmoredEnvelope",
-///  "description": "\nOpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
+///  "description": "OpenPGP-style ASCII-armored HPKE bundle — the existing OpenVTC sealed-transfer wire form (X25519-HKDF-SHA256 KEM + ChaCha20-Poly1305 AEAD, framed in armor with Bundle-Id / Digest-Algo headers and a CRC24 checksum). Producer assertion (`didSigned` / `attested` / `pinnedOnly`) is the integrity / authenticity anchor.\n\nNo open-source implementation reads this yet outside vta-sdk's `sealed_transfer` crate; new code SHOULD prefer the DIDComm variant. Defined here for parity with the existing offline-bundle / cross-VTA workflows that the design plan reserves for M5+.",
 ///  "type": "object",
 ///  "required": [
 ///    "armored",
@@ -2504,15 +2504,20 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/proxy-login:stepUpRequired`
     ///
     /// Policy demands a step-up proof before the login can proceed. Consumer retries with `stepUpProof` populated.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"$defs\":{\"StepUpChallenge\":{\"additionalProperties\":false,\"description\":\"The demand half of a step-up exchange: what the maintainer returns in the `details` of a `stepUpRequired` error, naming the method the consumer must satisfy and the challenge its proof must answer. The consumer's reply is a `StepUpProof`, whose `challengeId` echoes the `challengeId` here — the two definitions are the two ends of one exchange and their `method`/`kind` vocabularies MUST stay in step. Referenced by the `detailsSchema` of `vault/release`, `vault/proxy-login`, and `vault/sign-trust-task`, which previously each restated it.\",\"properties\":{\"challengeId\":{\"description\":\"Maintainer-issued challenge id. The consumer echoes this in `StepUpProof.challengeId` so the maintainer can bind the proof to the demand that provoked it.\",\"type\":\"string\"},\"method\":{\"description\":\"The step-up method the consumer must satisfy. Mirrors `StepUpProof.kind`.\",\"enum\":[\"webauthnUv\",\"pushApproval\",\"totp\"],\"type\":\"string\"},\"ttlSeconds\":{\"description\":\"How long the challenge remains answerable. Advisory to the consumer; the maintainer enforces its own expiry.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"method\",\"challengeId\"],\"title\":\"StepUpChallenge\",\"type\":\"object\"}},\"$ref\":\"#/$defs/StepUpChallenge\"}",
+        ),
     };
     /// `vault/proxy-login:targetUnreachable`
     ///
@@ -2522,6 +2527,7 @@ pub mod error_codes {
     pub const TARGET_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:targetUnreachable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/proxy-login:credentialRejected`
     ///
@@ -2531,6 +2537,7 @@ pub mod error_codes {
     pub const CREDENTIAL_REJECTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:credentialRejected",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/proxy-login:notProxyable`
     ///
@@ -2540,6 +2547,7 @@ pub mod error_codes {
     pub const NOT_PROXYABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:notProxyable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/proxy-login:policyDeny`
     ///
@@ -2549,14 +2557,19 @@ pub mod error_codes {
     pub const POLICY_DENY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:policyDeny",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/proxy-login:envelopeUnsupported`
     ///
     /// The maintainer cannot emit a `sealedSessionBlob` in any envelope kind the consumer accepts. Producers SHOULD consult `trust-task-discovery/0.1` for the maintainer's emit set.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/proxy-login:envelopeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"$defs\":{\"EnvelopeMismatch\":{\"additionalProperties\":false,\"description\":\"The `details` a maintainer returns with an `envelopeUnsupported` error: what the consumer asked for, and what this maintainer can actually emit. The consumer's recovery is to pick from `supportedEnvelopes`, so a maintainer that omits it leaves the caller guessing. Referenced by the `detailsSchema` of `vault/release` and `vault/proxy-login`, which previously each restated it.\",\"properties\":{\"requestedEnvelope\":{\"description\":\"The envelope kind the consumer asked for and this maintainer does not implement.\",\"type\":\"string\"},\"supportedEnvelopes\":{\"description\":\"The envelope kinds this maintainer does emit — the same set it advertises via `trust-task-discovery/0.1`.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"title\":\"EnvelopeMismatch\",\"type\":\"object\"}},\"$ref\":\"#/$defs/EnvelopeMismatch\"}",
+        ),
     };
 }

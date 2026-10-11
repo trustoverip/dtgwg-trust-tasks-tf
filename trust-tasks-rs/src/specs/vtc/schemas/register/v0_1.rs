@@ -1075,5 +1075,6 @@ pub mod error_codes {
     pub const INVALID_CREDENTIAL_SCHEMA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/register:invalidCredentialSchema",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

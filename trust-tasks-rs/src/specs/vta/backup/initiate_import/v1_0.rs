@@ -1180,6 +1180,7 @@ pub mod error_codes {
     pub const UNSUPPORTED_ALGORITHM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:unsupportedAlgorithm",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:invalidDigest`
     ///
@@ -1189,6 +1190,7 @@ pub mod error_codes {
     pub const INVALID_DIGEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:invalidDigest",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:transportUnavailable`
     ///
@@ -1198,6 +1200,7 @@ pub mod error_codes {
     pub const TRANSPORT_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:transportUnavailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/initiate-import:tooManyOpenBundles`
     ///
@@ -1207,5 +1210,6 @@ pub mod error_codes {
     pub const TOO_MANY_OPEN_BUNDLES: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/initiate-import:tooManyOpenBundles",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

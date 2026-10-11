@@ -983,6 +983,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/finalize-import:noBytesUploaded`
     ///
@@ -992,15 +993,20 @@ pub mod error_codes {
     pub const NO_BYTES_UPLOADED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:noBytesUploaded",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/finalize-import:incompleteUpload`
     ///
     /// A chunked bundle is missing one or more chunks. `details` says how many and lists the first of them, so the producer can write exactly those and finalize again. Raised before the password is used.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INCOMPLETE_UPLOAD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:incompleteUpload",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"missingCount\":{\"maximum\":4096,\"minimum\":1,\"type\":\"integer\"},\"missingIndices\":{\"items\":{\"maximum\":4095,\"minimum\":0,\"type\":\"integer\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"missingCount\",\"missingIndices\"],\"type\":\"object\"}",
+        ),
     };
     /// `backup/finalize-import:bundleDigestMismatch`
     ///
@@ -1010,6 +1016,7 @@ pub mod error_codes {
     pub const BUNDLE_DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:bundleDigestMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/finalize-import:terminalState`
     ///
@@ -1019,6 +1026,7 @@ pub mod error_codes {
     pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:terminalState",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/finalize-import:malformedBundle`
     ///
@@ -1028,6 +1036,7 @@ pub mod error_codes {
     pub const MALFORMED_BUNDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:malformedBundle",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/finalize-import:decryptionFailed`
     ///
@@ -1037,5 +1046,6 @@ pub mod error_codes {
     pub const DECRYPTION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/finalize-import:decryptionFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -847,6 +847,7 @@ pub mod error_codes {
     pub const NOT_ATTESTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/report:notAttested",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/attestation/report:evidenceUnavailable`
     ///
@@ -856,5 +857,6 @@ pub mod error_codes {
     pub const EVIDENCE_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/report:evidenceUnavailable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1090,6 +1090,7 @@ pub mod error_codes {
     pub const NOT_A_VETTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-root:notAVetter",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-root:wrongLabel`
     ///
@@ -1099,6 +1100,7 @@ pub mod error_codes {
     pub const WRONG_LABEL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-root:wrongLabel",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-root:alreadyEnrolled`
     ///
@@ -1108,6 +1110,7 @@ pub mod error_codes {
     pub const ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-root:alreadyEnrolled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-root:identifierRebound`
     ///
@@ -1117,6 +1120,7 @@ pub mod error_codes {
     pub const IDENTIFIER_REBOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-root:identifierRebound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-root:badRequest`
     ///
@@ -1126,5 +1130,6 @@ pub mod error_codes {
     pub const BAD_REQUEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-root:badRequest",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

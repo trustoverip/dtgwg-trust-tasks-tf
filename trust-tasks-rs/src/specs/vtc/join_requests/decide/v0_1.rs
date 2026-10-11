@@ -445,7 +445,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 ///      ]
 ///    },
 ///    "vmc": {
-///      "description": "\nThe membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.",
+///      "description": "The membership credential issued by this decision, delivered inline. Present only where the decision admitted the applicant.\n\nInline because the alternative is worse: the applicant would poll for a status, learn they were admitted, and then fetch the credential separately — a second round trip whose only purpose is to collect something the community already had in hand when it decided.",
 ///      "type": [
 ///        "object",
 ///        "null"
@@ -864,6 +864,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/decide:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/decide:notPending`
     ///
@@ -873,5 +874,6 @@ pub mod error_codes {
     pub const NOT_PENDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/decide:notPending",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

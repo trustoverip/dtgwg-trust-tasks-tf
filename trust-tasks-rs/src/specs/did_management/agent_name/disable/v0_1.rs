@@ -1026,6 +1026,7 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/disable:not_owner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/disable:not_found`
     ///
@@ -1035,6 +1036,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/disable:not_found",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/disable:already_disabled`
     ///
@@ -1044,6 +1046,7 @@ pub mod error_codes {
     pub const ALREADY_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/disable:already_disabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/disable:also_known_as_mismatch`
     ///
@@ -1053,6 +1056,7 @@ pub mod error_codes {
     pub const ALSO_KNOWN_AS_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/disable:also_known_as_mismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/disable:invalid_did_data`
     ///
@@ -1062,6 +1066,7 @@ pub mod error_codes {
     pub const INVALID_DID_DATA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/disable:invalid_did_data",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/agent-name/disable:step_up_required`
     ///
@@ -1071,6 +1076,7 @@ pub mod error_codes {
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/agent-name/disable:step_up_required",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management:unknown_domain`
     ///
@@ -1080,5 +1086,6 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknown_domain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

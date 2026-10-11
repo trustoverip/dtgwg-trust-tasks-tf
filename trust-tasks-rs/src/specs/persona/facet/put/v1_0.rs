@@ -1050,18 +1050,26 @@ pub mod error_codes {
     /// One or more of the listed `faceIds` already belongs to a different facet. The details name each offending profile and the facet currently holding it, so a producer can offer to move it rather than guessing. The facet is not written.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const FACE_ALREADY_PLACED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/facet/put:faceAlreadyPlaced",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"placed\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"faceId\":{\"type\":\"string\"},\"facetId\":{\"type\":\"string\"}},\"required\":[\"faceId\",\"facetId\"],\"type\":\"object\"},\"maxItems\":256,\"type\":\"array\"}},\"required\":[\"placed\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/facet/put:unresolvedReference`
     ///
     /// A listed `faceId` or `attributeId` names a record the holder does not hold. The details name them. The facet is not written — an arrangement referring to something that never existed is a typo, and accepting it silently makes the typo permanent.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNRESOLVED_REFERENCE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/facet/put:unresolvedReference",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"attributeIds\":{\"items\":{\"type\":\"string\"},\"maxItems\":1024,\"type\":\"array\"},\"faceIds\":{\"items\":{\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `persona/facet/put:versionConflict`
     ///
@@ -1071,5 +1079,6 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/facet/put:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

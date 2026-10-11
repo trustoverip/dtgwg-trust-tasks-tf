@@ -843,6 +843,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:archived`
     ///
@@ -852,6 +853,7 @@ pub mod error_codes {
     pub const ARCHIVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:archived",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/secret/set:notStaticModel`
     ///
@@ -861,6 +863,7 @@ pub mod error_codes {
     pub const NOT_STATIC_MODEL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/secret/set:notStaticModel",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/secret/set:unsealFailed`
     ///
@@ -870,5 +873,6 @@ pub mod error_codes {
     pub const UNSEAL_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/secret/set:unsealFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

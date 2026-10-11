@@ -1450,6 +1450,7 @@ pub mod error_codes {
     pub const PROFILE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:profileNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/binding/set:contextNotFound`
     ///
@@ -1459,6 +1460,7 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/binding/set:versionConflict`
     ///
@@ -1468,6 +1470,7 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/binding/set:profileRetired`
     ///
@@ -1477,6 +1480,7 @@ pub mod error_codes {
     pub const PROFILE_RETIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:profileRetired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/binding/set:untilNotFuture`
     ///
@@ -1486,6 +1490,7 @@ pub mod error_codes {
     pub const UNTIL_NOT_FUTURE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:untilNotFuture",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/binding/set:noPersonaHere`
     ///
@@ -1495,15 +1500,20 @@ pub mod error_codes {
     pub const NO_PERSONA_HERE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:noPersonaHere",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/binding/set:personaAmbiguous`
     ///
     /// `personaDid` was omitted and the holder has several personas in `contextId`. The details name them. Nothing is written — choosing one would decide which of the holder's identities this context sees.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const PERSONA_AMBIGUOUS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:personaAmbiguous",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"personaDids\":{\"items\":{\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"}},\"required\":[\"personaDids\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/binding/set:outsideReach`
     ///
@@ -1513,5 +1523,6 @@ pub mod error_codes {
     pub const OUTSIDE_REACH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/binding/set:outsideReach",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

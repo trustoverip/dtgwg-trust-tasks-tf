@@ -987,5 +987,6 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/retire:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

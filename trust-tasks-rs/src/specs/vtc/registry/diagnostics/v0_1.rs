@@ -184,7 +184,7 @@ Advertised and active are reported separately: a registry that advertises a prot
 /// ```json
 ///{
 ///  "title": "RegistryTransport",
-///  "description": "\nHow a maintainer addresses its trust registry, and what the last selection chose.\n\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.",
+///  "description": "How a maintainer addresses its trust registry, and what the last selection chose.\n\nAdvertised and active are reported separately: a registry that advertises a protocol this maintainer cannot answer is *configured* and *unreachable* at the same time, and one collapsed field cannot say so.",
 ///  "type": "object",
 ///  "properties": {
 ///    "active": {
@@ -513,7 +513,7 @@ impl<'de> ::serde::Deserialize<'de> for RegistryTransportError {
 ///      "type": "boolean"
 ///    },
 ///    "transports": {
-///      "description": "\nEvery protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\n\nReports all protocols rather than only the advertised ones, so a client can tell \"not advertised\" from \"absent from an older response\".",
+///      "description": "Every protocol this maintainer knows about, whether its own document advertises it, and whether it can serve it right now.\n\nReports all protocols rather than only the advertised ones, so a client can tell \"not advertised\" from \"absent from an older response\".",
 ///      "type": "array",
 ///      "items": {
 ///        "$ref": "#/definitions/TransportStatus"
@@ -938,7 +938,7 @@ The two are separate on purpose. `advertised` is read from the DID document; `se
 /// ```json
 ///{
 ///  "title": "TransportStatus",
-///  "description": "\nOne protocol's advertised and serviceable state.\n\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.",
+///  "description": "One protocol's advertised and serviceable state.\n\nThe two are separate on purpose. `advertised` is read from the DID document; `serviceable` is whether this maintainer can answer on it right now. Advertised-but-not-serviceable is the broken state a single boolean hides; serviceable-but-not-advertised is the staged rollout, where the binary is ready and the document has not caught up.",
 ///  "type": "object",
 ///  "required": [
 ///    "advertised",

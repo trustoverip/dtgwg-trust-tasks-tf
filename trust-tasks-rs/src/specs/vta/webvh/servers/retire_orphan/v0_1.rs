@@ -787,6 +787,7 @@ pub mod error_codes {
     pub const NOT_ORPHANED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/servers/retire-orphan:notOrphaned",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/servers/retire-orphan:didMismatch`
     ///
@@ -796,6 +797,7 @@ pub mod error_codes {
     pub const DID_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/servers/retire-orphan:didMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/servers/retire-orphan:listingUnavailable`
     ///
@@ -805,5 +807,6 @@ pub mod error_codes {
     pub const LISTING_UNAVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/servers/retire-orphan:listingUnavailable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

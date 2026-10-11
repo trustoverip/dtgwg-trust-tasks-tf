@@ -740,14 +740,19 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/sync/update:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/sync/update:invalidLog`
     ///
     /// The `logContent` failed structural validation or hash-chain verification.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_LOG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/sync/update:invalidLog",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
 }

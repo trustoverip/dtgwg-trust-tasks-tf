@@ -765,6 +765,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/invitations/deliver:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/invitations/deliver:revoked`
     ///
@@ -774,6 +775,7 @@ pub mod error_codes {
     pub const REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/invitations/deliver:revoked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/invitations/deliver:noRoute`
     ///
@@ -783,5 +785,6 @@ pub mod error_codes {
     pub const NO_ROUTE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/invitations/deliver:noRoute",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

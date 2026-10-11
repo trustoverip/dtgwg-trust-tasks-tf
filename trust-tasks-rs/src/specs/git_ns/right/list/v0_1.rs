@@ -1480,5 +1480,6 @@ pub mod error_codes {
     pub const NOT_COMMUNITY_ADMINISTRATOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/list:notCommunityAdministrator",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

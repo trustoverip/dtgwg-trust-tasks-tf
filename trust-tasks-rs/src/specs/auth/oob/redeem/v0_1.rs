@@ -742,18 +742,26 @@ pub mod error_codes {
     /// The request is not yet approved. Returned after the service has held the call for up to 25 s. `details.state` gives the state, and `details.matchNumber` the number to show once the request is claimed. The starter retries with a freshly signed document.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const PENDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob/redeem:pending",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"matchNumber\":{\"pattern\":\"^[0-9]{2}$\",\"type\":\"string\"},\"state\":{\"enum\":[\"pending\",\"claimed\",\"identified\"],\"type\":\"string\"}},\"required\":[\"state\"],\"type\":\"object\"}",
+        ),
     };
     /// `auth/oob/redeem:declined`
     ///
     /// The request was declined or cancelled and will not be approved. `details.state` says which.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob/redeem:declined",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"state\":{\"enum\":[\"declined\",\"cancelled\"],\"type\":\"string\"}},\"required\":[\"state\"],\"type\":\"object\"}",
+        ),
     };
     /// `auth/oob:notStarter`
     ///
@@ -763,6 +771,7 @@ pub mod error_codes {
     pub const NOT_STARTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:notStarter",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:requestExpired`
     ///
@@ -772,6 +781,7 @@ pub mod error_codes {
     pub const REQUEST_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:requestNotFound`
     ///
@@ -781,14 +791,19 @@ pub mod error_codes {
     pub const REQUEST_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:rateLimited`
     ///
     /// Another poll is already open for this request, or the starter's network has hit the poll cap. `details.retryAfter` MAY give seconds until a retry.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"retryAfter\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

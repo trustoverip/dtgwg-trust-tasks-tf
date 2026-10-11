@@ -1600,5 +1600,6 @@ pub mod error_codes {
     pub const UNKNOWN_JOB: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/bridge/result:unknownJob",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -682,6 +682,7 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknownDomain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/domain/purge:notDisabled`
     ///
@@ -691,6 +692,7 @@ pub mod error_codes {
     pub const NOT_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/domain/purge:notDisabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/domain/purge:isDefault`
     ///
@@ -700,5 +702,6 @@ pub mod error_codes {
     pub const IS_DEFAULT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/domain/purge:isDefault",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

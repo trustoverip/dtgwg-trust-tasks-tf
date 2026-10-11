@@ -679,14 +679,19 @@ pub mod error_codes {
     pub const NO_GROUP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/file-key:noGroup",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/file-key:unknownEpoch`
     ///
     /// The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNKNOWN_EPOCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/file-key:unknownEpoch",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"earliestEpoch\":{\"minimum\":1,\"type\":\"integer\"},\"heldEpoch\":{\"minimum\":1,\"type\":\"integer\"},\"reason\":{\"enum\":[\"notDelivered\",\"beyondChain\"],\"type\":\"string\"}},\"required\":[\"reason\"],\"type\":\"object\"}",
+        ),
     };
 }

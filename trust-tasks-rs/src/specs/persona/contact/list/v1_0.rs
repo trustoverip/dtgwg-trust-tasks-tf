@@ -1340,5 +1340,6 @@ pub mod error_codes {
     pub const CURSOR_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/contact/list:cursorInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

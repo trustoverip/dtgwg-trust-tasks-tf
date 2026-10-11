@@ -689,6 +689,7 @@ pub mod error_codes {
     pub const UNKNOWN_HANDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/provision:unknown_handle",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `push/provision:not_controller`
     ///
@@ -698,5 +699,6 @@ pub mod error_codes {
     pub const NOT_CONTROLLER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "push/provision:not_controller",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

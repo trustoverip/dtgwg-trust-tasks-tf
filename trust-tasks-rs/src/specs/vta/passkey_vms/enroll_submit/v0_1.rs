@@ -1836,6 +1836,7 @@ pub mod error_codes {
     pub const UNKNOWN_CEREMONY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/enroll-submit:unknownCeremony",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/passkey-vms/enroll-submit:ceremonyDidMismatch`
     ///
@@ -1845,15 +1846,20 @@ pub mod error_codes {
     pub const CEREMONY_DID_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/enroll-submit:ceremonyDidMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/passkey-vms/enroll-submit:invalidAttestation`
     ///
     /// The WebAuthn attestation could not be parsed or verified, or its credential key could not be converted to a Multikey.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_ATTESTATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/enroll-submit:invalidAttestation",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"unparseable\",\"webauthnVerificationFailed\",\"unsupportedAlgorithm\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vta/passkey-vms/enroll-submit:publicKeyMismatch`
     ///
@@ -1863,6 +1869,7 @@ pub mod error_codes {
     pub const PUBLIC_KEY_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/enroll-submit:publicKeyMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/passkey-vms/enroll-submit:alreadyEnrolled`
     ///
@@ -1872,5 +1879,6 @@ pub mod error_codes {
     pub const ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/passkey-vms/enroll-submit:alreadyEnrolled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

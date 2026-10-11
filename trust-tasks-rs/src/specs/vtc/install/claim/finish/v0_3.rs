@@ -879,6 +879,7 @@ pub mod error_codes {
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:invalidToken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:registrationMismatch`
     ///
@@ -888,6 +889,7 @@ pub mod error_codes {
     pub const REGISTRATION_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:registrationMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:subjectMismatch`
     ///
@@ -897,6 +899,7 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:subjectMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:didUnresolvable`
     ///
@@ -906,6 +909,7 @@ pub mod error_codes {
     pub const DID_UNRESOLVABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:didUnresolvable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:statementInvalid`
     ///
@@ -915,6 +919,7 @@ pub mod error_codes {
     pub const STATEMENT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:statementInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/install/claim/finish:approverNotDistinct`
     ///
@@ -924,5 +929,6 @@ pub mod error_codes {
     pub const APPROVER_NOT_DISTINCT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/finish:approverNotDistinct",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -437,5 +437,6 @@ pub mod error_codes {
     pub const SUPERVISOR_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "config/restart:supervisorRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

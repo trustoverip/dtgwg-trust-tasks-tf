@@ -2055,6 +2055,7 @@ pub mod error_codes {
     pub const UNKNOWN_NAMESPACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownNamespace",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:namespaceNotBound`
     ///
@@ -2064,6 +2065,7 @@ pub mod error_codes {
     pub const NAMESPACE_NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:namespaceNotBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -2073,6 +2075,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/repo/adopt:alreadyManaged`
     ///
@@ -2082,5 +2085,6 @@ pub mod error_codes {
     pub const ALREADY_MANAGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/repo/adopt:alreadyManaged",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1430,6 +1430,7 @@ pub mod error_codes {
     pub const UNKNOWN_SUBSCRIPTION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/monitor/subscribe:unknownSubscription",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/monitor/subscribe:tooManySubscriptions`
     ///
@@ -1439,5 +1440,6 @@ pub mod error_codes {
     pub const TOO_MANY_SUBSCRIPTIONS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/monitor/subscribe:tooManySubscriptions",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

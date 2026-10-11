@@ -670,5 +670,6 @@ pub mod error_codes {
     pub const DECLINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vrc/relationships/propose:declined",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

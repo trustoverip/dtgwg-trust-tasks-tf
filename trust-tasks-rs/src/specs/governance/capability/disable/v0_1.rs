@@ -642,5 +642,6 @@ pub mod error_codes {
     pub const NOT_ENABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "governance/capability/disable:notEnabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -553,5 +553,6 @@ pub mod error_codes {
     pub const NOT_ATTESTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/status:notAttested",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

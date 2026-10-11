@@ -683,6 +683,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/stats/get:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management:unknownDomain`
     ///
@@ -692,5 +693,6 @@ pub mod error_codes {
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknownDomain",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

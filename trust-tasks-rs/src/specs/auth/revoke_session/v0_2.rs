@@ -671,5 +671,6 @@ pub mod error_codes {
     pub const SESSION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/revoke-session:sessionNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

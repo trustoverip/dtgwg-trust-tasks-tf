@@ -468,5 +468,6 @@ pub mod error_codes {
     pub const CONTEXT_FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/memory/list:contextForbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

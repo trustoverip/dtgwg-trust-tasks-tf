@@ -53,7 +53,7 @@ pub mod error {
 ///      }
 ///    },
 ///    "approve": {
-///      "description": "\nApprove-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\n\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \"this subject may ratify nothing\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\n\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \"may this party ratify X\" and `scopes` to answer \"may this party do X\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.",
+///      "description": "Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\n\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \"this subject may ratify nothing\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\n\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \"may this party ratify X\" and `scopes` to answer \"may this party do X\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.",
 ///      "type": "object",
 ///      "properties": {
 ///        "all": {
@@ -222,7 +222,7 @@ A subject with approve-authority is NOT thereby authorized to act. Consumers MUS
 ///
 /// ```json
 ///{
-///  "description": "\nApprove-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\n\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \"this subject may ratify nothing\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\n\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \"may this party ratify X\" and `scopes` to answer \"may this party do X\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.",
+///  "description": "Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\n\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \"this subject may ratify nothing\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\n\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \"may this party ratify X\" and `scopes` to answer \"may this party do X\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.",
 ///  "type": "object",
 ///  "properties": {
 ///    "all": {
@@ -1567,6 +1567,7 @@ pub mod error_codes {
     pub const SUBJECT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/swap-key:subjectNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/swap-key:subjectAlreadyInUse`
     ///
@@ -1576,6 +1577,7 @@ pub mod error_codes {
     pub const SUBJECT_ALREADY_IN_USE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/swap-key:subjectAlreadyInUse",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/swap-key:linkProofRequired`
     ///
@@ -1585,15 +1587,20 @@ pub mod error_codes {
     pub const LINK_PROOF_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/swap-key:linkProofRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/swap-key:linkProofInvalid`
     ///
     /// The supplied `linkProof` failed verification.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const LINK_PROOF_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/swap-key:linkProofInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"signature_invalid\",\"nonce_mismatch\",\"subject_mismatch\",\"expired\",\"format_unsupported\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `acl/swap-key:notHolder`
     ///
@@ -1603,5 +1610,6 @@ pub mod error_codes {
     pub const NOT_HOLDER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/swap-key:notHolder",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

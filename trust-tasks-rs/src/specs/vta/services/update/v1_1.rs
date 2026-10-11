@@ -1118,6 +1118,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/update:validationFailed`
     ///
@@ -1127,6 +1128,7 @@ pub mod error_codes {
     pub const VALIDATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/update:validationFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/update:notAuthorized`
     ///
@@ -1136,5 +1138,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/update:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

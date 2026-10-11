@@ -788,6 +788,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys/export-secret:notExportable`
     ///
@@ -797,6 +798,7 @@ pub mod error_codes {
     pub const NOT_EXPORTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys/export-secret:notExportable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys/export-secret:neverExportable`
     ///
@@ -806,5 +808,6 @@ pub mod error_codes {
     pub const NEVER_EXPORTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys/export-secret:neverExportable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1151,7 +1151,7 @@ How the community authenticates to a config's backend. Absent on a `local` confi
 /// ```json
 ///{
 ///  "title": "StorageAuth",
-///  "description": "\nHow the community authenticates to a config's backend. Absent on a `local` config, which needs none.\n\n`vta-account` (RECOMMENDED): an external account in the community's VTA. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\n\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\n\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.",
+///  "description": "How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\n\n`vta-account` (RECOMMENDED): an external account in the community's VTA. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\n\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\n\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.",
 ///  "oneOf": [
 ///    {
 ///      "type": "object",
@@ -2521,15 +2521,20 @@ pub mod error_codes {
     pub const EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/create:exists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/storage/configs/create:invalidSettings`
     ///
     /// The settings are well-formed but unusable — a `local` root the community may not write, an endpoint it will not reach, a bucket name the backend rejects. `details` names the member and the problem.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_SETTINGS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/create:invalidSettings",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"member\":{\"maxLength\":64,\"type\":\"string\"},\"problem\":{\"maxLength\":500,\"type\":\"string\"}},\"required\":[\"member\",\"problem\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/storage/configs/create:authNotAllowed`
     ///
@@ -2539,6 +2544,7 @@ pub mod error_codes {
     pub const AUTH_NOT_ALLOWED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/create:authNotAllowed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/storage/configs/create:unknownAccount`
     ///
@@ -2548,5 +2554,6 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/storage/configs/create:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

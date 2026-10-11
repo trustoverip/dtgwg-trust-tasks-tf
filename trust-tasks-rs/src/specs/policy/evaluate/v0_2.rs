@@ -2576,8 +2576,12 @@ pub mod error_codes {
     /// The supplied `candidateModule` failed parsing.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CANDIDATE_REGO_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/evaluate:candidateRegoInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"column\":{\"minimum\":1,\"type\":\"integer\"},\"line\":{\"minimum\":1,\"type\":\"integer\"},\"message\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
 }

@@ -657,5 +657,6 @@ pub mod error_codes {
     pub const ALREADY_GRANTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-trust/grant:alreadyGranted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

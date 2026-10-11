@@ -1005,14 +1005,19 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/wipe:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `device/wipe:wipePartial`
     ///
     /// The target executed the wipe but could not complete every step (e.g. OS keychain APIs returned errors). The target completed as much as possible and reports `diagnostics.partialReasons`.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const WIPE_PARTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/wipe:wipePartial",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"partialReasons\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

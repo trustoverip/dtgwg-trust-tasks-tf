@@ -1290,15 +1290,20 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/sign:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/witness/sign:invalidLog`
     ///
     /// `logContent` does not verify as a did:webvh log — a broken hash chain, a bad controller proof, or a pre-rotation violation.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_LOG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/sign:invalidLog",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `webvh/witness/sign:versionNotLast`
     ///
@@ -1308,6 +1313,7 @@ pub mod error_codes {
     pub const VERSION_NOT_LAST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/sign:versionNotLast",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/witness/sign:notListed`
     ///
@@ -1317,6 +1323,7 @@ pub mod error_codes {
     pub const NOT_LISTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/sign:notListed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/witness/sign:deactivated`
     ///
@@ -1326,5 +1333,6 @@ pub mod error_codes {
     pub const DEACTIVATED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/sign:deactivated",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1072,6 +1072,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/finalize-import:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/finalize-import:noBytesUploaded`
     ///
@@ -1081,6 +1082,7 @@ pub mod error_codes {
     pub const NO_BYTES_UPLOADED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/finalize-import:noBytesUploaded",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/finalize-import:terminalState`
     ///
@@ -1090,6 +1092,7 @@ pub mod error_codes {
     pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/finalize-import:terminalState",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/finalize-import:malformedBundle`
     ///
@@ -1099,6 +1102,7 @@ pub mod error_codes {
     pub const MALFORMED_BUNDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/finalize-import:malformedBundle",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/backup/finalize-import:decryptionFailed`
     ///
@@ -1108,5 +1112,6 @@ pub mod error_codes {
     pub const DECRYPTION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/backup/finalize-import:decryptionFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -583,6 +583,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/revoke:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/revoke:alreadyRevoked`
     ///
@@ -592,5 +593,6 @@ pub mod error_codes {
     pub const ALREADY_REVOKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/revoke:alreadyRevoked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -433,5 +433,6 @@ pub mod error_codes {
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/auth/recognise/challenge:rateLimited",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

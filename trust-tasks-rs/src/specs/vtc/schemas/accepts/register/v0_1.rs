@@ -256,7 +256,7 @@ The `x:` prefix is an open extension namespace and is not decoration. The closes
 /// ```json
 ///{
 ///  "title": "ClaimType",
-///  "description": "\nThe vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
+///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
 ///  "type": "string",
 ///  "maxLength": 128,
 ///  "minLength": 1,
@@ -572,7 +572,7 @@ A producer marks a namespace only where the document's meaning depends on it. Ma
 /// ```json
 ///{
 ///  "title": "ExtCritical",
-///  "description": "\nNames the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\n\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\n\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.",
+///  "description": "Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\n\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\n\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.",
 ///  "examples": [
 ///    [
 ///      "org.openvtc.hidden-vetting"
@@ -2390,15 +2390,20 @@ pub mod error_codes {
     pub const INVALID_QUERY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/accepts/register:invalidQuery",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/schemas/accepts/register:unregisteredType`
     ///
     /// The query references a credential type (`meta.vct_values`) that is not in the schema registry. Register it with vtc/schemas/register first. `details.typeUri` names the first.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNREGISTERED_TYPE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/accepts/register:unregisteredType",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"maxProperties\":1,\"properties\":{\"typeUri\":{\"maxLength\":512,\"type\":\"string\"}},\"required\":[\"typeUri\"],\"type\":\"object\"}",
+        ),
     };
     /// `vtc/schemas/accepts/register:unregisteredStatementType`
     ///
@@ -2408,6 +2413,7 @@ pub mod error_codes {
     pub const UNREGISTERED_STATEMENT_TYPE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/accepts/register:unregisteredStatementType",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/schemas/accepts/register:invalidVetting`
     ///
@@ -2417,6 +2423,7 @@ pub mod error_codes {
     pub const INVALID_VETTING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/accepts/register:invalidVetting",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/schemas/accepts/register:notPublishable`
     ///
@@ -2426,5 +2433,6 @@ pub mod error_codes {
     pub const NOT_PUBLISHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/schemas/accepts/register:notPublishable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -2585,6 +2585,7 @@ pub mod error_codes {
     pub const UNKNOWN_NAMESPACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownNamespace",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:namespaceNotBound`
     ///
@@ -2594,6 +2595,7 @@ pub mod error_codes {
     pub const NAMESPACE_NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:namespaceNotBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:unknownRepo`
     ///
@@ -2603,6 +2605,7 @@ pub mod error_codes {
     pub const UNKNOWN_REPO: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownRepo",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:repoNotActive`
     ///
@@ -2612,6 +2615,7 @@ pub mod error_codes {
     pub const REPO_NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:repoNotActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -2621,6 +2625,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/drift/resolve:driftNotFound`
     ///
@@ -2630,6 +2635,7 @@ pub mod error_codes {
     pub const DRIFT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/drift/resolve:driftNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/drift/resolve:notAdoptable`
     ///
@@ -2639,6 +2645,7 @@ pub mod error_codes {
     pub const NOT_ADOPTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/drift/resolve:notAdoptable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/drift/resolve:accountNotLinked`
     ///
@@ -2648,6 +2655,7 @@ pub mod error_codes {
     pub const ACCOUNT_NOT_LINKED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/drift/resolve:accountNotLinked",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/drift/resolve:noMatchingRight`
     ///
@@ -2657,6 +2665,7 @@ pub mod error_codes {
     pub const NO_MATCHING_RIGHT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/drift/resolve:noMatchingRight",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:roleMapUnknown`
     ///
@@ -2666,6 +2675,7 @@ pub mod error_codes {
     pub const ROLE_MAP_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:roleMapUnknown",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/drift/resolve:notRevertible`
     ///
@@ -2675,5 +2685,6 @@ pub mod error_codes {
     pub const NOT_REVERTIBLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/drift/resolve:notRevertible",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

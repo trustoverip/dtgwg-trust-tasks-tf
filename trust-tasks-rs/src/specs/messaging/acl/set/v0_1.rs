@@ -976,14 +976,19 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/acl/set:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/acl/set:selfChangeDenied`
     ///
     /// The requester is the account's own controller and attempted to change a capability whose self-management is not permitted for it.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SELF_CHANGE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/acl/set:selfChangeDenied",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"deniedCapabilities\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

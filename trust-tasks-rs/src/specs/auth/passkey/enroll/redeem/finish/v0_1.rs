@@ -1794,6 +1794,7 @@ pub mod error_codes {
     pub const ENROLLMENT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/redeem/finish:enrollmentNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/redeem/finish:enrollmentExpired`
     ///
@@ -1803,6 +1804,7 @@ pub mod error_codes {
     pub const ENROLLMENT_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/redeem/finish:enrollmentExpired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/redeem/finish:attestationInvalid`
     ///
@@ -1812,6 +1814,7 @@ pub mod error_codes {
     pub const ATTESTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/redeem/finish:attestationInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/redeem/finish:userVerificationFailed`
     ///
@@ -1821,5 +1824,6 @@ pub mod error_codes {
     pub const USER_VERIFICATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/redeem/finish:userVerificationFailed",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -589,5 +589,6 @@ pub mod error_codes {
     pub const NOT_MANAGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/generations/list:notManaged",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

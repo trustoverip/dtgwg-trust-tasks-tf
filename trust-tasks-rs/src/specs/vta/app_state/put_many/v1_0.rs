@@ -1453,32 +1453,45 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/app-state/put-many:duplicateKey`
     ///
     /// Two writes in the batch name the same key. Refused rather than serialised, because their relative order is undefined and any choice the maintainer made would be arbitrary.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const DUPLICATE_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/put-many:duplicateKey",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"keys\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vta/app-state/put-many:atomicBatchRejected`
     ///
     /// An `atomic` batch was not applied because at least one write failed its precondition or its size check. Nothing was written. The details carry the per-record outcomes, so the caller learns which writes failed and which were merely skipped.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ATOMIC_BATCH_REJECTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/put-many:atomicBatchRejected",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"results\":{\"items\":{\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"results\"],\"type\":\"object\"}",
+        ),
     };
     /// `vta/app-state/put-many:batchTooLarge`
     ///
     /// The batch's aggregate size exceeds what the maintainer accepts in one request, independently of whether any single value is within the per-record cap. The caller must split the batch.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const BATCH_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/app-state/put-many:batchTooLarge",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"actualBytes\":{\"minimum\":0,\"type\":\"integer\"},\"limitBytes\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
 }

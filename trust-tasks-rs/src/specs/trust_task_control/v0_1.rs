@@ -42,7 +42,7 @@ The operation takes effect through SPEC.md §7.2 item 12: a valid, authorized co
 ///{
 ///  "$id": "https://trusttasks.org/spec/trust-task-control/0.1",
 ///  "title": "Payload",
-///  "description": "\nThe task-control request defined at SPEC.md §11: a producer withdrawing, pausing, or resuming work a consumer has already accepted.\n\nThis is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.\n\nThe operation takes effect through SPEC.md §7.2 item 12: a valid, authorized control operation is one of the conditions a consumer re-evaluates immediately before each irreversible or externally visible effect. There is no separate race protocol.",
+///  "description": "The task-control request defined at SPEC.md §11: a producer withdrawing, pausing, or resuming work a consumer has already accepted.\n\nThis is a REQUEST, not a response. A consumer that stops work on its own initiative does not send one of these — it returns a trust-task-error carrying `cancelled`, so that a withdrawal and a refusal remain distinguishable to every party and to any auditor reading the retained documents afterwards.\n\nThe operation takes effect through SPEC.md §7.2 item 12: a valid, authorized control operation is one of the conditions a consumer re-evaluates immediately before each irreversible or externally visible effect. There is no separate race protocol.",
 ///  "type": "object",
 ///  "required": [
 ///    "operation",
@@ -54,7 +54,7 @@ The operation takes effect through SPEC.md §7.2 item 12: a valid, authorized co
 ///      "type": "object"
 ///    },
 ///    "operation": {
-///      "description": "\nThe control operation requested.\n\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §11.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §11.5).\n\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.",
+///      "description": "The control operation requested.\n\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §11.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §11.5).\n\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.",
 ///      "enum": [
 ///        "cancel",
 ///        "suspend",
@@ -127,7 +127,7 @@ This is a discriminating field. A consumer that does not recognize a value MUST 
 ///
 /// ```json
 ///{
-///  "description": "\nThe control operation requested.\n\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §11.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §11.5).\n\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.",
+///  "description": "The control operation requested.\n\n`cancel` stops the task permanently: it is terminal, and a cancelled task MUST NOT be resumed, retried, or cancelled again (SPEC.md §11.3). `suspend` halts further effects while preserving the consumer's current execution state — it does not undo work already performed. `resume` continues a suspended task from the state the consumer holds; a consumer MUST NOT resume after the target document's `expiresAt` (SPEC.md §11.5).\n\nThis is a discriminating field. A consumer that does not recognize a value MUST reject the document rather than apply a default — silently downgrading an unrecognized operation to a known one would let a producer's intent be replaced by the consumer's guess.",
 ///  "enum": [
 ///    "cancel",
 ///    "suspend",
@@ -439,7 +439,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetId {
 ///      ]
 ///    },
 ///    "outcome": {
-///      "description": "\n`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.",
+///      "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.",
 ///      "enum": [
 ///        "applied",
 ///        "appliedWithEffects",
@@ -716,7 +716,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOperation {
 ///
 /// ```json
 ///{
-///  "description": "\n`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.",
+///  "description": "`applied` — the operation took effect and NO irreversible or externally visible effect had occurred. The only outcome that means the task left no trace.\n\n`appliedWithEffects` — the operation took effect, but effects had already occurred before it did. `effects` describes them. A consumer MUST NOT report `applied` in this case (SPEC.md §11.3).\n\n`alreadyCompleted` — the task finished before the control document was processed. Not a cancellation; whether to compensate is the producer's own decision.\n\n`unknownTask` — the consumer holds no record of the target `id`, either because it never received it or because its acceptance window has lapsed. A consumer that records the operation as a tombstone against a not-yet-arrived document reports `applied`, not this.",
 ///  "enum": [
 ///    "applied",
 ///    "appliedWithEffects",
@@ -1326,6 +1326,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "trust-task-control:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `trust-task-control:notControllable`
     ///
@@ -1335,6 +1336,7 @@ pub mod error_codes {
     pub const NOT_CONTROLLABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "trust-task-control:notControllable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `trust-task-control:alreadyCancelled`
     ///
@@ -1344,5 +1346,6 @@ pub mod error_codes {
     pub const ALREADY_CANCELLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "trust-task-control:alreadyCancelled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

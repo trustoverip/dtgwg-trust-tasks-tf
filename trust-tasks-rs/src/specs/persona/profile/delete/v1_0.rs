@@ -795,9 +795,13 @@ pub mod error_codes {
     /// A persona is still bound to this profile and `unbind` was not set. The details name the bound persona DIDs so the holder can decide between rebinding them and unbinding.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/delete:bound",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"personaDids\":{\"items\":{\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"}},\"required\":[\"personaDids\"],\"type\":\"object\"}",
+        ),
     };
     /// `persona/profile/delete:versionConflict`
     ///
@@ -807,5 +811,6 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/profile/delete:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

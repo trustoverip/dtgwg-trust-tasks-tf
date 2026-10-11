@@ -1430,6 +1430,7 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:alreadyExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys:invalidArgument`
     ///
@@ -1439,5 +1440,6 @@ pub mod error_codes {
     pub const INVALID_ARGUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:invalidArgument",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

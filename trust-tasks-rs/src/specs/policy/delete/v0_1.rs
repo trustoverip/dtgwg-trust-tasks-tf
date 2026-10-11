@@ -567,6 +567,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/delete:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `policy/delete:versionConflict`
     ///
@@ -576,14 +577,19 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/delete:versionConflict",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `policy/delete:wouldOrphanContexts`
     ///
     /// Deleting this policy would leave one or more contexts with no applicable policy. The maintainer's policy on this is configurable — if deny-by-default is in place, this is benign; if the policy was the only `allow` for the context, you'd be locking yourself out. Override by setting an `ext` flag.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const WOULD_ORPHAN_CONTEXTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/delete:wouldOrphanContexts",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"orphanedContexts\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

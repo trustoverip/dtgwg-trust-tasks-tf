@@ -900,6 +900,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/update:versionConflict`
     ///
@@ -909,6 +910,7 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/update:invalidDocument`
     ///
@@ -918,5 +920,6 @@ pub mod error_codes {
     pub const INVALID_DOCUMENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/update:invalidDocument",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

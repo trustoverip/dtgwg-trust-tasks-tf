@@ -1820,6 +1820,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/sign-trust-task:notSignable`
     ///
@@ -1829,6 +1830,7 @@ pub mod error_codes {
     pub const NOT_SIGNABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:notSignable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/sign-trust-task:envelopeInvalid`
     ///
@@ -1838,15 +1840,20 @@ pub mod error_codes {
     pub const ENVELOPE_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:envelopeInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/sign-trust-task:envelopeIssuerMismatch`
     ///
     /// The supplied envelope's `issuer` does not match the entry's `principalDid`. The maintainer refuses to sign — the consumer MUST set `issuer = principalDid` for the entry being used. This guards against the consumer accidentally requesting a signature for an issuer the maintainer can't actually authenticate as.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ENVELOPE_ISSUER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:envelopeIssuerMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"envelopeIssuer\":{\"type\":\"string\"},\"expectedIssuer\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/sign-trust-task:envelopeAlreadyProofed`
     ///
@@ -1856,6 +1863,7 @@ pub mod error_codes {
     pub const ENVELOPE_ALREADY_PROOFED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:envelopeAlreadyProofed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/sign-trust-task:envelopeExpired`
     ///
@@ -1865,15 +1873,20 @@ pub mod error_codes {
     pub const ENVELOPE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:envelopeExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/sign-trust-task:stepUpRequired`
     ///
     /// Policy demands a step-up proof before the signature can be issued. Consumer retries with `stepUpProof` populated. Same shape as `vault/proxy-login:stepUpRequired`.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::Some(
+            "{\"$defs\":{\"StepUpChallenge\":{\"additionalProperties\":false,\"description\":\"The demand half of a step-up exchange: what the maintainer returns in the `details` of a `stepUpRequired` error, naming the method the consumer must satisfy and the challenge its proof must answer. The consumer's reply is a `StepUpProof`, whose `challengeId` echoes the `challengeId` here — the two definitions are the two ends of one exchange and their `method`/`kind` vocabularies MUST stay in step. Referenced by the `detailsSchema` of `vault/release`, `vault/proxy-login`, and `vault/sign-trust-task`, which previously each restated it.\",\"properties\":{\"challengeId\":{\"description\":\"Maintainer-issued challenge id. The consumer echoes this in `StepUpProof.challengeId` so the maintainer can bind the proof to the demand that provoked it.\",\"type\":\"string\"},\"method\":{\"description\":\"The step-up method the consumer must satisfy. Mirrors `StepUpProof.kind`.\",\"enum\":[\"webauthnUv\",\"pushApproval\",\"totp\"],\"type\":\"string\"},\"ttlSeconds\":{\"description\":\"How long the challenge remains answerable. Advisory to the consumer; the maintainer enforces its own expiry.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"method\",\"challengeId\"],\"title\":\"StepUpChallenge\",\"type\":\"object\"}},\"$ref\":\"#/$defs/StepUpChallenge\"}",
+        ),
     };
     /// `vault/sign-trust-task:policyDeny`
     ///
@@ -1883,5 +1896,6 @@ pub mod error_codes {
     pub const POLICY_DENY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/sign-trust-task:policyDeny",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

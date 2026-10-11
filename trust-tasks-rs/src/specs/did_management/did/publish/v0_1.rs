@@ -1013,6 +1013,7 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/did/publish:not_owner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/did/publish:invalid_log`
     ///
@@ -1022,6 +1023,7 @@ pub mod error_codes {
     pub const INVALID_LOG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/did/publish:invalid_log",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/did/publish:host_mismatch`
     ///
@@ -1031,14 +1033,19 @@ pub mod error_codes {
     pub const HOST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/did/publish:host_mismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management:unknown_domain`
     ///
     /// The submitted `domain` is not a known hosting domain on this consumer. See [category conventions](../../../_shared/0.1/CONVENTIONS.md#2-unknown-domain-error).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const UNKNOWN_DOMAIN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management:unknown_domain",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"activeDomains\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"domain\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
 }

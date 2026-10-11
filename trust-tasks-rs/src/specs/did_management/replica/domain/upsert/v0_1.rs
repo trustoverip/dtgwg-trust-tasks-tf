@@ -778,6 +778,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/replica/domain/upsert:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/replica/domain/upsert:nonCanonicalName`
     ///
@@ -787,5 +788,6 @@ pub mod error_codes {
     pub const NON_CANONICAL_NAME: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/replica/domain/upsert:nonCanonicalName",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

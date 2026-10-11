@@ -706,6 +706,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/withdraw:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/withdraw:alreadyDecided`
     ///
@@ -715,5 +716,6 @@ pub mod error_codes {
     pub const ALREADY_DECIDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/withdraw:alreadyDecided",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

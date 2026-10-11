@@ -1282,9 +1282,13 @@ pub mod error_codes {
     /// The credential's proof did not verify against the issuer key resolved from its DID. The credential is not stored. A consumer MUST NOT retry unchanged.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VERIFICATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/receive:verificationFailed",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"proofInvalid\",\"issuerUnresolvable\",\"proofMissing\",\"unsupportedCryptosuite\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vault/credentials/receive:formatUnsupported`
     ///
@@ -1294,5 +1298,6 @@ pub mod error_codes {
     pub const FORMAT_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/receive:formatUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

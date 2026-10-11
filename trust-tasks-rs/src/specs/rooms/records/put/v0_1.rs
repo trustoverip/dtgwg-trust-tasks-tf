@@ -1293,6 +1293,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/put:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/put:versionConflict`
     ///
@@ -1302,6 +1303,7 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/put:versionConflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/put:chainTooDeep`
     ///
@@ -1311,6 +1313,7 @@ pub mod error_codes {
     pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/put:chainTooDeep",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/put:subjectBindingMissing`
     ///
@@ -1320,6 +1323,7 @@ pub mod error_codes {
     pub const SUBJECT_BINDING_MISSING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/put:subjectBindingMissing",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/put:epochMismatch`
     ///
@@ -1329,6 +1333,7 @@ pub mod error_codes {
     pub const EPOCH_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/put:epochMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/records/put:recordTooLarge`
     ///
@@ -1338,5 +1343,6 @@ pub mod error_codes {
     pub const RECORD_TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/records/put:recordTooLarge",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

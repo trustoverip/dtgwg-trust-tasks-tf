@@ -652,6 +652,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys/revoke:boundToIdentifier`
     ///
@@ -661,5 +662,6 @@ pub mod error_codes {
     pub const BOUND_TO_IDENTIFIER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys/revoke:boundToIdentifier",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

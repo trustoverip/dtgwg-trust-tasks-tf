@@ -112,7 +112,7 @@ The holder can always fetch the credential itself by `credentialId`, and a verif
 /// ```json
 ///{
 ///  "title": "CredentialReference",
-///  "description": "\nA pointer to an issued credential, without the credential itself.\n\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\n\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.",
+///  "description": "A pointer to an issued credential, without the credential itself.\n\nThe counterpart to IssuedCredential, for the far more common case of *reading about* a credential rather than being handed one. A listing that embedded the signed credential in every row would grow with the size of the credentials rather than the number of them — a page of fifty is megabytes — and a reader that only needs to know a credential exists, when it lapses, and how to revoke it does not need the bytes.\n\nThe holder can always fetch the credential itself by `credentialId`, and a verifier can check revocation from the row's status-list slot without either. Reach for IssuedCredential only at the moment of minting, where the caller has no other way to receive what was just made for them.",
 ///  "type": "object",
 ///  "required": [
 ///    "credentialId"
@@ -1340,5 +1340,6 @@ pub mod error_codes {
     pub const INVALID_CURSOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/endorsements/list:invalidCursor",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

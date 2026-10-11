@@ -1009,6 +1009,7 @@ pub mod error_codes {
     pub const NOT_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/set-wake:notRegistered",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `device/set-wake:invalidHandle`
     ///
@@ -1018,6 +1019,7 @@ pub mod error_codes {
     pub const INVALID_HANDLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/set-wake:invalidHandle",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `device/set-wake:gatewayUnreachable`
     ///
@@ -1027,5 +1029,6 @@ pub mod error_codes {
     pub const GATEWAY_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/set-wake:gatewayUnreachable",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

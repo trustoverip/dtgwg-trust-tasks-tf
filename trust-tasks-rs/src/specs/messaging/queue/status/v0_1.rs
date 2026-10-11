@@ -1080,5 +1080,6 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/queue/status:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

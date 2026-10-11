@@ -1061,6 +1061,7 @@ pub mod error_codes {
     pub const ENROLLMENT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:enrollmentNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/finish:enrollmentExpired`
     ///
@@ -1070,6 +1071,7 @@ pub mod error_codes {
     pub const ENROLLMENT_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:enrollmentExpired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/finish:notInvitedSubject`
     ///
@@ -1079,6 +1081,7 @@ pub mod error_codes {
     pub const NOT_INVITED_SUBJECT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:notInvitedSubject",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/finish:statementInvalid`
     ///
@@ -1088,6 +1091,7 @@ pub mod error_codes {
     pub const STATEMENT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:statementInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/finish:approverNotDistinct`
     ///
@@ -1097,6 +1101,7 @@ pub mod error_codes {
     pub const APPROVER_NOT_DISTINCT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:approverNotDistinct",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/finish:approverAlreadyBound`
     ///
@@ -1106,6 +1111,7 @@ pub mod error_codes {
     pub const APPROVER_ALREADY_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:approverAlreadyBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/approver/redeem/finish:tooManyApprovers`
     ///
@@ -1115,5 +1121,6 @@ pub mod error_codes {
     pub const TOO_MANY_APPROVERS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/approver/redeem/finish:tooManyApprovers",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

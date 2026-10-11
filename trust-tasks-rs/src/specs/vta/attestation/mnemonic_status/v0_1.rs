@@ -413,5 +413,6 @@ pub mod error_codes {
     pub const NOT_AVAILABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/attestation/mnemonic-status:notAvailable",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

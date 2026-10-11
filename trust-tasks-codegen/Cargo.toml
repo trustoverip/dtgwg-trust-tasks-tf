@@ -25,7 +25,7 @@ typify = "0.6"
 # This is a `publish = false` build tool with no security advisory on schemars.
 schemars = "0.8"
 prettyplease = "0.2"
-syn = { version = "2", features = ["full"] }
+syn = { version = "2", features = ["full", "visit-mut"] }
 proc-macro2 = "1"
 quote = "1"
 heck = "0.5"

@@ -44,7 +44,7 @@ This specification declares no response anchor. An acknowledgement is not answer
 ///{
 ///  "$id": "https://trusttasks.org/spec/trust-task-ok/0.1",
 ///  "title": "Payload",
-///  "description": "\nThe courtesy acknowledgement reserved at SPEC.md §8.6: a consumer confirming that it received and performed a task which defines no success-response document of its own.\n\nIt is deliberately weak. A producer MUST NOT rely on receiving one, and the absence of one carries no information — a consumer may not implement this specification, and the document may be lost. Anything a task's contract depends on belongs in that task's own #response, not here.\n\nEvery member is optional: an empty payload is the ordinary case, and means exactly 'received and performed'.\n\nThis specification declares no response anchor. An acknowledgement is not answered.",
+///  "description": "The courtesy acknowledgement reserved at SPEC.md §8.6: a consumer confirming that it received and performed a task which defines no success-response document of its own.\n\nIt is deliberately weak. A producer MUST NOT rely on receiving one, and the absence of one carries no information — a consumer may not implement this specification, and the document may be lost. Anything a task's contract depends on belongs in that task's own #response, not here.\n\nEvery member is optional: an empty payload is the ordinary case, and means exactly 'received and performed'.\n\nThis specification declares no response anchor. An acknowledgement is not answered.",
 ///  "type": "object",
 ///  "properties": {
 ///    "ext": {
@@ -57,7 +57,7 @@ This specification declares no response anchor. An acknowledgement is not answer
 ///      "maxLength": 1024
 ///    },
 ///    "refs": {
-///      "description": "\nOpaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.\n\nA consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.",
+///      "description": "Opaque references the consumer chose to surface — a ticket number, a queue position, a processing handle, a retention deadline. Convenience only.\n\nA consumer MUST NOT convey through `refs` anything the task's own contract depends on: a value a producer needs in order to proceed is part of that task's semantics and belongs in a response the task itself defines. A producer that finds itself parsing `refs` to continue an exchange is using the wrong document, and the task it is performing should declare its own #response.",
 ///      "type": "array",
 ///      "items": {
 ///        "type": "object",

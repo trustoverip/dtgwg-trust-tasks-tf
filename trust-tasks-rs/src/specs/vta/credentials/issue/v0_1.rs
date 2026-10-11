@@ -719,7 +719,7 @@ This is the credentials/_shared IssuedCredential shape — same members, same re
 /// ```json
 ///{
 ///  "title": "Response",
-///  "description": "\nThe success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.",
+///  "description": "The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.\n\nThis is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.",
 ///  "type": "object",
 ///  "required": [
 ///    "credential",
@@ -1156,6 +1156,7 @@ pub mod error_codes {
     pub const HOLDER_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:holderInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/issue:scopeEmpty`
     ///
@@ -1165,15 +1166,20 @@ pub mod error_codes {
     pub const SCOPE_EMPTY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:scopeEmpty",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/issue:validityTooLong`
     ///
     /// The requested validity exceeds the issuer's maximum.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const VALIDITY_TOO_LONG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:validityTooLong",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"maxSeconds\":{\"type\":\"integer\"},\"requestedSeconds\":{\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `vta/credentials/issue:stepUpRequired`
     ///
@@ -1183,6 +1189,7 @@ pub mod error_codes {
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/credentials/issue:profileViolation`
     ///
@@ -1192,5 +1199,6 @@ pub mod error_codes {
     pub const PROFILE_VIOLATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/credentials/issue:profileViolation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

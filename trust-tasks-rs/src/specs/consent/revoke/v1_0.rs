@@ -958,6 +958,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/revoke:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `consent/revoke:notFound`
     ///
@@ -967,5 +968,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "consent/revoke:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

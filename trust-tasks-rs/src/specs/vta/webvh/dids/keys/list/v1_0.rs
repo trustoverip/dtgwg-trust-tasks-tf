@@ -3151,6 +3151,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids:notKeyRoleIdentity`
     ///
@@ -3160,5 +3161,6 @@ pub mod error_codes {
     pub const NOT_KEY_ROLE_IDENTITY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids:notKeyRoleIdentity",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

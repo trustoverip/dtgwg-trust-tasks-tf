@@ -694,5 +694,6 @@ pub mod error_codes {
     pub const NOT_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/grant:notMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

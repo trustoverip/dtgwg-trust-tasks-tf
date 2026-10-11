@@ -924,6 +924,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/activate:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `policy/activate:policyDisabled`
     ///
@@ -933,6 +934,7 @@ pub mod error_codes {
     pub const POLICY_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/activate:policyDisabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `policy/activate:alreadyActive`
     ///
@@ -942,5 +944,6 @@ pub mod error_codes {
     pub const ALREADY_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/activate:alreadyActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1458,5 +1458,6 @@ pub mod error_codes {
     pub const PASSWORD_TOO_SHORT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/backup/export:passwordTooShort",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -543,6 +543,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/disable:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `device/disable:alreadyDisabled`
     ///
@@ -552,5 +553,6 @@ pub mod error_codes {
     pub const ALREADY_DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "device/disable:alreadyDisabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -468,5 +468,6 @@ pub mod error_codes {
     pub const UNKNOWN_SUBSCRIPTION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/monitor/unsubscribe:unknownSubscription",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

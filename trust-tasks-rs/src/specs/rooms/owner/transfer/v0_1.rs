@@ -654,6 +654,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/transfer:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/owner/transfer:notAMember`
     ///
@@ -663,5 +664,6 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/transfer:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

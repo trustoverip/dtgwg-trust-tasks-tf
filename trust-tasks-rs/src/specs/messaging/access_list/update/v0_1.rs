@@ -583,6 +583,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/access-list/update:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/access-list/update:listFull`
     ///
@@ -592,6 +593,7 @@ pub mod error_codes {
     pub const LIST_FULL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/access-list/update:listFull",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/access-list/update:selfChangeDenied`
     ///
@@ -601,5 +603,6 @@ pub mod error_codes {
     pub const SELF_CHANGE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/access-list/update:selfChangeDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -819,5 +819,6 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "registry/record/query:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

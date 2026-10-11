@@ -1646,5 +1646,6 @@ pub mod error_codes {
     pub const NOT_ELIGIBLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/profile:notEligible",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

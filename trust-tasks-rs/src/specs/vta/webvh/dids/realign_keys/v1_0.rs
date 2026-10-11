@@ -904,6 +904,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/realign-keys:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/webvh/dids/realign-keys:conflict`
     ///
@@ -913,5 +914,6 @@ pub mod error_codes {
     pub const CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/webvh/dids/realign-keys:conflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

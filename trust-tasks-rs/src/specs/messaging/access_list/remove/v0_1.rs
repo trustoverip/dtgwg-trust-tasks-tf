@@ -510,6 +510,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/access-list/remove:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/access-list/remove:selfChangeDenied`
     ///
@@ -519,5 +520,6 @@ pub mod error_codes {
     pub const SELF_CHANGE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/access-list/remove:selfChangeDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

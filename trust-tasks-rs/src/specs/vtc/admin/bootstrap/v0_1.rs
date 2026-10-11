@@ -599,6 +599,7 @@ pub mod error_codes {
     pub const INVALID_TOKEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/bootstrap:invalidToken",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/admin/bootstrap:alreadyBootstrapped`
     ///
@@ -608,5 +609,6 @@ pub mod error_codes {
     pub const ALREADY_BOOTSTRAPPED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/admin/bootstrap:alreadyBootstrapped",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

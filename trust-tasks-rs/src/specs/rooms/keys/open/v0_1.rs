@@ -640,6 +640,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/open:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/open:unknownEpoch`
     ///
@@ -649,6 +650,7 @@ pub mod error_codes {
     pub const UNKNOWN_EPOCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/open:unknownEpoch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/open:didNotOpen`
     ///
@@ -658,5 +660,6 @@ pub mod error_codes {
     pub const DID_NOT_OPEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/open:didNotOpen",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

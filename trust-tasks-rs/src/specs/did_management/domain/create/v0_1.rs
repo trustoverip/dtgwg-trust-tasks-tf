@@ -865,6 +865,7 @@ pub mod error_codes {
     pub const DOMAIN_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/domain/create:domainExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `did-management/domain/create:invalidName`
     ///
@@ -874,5 +875,6 @@ pub mod error_codes {
     pub const INVALID_NAME: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "did-management/domain/create:invalidName",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

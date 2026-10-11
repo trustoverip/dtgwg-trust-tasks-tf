@@ -1092,6 +1092,7 @@ pub mod error_codes {
     pub const CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/enable:conflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/enable:validationFailed`
     ///
@@ -1101,6 +1102,7 @@ pub mod error_codes {
     pub const VALIDATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/enable:validationFailed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/enable:notAuthorized`
     ///
@@ -1110,5 +1112,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/enable:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

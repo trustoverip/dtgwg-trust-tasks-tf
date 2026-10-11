@@ -1929,6 +1929,7 @@ pub mod error_codes {
     pub const UNKNOWN_ACCOUNT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/update:unknownAccount",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/account/update:rootAdminRequired`
     ///
@@ -1938,14 +1939,19 @@ pub mod error_codes {
     pub const ROOT_ADMIN_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/update:rootAdminRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `messaging/account/update:selfChangeDenied`
     ///
     /// The requester is the account's own controller and attempted to change a member it is not permitted to self-manage.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const SELF_CHANGE_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "messaging/account/update:selfChangeDenied",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"deniedMembers\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

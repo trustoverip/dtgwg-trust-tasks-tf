@@ -440,6 +440,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/drain/cancel:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/drain/cancel:conflict`
     ///
@@ -449,6 +450,7 @@ pub mod error_codes {
     pub const CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/drain/cancel:conflict",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vta/services/drain/cancel:notAuthorized`
     ///
@@ -458,5 +460,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/services/drain/cancel:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

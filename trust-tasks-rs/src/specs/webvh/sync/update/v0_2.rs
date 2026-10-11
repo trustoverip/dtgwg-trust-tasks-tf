@@ -929,15 +929,20 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/sync/update:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/sync/update:invalidLog`
     ///
     /// `logContent` does not verify as a did:webvh log establishing `didId` — a broken hash chain, a bad proof, a pre-rotation violation, or an entry count that is not `versionCount`.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_LOG: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/sync/update:invalidLog",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `webvh/sync/update:historyRewrite`
     ///
@@ -947,6 +952,7 @@ pub mod error_codes {
     pub const HISTORY_REWRITE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/sync/update:historyRewrite",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/sync/update:deactivated`
     ///
@@ -956,5 +962,6 @@ pub mod error_codes {
     pub const DEACTIVATED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/sync/update:deactivated",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

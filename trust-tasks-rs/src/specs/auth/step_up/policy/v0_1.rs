@@ -625,6 +625,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/policy:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/policy:unknownOperation`
     ///
@@ -634,6 +635,7 @@ pub mod error_codes {
     pub const UNKNOWN_OPERATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/policy:unknownOperation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/step-up/policy:lockoutRefused`
     ///
@@ -643,5 +645,6 @@ pub mod error_codes {
     pub const LOCKOUT_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/step-up/policy:lockoutRefused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

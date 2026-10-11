@@ -4364,7 +4364,7 @@ Plain OpenID Connect discovery federation is deliberately absent. It works by th
 /// ```json
 ///{
 ///  "title": "AuthModel",
-///  "description": "\nHow the account authenticates to its provider. Every model pins the custodian's verification material in the provider's own account, uploaded once, so no model requires the custodian to be reachable from the internet. `aws-roles-anywhere`: the custodian is the certificate authority of an IAM Roles Anywhere trust anchor, and signs CreateSession with a short-lived end-entity certificate it issued to the account's own key. `gcp-wif-pinned`: a Workload Identity Federation pool provider holds an uploaded JWKS; the custodian signs an ID token and exchanges it at Google's STS. `azure-cert`: a certificate uploaded to an Entra app registration; the custodian signs an RFC 7523 client assertion. `oauth2-private-key-jwt`: the same RFC 7523 client authentication against any token endpoint that registered the custodian's public key. `s3-static-presign`: an access-key pair for an S3-compatible store that cannot federate; the custodian presigns per-object URLs and never releases the key. `sui-signer`: a Sui address derived from the custodian's key; the custodian signs only allow-listed transactions. `static-secret`: an API key or token used inside the custodian by a named driver; last resort, never released.\n\nPlain OpenID Connect discovery federation is deliberately absent. It works by the provider fetching the issuer's JWKS from a public URL, which either makes the custodian reachable from the internet or makes whoever hosts a copy of the JWKS able to mint credentials for every federated role.",
+///  "description": "How the account authenticates to its provider. Every model pins the custodian's verification material in the provider's own account, uploaded once, so no model requires the custodian to be reachable from the internet. `aws-roles-anywhere`: the custodian is the certificate authority of an IAM Roles Anywhere trust anchor, and signs CreateSession with a short-lived end-entity certificate it issued to the account's own key. `gcp-wif-pinned`: a Workload Identity Federation pool provider holds an uploaded JWKS; the custodian signs an ID token and exchanges it at Google's STS. `azure-cert`: a certificate uploaded to an Entra app registration; the custodian signs an RFC 7523 client assertion. `oauth2-private-key-jwt`: the same RFC 7523 client authentication against any token endpoint that registered the custodian's public key. `s3-static-presign`: an access-key pair for an S3-compatible store that cannot federate; the custodian presigns per-object URLs and never releases the key. `sui-signer`: a Sui address derived from the custodian's key; the custodian signs only allow-listed transactions. `static-secret`: an API key or token used inside the custodian by a named driver; last resort, never released.\n\nPlain OpenID Connect discovery federation is deliberately absent. It works by the provider fetching the issuer's JWKS from a public URL, which either makes the custodian reachable from the internet or makes whoever hosts a copy of the JWKS able to mint credentials for every federated role.",
 ///  "type": "string",
 ///  "enum": [
 ///    "aws-roles-anywhere",
@@ -4773,7 +4773,7 @@ Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 nor
 /// ```json
 ///{
 ///  "title": "DigestMultibase",
-///  "description": "\nA cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
 ///  "examples": [
 ///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
 ///  ],
@@ -7577,6 +7577,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:notActive`
     ///
@@ -7586,6 +7587,7 @@ pub mod error_codes {
     pub const NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:notActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external:archived`
     ///
@@ -7595,6 +7597,7 @@ pub mod error_codes {
     pub const ARCHIVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external:archived",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/keys/rotate:notKeyModel`
     ///
@@ -7604,6 +7607,7 @@ pub mod error_codes {
     pub const NOT_KEY_MODEL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/keys/rotate:notKeyModel",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/keys/rotate:rotationPending`
     ///
@@ -7613,6 +7617,7 @@ pub mod error_codes {
     pub const ROTATION_PENDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/keys/rotate:rotationPending",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/keys/rotate:noRotationPending`
     ///
@@ -7622,14 +7627,19 @@ pub mod error_codes {
     pub const NO_ROTATION_PENDING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/keys/rotate:noRotationPending",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `external/accounts/keys/rotate:probeFailed`
     ///
     /// `confirm` ran a probe with the successor key and it failed; the provider does not trust it yet. `details` is the probe report.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const PROBE_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "external/accounts/keys/rotate:probeFailed",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"report\":{\"type\":\"object\"}},\"required\":[\"report\"],\"type\":\"object\"}",
+        ),
     };
 }

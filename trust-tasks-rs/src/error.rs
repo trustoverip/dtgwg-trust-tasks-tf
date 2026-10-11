@@ -420,8 +420,8 @@ impl TrustTaskCode {
 /// const ROLE_NOT_RECOGNIZED: &str = grant::error_codes::ROLE_NOT_RECOGNIZED.code;
 /// ```
 ///
-/// `#[non_exhaustive]` so the declaration's other members (`meaning`,
-/// `detailsSchema`) can be carried later without a breaking change.
+/// `#[non_exhaustive]` so the declaration's remaining member (`meaning`) can be
+/// carried later without a breaking change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub struct DeclaredErrorCode {
@@ -433,6 +433,16 @@ pub struct DeclaredErrorCode {
     /// The `retryable` value the specification declares for this code — the
     /// value an emitter SHOULD send (§8.4).
     pub retryable: bool,
+
+    /// The JSON Schema the specification declares for this error's `details`
+    /// member (`detailsSchema`, §7.3 item 9), or `None` when it declares none.
+    ///
+    /// Self-contained: a `$ref` the specification makes into a shared schema
+    /// file is resolved and carried inline, so the text compiles with no base
+    /// URI. An emitter can check the `details` it builds against it, rather than
+    /// against a copy it keeps by hand and that drifts when the specification
+    /// changes — with the `validate` feature, [`check_details`](Self::check_details).
+    pub details_schema: Option<&'static str>,
 }
 
 impl DeclaredErrorCode {
@@ -451,6 +461,25 @@ impl DeclaredErrorCode {
             .split_once(':')
             .map(|(_, local)| local)
             .unwrap_or("")
+    }
+
+    /// Check `details` against this code's declared
+    /// [`details_schema`](Self::details_schema).
+    ///
+    /// Succeeds when the specification declares no `detailsSchema`: it then
+    /// places no constraint on the member beyond its being an object (§8.2),
+    /// and there is nothing here to check. The §8.2.2 size bound is not a
+    /// schema constraint and is not checked here.
+    #[cfg(feature = "validate")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
+    pub fn check_details(
+        &self,
+        details: &serde_json::Value,
+    ) -> Result<(), crate::validate::ValidationError> {
+        match self.details_schema {
+            Some(schema) => crate::validate::against_schema(schema, details),
+            None => Ok(()),
+        }
     }
 
     /// Whether `code` is this declared code.

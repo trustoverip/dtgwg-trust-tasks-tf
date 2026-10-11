@@ -669,6 +669,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/accept:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/accept:notApproved`
     ///
@@ -678,6 +679,7 @@ pub mod error_codes {
     pub const NOT_APPROVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/accept:notApproved",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/join-requests/accept:credentialInvalid`
     ///
@@ -687,5 +689,6 @@ pub mod error_codes {
     pub const CREDENTIAL_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/accept:credentialInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

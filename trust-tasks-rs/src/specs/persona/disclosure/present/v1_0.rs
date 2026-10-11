@@ -998,6 +998,7 @@ pub mod error_codes {
     pub const PREVIEW_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/disclosure/present:previewNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/disclosure/present:staleClaim`
     ///
@@ -1007,6 +1008,7 @@ pub mod error_codes {
     pub const STALE_CLAIM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/disclosure/present:staleClaim",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/disclosure/present:stepUpRequired`
     ///
@@ -1016,5 +1018,6 @@ pub mod error_codes {
     pub const STEP_UP_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/disclosure/present:stepUpRequired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

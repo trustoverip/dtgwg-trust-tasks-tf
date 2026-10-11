@@ -708,6 +708,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/chain:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/epoch/chain:forbidden`
     ///
@@ -717,5 +718,6 @@ pub mod error_codes {
     pub const FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/epoch/chain:forbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

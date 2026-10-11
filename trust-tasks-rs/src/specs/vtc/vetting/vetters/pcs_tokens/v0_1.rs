@@ -959,6 +959,7 @@ pub mod error_codes {
     pub const NOT_A_VETTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:notAVetter",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-tokens:labelNotLive`
     ///
@@ -968,6 +969,7 @@ pub mod error_codes {
     pub const LABEL_NOT_LIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:labelNotLive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-tokens:alreadyServed`
     ///
@@ -977,6 +979,7 @@ pub mod error_codes {
     pub const ALREADY_SERVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:alreadyServed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-tokens:tickNotYet`
     ///
@@ -986,6 +989,7 @@ pub mod error_codes {
     pub const TICK_NOT_YET: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:tickNotYet",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-tokens:overQuota`
     ///
@@ -995,6 +999,7 @@ pub mod error_codes {
     pub const OVER_QUOTA: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:overQuota",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-tokens:badOpeningProof`
     ///
@@ -1004,6 +1009,7 @@ pub mod error_codes {
     pub const BAD_OPENING_PROOF: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:badOpeningProof",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/pcs-tokens:eventRefused`
     ///
@@ -1013,5 +1019,6 @@ pub mod error_codes {
     pub const EVENT_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/pcs-tokens:eventRefused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

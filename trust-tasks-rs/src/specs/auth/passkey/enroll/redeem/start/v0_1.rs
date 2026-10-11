@@ -93,7 +93,7 @@ pub mod error {
 ///      }
 ///    },
 ///    "extensions": {
-///      "description": "\nClient extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
+///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
 ///      "type": "object"
 ///    },
 ///    "pubKeyCredParams": {
@@ -1190,7 +1190,7 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTran
 ///      "type": "string"
 ///    },
 ///    "extensions": {
-///      "description": "\nClient extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
+///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
 ///      "type": "object"
 ///    },
 ///    "rpId": {
@@ -3020,6 +3020,7 @@ pub mod error_codes {
     pub const INVITE_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/redeem/start:inviteInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/redeem/start:tooManyAttempts`
     ///
@@ -3029,5 +3030,6 @@ pub mod error_codes {
     pub const TOO_MANY_ATTEMPTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/redeem/start:tooManyAttempts",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

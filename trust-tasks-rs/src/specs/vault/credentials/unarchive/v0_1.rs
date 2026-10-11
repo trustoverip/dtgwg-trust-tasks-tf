@@ -714,6 +714,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/unarchive:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vault/credentials/unarchive:notArchived`
     ///
@@ -723,5 +724,6 @@ pub mod error_codes {
     pub const NOT_ARCHIVED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/unarchive:notArchived",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

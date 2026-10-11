@@ -604,6 +604,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/personhood/assert:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/personhood/assert:challengeExpired`
     ///
@@ -613,6 +614,7 @@ pub mod error_codes {
     pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/personhood/assert:challengeExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/personhood/assert:presentationInvalid`
     ///
@@ -622,5 +624,6 @@ pub mod error_codes {
     pub const PRESENTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/personhood/assert:presentationInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

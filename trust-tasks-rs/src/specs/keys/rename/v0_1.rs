@@ -554,6 +554,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `keys:alreadyExists`
     ///
@@ -563,5 +564,6 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "keys:alreadyExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

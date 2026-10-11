@@ -900,6 +900,7 @@ pub mod error_codes {
     pub const SUBJECT_ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/invite:subjectAlreadyEnrolled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/invite:roleNotPermitted`
     ///
@@ -909,5 +910,6 @@ pub mod error_codes {
     pub const ROLE_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/invite:roleNotPermitted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -657,6 +657,7 @@ pub mod error_codes {
     pub const NOT_NOMINATED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/claim:notNominated",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/owner/claim:roomStillLive`
     ///
@@ -666,6 +667,7 @@ pub mod error_codes {
     pub const ROOM_STILL_LIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/claim:roomStillLive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/owner/claim:notAMember`
     ///
@@ -675,6 +677,7 @@ pub mod error_codes {
     pub const NOT_A_MEMBER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/claim:notAMember",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/owner/claim:notAuthorized`
     ///
@@ -684,5 +687,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/claim:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

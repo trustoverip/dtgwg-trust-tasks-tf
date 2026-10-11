@@ -39,7 +39,7 @@ The act axis and the approve axis are independent and a consumer MUST resolve th
 /// ```json
 ///{
 ///  "title": "AclEntry",
-///  "description": "\nOne access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
+///  "description": "One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).\n\nThe act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer \"may this subject do X\"; `approve` + `approveCapabilities` answer \"may this subject ratify someone else doing X\". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.",
 ///  "type": "object",
 ///  "required": [
 ///    "act",
@@ -3218,15 +3218,20 @@ pub mod error_codes {
     pub const SUBJECT_NOT_PRESENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/revoke:subjectNotPresent",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/revoke:lastAuthorityProtected`
     ///
     /// The revocation would leave the ACL with no party able to perform a privileged operation; the maintainer's policy forbids it.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const LAST_AUTHORITY_PROTECTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/revoke:lastAuthorityProtected",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"protectedRole\":{\"type\":\"string\"},\"remainingHolders\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `acl/revoke:notNarrowing`
     ///
@@ -3236,14 +3241,19 @@ pub mod error_codes {
     pub const NOT_NARROWING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/revoke:notNarrowing",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `acl/revoke:invalidActScope`
     ///
     /// The stated act scope names a context the maintainer does not hold, or uses the `contexts` shape at a maintainer without contexts.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_ACT_SCOPE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "acl/revoke:invalidActScope",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"offendingContexts\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
 }

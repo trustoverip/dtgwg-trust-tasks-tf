@@ -45,7 +45,7 @@ Deliberately not a duration. A room that promised "daily" would be making a clai
 /// ```json
 ///{
 ///  "title": "AnchorCadence",
-///  "description": "\nHow often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\n\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\n\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\n\nDeliberately not a duration. A room that promised \"daily\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.",
+///  "description": "How often this room intends to write an `EpochAnchor`. **A statement of intent, not a schedule anything enforces** — nothing in this family can make an owner anchor.\n\nIt is worth stating anyway, and the reason is the interesting part: it makes **silence legible**. A room that says `renewal` and has not anchored in ten epochs is telling a member something, and a member who did not know what to expect could not have noticed. A room that says `never` is telling them not to wait for one.\n\n  - `never` — no anchor is intended. Honest, and cheap: anchoring costs a witnessed update and a rotation of the room DID's update key each time.\n  - `renewal` — one anchor per epoch change, which is the cadence §9's lifecycle already moves at.\n  - `manual` — the owner anchors when they decide to. A member should draw no freshness expectation from this at all, which is exactly what it is for: it is the honest answer where there is no rule.\n\nDeliberately not a duration. A room that promised \"daily\" would be making a claim its owner's availability cannot keep, and a member comparing against a clock would read an owner's holiday as a host's misbehaviour.",
 ///  "type": "string",
 ///  "enum": [
 ///    "never",
@@ -789,6 +789,7 @@ pub mod error_codes {
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/create:alreadyExists",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/create:visibilityNotPermitted`
     ///
@@ -798,6 +799,7 @@ pub mod error_codes {
     pub const VISIBILITY_NOT_PERMITTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/create:visibilityNotPermitted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/create:notAuthorized`
     ///
@@ -807,5 +809,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/create:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

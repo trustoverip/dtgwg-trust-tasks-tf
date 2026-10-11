@@ -684,5 +684,6 @@ pub mod error_codes {
     pub const UNKNOWN_ROLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/invitations/issue:unknownRole",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

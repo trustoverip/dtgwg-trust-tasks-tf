@@ -796,6 +796,7 @@ pub mod error_codes {
     pub const SUBJECT_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "confirm/request:subject_unknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `confirm/request:rate_limited`
     ///
@@ -805,5 +806,6 @@ pub mod error_codes {
     pub const RATE_LIMITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "confirm/request:rate_limited",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
 }

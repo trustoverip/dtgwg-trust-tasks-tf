@@ -3592,18 +3592,26 @@ pub mod error_codes {
     /// The presented VP failed structural validation (missing required field, malformed `holder`, unsupported cryptosuite, freshness window passed, signature does not verify, `verificationMethod` does not resolve under `holder`).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_BOOTSTRAP_REQUEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:invalidBootstrapRequest",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"missing_type\",\"holder_invalid\",\"cryptosuite_unsupported\",\"verification_method_mismatch\",\"signature_invalid\",\"expired\",\"nonce_invalid\",\"shape\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `provision/integration:templateNotFound`
     ///
     /// The integration or admin template named in the ask is not registered at the maintainer. Operator must upload it via the maintainer's template-management surface before retrying.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const TEMPLATE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:templateNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"kind\":{\"enum\":[\"integration\",\"admin\"],\"type\":\"string\"},\"templateName\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `provision/integration:templateVarsInvalid`
     ///
@@ -3613,6 +3621,7 @@ pub mod error_codes {
     pub const TEMPLATE_VARS_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:templateVarsInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `provision/integration:contextNotFound`
     ///
@@ -3622,15 +3631,20 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `provision/integration:contextRequired`
     ///
     /// `payload.context` was omitted and the maintainer could not infer a unique target context from the relayer's grant. The relayer either holds admin role in multiple contexts (rule #1 ambiguous) or is a super-admin and the maintainer has multiple contexts registered (rule #2 ambiguous). The relayer SHOULD retry with an explicit `context` value selected from `details.candidates`.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const CONTEXT_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:contextRequired",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"candidates\":{\"description\":\"Contexts the maintainer considered as plausible targets. The relayer picks one and retries.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":2,\"type\":\"array\"}},\"type\":\"object\"}",
+        ),
     };
     /// `provision/integration:forbidden`
     ///
@@ -3640,6 +3654,7 @@ pub mod error_codes {
     pub const FORBIDDEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:forbidden",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `provision/integration:envelopeUnsupported`
     ///
@@ -3649,6 +3664,7 @@ pub mod error_codes {
     pub const ENVELOPE_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:envelopeUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `provision/integration:assertionUnsupported`
     ///
@@ -3658,5 +3674,6 @@ pub mod error_codes {
     pub const ASSERTION_UNSUPPORTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "provision/integration:assertionUnsupported",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

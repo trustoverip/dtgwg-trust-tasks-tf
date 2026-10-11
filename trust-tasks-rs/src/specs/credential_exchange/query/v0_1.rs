@@ -451,6 +451,7 @@ pub mod error_codes {
     pub const CONSENT_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/query:consentRequired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `credential-exchange/query:noMatch`
     ///
@@ -460,5 +461,6 @@ pub mod error_codes {
     pub const NO_MATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "credential-exchange/query:noMatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

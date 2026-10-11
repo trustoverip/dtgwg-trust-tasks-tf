@@ -1133,6 +1133,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/suspend:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/relationships/suspend:alreadySuspended`
     ///
@@ -1142,6 +1143,7 @@ pub mod error_codes {
     pub const ALREADY_SUSPENDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/suspend:alreadySuspended",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/relationships/suspend:terminal`
     ///
@@ -1151,5 +1153,6 @@ pub mod error_codes {
     pub const TERMINAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/relationships/suspend:terminal",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

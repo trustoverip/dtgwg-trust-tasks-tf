@@ -1161,6 +1161,7 @@ pub mod error_codes {
     pub const NOT_A_VETTER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/event-mode:notAVetter",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/event-mode:unknownEvent`
     ///
@@ -1170,6 +1171,7 @@ pub mod error_codes {
     pub const UNKNOWN_EVENT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/event-mode:unknownEvent",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/event-mode:unknownTier`
     ///
@@ -1179,6 +1181,7 @@ pub mod error_codes {
     pub const UNKNOWN_TIER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/event-mode:unknownTier",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/event-mode:badWindow`
     ///
@@ -1188,6 +1191,7 @@ pub mod error_codes {
     pub const BAD_WINDOW: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/event-mode:badWindow",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/event-mode:alreadyRequested`
     ///
@@ -1197,6 +1201,7 @@ pub mod error_codes {
     pub const ALREADY_REQUESTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/event-mode:alreadyRequested",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/vetting/vetters/event-mode:eventClosed`
     ///
@@ -1206,5 +1211,6 @@ pub mod error_codes {
     pub const EVENT_CLOSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/vetters/event-mode:eventClosed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

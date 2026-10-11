@@ -948,6 +948,7 @@ pub mod error_codes {
     pub const ROTATION_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/rotate:rotationExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/members/rotate:signatureInvalid`
     ///
@@ -957,5 +958,6 @@ pub mod error_codes {
     pub const SIGNATURE_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/members/rotate:signatureInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

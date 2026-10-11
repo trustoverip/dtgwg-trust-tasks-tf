@@ -650,6 +650,7 @@ pub mod error_codes {
     pub const NO_SIGNING_KEY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/issue-authority:noSigningKey",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/owner/issue-authority:emptyActions`
     ///
@@ -659,5 +660,6 @@ pub mod error_codes {
     pub const EMPTY_ACTIONS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/issue-authority:emptyActions",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

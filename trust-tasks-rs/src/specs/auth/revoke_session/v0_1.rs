@@ -565,6 +565,7 @@ pub mod error_codes {
     pub const SESSION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/revoke-session:sessionNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/revoke-session:notOwner`
     ///
@@ -574,5 +575,6 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/revoke-session:notOwner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

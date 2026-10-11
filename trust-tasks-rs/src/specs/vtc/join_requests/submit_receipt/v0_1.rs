@@ -523,5 +523,6 @@ pub mod error_codes {
     pub const UNKNOWN_REQUEST: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/submit-receipt:unknownRequest",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

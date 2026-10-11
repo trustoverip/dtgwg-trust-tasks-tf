@@ -1409,5 +1409,6 @@ pub mod error_codes {
     pub const FILTER_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vault/credentials/query:filterRequired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

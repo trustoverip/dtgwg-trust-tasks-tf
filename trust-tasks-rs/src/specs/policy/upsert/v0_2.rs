@@ -1402,6 +1402,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/upsert:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `policy/upsert:versionConflict`
     ///
@@ -1411,15 +1412,20 @@ pub mod error_codes {
     pub const VERSION_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/upsert:versionConflict",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `policy/upsert:regoInvalid`
     ///
     /// The supplied `module` failed Rego parsing or static analysis.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const REGO_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/upsert:regoInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"column\":{\"minimum\":1,\"type\":\"integer\"},\"line\":{\"minimum\":1,\"type\":\"integer\"},\"message\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `policy/upsert:contextNotFound`
     ///
@@ -1429,5 +1435,6 @@ pub mod error_codes {
     pub const CONTEXT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "policy/upsert:contextNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1433,6 +1433,7 @@ pub mod error_codes {
     pub const UNKNOWN_NAMESPACE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownNamespace",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:namespaceNotBound`
     ///
@@ -1442,6 +1443,7 @@ pub mod error_codes {
     pub const NAMESPACE_NOT_BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:namespaceNotBound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:unknownRepo`
     ///
@@ -1451,6 +1453,7 @@ pub mod error_codes {
     pub const UNKNOWN_REPO: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:unknownRepo",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:repoNotActive`
     ///
@@ -1460,6 +1463,7 @@ pub mod error_codes {
     pub const REPO_NOT_ACTIVE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:repoNotActive",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:scopeViolation`
     ///
@@ -1469,6 +1473,7 @@ pub mod error_codes {
     pub const SCOPE_VIOLATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:scopeViolation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:escalation`
     ///
@@ -1478,6 +1483,7 @@ pub mod error_codes {
     pub const ESCALATION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:escalation",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:membersOnly`
     ///
@@ -1487,6 +1493,7 @@ pub mod error_codes {
     pub const MEMBERS_ONLY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:membersOnly",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns:policyDenied`
     ///
@@ -1496,6 +1503,7 @@ pub mod error_codes {
     pub const POLICY_DENIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns:policyDenied",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/right/break-glass:disabled`
     ///
@@ -1505,6 +1513,7 @@ pub mod error_codes {
     pub const DISABLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/break-glass:disabled",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `git-ns/right/break-glass:notHeadless`
     ///
@@ -1514,5 +1523,6 @@ pub mod error_codes {
     pub const NOT_HEADLESS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-ns/right/break-glass:notHeadless",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

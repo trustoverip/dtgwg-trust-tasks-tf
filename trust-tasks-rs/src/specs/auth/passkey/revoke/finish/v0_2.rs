@@ -1199,6 +1199,7 @@ pub mod error_codes {
     pub const REVOCATION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/revoke/finish:revocationNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/revoke/finish:revocationExpired`
     ///
@@ -1208,6 +1209,7 @@ pub mod error_codes {
     pub const REVOCATION_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/revoke/finish:revocationExpired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/revoke/finish:userVerificationFailed`
     ///
@@ -1217,15 +1219,20 @@ pub mod error_codes {
     pub const USER_VERIFICATION_FAILED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/revoke/finish:userVerificationFailed",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/revoke/finish:lastCredential`
     ///
     /// Re-checked at commit time, the session credential is now the subject's last, because another revocation completed in between. Never returned for a step-up credential. `details.remaining` MAY carry the count.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const LAST_CREDENTIAL: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/revoke/finish:lastCredential",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"remaining\":{\"minimum\":0,\"type\":\"integer\"}},\"type\":\"object\"}",
+        ),
     };
     /// `auth/passkey/revoke/finish:notAuthorized`
     ///
@@ -1235,5 +1242,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/revoke/finish:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -751,5 +751,6 @@ pub mod error_codes {
     pub const NOT_GRANTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "git-trust/revoke:notGranted",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

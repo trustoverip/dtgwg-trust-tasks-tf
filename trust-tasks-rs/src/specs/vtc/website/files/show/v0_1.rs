@@ -862,6 +862,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/files/show:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/files/show:pathRefused`
     ///
@@ -871,6 +872,7 @@ pub mod error_codes {
     pub const PATH_REFUSED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/files/show:pathRefused",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/files/show:changed`
     ///
@@ -880,6 +882,7 @@ pub mod error_codes {
     pub const CHANGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/files/show:changed",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `vtc/website/files/show:rangeOutOfBounds`
     ///
@@ -889,5 +892,6 @@ pub mod error_codes {
     pub const RANGE_OUT_OF_BOUNDS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/website/files/show:rangeOutOfBounds",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

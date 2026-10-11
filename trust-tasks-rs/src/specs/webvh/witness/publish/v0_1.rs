@@ -475,15 +475,20 @@ pub mod error_codes {
     pub const NOT_OWNER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/publish:notOwner",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `webvh/witness/publish:invalidWitness`
     ///
     /// The supplied `witness` object failed structural validation (empty object, missing signature, or signature did not verify against the expected witness DID).
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const INVALID_WITNESS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/publish:invalidWitness",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
     /// `webvh/witness/publish:slotNotFound`
     ///
@@ -493,5 +498,6 @@ pub mod error_codes {
     pub const SLOT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "webvh/witness/publish:slotNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

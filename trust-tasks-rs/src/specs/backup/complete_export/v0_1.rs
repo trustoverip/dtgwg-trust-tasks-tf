@@ -551,6 +551,7 @@ pub mod error_codes {
     pub const NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/complete-export:notFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `backup/complete-export:terminalState`
     ///
@@ -560,5 +561,6 @@ pub mod error_codes {
     pub const TERMINAL_STATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "backup/complete-export:terminalState",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

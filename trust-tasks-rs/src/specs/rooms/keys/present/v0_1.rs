@@ -633,6 +633,7 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/present:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/keys/present:actionNotHeld`
     ///
@@ -642,5 +643,6 @@ pub mod error_codes {
     pub const ACTION_NOT_HELD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/present:actionNotHeld",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

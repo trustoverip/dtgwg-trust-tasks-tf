@@ -423,5 +423,6 @@ pub mod error_codes {
     pub const NOT_INVITED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/keys/key-package:notInvited",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -594,5 +594,6 @@ pub mod error_codes {
     pub const BOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/local/profile/delete:bound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

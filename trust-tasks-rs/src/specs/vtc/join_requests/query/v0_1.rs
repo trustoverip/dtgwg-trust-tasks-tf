@@ -1020,5 +1020,6 @@ pub mod error_codes {
     pub const CRITERION_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/join-requests/query:criterionNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

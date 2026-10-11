@@ -1106,6 +1106,7 @@ pub mod error_codes {
     pub const NOT_LOCAL_PROFILE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/local/binding/set:notLocalProfile",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/local/binding/set:profileRetired`
     ///
@@ -1115,6 +1116,7 @@ pub mod error_codes {
     pub const PROFILE_RETIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/local/binding/set:profileRetired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `persona/local/binding/set:untilNotFuture`
     ///
@@ -1124,5 +1126,6 @@ pub mod error_codes {
     pub const UNTIL_NOT_FUTURE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/local/binding/set:untilNotFuture",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

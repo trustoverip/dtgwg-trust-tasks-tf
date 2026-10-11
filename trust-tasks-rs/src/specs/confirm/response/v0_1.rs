@@ -749,6 +749,7 @@ pub mod error_codes {
     pub const CHALLENGE_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "confirm/response:challenge_unknown",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `confirm/response:challenge_expired`
     ///
@@ -758,6 +759,7 @@ pub mod error_codes {
     pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "confirm/response:challenge_expired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `confirm/response:subject_mismatch`
     ///
@@ -767,5 +769,6 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "confirm/response:subject_mismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

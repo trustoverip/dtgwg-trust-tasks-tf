@@ -1412,6 +1412,7 @@ pub mod error_codes {
     pub const CHAIN_TOO_DEEP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/info:chainTooDeep",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `rooms/info:subjectBindingMissing`
     ///
@@ -1421,5 +1422,6 @@ pub mod error_codes {
     pub const SUBJECT_BINDING_MISSING: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/info:subjectBindingMissing",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

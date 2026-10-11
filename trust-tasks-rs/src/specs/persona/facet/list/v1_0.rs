@@ -1211,5 +1211,6 @@ pub mod error_codes {
     pub const INVALID_CURSOR: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "persona/facet/list:invalidCursor",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

@@ -1351,5 +1351,6 @@ pub mod error_codes {
     pub const DUPLICATE_NAME: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/did-templates/create:duplicateName",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

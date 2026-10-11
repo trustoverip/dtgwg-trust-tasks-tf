@@ -519,6 +519,7 @@ pub mod error_codes {
     pub const REQUEST_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:requestExpired`
     ///
@@ -528,6 +529,7 @@ pub mod error_codes {
     pub const REQUEST_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:requestExpired",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:alreadyDecided`
     ///
@@ -537,6 +539,7 @@ pub mod error_codes {
     pub const ALREADY_DECIDED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:alreadyDecided",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/oob:notAuthorized`
     ///
@@ -546,5 +549,6 @@ pub mod error_codes {
     pub const NOT_AUTHORIZED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/oob:notAuthorized",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

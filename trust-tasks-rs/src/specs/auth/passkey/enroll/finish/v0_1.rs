@@ -1103,6 +1103,7 @@ pub mod error_codes {
     pub const ENROLLMENT_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/finish:enrollmentNotFound",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/finish:enrollmentExpired`
     ///
@@ -1112,6 +1113,7 @@ pub mod error_codes {
     pub const ENROLLMENT_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/finish:enrollmentExpired",
         retryable: true,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/finish:subjectMismatch`
     ///
@@ -1121,14 +1123,19 @@ pub mod error_codes {
     pub const SUBJECT_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/finish:subjectMismatch",
         retryable: false,
+        details_schema: ::core::option::Option::None,
     };
     /// `auth/passkey/enroll/finish:attestationInvalid`
     ///
     /// The WebAuthn attestation failed verification (challenge mismatch, signature failure, unsupported algorithm, etc.). `details.reason` carries a machine-readable hint.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ATTESTATION_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "auth/passkey/enroll/finish:attestationInvalid",
         retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"reason\":{\"enum\":[\"challenge_mismatch\",\"origin_mismatch\",\"rp_id_mismatch\",\"signature_invalid\",\"algorithm_unsupported\",\"attestation_format_invalid\"],\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
     };
 }
