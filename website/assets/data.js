@@ -40,11 +40,32 @@ window.TT_CATEGORIES = [
     icon: "shield-check"
   },
   {
+    id: "automation",
+    name: "Automation",
+    color: "sky",
+    blurb: "Scheduled and event-triggered execution with no human in the loop — recurring jobs, one-shot timers, trigger registration, and the run history that shows what fired and when (scheduler/*).",
+    icon: "zap"
+  },
+  {
     id: "chat",
     name: "Chat",
     color: "teal",
     blurb: "Conversational messaging between AI agents and messaging-platform bridges — author-signed, hash-linked messages forming a verifiable per-conversation chain for audit and dispute resolution (chat/*).",
     icon: "message"
+  },
+  {
+    id: "collaboration",
+    name: "Collaboration",
+    color: "violet",
+    blurb: "Concurrent multi-party editing of shared state — a canvas or document several parties mutate at the same time, with per-party attribution and an explicit conflict-resolution rule (canvas/*).",
+    icon: "users"
+  },
+  {
+    id: "communications",
+    name: "Communications",
+    color: "coral",
+    blurb: "Real-time synchronous session setup and teardown — offer/answer negotiation, participant management, and call lifecycle. Distinct from the asynchronous message exchange of chat/* and from the transport administration of messaging/* (call/*).",
+    icon: "phone"
   },
   {
     id: "consent",
@@ -103,6 +124,20 @@ window.TT_CATEGORIES = [
     icon: "key"
   },
   {
+    id: "matchmaking",
+    name: "Matchmaking",
+    color: "coral",
+    blurb: "Mutual-interest discovery and introduction — a party declares what it seeks and an introduction is made only when the interest is reciprocal, so neither side learns of an interest the other did not return (matchmaking/*).",
+    icon: "handshake"
+  },
+  {
+    id: "media",
+    name: "Media",
+    color: "violet",
+    blurb: "Custody and delivery of recorded audio, video, image, and book assets — ingest, transcode, streaming release, and playback position, held on behalf of the party that owns the asset (media/*).",
+    icon: "film"
+  },
+  {
     id: "messaging",
     name: "Messaging",
     color: "teal",
@@ -124,6 +159,20 @@ window.TT_CATEGORIES = [
     icon: "credit-card"
   },
   {
+    id: "prediction",
+    name: "Prediction",
+    color: "amber",
+    blurb: "A claim about the future together with the accuracy record that later settles it. Reputation scores the past and provenance records it; neither can hold the claim half (forecast/*).",
+    icon: "trending-up"
+  },
+  {
+    id: "privacy",
+    name: "Privacy",
+    color: "teal",
+    blurb: "Data-subject rights exercised against a controller — access, rectification, erasure, portability, and objection. Distinct from consent, which covers a subject granting permission rather than compelling a controller who would rather not comply (data-subject/*).",
+    icon: "eye-off"
+  },
+  {
     id: "provenance",
     name: "Provenance",
     color: "violet",
@@ -136,5 +185,26 @@ window.TT_CATEGORIES = [
     color: "sky",
     blurb: "Reputation, attestation, and trust-score tasks. (Reserved; no specs yet.)",
     icon: "star"
+  },
+  {
+    id: "storage",
+    name: "Storage",
+    color: "navy",
+    blurb: "Document custody on behalf of another party — upload, listing, retrieval, and deletion of files a producer holds for a consumer. Distinct from governance, which decides who may reach them (files/*).",
+    icon: "folder"
+  },
+  {
+    id: "task-management",
+    name: "Task Management",
+    color: "amber",
+    blurb: "Human work tracking and assignment — creating, assigning, transitioning, and closing items of work whose completion is judged by a person rather than by a machine (todo/*).",
+    icon: "check-square"
+  },
+  {
+    id: "temporal-coordination",
+    name: "Temporal Coordination",
+    color: "teal",
+    blurb: "Negotiating when an interaction happens, between parties — availability exchange, proposal and counter-proposal, confirmation, and rescheduling of a shared point in time (calendar/*).",
+    icon: "calendar"
   }
 ];
