@@ -31,6 +31,19 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.30.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.30.0...trust-tasks-rs-v0.30.1) — 2026-10-12
+
+
+### Added
+
+- **provision/vta**: Add the VTA Farm claim and redeem tasks for the vta-claim trigger-link flow ([#753](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/753))
+
+* feat(provision/vta/claim): add the VTA Farm claim task for the vta-claim trigger-link flow
+
+  The first request of the vta-claim flow (VTI-LNK-110 to 117): a wallet claims a reserved VTA from a Farm with a fresh Ed25519 did:key that becomes the VTA's administrator, and the Farm answers with the VTA DID, the operation and whether it holds the VTA for the claim check. Patterned on auth/oob/claim; bindings regenerated for Rust, TypeScript, Go and Dart.
+
+
+
 ## [0.30.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.29.0...trust-tasks-rs-v0.30.0) — 2026-10-11
 
 
