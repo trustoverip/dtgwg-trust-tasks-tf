@@ -1,0 +1,56 @@
+[
+  {
+    "note": "Missing handle — a poll must name the reservation it asks about.",
+    "payload": {}
+  },
+  {
+    "note": "handle with characters outside unpadded base64url (padding `=`) must be rejected; VTI-LNK-033 fixes the alphabet.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA=="
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false rejects a claimant-supplied confirmation. Whether the claim check matched is decided on the Farm's page, never asserted by the wallet.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "confirmed": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A hand-over without vtaDid tells the wallet nothing it can act on.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "operation": "provisionVta"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "operation is a closed lowerCamelCase list (SPEC §4.10); the snake_case spelling is rejected.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "vtaDid": "did:webvh:QmYyWfX2gJmZk9zNqV8pL3tRbH4sKc6dEa7uF1nG5oP2wQ:dids.firstperson.dev:alice-vta",
+      "operation": "provision_vta"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "The hand-over carries no claim check — additionalProperties: false rejects one. The wallet computes the check from its own key (VTI-LNK-115), and by the time this document exists the check has already been confirmed on the page.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "vtaDid": "did:webvh:QmYyWfX2gJmZk9zNqV8pL3tRbH4sKc6dEa7uF1nG5oP2wQ:dids.firstperson.dev:alice-vta",
+      "operation": "provisionVta",
+      "claimCheck": "K7Q2ZM"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A DID log URL with userinfo is rejected; a credential belongs in neither a URL nor a log line.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "vtaDid": "did:webvh:QmYyWfX2gJmZk9zNqV8pL3tRbH4sKc6dEa7uF1nG5oP2wQ:dids.firstperson.dev:alice-vta",
+      "operation": "provisionVta",
+      "didLogUrl": "https://token@dids.firstperson.dev/alice-vta/did.jsonl"
+    }
+  }
+]

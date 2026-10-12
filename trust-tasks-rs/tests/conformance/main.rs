@@ -970,6 +970,9 @@ mod provision {
         mod claim {
             mod v0_1;
         }
+        mod redeem {
+            mod v0_1;
+        }
     }
 }
 #[cfg(feature = "push")]

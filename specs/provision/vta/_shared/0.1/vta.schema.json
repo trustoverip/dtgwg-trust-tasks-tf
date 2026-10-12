@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/provision/vta/_shared/0.1/vta",
+  "title": "Provision — shared VTA reservation definitions",
+  "description": "Shared types for the provision/vta/* family: a Farm reserves a VTA behind a trigger link, a wallet claims it with a fresh key, and the claimant redeems the hand-over once the person has confirmed the claim check. Defined once so claim and redeem describe the same handle. The family rules are in CONVENTIONS.md beside this file. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "Handle": {
+      "title": "Handle",
+      "type": "string",
+      "minLength": 22,
+      "maxLength": 43,
+      "pattern": "^[A-Za-z0-9_-]{22,43}$",
+      "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim."
+    }
+  }
+}
