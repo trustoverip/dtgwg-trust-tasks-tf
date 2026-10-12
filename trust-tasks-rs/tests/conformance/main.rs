@@ -966,6 +966,11 @@ mod provision {
         mod v0_2;
         mod v0_3;
     }
+    mod vta {
+        mod claim {
+            mod v0_1;
+        }
+    }
 }
 #[cfg(feature = "push")]
 mod push {

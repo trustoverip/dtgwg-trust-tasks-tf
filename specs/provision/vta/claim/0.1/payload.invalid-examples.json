@@ -1,0 +1,70 @@
+[
+  {
+    "note": "Missing handle — a claim must name the reservation it claims.",
+    "payload": {}
+  },
+  {
+    "note": "handle with characters outside unpadded base64url (padding `=`) must be rejected; VTI-LNK-033 fixes the alphabet.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA=="
+    }
+  },
+  {
+    "note": "handle shorter than 16 bytes (22 characters) must be rejected.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1Lw"
+    }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false rejects a claimant-supplied administrator DID. The administrator is the envelope's issuer (VTI-LNK-113), never a payload member, so a Farm cannot be talked into writing a key that did not sign the claim.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "adminDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response without vtaDid tells the wallet nothing it can act on.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "operation": "provisionVta",
+      "checkRequired": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "operation is a closed lowerCamelCase list (SPEC §4.10); the snake_case spelling is rejected.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "vtaDid": "did:webvh:QmYyWfX2gJmZk9zNqV8pL3tRbH4sKc6dEa7uF1nG5oP2wQ:dids.firstperson.dev:alice-vta",
+      "operation": "provision_vta",
+      "checkRequired": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "The response carries no claim check — additionalProperties: false rejects one. The wallet computes the check from its own key (VTI-LNK-115); a Farm-supplied value would let a wallet show a check it did not derive.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "vtaDid": "did:webvh:QmYyWfX2gJmZk9zNqV8pL3tRbH4sKc6dEa7uF1nG5oP2wQ:dids.firstperson.dev:alice-vta",
+      "operation": "provisionVta",
+      "checkRequired": true,
+      "confirmBy": 1791626860,
+      "claimCheck": "K7Q2ZM"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A progress URL with userinfo is rejected; a credential belongs in neither a URL nor a log line.",
+    "payload": {
+      "handle": "q3Vn7Zk2Xo9Rt1LwPb4HdA",
+      "vtaDid": "did:webvh:QmYyWfX2gJmZk9zNqV8pL3tRbH4sKc6dEa7uF1nG5oP2wQ:dids.firstperson.dev:alice-vta",
+      "operation": "provisionVta",
+      "checkRequired": false,
+      "progress": {
+        "url": "https://token@vtafarm-api.example/progress/abc",
+        "expiresAt": 1791630400
+      }
+    }
+  }
+]

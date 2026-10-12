@@ -2050,6 +2050,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "provision")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/provision/integration/0.3#response" => <crate::specs::provision::integration::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "provision")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/provision/vta/claim/0.1" => <crate::specs::provision::vta::claim::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "provision")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/provision/vta/claim/0.1#response" => <crate::specs::provision::vta::claim::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "push")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/push/provision/0.1" => <crate::specs::push::provision::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -6370,6 +6376,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/provision/integration/0.3" => Some(crate::SpecPolicy::of::<
             crate::specs::provision::integration::v0_3::Payload,
         >()),
+        #[cfg(feature = "provision")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/provision/vta/claim/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::provision::vta::claim::v0_1::Payload,
+        >()),
         #[cfg(feature = "push")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/push/provision/0.1" => Some(crate::SpecPolicy::of::<
@@ -10383,6 +10394,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/provision/integration/0.3" => {
             Some(crate::specs::provision::integration::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "provision")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/provision/vta/claim/0.1" => {
+            Some(crate::specs::provision::vta::claim::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "push")]
         #[cfg(not(test))]

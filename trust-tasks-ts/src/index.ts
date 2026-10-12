@@ -403,6 +403,7 @@ export * as ProcessAttestation_v0_1 from "./process-attestation/0.1/payload.js";
 export * as ProvisionIntegration_v0_1 from "./provision/integration/0.1/payload.js";
 export * as ProvisionIntegration_v0_2 from "./provision/integration/0.2/payload.js";
 export * as ProvisionIntegration_v0_3 from "./provision/integration/0.3/payload.js";
+export * as ProvisionVtaClaim_v0_1 from "./provision/vta/claim/0.1/payload.js";
 export * as PushProvision_v0_1 from "./push/provision/0.1/payload.js";
 export * as PushProvision_v0_2 from "./push/provision/0.2/payload.js";
 export * as PushRegister_v0_1 from "./push/register/0.1/payload.js";
