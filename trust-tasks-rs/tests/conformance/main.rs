@@ -1440,6 +1440,50 @@ mod vta {
             mod v0_1;
         }
     }
+    mod pcs {
+        mod applications {
+            mod create {
+                mod v0_1;
+            }
+            mod delete {
+                mod v0_1;
+            }
+            mod show {
+                mod v0_1;
+            }
+        }
+        mod attest {
+            mod v0_1;
+        }
+        mod prove {
+            mod v0_1;
+        }
+        mod root_accept {
+            mod v0_1;
+        }
+        mod root_request {
+            mod v0_1;
+        }
+        mod tokens {
+            mod abandon {
+                mod v0_1;
+            }
+            mod accept {
+                mod v0_1;
+            }
+            mod request {
+                mod v0_1;
+            }
+        }
+        mod verify_attestation {
+            mod v0_1;
+        }
+        mod vetter {
+            mod show {
+                mod v0_1;
+            }
+        }
+    }
     mod restore {
         mod status {
             mod v0_1;

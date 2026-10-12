@@ -367,6 +367,10 @@ export type ApproverDid = string;
  */
 export type ApproverLabel = string;
 /**
+ * The metadata of one attestation: what a Vetting Statement would have said, minus its issuer, as vetting/attestation/0.1 defines it.
+ */
+export type AttestationMeta = StatementMeta;
+/**
  * The kind of privileged change recorded in the audit log.
  */
 export type AuditAction =
@@ -470,7 +474,9 @@ export type Capability_DeviceV0_2 =
   | "signJws"
   | "signCsr"
   | "externalAccountsManage"
-  | "externalAuthUse";
+  | "externalAuthUse"
+  | "pcsVetter"
+  | "pcsApplicant";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
@@ -495,6 +501,10 @@ export type ChunkSize = number;
  * The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.
  */
 export type ClaimType = string;
+/**
+ * The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.
+ */
+export type CommunityParameters = PublishedConfig;
 /**
  * `active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.
  */
@@ -798,6 +808,10 @@ export type MatchNumber = string;
  * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
  */
 export type Mode = "scan";
+/**
+ * A binary value, multibase base58btc over the suite's canonical encoding.
+ */
+export type Multibase = string;
 /**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
@@ -1249,6 +1263,10 @@ export type SyncEvent_SyncV0_2 =
   | VaultDeletedEvent_SyncV0_2
   | AclChangedEvent_SyncV0_2
   | PolicyChangedEvent_SyncV0_2;
+/**
+ * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
+ */
+export type TickLength = string;
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
@@ -3764,6 +3782,37 @@ export interface AppStateRecord {
   deletedAt?: string;
 }
 /**
+ * An applicant engine as the VTA holds it, without its key.
+ */
+export interface ApplicationSummary {
+  /**
+   * The VTA's handle for this application. Opaque; never sent to the community.
+   */
+  applicationId: string;
+  /**
+   * The context the application's key is derived in.
+   */
+  contextId: string;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  /**
+   * The DID the application joins as.
+   */
+  joinDid: string;
+  suite: string;
+  /**
+   * The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.
+   */
+  id: Multibase;
+  /**
+   * The metadata of each attestation held, in the order received. Metadata names no vetter.
+   */
+  attestations: StatementMeta[];
+  createdAt: string;
+}
+/**
  * Exactly the listed capabilities, intersected with the role's approve ceiling where the maintainer's roles define one.
  */
 export interface ApproveCapabilityScopeListed {
@@ -3868,6 +3917,38 @@ export interface AttachmentRef_VaultV0_3 {
  * A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.
  */
 export interface AttestStatement {}
+/**
+ * An attestation as a vetter hands it to an applicant: the payload of vetting/attestation/0.1, without its `ext`. The engine produces it from vta/pcs/attest and takes it into vta/pcs/verify-attestation.
+ */
+export interface Attestation {
+  /**
+   * The suite the attestation was made under, as the community publishes it.
+   */
+  suite: string;
+  /**
+   * The attestation: a tag, a shown class credential and a proof. It names no vetter.
+   */
+  attestation: Multibase;
+  meta: StatementMeta;
+  token: AttestationToken;
+}
+/**
+ * The attestation token spent on one attestation: the label it was drawn under, the serial its spend reveals, and its re-randomised signature. The same members as `token` in vetting/attestation/0.1.
+ */
+export interface AttestationToken {
+  /**
+   * The token label spent under.
+   */
+  label: string;
+  /**
+   * The serial revealed by the spend.
+   */
+  serial: Multibase;
+  /**
+   * The re-randomised token signature, verifiable under the published token key.
+   */
+  shown: Multibase;
+}
 /**
  * One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.
  */
@@ -5777,6 +5858,41 @@ export interface GitNamespace {
   state: "pending" | "bound";
 }
 /**
+ * The applicant's proof that distinct eligible vetters of the community vetted it, as a join submission carries it under `extensions.hiddenVetting`. Built by vta/pcs/prove, verified by the community.
+ */
+export interface HiddenVettingSubmission {
+  /**
+   * The suite the proof is built in.
+   */
+  suite: string;
+  /**
+   * The applicant's PCS identifier for this application.
+   */
+  id: Multibase;
+  /**
+   * The DID the applicant joins as. Bound to `id` by `idBinding`.
+   */
+  joinDid: string;
+  /**
+   * The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join.
+   */
+  idBinding: Multibase;
+  /**
+   * The community's single-use challenge, as vtc/vetting/pcs-challenge issued it.
+   */
+  challenge: string;
+  /**
+   * One entry per attestation the proof carries, in the proof's order.
+   *
+   * @minItems 1
+   */
+  statements: [SubmittedStatement, ...SubmittedStatement[]];
+  /**
+   * The issuance proof, which carries the attestations.
+   */
+  proof: Multibase;
+}
+/**
  * One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.
  */
 export interface Histogram {
@@ -7038,6 +7154,38 @@ export interface PublicKeyCredentialRequestOptions {
   allowCredentials?: PublicKeyCredentialDescriptor[];
   userVerification?: "discouraged" | "preferred" | "required";
 }
+/**
+ * The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.
+ */
+export interface PublishedConfig {
+  suite: string;
+  /**
+   * The helper verification key, multibase — named for its role on the wire rather than for hvk.
+   */
+  helperKey: string;
+  /**
+   * The token verification key, multibase — named for its role on the wire rather than for tvk.
+   */
+  tokenKey: string;
+  /**
+   * Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.
+   */
+  vetterLabels: string[];
+  tokenLabels: string[];
+  dripPerTick: number;
+  tickLength: TickLength;
+  events: PublishedEvent[];
+}
+/**
+ * The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.
+ */
+export interface PublishedEvent {
+  eventId: string;
+  startDate: string;
+  endDate: string;
+  groupFloor: number;
+  tiers: Tier[];
+}
 export interface Apns {
   platform: "apns";
   /**
@@ -8275,6 +8423,61 @@ export interface StatePin {
    */
   version: string;
 }
+/**
+ * What a Vetting Statement would have said, minus its issuer.
+ */
+export interface StatementMeta {
+  /**
+   * The community this attestation is for. An attestation is not portable between communities.
+   */
+  community: string;
+  /**
+   * The digest of the criterion's requirements as the vetter read them.
+   */
+  requirementsDigest: string;
+  /**
+   * How the vetter met the applicant.
+   */
+  method: "inPerson" | "video" | "priorAcquaintance";
+  /**
+   * The claim types the vetter checked.
+   *
+   * @minItems 1
+   */
+  claimsVerified: [string, ...string[]];
+  /**
+   * Whether the vetter confirmed a live person.
+   */
+  livenessConfirmed: boolean;
+  /**
+   * The relationship the vetter declared, which the community's independence rules count.
+   */
+  declaredRelationship: "none" | "family" | "sameEmployer" | "closeFriend" | "other";
+  /**
+   * The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.
+   */
+  identityCommitment: string;
+  /**
+   * Digest of that card, as the vetter verified it.
+   */
+  cardDigestMultibase: string;
+  /**
+   * A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.
+   */
+  validFrom: string;
+  /**
+   * A date, for the same reason.
+   */
+  validUntil: string;
+  /**
+   * The token label spent, repeated inside the bound facts so it cannot be swapped in transit.
+   */
+  tokenLabel: string;
+  /**
+   * The token serial spent, likewise bound.
+   */
+  tokenSerial: string;
+}
 export interface StepUpProof_VaultV0_1 {
   kind: "webauthn-uv" | "push-approval" | "totp";
   /**
@@ -8375,6 +8578,43 @@ export interface StorageHealth {
   lastDeleteAt?: string;
 }
 /**
+ * The parameters exactly as the community stores them, including the helper key it never publishes.
+ */
+export interface StoredConfig {
+  /**
+   * The blind-signature suite in force, e.g. ps-ddh-bls12381.
+   */
+  suite: string;
+  /**
+   * The helper verification key, multibase. A public value, published as helperKey.
+   */
+  hvk: string;
+  /**
+   * The token verification key, multibase. Never the same key as hvk.
+   */
+  tvk: string;
+  /**
+   * Live vetter class periods, current first, stored as the bare YYYY-MM period.
+   */
+  livePeriods: string[];
+  liveTokenLabels: string[];
+  dripPerTick: number;
+  tickLength: TickLength;
+  events: StoredEvent[];
+}
+export interface StoredEvent {
+  eventId: string;
+  startDate: string;
+  endDate: string;
+  graceDays: number;
+  groupFloor: number;
+  tiers: Tier[];
+  /**
+   * Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).
+   */
+  approvedBy?: string | null;
+}
+/**
  * A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/* /1.0` descriptor.
  */
 export interface StreamDescriptor {
@@ -8394,6 +8634,13 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * One attestation as a submission carries it: its metadata and its token. The attestation itself is inside the submission's `proof`, in the same order.
+ */
+export interface SubmittedStatement {
+  meta: StatementMeta;
+  token: AttestationToken;
 }
 /**
  * One Move function an account's transactions may call.
@@ -8470,6 +8717,16 @@ export interface SyncUpdate {
   disabled: boolean;
   ext?: Ext;
 }
+export interface Tier {
+  /**
+   * How the menu names it: desk, busy-desk.
+   */
+  name: string;
+  /**
+   * How many tokens a tick under this tier yields.
+   */
+  dripPerTick: number;
+}
 /**
  * An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.
  */
@@ -8502,6 +8759,13 @@ export interface TokenBundle {
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
   ext?: Ext;
+}
+/**
+ * One draw of the token drip: a label and a tick.
+ */
+export interface TokenDraw {
+  label: string;
+  tick: number;
 }
 /**
  * Why a frame was refused or failed.
@@ -8964,6 +9228,46 @@ export interface VetterLocation {
   country: CountryCode;
   region?: PlaceName;
   city?: PlaceName;
+}
+/**
+ * A vetter engine as the VTA holds it, without its key, its credentials or its tokens.
+ */
+export interface VetterSummary {
+  contextId: string;
+  community: string;
+  /**
+   * The member DID the engine draws tokens as. Bound into every token request.
+   */
+  memberDid: string;
+  suite: string;
+  /**
+   * The vetter's PCS identifier for this community.
+   */
+  id: Multibase;
+  /**
+   * Class labels this vetter holds a credential under, newest first.
+   */
+  enrolledLabels: string[];
+  /**
+   * Class labels requested and not yet accepted.
+   */
+  pendingLabels: string[];
+  /**
+   * Tokens held and not reserved.
+   */
+  tokensFree: number;
+  /**
+   * Tokens held in all.
+   */
+  tokensHeld: number;
+  /**
+   * Draws requested and not yet accepted or abandoned.
+   */
+  drawsInFlight: TokenDraw[];
+  /**
+   * Attestations made through this engine.
+   */
+  attested: number;
 }
 export interface VettingCard {
   /**

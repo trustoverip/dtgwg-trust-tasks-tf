@@ -121,6 +121,8 @@ const (
 	CapabilitySignCsr                Capability = "signCsr"
 	CapabilityExternalAccountsManage Capability = "externalAccountsManage"
 	CapabilityExternalAuthUse        Capability = "externalAuthUse"
+	CapabilityPcsVetter              Capability = "pcsVetter"
+	CapabilityPcsApplicant           Capability = "pcsApplicant"
 )
 
 // DeviceAttestation Producer-supplied attestation at registration time, verifiable by the

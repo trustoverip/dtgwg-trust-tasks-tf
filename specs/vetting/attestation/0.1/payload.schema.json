@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vetting/attestation/0.1",
-  "title": "Vetting \u2014 Attestation \u2014 payload",
+  "title": "Vetting — Attestation — payload",
   "description": "A vetter gives an applicant an attestation that names nobody. It carries the same facts a Vetting Statement carries and no issuer: what proves it was made by an eligible vetter is the proof the applicant later builds over it, not a signature on this document.",
   "type": "object",
   "additionalProperties": false,
@@ -21,10 +21,10 @@
     "attestation": {
       "type": "string",
       "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-      "description": "The attestation itself, multibase base58btc: a tag, a shown class credential and a proof. It carries no identifier of the vetter \u2014 the tag is deterministic for this (vetter, applicant) pair and unlinkable across applicants."
+      "description": "The attestation itself, multibase base58btc: a tag, a shown class credential and a proof. It carries no identifier of the vetter — the tag is deterministic for this (vetter, applicant) pair and unlinkable across applicants."
     },
     "meta": {
-      "$ref": "#/$defs/StatementMeta",
+      "$ref": "../../../vetting/_shared/0.1/hidden-vetting.schema.json#/$defs/StatementMeta",
       "description": "The facts the community will count. Bound into the attestation, so changing one here invalidates it."
     },
     "token": {
@@ -60,104 +60,9 @@
     }
   },
   "$defs": {
-    "StatementMeta": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "community",
-        "requirementsDigest",
-        "method",
-        "claimsVerified",
-        "livenessConfirmed",
-        "declaredRelationship",
-        "identityCommitment",
-        "cardDigestMultibase",
-        "validFrom",
-        "validUntil",
-        "tokenLabel",
-        "tokenSerial"
-      ],
-      "description": "What a Vetting Statement would have said, minus its issuer.",
-      "properties": {
-        "community": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The community this attestation is for. An attestation is not portable between communities."
-        },
-        "requirementsDigest": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The digest of the criterion's requirements as the vetter read them."
-        },
-        "method": {
-          "type": "string",
-          "enum": [
-            "inPerson",
-            "video",
-            "priorAcquaintance"
-          ],
-          "description": "How the vetter met the applicant."
-        },
-        "claimsVerified": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "The claim types the vetter checked."
-        },
-        "livenessConfirmed": {
-          "type": "boolean",
-          "description": "Whether the vetter confirmed a live person."
-        },
-        "declaredRelationship": {
-          "type": "string",
-          "enum": [
-            "none",
-            "family",
-            "sameEmployer",
-            "closeFriend",
-            "other"
-          ],
-          "description": "The relationship the vetter declared, which the community's independence rules count."
-        },
-        "identityCommitment": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them."
-        },
-        "cardDigestMultibase": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "Digest of that card, as the vetter verified it."
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date",
-          "description": "A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date",
-          "description": "A date, for the same reason."
-        },
-        "tokenLabel": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The token label spent, repeated inside the bound facts so it cannot be swapped in transit."
-        },
-        "tokenSerial": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The token serial spent, likewise bound."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
-      "title": "Vetting Attestation \u2014 response payload",
+      "title": "Vetting Attestation — response payload",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -172,7 +77,7 @@
         "heldCount": {
           "type": "integer",
           "minimum": 0,
-          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion \u2014 a courtesy so a vetter can tell someone they are done."
+          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done."
         },
         "ext": {
           "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"

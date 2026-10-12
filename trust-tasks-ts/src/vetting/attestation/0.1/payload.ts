@@ -3,7 +3,7 @@
  * Source: specs/vetting/attestation/0.1/payload.schema.json
  */
 
-import type { Ext } from "../../../_shared/components.js";
+import type { Ext, StatementMeta } from "../../../_shared/components.js";
 
 
 /**
@@ -18,6 +18,9 @@ export interface VettingAttestationPayload {
    * The attestation itself, multibase base58btc: a tag, a shown class credential and a proof. It carries no identifier of the vetter — the tag is deterministic for this (vetter, applicant) pair and unlinkable across applicants.
    */
   attestation: string;
+  /**
+   * The facts the community will count. Bound into the attestation, so changing one here invalidates it.
+   */
   meta: StatementMeta;
   /**
    * The attestation token spent for this attestation. The community records the serial, which is how a vetter's rate is capped without anybody learning who they are.
@@ -39,61 +42,6 @@ export interface VettingAttestationPayload {
   ext?: Ext;
 }
 /**
- * The facts the community will count. Bound into the attestation, so changing one here invalidates it.
- */
-export interface StatementMeta {
-  /**
-   * The community this attestation is for. An attestation is not portable between communities.
-   */
-  community: string;
-  /**
-   * The digest of the criterion's requirements as the vetter read them.
-   */
-  requirementsDigest: string;
-  /**
-   * How the vetter met the applicant.
-   */
-  method: "inPerson" | "video" | "priorAcquaintance";
-  /**
-   * The claim types the vetter checked.
-   *
-   * @minItems 1
-   */
-  claimsVerified: [string, ...string[]];
-  /**
-   * Whether the vetter confirmed a live person.
-   */
-  livenessConfirmed: boolean;
-  /**
-   * The relationship the vetter declared, which the community's independence rules count.
-   */
-  declaredRelationship: "none" | "family" | "sameEmployer" | "closeFriend" | "other";
-  /**
-   * The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.
-   */
-  identityCommitment: string;
-  /**
-   * Digest of that card, as the vetter verified it.
-   */
-  cardDigestMultibase: string;
-  /**
-   * A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.
-   */
-  validFrom: string;
-  /**
-   * A date, for the same reason.
-   */
-  validUntil: string;
-  /**
-   * The token label spent, repeated inside the bound facts so it cannot be swapped in transit.
-   */
-  tokenLabel: string;
-  /**
-   * The token serial spent, likewise bound.
-   */
-  tokenSerial: string;
-}
-/**
  * The applicant's receipt. It verifies the attestation on arrival rather than at submit, so a vetter learns immediately that what it sent is usable.
  */
 export interface VettingAttestationResponsePayload {
@@ -109,7 +57,7 @@ export interface VettingAttestationResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext };
+export type { Ext, StatementMeta };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vetting/attestation/0.1" as const;
@@ -194,6 +142,40 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vetting Attestation — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted"
+      ],
+      "description": "The applicant's receipt. It verifies the attestation on arrival rather than at submit, so a vetter learns immediately that what it sent is usable.",
+      "properties": {
+        "accepted": {
+          "type": "boolean",
+          "description": "Whether the attestation verified against the community's published parameters and the card the applicant showed."
+        },
+        "heldCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
     "StatementMeta": {
       "type": "object",
       "additionalProperties": false,
@@ -287,40 +269,6 @@ export const PAYLOAD_SCHEMA = {
           "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
           "description": "The token serial spent, likewise bound."
         }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Vetting Attestation — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "accepted"
-      ],
-      "description": "The applicant's receipt. It verifies the attestation on arrival rather than at submit, so a vetter learns immediately that what it sent is usable.",
-      "properties": {
-        "accepted": {
-          "type": "boolean",
-          "description": "Whether the attestation verified against the community's published parameters and the card the applicant showed."
-        },
-        "heldCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     }
   }
@@ -331,6 +279,40 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Vetting Attestation — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted"
+      ],
+      "description": "The applicant's receipt. It verifies the attestation on arrival rather than at submit, so a vetter learns immediately that what it sent is usable.",
+      "properties": {
+        "accepted": {
+          "type": "boolean",
+          "description": "Whether the attestation verified against the community's published parameters and the card the applicant showed."
+        },
+        "heldCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
     "StatementMeta": {
       "type": "object",
       "additionalProperties": false,
@@ -424,40 +406,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
           "description": "The token serial spent, likewise bound."
         }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Vetting Attestation — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "accepted"
-      ],
-      "description": "The applicant's receipt. It verifies the attestation on arrival rather than at submit, so a vetter learns immediately that what it sent is usable.",
-      "properties": {
-        "accepted": {
-          "type": "boolean",
-          "description": "Whether the attestation verified against the community's published parameters and the card the applicant showed."
-        },
-        "heldCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "OPTIONAL. How many attestations the applicant now holds for this criterion — a courtesy so a vetter can tell someone they are done."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     }
   }

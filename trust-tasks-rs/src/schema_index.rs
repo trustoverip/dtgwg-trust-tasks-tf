@@ -3038,6 +3038,78 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1#response" => <crate::specs::vta::passkey_vms::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/create/0.1" => <crate::specs::vta::pcs::applications::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/create/0.1#response" => <crate::specs::vta::pcs::applications::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/delete/0.1" => <crate::specs::vta::pcs::applications::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/delete/0.1#response" => <crate::specs::vta::pcs::applications::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/show/0.1" => <crate::specs::vta::pcs::applications::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/show/0.1#response" => <crate::specs::vta::pcs::applications::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/attest/0.1" => <crate::specs::vta::pcs::attest::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/attest/0.1#response" => <crate::specs::vta::pcs::attest::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/prove/0.1" => <crate::specs::vta::pcs::prove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/prove/0.1#response" => <crate::specs::vta::pcs::prove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-accept/0.1" => <crate::specs::vta::pcs::root_accept::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-accept/0.1#response" => <crate::specs::vta::pcs::root_accept::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-request/0.1" => <crate::specs::vta::pcs::root_request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-request/0.1#response" => <crate::specs::vta::pcs::root_request::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/abandon/0.1" => <crate::specs::vta::pcs::tokens::abandon::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/abandon/0.1#response" => <crate::specs::vta::pcs::tokens::abandon::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1" => <crate::specs::vta::pcs::tokens::accept::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1#response" => <crate::specs::vta::pcs::tokens::accept::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/request/0.1" => <crate::specs::vta::pcs::tokens::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/request/0.1#response" => <crate::specs::vta::pcs::tokens::request::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/verify-attestation/0.1" => <crate::specs::vta::pcs::verify_attestation::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/verify-attestation/0.1#response" => <crate::specs::vta::pcs::verify_attestation::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/vetter/show/0.1" => <crate::specs::vta::pcs::vetter::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/vetter/show/0.1#response" => <crate::specs::vta::pcs::vetter::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/restore/status/0.1" => <crate::specs::vta::restore::status::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -7313,6 +7385,74 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/create/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::pcs::applications::create::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/delete/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::pcs::applications::delete::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/show/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::pcs::applications::show::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/attest/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::attest::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/prove/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::prove::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-accept/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::root_accept::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::root_request::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/abandon/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::tokens::abandon::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::tokens::accept::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/request/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::tokens::request::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/verify-attestation/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::pcs::verify_attestation::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/vetter/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::pcs::vetter::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/restore/status/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::restore::status::v0_1::Payload,
         >()),
@@ -11248,6 +11388,66 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1" => {
             Some(crate::specs::vta::passkey_vms::revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/create/0.1" => {
+            Some(crate::specs::vta::pcs::applications::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/delete/0.1" => {
+            Some(crate::specs::vta::pcs::applications::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/applications/show/0.1" => {
+            Some(crate::specs::vta::pcs::applications::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/attest/0.1" => {
+            Some(crate::specs::vta::pcs::attest::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/prove/0.1" => {
+            Some(crate::specs::vta::pcs::prove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-accept/0.1" => {
+            Some(crate::specs::vta::pcs::root_accept::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/root-request/0.1" => {
+            Some(crate::specs::vta::pcs::root_request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/abandon/0.1" => {
+            Some(crate::specs::vta::pcs::tokens::abandon::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1" => {
+            Some(crate::specs::vta::pcs::tokens::accept::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/tokens/request/0.1" => {
+            Some(crate::specs::vta::pcs::tokens::request::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/verify-attestation/0.1" => {
+            Some(crate::specs::vta::pcs::verify_attestation::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/pcs/vetter/show/0.1" => {
+            Some(crate::specs::vta::pcs::vetter::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

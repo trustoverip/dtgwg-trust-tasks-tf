@@ -3,13 +3,8 @@
  * Source: specs/vtc/vetting/hidden/show/0.1/payload.schema.json
  */
 
-import type { Ext } from "../../../../../_shared/components.js";
+import type { Ext, PublishedConfig, PublishedEvent, StoredConfig, StoredEvent, TickLength, Tier } from "../../../../../_shared/components.js";
 
-
-/**
- * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
- */
-export type TickLength = string;
 
 /**
  * Read one criterion's stored hidden-vetting configuration, what it publishes, and the aggregate counts an administrator needs to run it. The outer document members are owned by the framework — SPEC §6.3.
@@ -49,85 +44,6 @@ export interface VTCVettingHiddenShowResponsePayload {
   ext?: Ext;
 }
 /**
- * The parameters exactly as the community stores them, including the helper key it never publishes.
- */
-export interface StoredConfig {
-  /**
-   * The blind-signature suite in force, e.g. ps-ddh-bls12381.
-   */
-  suite: string;
-  /**
-   * The helper verification key, multibase. A public value, published as helperKey.
-   */
-  hvk: string;
-  /**
-   * The token verification key, multibase. Never the same key as hvk.
-   */
-  tvk: string;
-  /**
-   * Live vetter class periods, current first, stored as the bare YYYY-MM period.
-   */
-  livePeriods: string[];
-  liveTokenLabels: string[];
-  dripPerTick: number;
-  tickLength: TickLength;
-  events: StoredEvent[];
-}
-export interface StoredEvent {
-  eventId: string;
-  startDate: string;
-  endDate: string;
-  graceDays: number;
-  groupFloor: number;
-  tiers: Tier[];
-  /**
-   * Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).
-   */
-  approvedBy?: string | null;
-}
-export interface Tier {
-  /**
-   * How the menu names it: desk, busy-desk.
-   */
-  name: string;
-  /**
-   * How many tokens a tick under this tier yields.
-   */
-  dripPerTick: number;
-}
-/**
- * The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.
- */
-export interface PublishedConfig {
-  suite: string;
-  /**
-   * The helper verification key, multibase — named for its role on the wire rather than for hvk.
-   */
-  helperKey: string;
-  /**
-   * The token verification key, multibase — named for its role on the wire rather than for tvk.
-   */
-  tokenKey: string;
-  /**
-   * Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.
-   */
-  vetterLabels: string[];
-  tokenLabels: string[];
-  dripPerTick: number;
-  tickLength: TickLength;
-  events: PublishedEvent[];
-}
-/**
- * The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.
- */
-export interface PublishedEvent {
-  eventId: string;
-  startDate: string;
-  endDate: string;
-  groupFloor: number;
-  tiers: Tier[];
-}
-/**
  * How one stored event stands today. Counts only — never which members asked.
  */
 export interface EventStatus {
@@ -151,7 +67,7 @@ export interface EventStatus {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext };
+export type { Ext, PublishedConfig, PublishedEvent, StoredConfig, StoredEvent, TickLength, Tier };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/vetting/hidden/show/0.1" as const;
@@ -195,233 +111,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "Tier": {
-      "title": "Tier",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "dripPerTick"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "How the menu names it: desk, busy-desk."
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "How many tokens a tick under this tier yields."
-        }
-      }
-    },
-    "StoredEvent": {
-      "title": "StoredEvent",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "graceDays",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "graceDays": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        },
-        "approvedBy": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
-        }
-      }
-    },
-    "PublishedEvent": {
-      "title": "PublishedEvent",
-      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        }
-      }
-    },
-    "StoredConfig": {
-      "title": "StoredConfig",
-      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "suite",
-        "hvk",
-        "tvk",
-        "livePeriods",
-        "liveTokenLabels",
-        "dripPerTick",
-        "tickLength",
-        "events"
-      ],
-      "properties": {
-        "suite": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
-        },
-        "hvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The helper verification key, multibase. A public value, published as helperKey."
-        },
-        "tvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The token verification key, multibase. Never the same key as hvk."
-        },
-        "livePeriods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
-          },
-          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
-        },
-        "liveTokenLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tickLength": {
-          "$ref": "#/$defs/TickLength"
-        },
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/StoredEvent"
-          }
-        }
-      }
-    },
-    "PublishedConfig": {
-      "title": "PublishedConfig",
-      "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "suite",
-        "helperKey",
-        "tokenKey",
-        "vetterLabels",
-        "tokenLabels",
-        "dripPerTick",
-        "tickLength",
-        "events"
-      ],
-      "properties": {
-        "suite": {
-          "type": "string",
-          "minLength": 1
-        },
-        "helperKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk."
-        },
-        "tokenKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The token verification key, multibase — named for its role on the wire rather than for tvk."
-        },
-        "vetterLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period."
-        },
-        "tokenLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tickLength": {
-          "$ref": "#/$defs/TickLength"
-        },
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PublishedEvent"
-          }
-        }
-      }
-    },
     "EventStatus": {
       "title": "EventStatus",
       "description": "How one stored event stands today. Counts only — never which members asked.",
@@ -531,12 +220,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "TickLength": {
-      "title": "TickLength",
-      "type": "string",
-      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -545,6 +228,239 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PublishedConfig": {
+      "title": "PublishedConfig",
+      "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "helperKey",
+        "tokenKey",
+        "vetterLabels",
+        "tokenLabels",
+        "dripPerTick",
+        "tickLength",
+        "events"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "minLength": 1
+        },
+        "helperKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk."
+        },
+        "tokenKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The token verification key, multibase — named for its role on the wire rather than for tvk."
+        },
+        "vetterLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period."
+        },
+        "tokenLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublishedEvent"
+          }
+        }
+      }
+    },
+    "PublishedEvent": {
+      "title": "PublishedEvent",
+      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "startDate",
+        "endDate",
+        "groupFloor",
+        "tiers"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        }
+      }
+    },
+    "Tier": {
+      "title": "Tier",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "dripPerTick"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the menu names it: desk, busy-desk."
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many tokens a tick under this tier yields."
+        }
+      }
+    },
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
+    "StoredConfig": {
+      "title": "StoredConfig",
+      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "hvk",
+        "tvk",
+        "livePeriods",
+        "liveTokenLabels",
+        "dripPerTick",
+        "tickLength",
+        "events"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
+        },
+        "hvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The helper verification key, multibase. A public value, published as helperKey."
+        },
+        "tvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The token verification key, multibase. Never the same key as hvk."
+        },
+        "livePeriods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+          },
+          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
+        },
+        "liveTokenLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StoredEvent"
+          }
+        }
+      }
+    },
+    "StoredEvent": {
+      "title": "StoredEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "startDate",
+        "endDate",
+        "graceDays",
+        "groupFloor",
+        "tiers"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "graceDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        },
+        "approvedBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
+        }
       }
     }
   }
@@ -555,233 +471,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "Tier": {
-      "title": "Tier",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "dripPerTick"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "How the menu names it: desk, busy-desk."
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "How many tokens a tick under this tier yields."
-        }
-      }
-    },
-    "StoredEvent": {
-      "title": "StoredEvent",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "graceDays",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "graceDays": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        },
-        "approvedBy": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
-        }
-      }
-    },
-    "PublishedEvent": {
-      "title": "PublishedEvent",
-      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        }
-      }
-    },
-    "StoredConfig": {
-      "title": "StoredConfig",
-      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "suite",
-        "hvk",
-        "tvk",
-        "livePeriods",
-        "liveTokenLabels",
-        "dripPerTick",
-        "tickLength",
-        "events"
-      ],
-      "properties": {
-        "suite": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
-        },
-        "hvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The helper verification key, multibase. A public value, published as helperKey."
-        },
-        "tvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The token verification key, multibase. Never the same key as hvk."
-        },
-        "livePeriods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
-          },
-          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
-        },
-        "liveTokenLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tickLength": {
-          "$ref": "#/$defs/TickLength"
-        },
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/StoredEvent"
-          }
-        }
-      }
-    },
-    "PublishedConfig": {
-      "title": "PublishedConfig",
-      "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "suite",
-        "helperKey",
-        "tokenKey",
-        "vetterLabels",
-        "tokenLabels",
-        "dripPerTick",
-        "tickLength",
-        "events"
-      ],
-      "properties": {
-        "suite": {
-          "type": "string",
-          "minLength": 1
-        },
-        "helperKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk."
-        },
-        "tokenKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The token verification key, multibase — named for its role on the wire rather than for tvk."
-        },
-        "vetterLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period."
-        },
-        "tokenLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tickLength": {
-          "$ref": "#/$defs/TickLength"
-        },
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/PublishedEvent"
-          }
-        }
-      }
-    },
     "EventStatus": {
       "title": "EventStatus",
       "description": "How one stored event stands today. Counts only — never which members asked.",
@@ -891,12 +580,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "TickLength": {
-      "title": "TickLength",
-      "type": "string",
-      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -905,6 +588,239 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "PublishedConfig": {
+      "title": "PublishedConfig",
+      "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "helperKey",
+        "tokenKey",
+        "vetterLabels",
+        "tokenLabels",
+        "dripPerTick",
+        "tickLength",
+        "events"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "minLength": 1
+        },
+        "helperKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk."
+        },
+        "tokenKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The token verification key, multibase — named for its role on the wire rather than for tvk."
+        },
+        "vetterLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period."
+        },
+        "tokenLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublishedEvent"
+          }
+        }
+      }
+    },
+    "PublishedEvent": {
+      "title": "PublishedEvent",
+      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "startDate",
+        "endDate",
+        "groupFloor",
+        "tiers"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        }
+      }
+    },
+    "Tier": {
+      "title": "Tier",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "dripPerTick"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the menu names it: desk, busy-desk."
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many tokens a tick under this tier yields."
+        }
+      }
+    },
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
+    "StoredConfig": {
+      "title": "StoredConfig",
+      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "hvk",
+        "tvk",
+        "livePeriods",
+        "liveTokenLabels",
+        "dripPerTick",
+        "tickLength",
+        "events"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
+        },
+        "hvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The helper verification key, multibase. A public value, published as helperKey."
+        },
+        "tvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The token verification key, multibase. Never the same key as hvk."
+        },
+        "livePeriods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+          },
+          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
+        },
+        "liveTokenLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StoredEvent"
+          }
+        }
+      }
+    },
+    "StoredEvent": {
+      "title": "StoredEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "startDate",
+        "endDate",
+        "graceDays",
+        "groupFloor",
+        "tiers"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "graceDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        },
+        "approvedBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
+        }
       }
     }
   }

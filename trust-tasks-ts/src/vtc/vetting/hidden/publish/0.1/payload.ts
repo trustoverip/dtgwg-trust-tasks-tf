@@ -3,13 +3,8 @@
  * Source: specs/vtc/vetting/hidden/publish/0.1/payload.schema.json
  */
 
-import type { Ext } from "../../../../../_shared/components.js";
+import type { Ext, PublishedConfig, PublishedEvent, StoredConfig, StoredEvent, TickLength, Tier } from "../../../../../_shared/components.js";
 
-
-/**
- * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
- */
-export type TickLength = string;
 
 /**
  * Turn on (or rotate the parameters of) hidden-vetter admission for one criterion. Every member but criterionId has a default. The outer document members are owned by the framework — SPEC §6.3.
@@ -74,16 +69,6 @@ export interface RequestEvent {
    */
   approvedBy?: string;
 }
-export interface Tier {
-  /**
-   * How the menu names it: desk, busy-desk.
-   */
-  name: string;
-  /**
-   * How many tokens a tick under this tier yields.
-   */
-  dripPerTick: number;
-}
 export interface VTCVettingHiddenPublishResponsePayload {
   /**
    * The criterion that now accepts a hidden proof.
@@ -97,78 +82,9 @@ export interface VTCVettingHiddenPublishResponsePayload {
   requirementsDigest: string | null;
   ext?: Ext;
 }
-/**
- * The parameters exactly as the community stores them, including the helper key it never publishes.
- */
-export interface StoredConfig {
-  /**
-   * The blind-signature suite in force, e.g. ps-ddh-bls12381.
-   */
-  suite: string;
-  /**
-   * The helper verification key, multibase. A public value, published as helperKey.
-   */
-  hvk: string;
-  /**
-   * The token verification key, multibase. Never the same key as hvk.
-   */
-  tvk: string;
-  /**
-   * Live vetter class periods, current first, stored as the bare YYYY-MM period.
-   */
-  livePeriods: string[];
-  liveTokenLabels: string[];
-  dripPerTick: number;
-  tickLength: TickLength;
-  events: StoredEvent[];
-}
-export interface StoredEvent {
-  eventId: string;
-  startDate: string;
-  endDate: string;
-  graceDays: number;
-  groupFloor: number;
-  tiers: Tier[];
-  /**
-   * Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events).
-   */
-  approvedBy?: string | null;
-}
-/**
- * The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.
- */
-export interface PublishedConfig {
-  suite: string;
-  /**
-   * The helper verification key, multibase — named for its role on the wire rather than for hvk.
-   */
-  helperKey: string;
-  /**
-   * The token verification key, multibase — named for its role on the wire rather than for tvk.
-   */
-  tokenKey: string;
-  /**
-   * Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.
-   */
-  vetterLabels: string[];
-  tokenLabels: string[];
-  dripPerTick: number;
-  tickLength: TickLength;
-  events: PublishedEvent[];
-}
-/**
- * The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.
- */
-export interface PublishedEvent {
-  eventId: string;
-  startDate: string;
-  endDate: string;
-  groupFloor: number;
-  tiers: Tier[];
-}
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext };
+export type { Ext, PublishedConfig, PublishedEvent, StoredConfig, StoredEvent, TickLength, Tier };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/vetting/hidden/publish/0.1" as const;
@@ -245,12 +161,6 @@ export const PAYLOAD_SCHEMA = {
     }
   },
   "$defs": {
-    "TickLength": {
-      "title": "TickLength",
-      "type": "string",
-      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
-    },
     "RequestEvent": {
       "title": "RequestEvent",
       "type": "object",
@@ -302,171 +212,49 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Tier": {
-      "title": "Tier",
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Hidden — Publish — response payload",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "name",
-        "dripPerTick"
+        "criterionId",
+        "stored",
+        "published",
+        "requirementsDigest"
       ],
       "properties": {
-        "name": {
+        "criterionId": {
           "type": "string",
           "minLength": 1,
-          "description": "How the menu names it: desk, busy-desk."
+          "description": "The criterion that now accepts a hidden proof."
         },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "How many tokens a tick under this tier yields."
-        }
-      }
-    },
-    "StoredEvent": {
-      "title": "StoredEvent",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "graceDays",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
+        "stored": {
+          "$ref": "#/$defs/StoredConfig"
         },
-        "startDate": {
-          "type": "string",
-          "format": "date"
+        "published": {
+          "$ref": "#/$defs/PublishedConfig"
         },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "graceDays": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        },
-        "approvedBy": {
+        "requirementsDigest": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
+          "description": "The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
         }
       }
     },
-    "PublishedEvent": {
-      "title": "PublishedEvent",
-      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        }
-      }
-    },
-    "StoredConfig": {
-      "title": "StoredConfig",
-      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "suite",
-        "hvk",
-        "tvk",
-        "livePeriods",
-        "liveTokenLabels",
-        "dripPerTick",
-        "tickLength",
-        "events"
-      ],
-      "properties": {
-        "suite": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
-        },
-        "hvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The helper verification key, multibase. A public value, published as helperKey."
-        },
-        "tvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The token verification key, multibase. Never the same key as hvk."
-        },
-        "livePeriods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
-          },
-          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
-        },
-        "liveTokenLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tickLength": {
-          "$ref": "#/$defs/TickLength"
-        },
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/StoredEvent"
-          }
-        }
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
     "PublishedConfig": {
@@ -529,49 +317,177 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Hidden — Publish — response payload",
+    "PublishedEvent": {
+      "title": "PublishedEvent",
+      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "criterionId",
-        "stored",
-        "published",
-        "requirementsDigest"
+        "eventId",
+        "startDate",
+        "endDate",
+        "groupFloor",
+        "tiers"
       ],
       "properties": {
-        "criterionId": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        }
+      }
+    },
+    "Tier": {
+      "title": "Tier",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "dripPerTick"
+      ],
+      "properties": {
+        "name": {
           "type": "string",
           "minLength": 1,
-          "description": "The criterion that now accepts a hidden proof."
+          "description": "How the menu names it: desk, busy-desk."
         },
-        "stored": {
-          "$ref": "#/$defs/StoredConfig"
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many tokens a tick under this tier yields."
+        }
+      }
+    },
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
+    "StoredConfig": {
+      "title": "StoredConfig",
+      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "hvk",
+        "tvk",
+        "livePeriods",
+        "liveTokenLabels",
+        "dripPerTick",
+        "tickLength",
+        "events"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
         },
-        "published": {
-          "$ref": "#/$defs/PublishedConfig"
+        "hvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The helper verification key, multibase. A public value, published as helperKey."
         },
-        "requirementsDigest": {
+        "tvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The token verification key, multibase. Never the same key as hvk."
+        },
+        "livePeriods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+          },
+          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
+        },
+        "liveTokenLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StoredEvent"
+          }
+        }
+      }
+    },
+    "StoredEvent": {
+      "title": "StoredEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "startDate",
+        "endDate",
+        "graceDays",
+        "groupFloor",
+        "tiers"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "graceDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        },
+        "approvedBy": {
           "type": [
             "string",
             "null"
           ],
-          "description": "The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
+          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
         }
-      }
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     }
   }
@@ -582,12 +498,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "TickLength": {
-      "title": "TickLength",
-      "type": "string",
-      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
-      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`; a request that omits it gets `P3D`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
-    },
     "RequestEvent": {
       "title": "RequestEvent",
       "type": "object",
@@ -639,171 +549,49 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Tier": {
-      "title": "Tier",
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Vetting — Hidden — Publish — response payload",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "name",
-        "dripPerTick"
+        "criterionId",
+        "stored",
+        "published",
+        "requirementsDigest"
       ],
       "properties": {
-        "name": {
+        "criterionId": {
           "type": "string",
           "minLength": 1,
-          "description": "How the menu names it: desk, busy-desk."
+          "description": "The criterion that now accepts a hidden proof."
         },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "How many tokens a tick under this tier yields."
-        }
-      }
-    },
-    "StoredEvent": {
-      "title": "StoredEvent",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "graceDays",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
+        "stored": {
+          "$ref": "#/$defs/StoredConfig"
         },
-        "startDate": {
-          "type": "string",
-          "format": "date"
+        "published": {
+          "$ref": "#/$defs/PublishedConfig"
         },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "graceDays": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        },
-        "approvedBy": {
+        "requirementsDigest": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
+          "description": "The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none."
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
         }
       }
     },
-    "PublishedEvent": {
-      "title": "PublishedEvent",
-      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
+    "Ext": {
+      "title": "Ext",
+      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
       "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "eventId",
-        "startDate",
-        "endDate",
-        "groupFloor",
-        "tiers"
-      ],
-      "properties": {
-        "eventId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "startDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "endDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "groupFloor": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Tier"
-          }
-        }
-      }
-    },
-    "StoredConfig": {
-      "title": "StoredConfig",
-      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "suite",
-        "hvk",
-        "tvk",
-        "livePeriods",
-        "liveTokenLabels",
-        "dripPerTick",
-        "tickLength",
-        "events"
-      ],
-      "properties": {
-        "suite": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
-        },
-        "hvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The helper verification key, multibase. A public value, published as helperKey."
-        },
-        "tvk": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The token verification key, multibase. Never the same key as hvk."
-        },
-        "livePeriods": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
-          },
-          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
-        },
-        "liveTokenLabels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "dripPerTick": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "tickLength": {
-          "$ref": "#/$defs/TickLength"
-        },
-        "events": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/StoredEvent"
-          }
-        }
+      "minProperties": 1,
+      "additionalProperties": true,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
     "PublishedConfig": {
@@ -866,49 +654,177 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Hidden — Publish — response payload",
+    "PublishedEvent": {
+      "title": "PublishedEvent",
+      "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "criterionId",
-        "stored",
-        "published",
-        "requirementsDigest"
+        "eventId",
+        "startDate",
+        "endDate",
+        "groupFloor",
+        "tiers"
       ],
       "properties": {
-        "criterionId": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        }
+      }
+    },
+    "Tier": {
+      "title": "Tier",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "dripPerTick"
+      ],
+      "properties": {
+        "name": {
           "type": "string",
           "minLength": 1,
-          "description": "The criterion that now accepts a hidden proof."
+          "description": "How the menu names it: desk, busy-desk."
         },
-        "stored": {
-          "$ref": "#/$defs/StoredConfig"
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "How many tokens a tick under this tier yields."
+        }
+      }
+    },
+    "TickLength": {
+      "title": "TickLength",
+      "type": "string",
+      "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$",
+      "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`)."
+    },
+    "StoredConfig": {
+      "title": "StoredConfig",
+      "description": "The parameters exactly as the community stores them, including the helper key it never publishes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "hvk",
+        "tvk",
+        "livePeriods",
+        "liveTokenLabels",
+        "dripPerTick",
+        "tickLength",
+        "events"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The blind-signature suite in force, e.g. ps-ddh-bls12381."
         },
-        "published": {
-          "$ref": "#/$defs/PublishedConfig"
+        "hvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The helper verification key, multibase. A public value, published as helperKey."
         },
-        "requirementsDigest": {
+        "tvk": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The token verification key, multibase. Never the same key as hvk."
+        },
+        "livePeriods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+          },
+          "description": "Live vetter class periods, current first, stored as the bare YYYY-MM period."
+        },
+        "liveTokenLabels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dripPerTick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tickLength": {
+          "$ref": "#/$defs/TickLength"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StoredEvent"
+          }
+        }
+      }
+    },
+    "StoredEvent": {
+      "title": "StoredEvent",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "startDate",
+        "endDate",
+        "graceDays",
+        "groupFloor",
+        "tiers"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "graceDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "groupFloor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          }
+        },
+        "approvedBy": {
           "type": [
             "string",
             "null"
           ],
-          "description": "The criterion's requirementsDigest after the change. It moves, because the digest covers the published parameters — an applicant mid-application is told its requirements changed, which is the honest answer. Null only when the criterion's manifest entry carries none."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
+          "description": "Who approved the event, or null when nobody has. Recorded in storage only — dropped from the published shape (see published.events)."
         }
-      }
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     }
   }
