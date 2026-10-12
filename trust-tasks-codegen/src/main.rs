@@ -266,7 +266,7 @@ fn read_bearer_flag(spec_md_path: &Path) -> Result<bool> {
         front_matter.push('\n');
     }
 
-    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
     Ok(value
         .get("bearer")
@@ -314,7 +314,7 @@ fn read_proof_required_flag(spec_md_path: &Path) -> Result<ProofRequired> {
         front_matter.push('\n');
     }
 
-    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
     let pr = match value.get("proofRequirement") {
         Some(v) => v,
@@ -383,7 +383,7 @@ fn read_issued_at_required_flag(spec_md_path: &Path) -> Result<IssuedAtRequired>
         front_matter.push('\n');
     }
 
-    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
     let Some(ir) = value.get("issuedAtRequirement") else {
         return Ok(IssuedAtRequired::default());
@@ -441,7 +441,7 @@ fn read_max_document_bytes(spec_md_path: &Path) -> Result<MaxDocumentBytes> {
         front_matter.push_str(line);
         front_matter.push('\n');
     }
-    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
     let Some(decl) = value.get("maxDocumentBytes") else {
         return Ok(MaxDocumentBytes::default());
@@ -496,9 +496,9 @@ fn read_member_required_flag(spec_md_path: &Path, member: &str) -> Result<bool> 
         front_matter.push_str(line);
         front_matter.push('\n');
     }
-    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    let Some(parties) = value.get("parties").and_then(|v| v.as_sequence()) else {
+    let Some(parties) = value.get("parties").and_then(|v| v.as_array()) else {
         return Ok(false);
     };
     Ok(parties.iter().any(|p| {
@@ -548,7 +548,7 @@ fn read_error_codes(spec: &Spec) -> Result<Vec<ErrorCodeDecl>> {
         front_matter.push_str(line);
         front_matter.push('\n');
     }
-    let value: serde_yaml::Value = serde_yaml::from_str(&front_matter)
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
         .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
     let mut decls = error_code_decls(&spec.slug, &value)
         .with_context(|| format!("errorCodes in {}", spec_md_path.display()))?;
@@ -584,7 +584,7 @@ fn read_error_codes(spec: &Spec) -> Result<Vec<ErrorCodeDecl>> {
 /// wire*: `DeclaredErrorCode` converts to a `TrustTaskCode` infallibly on the
 /// strength of it, so a code that does not parse, or a namespace outside the
 /// slug's family, must stop generation rather than reach a library.
-fn error_code_decls(slug: &str, value: &serde_yaml::Value) -> Result<Vec<ErrorCodeDecl>> {
+fn error_code_decls(slug: &str, value: &serde_json::Value) -> Result<Vec<ErrorCodeDecl>> {
     use heck::ToShoutySnakeCase;
 
     let Some(entries) = value.get("errorCodes") else {
@@ -594,7 +594,7 @@ fn error_code_decls(slug: &str, value: &serde_yaml::Value) -> Result<Vec<ErrorCo
         return Ok(Vec::new());
     }
     let entries = entries
-        .as_sequence()
+        .as_array()
         .ok_or_else(|| anyhow!("`errorCodes` is not a list"))?;
 
     // The slug itself plus each proper path prefix of it (§8.5 rule 2).
@@ -626,10 +626,7 @@ fn error_code_decls(slug: &str, value: &serde_yaml::Value) -> Result<Vec<ErrorCo
             .to_string();
         let details_schema = match entry.get("detailsSchema") {
             None => None,
-            Some(schema) if schema.is_mapping() => Some(
-                serde_json::to_value(schema)
-                    .with_context(|| format!("errorCodes[{code:?}].detailsSchema"))?,
-            ),
+            Some(schema) if schema.is_object() => Some(schema.clone()),
             Some(_) => {
                 return Err(anyhow!(
                     "errorCodes[{code:?}].detailsSchema is not an object (SPEC §7.3 item 9)"
@@ -2932,7 +2929,7 @@ errorCodes:
     }
 
     fn decls(slug: &str, yaml: &str) -> Result<Vec<ErrorCodeDecl>> {
-        let value: serde_yaml::Value = serde_yaml::from_str(yaml).unwrap();
+        let value: serde_json::Value = serde_saphyr::from_str(yaml).unwrap();
         error_code_decls(slug, &value)
     }
 
