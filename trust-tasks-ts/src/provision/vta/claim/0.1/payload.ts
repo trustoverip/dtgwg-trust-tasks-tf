@@ -7,37 +7,9 @@ import type { Ext } from "../../../../_shared/components.js";
 
 
 /**
- * The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`.
+ * The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim.
  */
 export type Handle = string;
-/**
- * The handle the claim named. Equal to the request's `payload.handle`.
- */
-export type Handle1 = string;
-/**
- * The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to.
- */
-export type Did = string;
-/**
- * When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made.
- */
-export type EpochSeconds = number;
-/**
- * The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.
- */
-export type Did1 = string;
-/**
- * Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes.
- */
-export type HttpsUrl = string;
-/**
- * Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification.
- */
-export type HttpsUrl1 = string;
-/**
- * When the URL stops answering.
- */
-export type EpochSeconds1 = number;
 
 /**
  * A wallet claims a VTA that a Farm has reserved behind a `vta-claim` trigger link. The document is the first request of the exchange (VTI-LNK-054): issued and signed by a fresh Ed25519 `did:key` that becomes the VTA's administrator, addressed to the Farm, and carrying the reservation's handle both here and as the envelope's `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
@@ -50,8 +22,11 @@ export interface ProvisionVTAClaimPayload {
  * The Farm's answer to a successful claim, signed by its assertionMethod key: which VTA the claimant now administers, what the claim did, and whether the Farm is holding the VTA until the person confirms the claim check on the page. It carries no claim check: the wallet computes its own from the key it signed with (VTI-LNK-115).
  */
 export interface ProvisionVTAClaimResponsePayload {
-  handle: Handle1;
-  vtaDid: Did;
+  handle: Handle;
+  /**
+   * The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.
+   */
+  vtaDid: string;
   /**
    * What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.
    */
@@ -60,15 +35,30 @@ export interface ProvisionVTAClaimResponsePayload {
    * `true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant.
    */
   checkRequired: boolean;
-  confirmBy?: EpochSeconds;
-  mediatorDid?: Did1;
-  didLogUrl?: HttpsUrl;
+  /**
+   * When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`.
+   */
+  confirmBy?: number;
+  /**
+   * The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.
+   */
+  mediatorDid?: string;
+  /**
+   * Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.
+   */
+  didLogUrl?: string;
   /**
    * How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`.
    */
   progress?: {
-    url: HttpsUrl1;
-    expiresAt: EpochSeconds1;
+    /**
+     * Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.
+     */
+    url: string;
+    /**
+     * When the URL stops answering. Integer UTC epoch seconds.
+     */
+    expiresAt: number;
   };
   ext?: Ext;
 }
@@ -109,8 +99,7 @@ export const PAYLOAD_SCHEMA = {
   ],
   "properties": {
     "handle": {
-      "$ref": "#/$defs/Handle",
-      "description": "The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`."
+      "$ref": "#/$defs/Handle"
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -123,29 +112,7 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 22,
       "maxLength": 43,
       "pattern": "^[A-Za-z0-9_-]{22,43}$",
-      "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. It confers no authority on its holder beyond the right to make one claim."
-    },
-    "Did": {
-      "title": "Did",
-      "type": "string",
-      "minLength": 8,
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:[^\\s]+$",
-      "description": "A DID, as DID Core spells it. The Farm chooses the method; the VTA Farm issues `did:webvh`."
-    },
-    "HttpsUrl": {
-      "title": "HttpsUrl",
-      "type": "string",
-      "minLength": 9,
-      "maxLength": 2048,
-      "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
-      "description": "An `https` URL with no userinfo. Carried for the wallet to fetch; it is never used to verify anything."
-    },
-    "EpochSeconds": {
-      "title": "EpochSeconds",
-      "type": "integer",
-      "minimum": 0,
-      "description": "A point in time as integer UTC epoch seconds, the unit of the trigger link's `_exp`."
+      "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim."
     },
     "Response": {
       "$anchor": "response",
@@ -161,12 +128,14 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "handle": {
-          "$ref": "#/$defs/Handle",
-          "description": "The handle the claim named. Equal to the request's `payload.handle`."
+          "$ref": "#/$defs/Handle"
         },
         "vtaDid": {
-          "$ref": "#/$defs/Did",
-          "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to."
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2048,
+          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
+          "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`."
         },
         "operation": {
           "type": "string",
@@ -181,16 +150,23 @@ export const PAYLOAD_SCHEMA = {
           "description": "`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant."
         },
         "confirmBy": {
-          "$ref": "#/$defs/EpochSeconds",
-          "description": "When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made."
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`."
         },
         "mediatorDid": {
-          "$ref": "#/$defs/Did",
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2048,
+          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
           "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves."
         },
         "didLogUrl": {
-          "$ref": "#/$defs/HttpsUrl",
-          "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes."
+          "type": "string",
+          "minLength": 9,
+          "maxLength": 2048,
+          "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
+          "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo."
         },
         "progress": {
           "type": "object",
@@ -201,12 +177,16 @@ export const PAYLOAD_SCHEMA = {
           ],
           "properties": {
             "url": {
-              "$ref": "#/$defs/HttpsUrl",
-              "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification."
+              "type": "string",
+              "minLength": 9,
+              "maxLength": 2048,
+              "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
+              "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line."
             },
             "expiresAt": {
-              "$ref": "#/$defs/EpochSeconds",
-              "description": "When the URL stops answering."
+              "type": "integer",
+              "minimum": 0,
+              "description": "When the URL stops answering. Integer UTC epoch seconds."
             }
           },
           "description": "How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`."
@@ -240,29 +220,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 22,
       "maxLength": 43,
       "pattern": "^[A-Za-z0-9_-]{22,43}$",
-      "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. It confers no authority on its holder beyond the right to make one claim."
-    },
-    "Did": {
-      "title": "Did",
-      "type": "string",
-      "minLength": 8,
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:[^\\s]+$",
-      "description": "A DID, as DID Core spells it. The Farm chooses the method; the VTA Farm issues `did:webvh`."
-    },
-    "HttpsUrl": {
-      "title": "HttpsUrl",
-      "type": "string",
-      "minLength": 9,
-      "maxLength": 2048,
-      "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
-      "description": "An `https` URL with no userinfo. Carried for the wallet to fetch; it is never used to verify anything."
-    },
-    "EpochSeconds": {
-      "title": "EpochSeconds",
-      "type": "integer",
-      "minimum": 0,
-      "description": "A point in time as integer UTC epoch seconds, the unit of the trigger link's `_exp`."
+      "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim."
     },
     "Response": {
       "$anchor": "response",
@@ -278,12 +236,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "handle": {
-          "$ref": "#/$defs/Handle",
-          "description": "The handle the claim named. Equal to the request's `payload.handle`."
+          "$ref": "#/$defs/Handle"
         },
         "vtaDid": {
-          "$ref": "#/$defs/Did",
-          "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to."
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2048,
+          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
+          "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`."
         },
         "operation": {
           "type": "string",
@@ -298,16 +258,23 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant."
         },
         "confirmBy": {
-          "$ref": "#/$defs/EpochSeconds",
-          "description": "When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made."
+          "type": "integer",
+          "minimum": 0,
+          "description": "When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`."
         },
         "mediatorDid": {
-          "$ref": "#/$defs/Did",
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2048,
+          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
           "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves."
         },
         "didLogUrl": {
-          "$ref": "#/$defs/HttpsUrl",
-          "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes."
+          "type": "string",
+          "minLength": 9,
+          "maxLength": 2048,
+          "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
+          "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo."
         },
         "progress": {
           "type": "object",
@@ -318,12 +285,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           ],
           "properties": {
             "url": {
-              "$ref": "#/$defs/HttpsUrl",
-              "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification."
+              "type": "string",
+              "minLength": 9,
+              "maxLength": 2048,
+              "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
+              "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line."
             },
             "expiresAt": {
-              "$ref": "#/$defs/EpochSeconds",
-              "description": "When the URL stops answering."
+              "type": "integer",
+              "minimum": 0,
+              "description": "When the URL stops answering. Integer UTC epoch seconds."
             }
           },
           "description": "How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`."

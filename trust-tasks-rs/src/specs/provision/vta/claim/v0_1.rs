@@ -29,143 +29,6 @@ pub mod error {
         }
     }
 }
-///A DID, as DID Core spells it. The Farm chooses the method; the VTA Farm issues `did:webvh`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Did",
-///  "description": "A DID, as DID Core spells it. The Farm chooses the method; the VTA Farm issues `did:webvh`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 8,
-///  "pattern": "^did:[a-z0-9]+:[^\\s]+$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct Did(::std::string::String);
-impl ::std::ops::Deref for Did {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<Did> for ::std::string::String {
-    fn from(value: Did) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for Did {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 8usize {
-            return Err("shorter than 8 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^did:[a-z0-9]+:[^\\s]+$").unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^did:[a-z0-9]+:[^\\s]+$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for Did {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for Did {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for Did {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for Did {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///A point in time as integer UTC epoch seconds, the unit of the trigger link's `_exp`.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EpochSeconds",
-///  "description": "A point in time as integer UTC epoch seconds, the unit of the trigger link's `_exp`.",
-///  "type": "integer",
-///  "minimum": 0.0
-///}
-/// ```
-/// </details>
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(transparent)]
-pub struct EpochSeconds(pub u64);
-impl ::std::ops::Deref for EpochSeconds {
-    type Target = u64;
-    fn deref(&self) -> &u64 {
-        &self.0
-    }
-}
-impl ::std::convert::From<EpochSeconds> for u64 {
-    fn from(value: EpochSeconds) -> Self {
-        value.0
-    }
-}
-impl ::std::convert::From<u64> for EpochSeconds {
-    fn from(value: u64) -> Self {
-        Self(value)
-    }
-}
-impl ::std::str::FromStr for EpochSeconds {
-    type Err = <u64 as ::std::str::FromStr>::Err;
-    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
-        Ok(Self(value.parse()?))
-    }
-}
-impl ::std::convert::TryFrom<&str> for EpochSeconds {
-    type Error = <u64 as ::std::str::FromStr>::Err;
-    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<String> for EpochSeconds {
-    type Error = <u64 as ::std::str::FromStr>::Err;
-    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
-        value.parse()
-    }
-}
-impl ::std::fmt::Display for EpochSeconds {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 /// <details><summary>JSON schema</summary>
@@ -274,14 +137,14 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-///The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. It confers no authority on its holder beyond the right to make one claim.
+///The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "Handle",
-///  "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. It confers no authority on its holder beyond the right to make one claim.",
+///  "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim.",
 ///  "type": "string",
 ///  "maxLength": 43,
 ///  "minLength": 22,
@@ -354,88 +217,6 @@ impl<'de> ::serde::Deserialize<'de> for Handle {
             })
     }
 }
-///An `https` URL with no userinfo. Carried for the wallet to fetch; it is never used to verify anything.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "HttpsUrl",
-///  "description": "An `https` URL with no userinfo. Carried for the wallet to fetch; it is never used to verify anything.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 9,
-///  "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct HttpsUrl(::std::string::String);
-impl ::std::ops::Deref for HttpsUrl {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<HttpsUrl> for ::std::string::String {
-    fn from(value: HttpsUrl) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for HttpsUrl {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 9usize {
-            return Err("shorter than 9 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| {
-                ::regress::Regex::new("^https://[^@/?#\\s]+(/[^\\s]*)?$").unwrap()
-            });
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^https://[^@/?#\\s]+(/[^\\s]*)?$\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for HttpsUrl {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for HttpsUrl {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for HttpsUrl {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for HttpsUrl {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 ///A wallet claims a VTA that a Farm has reserved behind a `vta-claim` trigger link. The document is the first request of the exchange (VTI-LNK-054): issued and signed by a fresh Ed25519 `did:key` that becomes the VTA's administrator, addressed to the Farm, and carrying the reservation's handle both here and as the envelope's `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
 ///
 /// <details><summary>JSON schema</summary>
@@ -454,7 +235,6 @@ impl<'de> ::serde::Deserialize<'de> for HttpsUrl {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "handle": {
-///      "description": "The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`.",
 ///      "$ref": "#/definitions/Handle"
 ///    }
 ///  },
@@ -468,7 +248,6 @@ impl<'de> ::serde::Deserialize<'de> for HttpsUrl {
 pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`.
     pub handle: Handle,
 }
 impl Payload {
@@ -497,23 +276,29 @@ impl Payload {
 ///      "type": "boolean"
 ///    },
 ///    "confirmBy": {
-///      "description": "When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made.",
-///      "$ref": "#/definitions/EpochSeconds"
+///      "description": "When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`.",
+///      "type": "integer",
+///      "minimum": 0.0
 ///    },
 ///    "didLogUrl": {
-///      "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes.",
-///      "$ref": "#/definitions/HttpsUrl"
+///      "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.",
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 9,
+///      "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
 ///    },
 ///    "ext": {
 ///      "$ref": "#/definitions/Ext"
 ///    },
 ///    "handle": {
-///      "description": "The handle the claim named. Equal to the request's `payload.handle`.",
 ///      "$ref": "#/definitions/Handle"
 ///    },
 ///    "mediatorDid": {
 ///      "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.",
-///      "$ref": "#/definitions/Did"
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 8,
+///      "pattern": "^did:[a-z0-9]+:[^\\s]+$"
 ///    },
 ///    "operation": {
 ///      "description": "What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.",
@@ -532,19 +317,26 @@ impl Payload {
 ///      ],
 ///      "properties": {
 ///        "expiresAt": {
-///          "description": "When the URL stops answering.",
-///          "$ref": "#/definitions/EpochSeconds"
+///          "description": "When the URL stops answering. Integer UTC epoch seconds.",
+///          "type": "integer",
+///          "minimum": 0.0
 ///        },
 ///        "url": {
-///          "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification.",
-///          "$ref": "#/definitions/HttpsUrl"
+///          "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.",
+///          "type": "string",
+///          "maxLength": 2048,
+///          "minLength": 9,
+///          "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
 ///        }
 ///      },
 ///      "additionalProperties": false
 ///    },
 ///    "vtaDid": {
-///      "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to.",
-///      "$ref": "#/definitions/Did"
+///      "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.",
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 8,
+///      "pattern": "^did:[a-z0-9]+:[^\\s]+$"
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -559,23 +351,22 @@ pub struct Response {
     ///`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant.
     #[serde(rename = "checkRequired")]
     pub check_required: bool,
-    ///When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made.
+    ///When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`.
     #[serde(
         rename = "confirmBy",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub confirm_by: ::std::option::Option<EpochSeconds>,
-    ///Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes.
+    pub confirm_by: ::std::option::Option<u64>,
+    ///Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.
     #[serde(
         rename = "didLogUrl",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub did_log_url: ::std::option::Option<HttpsUrl>,
+    pub did_log_url: ::std::option::Option<ResponseDidLogUrl>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
-    ///The handle the claim named. Equal to the request's `payload.handle`.
     pub handle: Handle,
     ///The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.
     #[serde(
@@ -583,18 +374,180 @@ pub struct Response {
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
-    pub mediator_did: ::std::option::Option<Did>,
+    pub mediator_did: ::std::option::Option<ResponseMediatorDid>,
     ///What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.
     pub operation: ResponseOperation,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub progress: ::std::option::Option<ResponseProgress>,
-    ///The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to.
+    ///The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.
     #[serde(rename = "vtaDid")]
-    pub vta_did: Did,
+    pub vta_did: ResponseVtaDid,
 }
 impl Response {
     pub fn builder() -> builder::Response {
         Default::default()
+    }
+}
+///Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 9,
+///  "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseDidLogUrl(::std::string::String);
+impl ::std::ops::Deref for ResponseDidLogUrl {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseDidLogUrl> for ::std::string::String {
+    fn from(value: ResponseDidLogUrl) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseDidLogUrl {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 9usize {
+            return Err("shorter than 9 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^https://[^@/?#\\s]+(/[^\\s]*)?$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^https://[^@/?#\\s]+(/[^\\s]*)?$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseDidLogUrl {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseDidLogUrl {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseDidLogUrl {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseDidLogUrl {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 8,
+///  "pattern": "^did:[a-z0-9]+:[^\\s]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseMediatorDid(::std::string::String);
+impl ::std::ops::Deref for ResponseMediatorDid {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseMediatorDid> for ::std::string::String {
+    fn from(value: ResponseMediatorDid) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseMediatorDid {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 8usize {
+            return Err("shorter than 8 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^did:[a-z0-9]+:[^\\s]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:[a-z0-9]+:[^\\s]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseMediatorDid {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseMediatorDid {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseMediatorDid {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseMediatorDid {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.
@@ -685,12 +638,16 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOperation {
 ///  ],
 ///  "properties": {
 ///    "expiresAt": {
-///      "description": "When the URL stops answering.",
-///      "$ref": "#/definitions/EpochSeconds"
+///      "description": "When the URL stops answering. Integer UTC epoch seconds.",
+///      "type": "integer",
+///      "minimum": 0.0
 ///    },
 ///    "url": {
-///      "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification.",
-///      "$ref": "#/definitions/HttpsUrl"
+///      "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.",
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 9,
+///      "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
 ///    }
 ///  },
 ///  "additionalProperties": false
@@ -701,15 +658,177 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOperation {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ResponseProgress {
-    ///When the URL stops answering.
+    ///When the URL stops answering. Integer UTC epoch seconds.
     #[serde(rename = "expiresAt")]
-    pub expires_at: EpochSeconds,
-    ///Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification.
-    pub url: HttpsUrl,
+    pub expires_at: u64,
+    ///Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.
+    pub url: ResponseProgressUrl,
 }
 impl ResponseProgress {
     pub fn builder() -> builder::ResponseProgress {
         Default::default()
+    }
+}
+///Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 9,
+///  "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseProgressUrl(::std::string::String);
+impl ::std::ops::Deref for ResponseProgressUrl {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseProgressUrl> for ::std::string::String {
+    fn from(value: ResponseProgressUrl) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseProgressUrl {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 9usize {
+            return Err("shorter than 9 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^https://[^@/?#\\s]+(/[^\\s]*)?$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^https://[^@/?#\\s]+(/[^\\s]*)?$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseProgressUrl {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseProgressUrl {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseProgressUrl {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseProgressUrl {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 8,
+///  "pattern": "^did:[a-z0-9]+:[^\\s]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseVtaDid(::std::string::String);
+impl ::std::ops::Deref for ResponseVtaDid {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseVtaDid> for ::std::string::String {
+    fn from(value: ResponseVtaDid) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseVtaDid {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 8usize {
+            return Err("shorter than 8 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^did:[a-z0-9]+:[^\\s]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:[a-z0-9]+:[^\\s]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseVtaDid {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseVtaDid {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseVtaDid {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseVtaDid {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 /// Types for composing complex structures.
@@ -769,22 +888,23 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         check_required: ::std::result::Result<bool, ::std::string::String>,
-        confirm_by: ::std::result::Result<
-            ::std::option::Option<super::EpochSeconds>,
+        confirm_by: ::std::result::Result<::std::option::Option<u64>, ::std::string::String>,
+        did_log_url: ::std::result::Result<
+            ::std::option::Option<super::ResponseDidLogUrl>,
             ::std::string::String,
         >,
-        did_log_url:
-            ::std::result::Result<::std::option::Option<super::HttpsUrl>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         handle: ::std::result::Result<super::Handle, ::std::string::String>,
-        mediator_did:
-            ::std::result::Result<::std::option::Option<super::Did>, ::std::string::String>,
+        mediator_did: ::std::result::Result<
+            ::std::option::Option<super::ResponseMediatorDid>,
+            ::std::string::String,
+        >,
         operation: ::std::result::Result<super::ResponseOperation, ::std::string::String>,
         progress: ::std::result::Result<
             ::std::option::Option<super::ResponseProgress>,
             ::std::string::String,
         >,
-        vta_did: ::std::result::Result<super::Did, ::std::string::String>,
+        vta_did: ::std::result::Result<super::ResponseVtaDid, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -814,7 +934,7 @@ pub mod builder {
         }
         pub fn confirm_by<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::EpochSeconds>>,
+            T: ::std::convert::TryInto<::std::option::Option<u64>>,
             T::Error: ::std::fmt::Display,
         {
             self.confirm_by = value
@@ -824,7 +944,7 @@ pub mod builder {
         }
         pub fn did_log_url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::HttpsUrl>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseDidLogUrl>>,
             T::Error: ::std::fmt::Display,
         {
             self.did_log_url = value
@@ -854,7 +974,7 @@ pub mod builder {
         }
         pub fn mediator_did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::Did>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::ResponseMediatorDid>>,
             T::Error: ::std::fmt::Display,
         {
             self.mediator_did = value
@@ -884,7 +1004,7 @@ pub mod builder {
         }
         pub fn vta_did<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::Did>,
+            T: ::std::convert::TryInto<super::ResponseVtaDid>,
             T::Error: ::std::fmt::Display,
         {
             self.vta_did = value
@@ -926,8 +1046,8 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct ResponseProgress {
-        expires_at: ::std::result::Result<super::EpochSeconds, ::std::string::String>,
-        url: ::std::result::Result<super::HttpsUrl, ::std::string::String>,
+        expires_at: ::std::result::Result<u64, ::std::string::String>,
+        url: ::std::result::Result<super::ResponseProgressUrl, ::std::string::String>,
     }
     impl ::std::default::Default for ResponseProgress {
         fn default() -> Self {
@@ -940,7 +1060,7 @@ pub mod builder {
     impl ResponseProgress {
         pub fn expires_at<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::EpochSeconds>,
+            T: ::std::convert::TryInto<u64>,
             T::Error: ::std::fmt::Display,
         {
             self.expires_at = value
@@ -950,7 +1070,7 @@ pub mod builder {
         }
         pub fn url<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::HttpsUrl>,
+            T: ::std::convert::TryInto<super::ResponseProgressUrl>,
             T::Error: ::std::fmt::Display,
         {
             self.url = value
@@ -985,7 +1105,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Did\": {\n      \"description\": \"A DID, as DID Core spells it. The Farm chooses the method; the VTA Farm issues `did:webvh`.\",\n      \"maxLength\": 2048,\n      \"minLength\": 8,\n      \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"EpochSeconds\": {\n      \"description\": \"A point in time as integer UTC epoch seconds, the unit of the trigger link's `_exp`.\",\n      \"minimum\": 0,\n      \"title\": \"EpochSeconds\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Handle\": {\n      \"description\": \"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. It confers no authority on its holder beyond the right to make one claim.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"Handle\",\n      \"type\": \"string\"\n    },\n    \"HttpsUrl\": {\n      \"description\": \"An `https` URL with no userinfo. Carried for the wallet to fetch; it is never used to verify anything.\",\n      \"maxLength\": 2048,\n      \"minLength\": 9,\n      \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n      \"title\": \"HttpsUrl\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The Farm's answer to a successful claim, signed by its assertionMethod key: which VTA the claimant now administers, what the claim did, and whether the Farm is holding the VTA until the person confirms the claim check on the page. It carries no claim check: the wallet computes its own from the key it signed with (VTI-LNK-115).\",\n      \"properties\": {\n        \"checkRequired\": {\n          \"description\": \"`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant.\",\n          \"type\": \"boolean\"\n        },\n        \"confirmBy\": {\n          \"$ref\": \"#/$defs/EpochSeconds\",\n          \"description\": \"When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made.\"\n        },\n        \"didLogUrl\": {\n          \"$ref\": \"#/$defs/HttpsUrl\",\n          \"description\": \"Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"$ref\": \"#/$defs/Handle\",\n          \"description\": \"The handle the claim named. Equal to the request's `payload.handle`.\"\n        },\n        \"mediatorDid\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.\"\n        },\n        \"operation\": {\n          \"description\": \"What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.\",\n          \"enum\": [\n            \"provisionVta\",\n            \"grantAcl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"progress\": {\n          \"additionalProperties\": false,\n          \"description\": \"How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"$ref\": \"#/$defs/EpochSeconds\",\n              \"description\": \"When the URL stops answering.\"\n            },\n            \"url\": {\n              \"$ref\": \"#/$defs/HttpsUrl\",\n              \"description\": \"Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification.\"\n            }\n          },\n          \"required\": [\n            \"url\",\n            \"expiresAt\"\n          ],\n          \"type\": \"object\"\n        },\n        \"vtaDid\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to.\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"vtaDid\",\n        \"operation\",\n        \"checkRequired\"\n      ],\n      \"title\": \"Provision — VTA Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/provision/vta/claim/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A wallet claims a VTA that a Farm has reserved behind a `vta-claim` trigger link. The document is the first request of the exchange (VTI-LNK-054): issued and signed by a fresh Ed25519 `did:key` that becomes the VTA's administrator, addressed to the Farm, and carrying the reservation's handle both here and as the envelope's `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"handle\": {\n      \"$ref\": \"#/$defs/Handle\",\n      \"description\": \"The handle read from the trigger link's `_id`. MUST equal the document's `parentThreadId`.\"\n    }\n  },\n  \"required\": [\n    \"handle\"\n  ],\n  \"title\": \"Provision — VTA Claim — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Handle\": {\n      \"description\": \"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"Handle\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The Farm's answer to a successful claim, signed by its assertionMethod key: which VTA the claimant now administers, what the claim did, and whether the Farm is holding the VTA until the person confirms the claim check on the page. It carries no claim check: the wallet computes its own from the key it signed with (VTI-LNK-115).\",\n      \"properties\": {\n        \"checkRequired\": {\n          \"description\": \"`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant.\",\n          \"type\": \"boolean\"\n        },\n        \"confirmBy\": {\n          \"description\": \"When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"didLogUrl\": {\n          \"description\": \"Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.\",\n          \"maxLength\": 2048,\n          \"minLength\": 9,\n          \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"$ref\": \"#/$defs/Handle\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.\",\n          \"enum\": [\n            \"provisionVta\",\n            \"grantAcl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"progress\": {\n          \"additionalProperties\": false,\n          \"description\": \"How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"description\": \"When the URL stops answering. Integer UTC epoch seconds.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"url\": {\n              \"description\": \"Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.\",\n              \"maxLength\": 2048,\n              \"minLength\": 9,\n              \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"url\",\n            \"expiresAt\"\n          ],\n          \"type\": \"object\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"vtaDid\",\n        \"operation\",\n        \"checkRequired\"\n      ],\n      \"title\": \"Provision — VTA Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/provision/vta/claim/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A wallet claims a VTA that a Farm has reserved behind a `vta-claim` trigger link. The document is the first request of the exchange (VTI-LNK-054): issued and signed by a fresh Ed25519 `did:key` that becomes the VTA's administrator, addressed to the Farm, and carrying the reservation's handle both here and as the envelope's `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"handle\": {\n      \"$ref\": \"#/$defs/Handle\"\n    }\n  },\n  \"required\": [\n    \"handle\"\n  ],\n  \"title\": \"Provision — VTA Claim — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -994,7 +1114,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Did\": {\n      \"description\": \"A DID, as DID Core spells it. The Farm chooses the method; the VTA Farm issues `did:webvh`.\",\n      \"maxLength\": 2048,\n      \"minLength\": 8,\n      \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"EpochSeconds\": {\n      \"description\": \"A point in time as integer UTC epoch seconds, the unit of the trigger link's `_exp`.\",\n      \"minimum\": 0,\n      \"title\": \"EpochSeconds\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Handle\": {\n      \"description\": \"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. It confers no authority on its holder beyond the right to make one claim.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"Handle\",\n      \"type\": \"string\"\n    },\n    \"HttpsUrl\": {\n      \"description\": \"An `https` URL with no userinfo. Carried for the wallet to fetch; it is never used to verify anything.\",\n      \"maxLength\": 2048,\n      \"minLength\": 9,\n      \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n      \"title\": \"HttpsUrl\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The Farm's answer to a successful claim, signed by its assertionMethod key: which VTA the claimant now administers, what the claim did, and whether the Farm is holding the VTA until the person confirms the claim check on the page. It carries no claim check: the wallet computes its own from the key it signed with (VTI-LNK-115).\",\n      \"properties\": {\n        \"checkRequired\": {\n          \"description\": \"`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant.\",\n          \"type\": \"boolean\"\n        },\n        \"confirmBy\": {\n          \"$ref\": \"#/$defs/EpochSeconds\",\n          \"description\": \"When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made.\"\n        },\n        \"didLogUrl\": {\n          \"$ref\": \"#/$defs/HttpsUrl\",\n          \"description\": \"Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"$ref\": \"#/$defs/Handle\",\n          \"description\": \"The handle the claim named. Equal to the request's `payload.handle`.\"\n        },\n        \"mediatorDid\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.\"\n        },\n        \"operation\": {\n          \"description\": \"What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.\",\n          \"enum\": [\n            \"provisionVta\",\n            \"grantAcl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"progress\": {\n          \"additionalProperties\": false,\n          \"description\": \"How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"$ref\": \"#/$defs/EpochSeconds\",\n              \"description\": \"When the URL stops answering.\"\n            },\n            \"url\": {\n              \"$ref\": \"#/$defs/HttpsUrl\",\n              \"description\": \"Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification.\"\n            }\n          },\n          \"required\": [\n            \"url\",\n            \"expiresAt\"\n          ],\n          \"type\": \"object\"\n        },\n        \"vtaDid\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to.\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"vtaDid\",\n        \"operation\",\n        \"checkRequired\"\n      ],\n      \"title\": \"Provision — VTA Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Handle\": {\n      \"description\": \"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In the request it MUST equal the document's `parentThreadId`; the response echoes it. It confers no authority on its holder beyond the right to make one claim.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"Handle\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The Farm's answer to a successful claim, signed by its assertionMethod key: which VTA the claimant now administers, what the claim did, and whether the Farm is holding the VTA until the person confirms the claim check on the page. It carries no claim check: the wallet computes its own from the key it signed with (VTI-LNK-115).\",\n      \"properties\": {\n        \"checkRequired\": {\n          \"description\": \"`true` when the Farm holds the VTA until the person confirms, on the Farm's page, that the claim check shown there matches the one the wallet shows (VTI-LNK-115). The Farm sets it `true` for every `grantAcl` (VTI-LNK-117). When `false`, the Farm has already released the VTA to the claimant.\",\n          \"type\": \"boolean\"\n        },\n        \"confirmBy\": {\n          \"description\": \"When the hold ends if nobody confirms. Present when `checkRequired` is `true`. After it, the Farm discards the claimant's identifier and the reservation lapses; a new code must be made. Integer UTC epoch seconds, the unit of the trigger link's `_exp`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"didLogUrl\": {\n          \"description\": \"Where the VTA's DID log is served, for a wallet that wants to fetch it before the VTA answers. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.\",\n          \"maxLength\": 2048,\n          \"minLength\": 9,\n          \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"$ref\": \"#/$defs/Handle\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document once that resolves.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"What the claim did at the Farm. `provisionVta`: the claimant becomes the first administrator of a VTA that is being, or has been, provisioned for this reservation. `grantAcl`: the claimant is added as an administrator of a VTA that already has one. The Farm derives the value from the reservation; the wallet does not choose it.\",\n          \"enum\": [\n            \"provisionVta\",\n            \"grantAcl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"progress\": {\n          \"additionalProperties\": false,\n          \"description\": \"How the wallet can follow what happens after the claim. Present for `provisionVta`, where the VTA is not reachable until the pipeline finishes; a Farm MAY also send it for `grantAcl`.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"description\": \"When the URL stops answering. Integer UTC epoch seconds.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"url\": {\n              \"description\": \"Where the wallet can poll the state of the provisioning or grant. The Farm's own interface; its shape is not part of this specification. An `https` URL with no userinfo; a credential belongs in neither a URL nor a log line.\",\n              \"maxLength\": 2048,\n              \"minLength\": 9,\n              \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"url\",\n            \"expiresAt\"\n          ],\n          \"type\": \"object\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the VTA the claim applies to. For `provisionVta` it is the DID of the VTA being set up for the claimant; for `grantAcl` it is the DID of the running VTA the claimant is being added to. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"vtaDid\",\n        \"operation\",\n        \"checkRequired\"\n      ],\n      \"title\": \"Provision — VTA Claim — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
