@@ -425,8 +425,10 @@ class HiddenVettingSubmission {
   final String joinDid;
 
   /// The binding of `id` to `joinDid`, the community and the requirements digest, so a
-  /// proof cannot be carried to another join.
-  final Multibase idBinding;
+  /// proof cannot be carried to another join: lowercase hex of a SHA-256 over the four
+  /// values, each length-prefixed. The proof commits to it, and the community recomputes
+  /// it.
+  final String idBinding;
 
   /// The community's single-use challenge, as vtc/vetting/pcs-challenge issued it.
   final String challenge;

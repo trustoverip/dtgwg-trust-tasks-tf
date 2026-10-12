@@ -150,8 +150,9 @@ export const PAYLOAD_SCHEMA = {
           "description": "The DID the applicant joins as. Bound to `id` by `idBinding`."
         },
         "idBinding": {
-          "$ref": "#/$defs/Multibase",
-          "description": "The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join."
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join: lowercase hex of a SHA-256 over the four values, each length-prefixed. The proof commits to it, and the community recomputes it."
         },
         "challenge": {
           "type": "string",
@@ -513,8 +514,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The DID the applicant joins as. Bound to `id` by `idBinding`."
         },
         "idBinding": {
-          "$ref": "#/$defs/Multibase",
-          "description": "The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join."
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join: lowercase hex of a SHA-256 over the four values, each length-prefixed. The proof commits to it, and the community recomputes it."
         },
         "challenge": {
           "type": "string",

@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::vta::pcs::vetter::show::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000007942241\",\n  \"type\": \"https://trusttasks.org/spec/vta/pcs/vetter/show/0.1#request\",\n  \"issuer\": \"did:key:z6MkfClientWalletExampleKey1111111111111111111\",\n  \"recipient\": \"did:webvh:QmVta:vta.example.com\",\n  \"issuedAt\": \"2026-10-12T09:00:00Z\",\n  \"threadId\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000007942249\",\n  \"payload\": {\n    \"contextId\": \"personal/communities\",\n    \"community\": \"did:webvh:QmCommunity:vtc.example.org\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000002239531\",\n  \"type\": \"https://trusttasks.org/spec/vta/pcs/vetter/show/0.1#request\",\n  \"issuer\": \"did:key:z6MkfClientWalletExampleKey1111111111111111111\",\n  \"recipient\": \"did:webvh:QmVta:vta.example.com\",\n  \"issuedAt\": \"2026-10-12T09:00:00Z\",\n  \"threadId\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000002239539\",\n  \"payload\": {\n    \"contextId\": \"personal/communities\",\n    \"community\": \"did:webvh:QmCommunity:vtc.example.org\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000007942242\",\n  \"type\": \"https://trusttasks.org/spec/vta/pcs/vetter/show/0.1#response\",\n  \"issuer\": \"did:webvh:QmVta:vta.example.com\",\n  \"recipient\": \"did:key:z6MkfClientWalletExampleKey1111111111111111111\",\n  \"issuedAt\": \"2026-10-12T09:00:01Z\",\n  \"threadId\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000007942249\",\n  \"payload\": {\n    \"vetter\": {\n      \"contextId\": \"personal/communities\",\n      \"community\": \"did:webvh:QmCommunity:vtc.example.org\",\n      \"memberDid\": \"did:webvh:QmMember:vta.example.com:alice\",\n      \"suite\": \"ps-ddh-bls12381\",\n      \"id\": \"z4FvpxtP31f2HAEo4V9ffW3VRH1yZJAXY\",\n      \"enrolledLabels\": [\n        \"vetter/2026-10\"\n      ],\n      \"pendingLabels\": [],\n      \"tokensFree\": 3,\n      \"tokensHeld\": 3,\n      \"drawsInFlight\": [],\n      \"attested\": 0\n    }\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000002239532\",\n  \"type\": \"https://trusttasks.org/spec/vta/pcs/vetter/show/0.1#response\",\n  \"issuer\": \"did:webvh:QmVta:vta.example.com\",\n  \"recipient\": \"did:key:z6MkfClientWalletExampleKey1111111111111111111\",\n  \"issuedAt\": \"2026-10-12T09:00:01Z\",\n  \"threadId\": \"urn:uuid:7c1d0e5a-0000-4000-8000-000002239539\",\n  \"payload\": {\n    \"vetter\": {\n      \"contextId\": \"personal/communities\",\n      \"community\": \"did:webvh:QmCommunity:vtc.example.org\",\n      \"memberDid\": \"did:webvh:QmMember:vta.example.com:alice\",\n      \"suite\": \"ps-ddh-bls12381\",\n      \"id\": \"z4FvpxtP31f2HAEo4V9ffW3VRH1yZJAXY\",\n      \"enrolledLabels\": [\n        \"vetter/2026-10\"\n      ],\n      \"pendingLabels\": [],\n      \"tokensFree\": 3,\n      \"tokensHeld\": 3,\n      \"drawsInFlight\": [],\n      \"attested\": 0\n    }\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");

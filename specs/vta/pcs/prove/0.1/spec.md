@@ -116,12 +116,12 @@ The client sends the request to its VTA. The payload is the top-level schema in 
 
 ```json
 {
-  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000007891221",
+  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000007870271",
   "type": "https://trusttasks.org/spec/vta/pcs/prove/0.1#request",
   "issuer": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
   "recipient": "did:webvh:QmVta:vta.example.com",
   "issuedAt": "2026-10-12T09:00:00Z",
-  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000007891229",
+  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000007870279",
   "payload": {
     "applicationId": "app-7f3c2a",
     "parameters": {
@@ -153,18 +153,18 @@ The VTA answers with the payload under `$anchor: "response"` in [`payload.schema
 
 ```json
 {
-  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000007891222",
+  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000007870272",
   "type": "https://trusttasks.org/spec/vta/pcs/prove/0.1#response",
   "issuer": "did:webvh:QmVta:vta.example.com",
   "recipient": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
   "issuedAt": "2026-10-12T09:00:01Z",
-  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000007891229",
+  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000007870279",
   "payload": {
     "hiddenVetting": {
       "suite": "ps-ddh-bls12381",
       "id": "zkChBGjt2GvefLiGF1uuJCsv4eFaSFRuF",
       "joinDid": "did:key:z6MkpJoinPersonaExampleKey22222222222222222222",
-      "idBinding": "zWLVjLWUJD1168qyxKAoRanBgYZggrMDX",
+      "idBinding": "4f9b2c7e1a0d3e8f6b5c4a39281706f5e4d3c2b1a09f8e7d6c5b4a3928170615",
       "challenge": "zxkTnTcyyDriAinL5aWFMKsYgcGf4qwCp",
       "statements": [
         {

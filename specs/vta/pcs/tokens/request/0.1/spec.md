@@ -123,12 +123,12 @@ The client sends the request to its VTA. The payload is the top-level schema in 
 
 ```json
 {
-  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000005080271",
+  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000002672331",
   "type": "https://trusttasks.org/spec/vta/pcs/tokens/request/0.1#request",
   "issuer": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
   "recipient": "did:webvh:QmVta:vta.example.com",
   "issuedAt": "2026-10-12T09:00:00Z",
-  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000005080279",
+  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000002672339",
   "payload": {
     "contextId": "personal/communities",
     "community": "did:webvh:QmCommunity:vtc.example.org",
@@ -162,12 +162,12 @@ The VTA answers with the payload under `$anchor: "response"` in [`payload.schema
 
 ```json
 {
-  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000005080272",
+  "id": "urn:uuid:7c1d0e5a-0000-4000-8000-000002672332",
   "type": "https://trusttasks.org/spec/vta/pcs/tokens/request/0.1#response",
   "issuer": "did:webvh:QmVta:vta.example.com",
   "recipient": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
   "issuedAt": "2026-10-12T09:00:01Z",
-  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000005080279",
+  "threadId": "urn:uuid:7c1d0e5a-0000-4000-8000-000002672339",
   "payload": {
     "request": {
       "label": "token/2026-10",

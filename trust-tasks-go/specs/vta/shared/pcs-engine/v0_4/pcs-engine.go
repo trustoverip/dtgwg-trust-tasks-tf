@@ -65,8 +65,9 @@ type HiddenVettingSubmission struct {
 	JoinDID string `json:"joinDid"`
 
 	// The binding of `id` to `joinDid`, the community and the requirements digest, so a proof
-	// cannot be carried to another join.
-	IDBinding Multibase `json:"idBinding"`
+	// cannot be carried to another join: lowercase hex of a SHA-256 over the four values,
+	// each length-prefixed. The proof commits to it, and the community recomputes it.
+	IDBinding string `json:"idBinding"`
 
 	// The community's single-use challenge, as vtc/vetting/pcs-challenge issued it.
 	Challenge string `json:"challenge"`

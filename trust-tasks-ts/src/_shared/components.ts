@@ -5874,9 +5874,9 @@ export interface HiddenVettingSubmission {
    */
   joinDid: string;
   /**
-   * The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join.
+   * The binding of `id` to `joinDid`, the community and the requirements digest, so a proof cannot be carried to another join: lowercase hex of a SHA-256 over the four values, each length-prefixed. The proof commits to it, and the community recomputes it.
    */
-  idBinding: Multibase;
+  idBinding: string;
   /**
    * The community's single-use challenge, as vtc/vetting/pcs-challenge issued it.
    */
