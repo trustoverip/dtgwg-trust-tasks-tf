@@ -11,6 +11,24 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.7.2 — 2026-10-13
+
+
+### Added
+
+- **vta/pcs**: The VTA as hidden-vetting (PCS) engine — applicant and vetter tasks (#756)
+
+* feat(vta/pcs): the VTA as hidden-vetting (PCS) engine — applicant and vetter tasks
+
+  A community that runs hidden vetting admits an applicant on a zero-knowledge
+  proof that enough distinct eligible vetters vetted them. Every vetter and
+  applicant holds a PCS secret key, and until now the member side ran only in a
+  client that links the PCS library — so a wallet with no PCS implementation
+  (a mobile app) could not take part at all.
+
+  This adds the vta/pcs/* family: the VTA holds the PCS keys and runs every
+  member-side operation; the client carries messages and never holds a key.
+
 ## 0.7.1 — 2026-10-12
 
 
