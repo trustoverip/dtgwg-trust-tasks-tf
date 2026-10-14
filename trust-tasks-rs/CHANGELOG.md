@@ -31,6 +31,150 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.1...trust-tasks-rs-v0.31.2) — 2026-10-14
+
+
+### Added
+
+- **vtc**: Community-owned rooms and member offers — vtc/rooms/community/* and vtc/rooms/offers/* ([#768](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/768))
+
+A community hosts rooms its members own, and can now own rooms itself — the
+  board's papers, a working group's drafts, a members' library — run from its
+  console. Design: verifiable-trust-infrastructure docs/05-design-notes/
+  data-rooms-files.md §8.4.
+
+  The community is the owner, and its own VTA is the key holder: the VTA mints
+  the room's DID, signs its credentials and holds the community's place in a
+  sealed room's group, through the same rooms/owner/* and rooms/keys/* tasks any
+  owner's key holder serves. The community holds no room key and no group
+  secret.
+
+  Administrators, holding the new vtc.rooms.manage (the owner's authority,
+  distinct from hosting's vtc.rooms.admin):
+  - vtc/rooms/community/create — the VTA mints, founds the group, issues the
+    community's own admin authority; the room is stored only after every
+    remote step, so a failure leaves no room behind.
+  - vtc/rooms/community/{list,get} — the owner's view, with counts and when the
+    community's own authority lapses.
+  - vtc/rooms/community/members/{add,remove,list} — add has the VTA issue the
+    invitation, membership and authority credentials (never admin) and keeps
+    them as an offer; remove advances a sealed room's epoch through the owner's
+    group removal and says what removal does not do (no recall; an authority
+    credential is honoured until it expires, so open rooms want short expiries).
+    members/list is paged and separate from get, because a community library
+    can admit the whole community.
+
+  Members, on their own DID (pull-shaped admission: a member's VTA has no
+  inbound address):
+  - vtc/rooms/offers/list — the caller's offers and the credentials to store with
+    their own key holder; never anyone else's.
+  - vtc/rooms/offers/accept — on a sealed tier, a KeyPackage in and the Welcome
+    out, after the VTA adds the member. A repeat with the same KeyPackage gets the
+    same Welcome; an unknown outcome is admissionPending, retried safely because
+    the VTA settles a pending admission first.
+
+  Only active members of the community are admitted to its rooms. Step-up and
+  consent are described as the intended model, not declared (SPEC §7.3 item 13).
+  The owner's record of whom it admitted lives apart from anything the host path
+  reads, so invariant I5 and portability hold.
+
+  New shared schema vtc/_shared/0.1/community-room.schema.json. Additive for the
+  generated types: new modules only.
+
+
+
+### Specifications
+
+- **rooms,vtc**: Rooms/owner/group/remove, and a `rooms` topic on the console's live events (vtc/admin/events 0.2) ([#767](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/767))
+
+rooms/owner/group/remove/0.1 — the last of the owner's group tasks
+  (data-rooms-files.md §11). Removal is an epoch advance and nothing else is:
+  the key holder drops the member's leaf and advances the room at its host
+  with the link and commit, under the caller's `admin` authority. Same
+  remote-first rules as group/add as corrected in #766: the advanced state is
+  kept durably before the host is contacted, applied only once the host
+  accepts, discarded only on a refusal, kept on an unknown outcome and settled
+  by the next request through rooms/info. At most one pending advance per room,
+  admission or removal. Refuses `ownLeaf` (an owner leaving hands the room on
+  with rooms/owner/transfer). States what removal does not do: no recall of
+  what was read, and the authority credential is a separate thing.
+
+  vtc/admin/events {_shared,subscribe,event} 0.2 — the topic set is closed per
+  version ("a topic not listed here is a new MINOR version of this
+  component"), so the `rooms` topic is a new version rather than an `ext`
+  member. `rooms` prompts vtc/rooms/list, vtc/rooms/usage and
+  vtc/storage/configs/list, goes to holders of vtc.rooms.admin, carries no
+  count, and is hinted when a room is registered or removed or changes
+  lifecycle state, when a room's usage or a storage config's held bytes
+  crosses 80, 95 or 100 percent of a limit or capacity in either direction,
+  and when a storage config is created, changed or changes state — naming
+  none of them (data-rooms-files.md §6.3 alerts). subscribe 0.2 allows up to
+  seven topics. 0.1 is unchanged; a community serving both answers each at its
+  own version.
+
+  Additive for the generated types: new modules; the TypeScript 0.1 modules
+  keep exporting `Topic` (the generator now disambiguates the two shared
+  definitions internally).
+
+- **rooms**: Group/add keeps a pending admission on an unknown outcome; details schemas for group codes ([#766](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/766))
+
+Corrections to rooms/owner/group/{create,add}/0.1 (drafts, #763), found
+  implementing them in the VTA:
+
+  - add, item 5: discard the pending admission only on a refusal. An
+    unreachable or silent host is an unknown outcome — it may have accepted —
+    and discarding then would leave the owner an epoch behind their own room.
+    The pending admission is kept for item 6; hostUnreachable's meaning says so
+    instead of "nothing was changed".
+  - add, items 2-3: what is kept is the advanced group state with the link,
+    commit and Welcome, beside the group the recipient holds, since a
+    committer cannot process its own commit later.
+  - add, item 6: the host's epoch is read with rooms/info under the caller's
+    read authority, from the host the admission was sent to; a host at neither
+    epoch has moved on, so discard and refuse epochConflict.
+  - detailsSchema for create's alreadyExists (epoch) and add's epochConflict
+    (hostEpoch), which the text already promised.
+  - create, item 1: the gates on naming the key are issue-membership's, but
+    nothing is signed, so a signing quota is not consumed or consulted.
+
+- **rooms**: Rooms/owner/group/{create,add} — the owner's agent founds and grows a sealed room's group; register signs as the owner ([#763](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/763))
+
+* spec(rooms): rooms/owner/group/{create,add} — the owner's agent founds and grows a sealed room's group; register signs as the owner
+
+  A sealed room (`attributed`, `private`) cannot be written to until its MLS
+  group exists, and every member reaches the group by a Welcome — except the
+  owner, whom nobody can welcome. The member half is specified
+  (`rooms/keys/{key-package,welcome,commit}`); the owner half was not, so no
+  surface could found a sealed room or admit anyone to one.
+
+  - `rooms/owner/group/create/0.1`: the owner's key holder forms the room's
+    group with the owner as its only leaf, at room epoch 1 (the epoch a host
+    records at registration). Entitlement: control of the room's signing key,
+    as for issuing its credentials. Refuses `alreadyExists` rather than
+    replacing a group whose key schedule sealed records depend on.
+  - `rooms/owner/group/add/0.1`: the key holder admits a member's KeyPackage,
+    advances the room at its host with `rooms/epoch/mint` (link and commit
+    included, the caller's `admin` authority presented), and returns the
+    Welcome for the caller to deliver with `rooms/keys/welcome` — never
+    through the host. Remote first: the pending commit is kept durably, sent,
+    and applied only once the host accepts, and reconciled against the host's
+    epoch after a crash, since a key holder cannot process its own commit
+    from the wire.
+  - `rooms/owner/register/0.1` (draft, clarified in place): the key holder
+    sends `rooms/create` with `ownerDid` as its issuer, signed with a key of
+    that DID it holds, and never as itself; it refuses with `permissionDenied`
+    before contacting the host when it holds none. `rooms/create` names the
+    Owner as issuer, and a host running a creation policy (a community
+    admitting rooms for its members) checks the party asking is the owner it
+    names — a registration issued by the agent in another party's name is one
+    no host can tell from registering rooms in a stranger's name. No schema
+    change beyond the `ownerDid` description.
+
+  Additive for the generated types: two new modules, no change to an
+  existing type.
+
+
+
 ## [0.31.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.0...trust-tasks-rs-v0.31.1) — 2026-10-14
 
 
