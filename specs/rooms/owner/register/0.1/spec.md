@@ -71,7 +71,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 ## Authorization
 
-**The entitlement is being the recipient's own principal.** This asks an agent to speak outward for the party it acts for, which is the standing relationship every task in this family rests on.
+**The entitlement is being the recipient's own principal.** This asks an agent to speak outward for the party it acts for, which is the standing relationship every task in this family rests on. A recipient MAY narrow it further — requiring the caller to hold the grant it already requires for signing as a room, say — and refuses a caller who lacks it with the framework's standard `permissionDenied`.
 
 Note what it deliberately does **not** check. It does not verify that the caller controls the room's DID, because the recipient is not a DID resolver and `rooms/create` does not ask it to be one: a host authorizes room operations from credentials the room issued, and a room registered by a party who cannot issue in its name is a room that admits nobody. The failure is real, immediate, and at the point of use.
 
