@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/add/0.1",
+  "title": "VTC Rooms Community Members Add — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "member",
+    "actions",
+    "validUntil",
+    "reason"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The member to admit: an active member of this community."
+    },
+    "actions": {
+      "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/MemberActions"
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the member's authority expires. Required, because expiry is the only way a grant in this family ends on its own: a chain root is never revoked."
+    },
+    "reason": {
+      "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Members Add — response payload",
+      "description": "Success response to vtc/rooms/community/members/add. Type https://trusttasks.org/spec/vtc/rooms/community/members/add/0.1#response. The member as recorded, in state `offered`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member"
+      ],
+      "properties": {
+        "member": {
+          "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomMember"
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

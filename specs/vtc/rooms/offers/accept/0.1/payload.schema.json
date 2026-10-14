@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1",
+  "title": "VTC Rooms Offers Accept — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "keyPackage": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Offers Accept — response payload",
+      "description": "Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "state",
+        "epoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The room's identifier: its DID."
+        },
+        "state": {
+          "const": "admitted"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The room epoch the caller joins at."
+        },
+        "welcome": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else."
+        },
+        "ratchetTree": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

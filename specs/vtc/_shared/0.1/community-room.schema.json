@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/community-room",
+  "title": "VTC — shared community-owned room definitions",
+  "description": "Shared types for rooms a community owns rather than merely hosts: the vtc/rooms/community/* tasks an administrator runs them with, and the vtc/rooms/offers/* tasks a member collects and accepts an admission with. The community is the room's owner; the community's own VTA holds the room's signing key and, on a sealed tier, the community's place in its MLS group. The community holds no room key and no group secret. What it records here is the owner's own record of whom it admitted — never read when the community serves the room as its host, where authorization is the room's credential chain and nothing else. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "RoomLabel": {
+      "title": "RoomLabel",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and not sent to the room's host path. MUST NOT carry personal data."
+    },
+    "MemberAction": {
+      "title": "MemberAction",
+      "type": "string",
+      "enum": [
+        "read",
+        "write",
+        "curate"
+      ],
+      "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
+    },
+    "MemberActions": {
+      "title": "MemberActions",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/MemberAction"
+      },
+      "description": "The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer."
+    },
+    "MemberState": {
+      "title": "MemberState",
+      "type": "string",
+      "enum": [
+        "offered",
+        "admitted",
+        "removed"
+      ],
+      "description": "Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them."
+    },
+    "CommunityRoom": {
+      "title": "CommunityRoom",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room",
+        "label",
+        "admitted",
+        "offered"
+      ],
+      "description": "One room the community owns, as its administrators see it.",
+      "properties": {
+        "room": {
+          "$ref": "room-storage.schema.json#/$defs/HostedRoom"
+        },
+        "label": {
+          "$ref": "#/$defs/RoomLabel"
+        },
+        "storageConfig": {
+          "$ref": "room-storage.schema.json#/$defs/StorageConfigId",
+          "description": "The storage config receiving the room's new uploads."
+        },
+        "admitted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Members in state `admitted`."
+        },
+        "offered": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Offers not yet accepted or withdrawn."
+        },
+        "ownerAuthorityValidUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before."
+        },
+        "createdBy": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The administrator who created it."
+        }
+      }
+    },
+    "RoomMember": {
+      "title": "RoomMember",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member",
+        "actions",
+        "validUntil",
+        "state",
+        "offeredAt"
+      ],
+      "description": "One party the community admitted to a room it owns, or offered admission to.",
+      "properties": {
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048
+        },
+        "actions": {
+          "$ref": "#/$defs/MemberActions"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the member's authority credential expires."
+        },
+        "state": {
+          "$ref": "#/$defs/MemberState"
+        },
+        "offeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "admittedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "removedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "OfferCredentials": {
+      "title": "OfferCredentials",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invitation",
+        "membership",
+        "authority"
+      ],
+      "description": "The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.",
+      "properties": {
+        "invitation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome)."
+        },
+        "membership": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "The Verifiable Membership Credential."
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "The Verifiable Authority Credential granting `actions` until `validUntil`."
+        }
+      }
+    },
+    "Offer": {
+      "title": "Offer",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "host",
+        "label",
+        "visibility",
+        "actions",
+        "validUntil",
+        "offeredAt",
+        "state",
+        "credentials"
+      ],
+      "description": "A community's offer of admission to a room it owns, as the member it is addressed to sees it.",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "host": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The room's host: this community."
+        },
+        "label": {
+          "$ref": "#/$defs/RoomLabel"
+        },
+        "visibility": {
+          "$ref": "../../../rooms/_shared/0.1/room.schema.json#/$defs/Visibility"
+        },
+        "actions": {
+          "$ref": "#/$defs/MemberActions"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "offeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "accepted"
+          ],
+          "description": "`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered."
+        },
+        "credentials": {
+          "$ref": "#/$defs/OfferCredentials"
+        }
+      }
+    },
+    "Reason": {
+      "title": "Reason",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
+    }
+  }
+}

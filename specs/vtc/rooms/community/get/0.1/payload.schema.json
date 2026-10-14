@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/get/0.1",
+  "title": "VTC Rooms Community Get — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Get — response payload",
+      "description": "Success response to vtc/rooms/community/get. Type https://trusttasks.org/spec/vtc/rooms/community/get/0.1#response. One room the community owns, with its counts. Its members are vtc/rooms/community/members/list's.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room"
+      ],
+      "properties": {
+        "room": {
+          "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/CommunityRoom"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

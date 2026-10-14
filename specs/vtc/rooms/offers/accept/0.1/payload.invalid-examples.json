@@ -1,0 +1,35 @@
+[
+  {
+    "note": "No room.",
+    "payload": {
+      "keyPackage": "AAEAAgADAAQ"
+    }
+  },
+  {
+    "note": "A KeyPackage in padded standard base64. The family carries MLS messages as base64url without padding.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "keyPackage": "AAEAAgADAAQ+/w=="
+    }
+  },
+  {
+    "note": "A member DID in the request. The admission accepted is the signer's own.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "keyPackage": "AAEAAgADAAQ",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "keyPackage": "AAEAAgADAAQ",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1",
+  "title": "VTC Rooms Community Members Remove — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "member",
+    "reason"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048
+    },
+    "reason": {
+      "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Members Remove — response payload",
+      "description": "Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member"
+      ],
+      "properties": {
+        "member": {
+          "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomMember"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "On a sealed tier, the room epoch after the removal."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

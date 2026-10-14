@@ -1,0 +1,55 @@
+[
+  {
+    "note": "`admin` among the actions. Minting epochs, admitting and removing are the community's, as owner, and are never granted to a member.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": [
+        "read",
+        "admin"
+      ],
+      "validUntil": "2027-10-01T00:00:00Z",
+      "reason": "Joins the board."
+    }
+  },
+  {
+    "note": "No validUntil. A grant here ends by expiry or not at all.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": [
+        "read",
+        "write"
+      ],
+      "reason": "Joins the board."
+    }
+  },
+  {
+    "note": "An empty action list confers nothing, and a schema allowing it invites the reading that it confers everything.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": [],
+      "validUntil": "2027-10-01T00:00:00Z",
+      "reason": "Joins the board."
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "actions": [
+        "read",
+        "write"
+      ],
+      "validUntil": "2027-10-01T00:00:00Z",
+      "reason": "Joins the board.",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

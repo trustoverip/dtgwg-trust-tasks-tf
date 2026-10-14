@@ -1,0 +1,30 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "A member that is not a DID.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "alice",
+      "reason": "Left the board."
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "reason": "Left the board.",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

@@ -811,6 +811,21 @@ export type LimitSource = "policy" | "override" | "default";
  */
 export type MatchNumber = string;
 /**
+ * What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.
+ */
+export type MemberAction = "read" | "write" | "curate";
+/**
+ * The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.
+ *
+ * @minItems 1
+ * @maxItems 3
+ */
+export type MemberActions = [MemberAction] | [MemberAction, MemberAction] | [MemberAction, MemberAction, MemberAction];
+/**
+ * Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.
+ */
+export type MemberState = "offered" | "admitted" | "removed";
+/**
  * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
  */
 export type Mode = "scan";
@@ -978,6 +993,10 @@ export type PushRegistration = Apns | Fcm | WebPush;
  */
 export type Queue = "receive" | "send";
 /**
+ * Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
+ */
+export type Reason = string;
+/**
  * How many records the room held when `DataCommitment` was computed — the number of leaves in that tree, tombstones included, since a tombstone is a record.
  *
  * **Why a root needs this.** Certificate Transparency's signed tree head is a root *and a tree size*; this family shipped the root alone, and the half that was dropped is the half that makes a listing checkable. A reader holding a **complete, unfiltered** listing cannot recompute the root — a leaf commits to a whole record and a listing returns a projection without the body — but it can count. A host that omits a record from a listing while committing to a tree that holds it now contradicts itself in the same response, with no second party and no anchor involved.
@@ -1081,6 +1100,10 @@ export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retir
  * A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.
  */
 export type RoleName = string;
+/**
+ * A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and not sent to the room's host path. MUST NOT carry personal data.
+ */
+export type RoomLabel = string;
 /**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
  */
@@ -4562,6 +4585,33 @@ export interface CommunityProfileView {
   personhood?: PersonhoodGovernance;
 }
 /**
+ * One room the community owns, as its administrators see it.
+ */
+export interface CommunityRoom {
+  room: HostedRoom;
+  label: RoomLabel;
+  /**
+   * The storage config receiving the room's new uploads.
+   */
+  storageConfig?: StorageConfigId;
+  /**
+   * Members in state `admitted`.
+   */
+  admitted: number;
+  /**
+   * Offers not yet accepted or withdrawn.
+   */
+  offered: number;
+  /**
+   * When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before.
+   */
+  ownerAuthorityValidUntil?: string;
+  /**
+   * The administrator who created it.
+   */
+  createdBy?: string;
+}
+/**
  * A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.
  *
  * This document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.
@@ -6760,6 +6810,43 @@ export interface MonitorFilter {
    */
   failuresOnly?: boolean;
 }
+/**
+ * A community's offer of admission to a room it owns, as the member it is addressed to sees it.
+ */
+export interface Offer {
+  roomId: string;
+  /**
+   * The room's host: this community.
+   */
+  host: string;
+  label: RoomLabel;
+  visibility: Visibility;
+  actions: MemberActions;
+  validUntil: string;
+  offeredAt: string;
+  /**
+   * `open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.
+   */
+  state: "open" | "accepted";
+  credentials: OfferCredentials;
+}
+/**
+ * The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.
+ */
+export interface OfferCredentials {
+  /**
+   * The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).
+   */
+  invitation: string;
+  /**
+   * The Verifiable Membership Credential.
+   */
+  membership: string;
+  /**
+   * The Verifiable Authority Credential granting `actions` until `validUntil`.
+   */
+  authority: string;
+}
 export interface PasskeyVerificationMethod {
   /**
    * The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
@@ -7898,6 +7985,21 @@ export interface RoomLimits {
    * Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.
    */
   member?: ScopeLimits;
+}
+/**
+ * One party the community admitted to a room it owns, or offered admission to.
+ */
+export interface RoomMember {
+  member: string;
+  actions: MemberActions;
+  /**
+   * When the member's authority credential expires.
+   */
+  validUntil: string;
+  state: MemberState;
+  offeredAt: string;
+  admittedAt?: string;
+  removedAt?: string;
 }
 /**
  * One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.
