@@ -49,8 +49,16 @@ errorCodes:
   - code: rooms/owner/group/add:epochConflict
     meaning: "The host is at a different epoch than the recipient's group — another admin advanced the room. Catch up (rooms/epoch/commits) and try again. The host's epoch is carried in `details.hostEpoch`."
     retryable: true
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: [hostEpoch]
+      properties:
+        hostEpoch:
+          type: integer
+          minimum: 1
   - code: rooms/owner/group/add:hostUnreachable
-    meaning: "The named host could not be resolved, advertises no transport this recipient speaks, or did not answer. Nothing was changed."
+    meaning: "The named host could not be resolved, advertises no transport this recipient speaks, or did not answer. The outcome is unknown — the host may have accepted the advance — so the recipient keeps the pending admission and the next request to it settles it (item 6)."
     retryable: true
   - code: rooms/owner/group/add:hostRefused
     meaning: "The host answered and declined the epoch advance. Its reason is carried in `details`. Nothing was changed."
@@ -88,11 +96,11 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming recipient:
 
 1. **MUST** refuse with `noGroup` when it holds no group for `roomId`, and with `keyPackageInvalid` when the KeyPackage does not validate or its leaf credential does not identify `member`.
-2. **MUST** build the commit adding `member`, and the epoch link that seals the outgoing epoch's storage key under the incoming one, **without** applying the commit to its group.
-3. **MUST** retain that pending commit durably **before** sending anything to the host.
+2. **MUST** build the commit adding `member`, and the epoch link that seals the outgoing epoch's storage key under the incoming one, **without** applying the commit to the group it holds. (A committer cannot process its own commit later, so what it keeps is the advanced group state alongside the one it holds, not only the commit.)
+3. **MUST** retain that pending admission — the advanced state, the link, the commit and the Welcome — durably **before** sending anything to the host.
 4. **MUST** advance the room at `host` with [`rooms/epoch/mint`](../../../../epoch/mint/0.1/spec.md), carrying the new epoch, the link, the commit and a presentation of the caller's `admin` authority — minted as [`rooms/keys/present`](../../../../keys/present/0.2/spec.md) would mint it, bound to `host`.
-5. **MUST** apply the pending commit only once the host has accepted the advance, and **MUST** discard it, leaving the group unchanged, when the host refuses or cannot be reached.
-6. **MUST**, when it finds a pending commit at a later request, ask the host for the room's epoch and apply the pending commit if the host is at its epoch, or discard it if the host is not. This is what makes the task safe across a crash between the host's acceptance and the recipient's own write: a key holder cannot process its own commit from the wire, so the pending state is the only way back.
+5. **MUST** apply the pending admission only once the host has accepted the advance, and **MUST** discard it, leaving the group unchanged, when the host **refuses** it. When the outcome is unknown — the host could not be reached, or did not answer — it **MUST** keep the pending admission for item 6, because the host may have accepted: discarding it then would leave the owner an epoch behind their own room.
+6. **MUST**, when it finds a pending admission at a later request, ask the host the admission was sent to for the room's epoch — with [`rooms/info`](../../../../info/0.1/spec.md), under the caller's `read` authority — and apply the pending admission if the host is at its epoch, or discard it if the host is still at the epoch before it. A host anywhere else has moved on without it: discard it and refuse with `epochConflict`. This is what makes the task safe across a crash or a lost reply between the host's acceptance and the recipient's own write: a key holder cannot process its own commit from the wire, so the pending state is the only way back.
 7. **MUST NOT** send the Welcome to the host.
 
 ## Authorization
@@ -182,7 +190,7 @@ On a `private` room the host must not learn who joined. It sees an epoch advance
 
 ### Retention
 
-The advanced group state is durable. The pending commit of item 3 is retained only until the host's answer is known.
+The advanced group state is durable. The pending admission of item 3 is retained only until the host's answer is known — by its reply, or by item 6.
 
 ### Consent/purpose
 

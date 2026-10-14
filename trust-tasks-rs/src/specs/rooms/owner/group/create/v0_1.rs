@@ -745,9 +745,12 @@ pub mod error_codes {
     /// The recipient already holds group state for this room. Its current epoch is carried in `details.epoch`.
     ///
     /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const ALREADY_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/group/create:alreadyExists",
         retryable: false,
-        details_schema: ::core::option::Option::None,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"epoch\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"epoch\"],\"type\":\"object\"}",
+        ),
     };
 }

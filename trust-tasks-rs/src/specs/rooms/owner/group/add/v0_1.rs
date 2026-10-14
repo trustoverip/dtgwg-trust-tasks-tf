@@ -1283,14 +1283,17 @@ pub mod error_codes {
     /// The host is at a different epoch than the recipient's group — another admin advanced the room. Catch up (rooms/epoch/commits) and try again. The host's epoch is carried in `details.hostEpoch`.
     ///
     /// Declared `retryable: true`.
+    /// Declares a `detailsSchema` for the error's `details` member.
     pub const EPOCH_CONFLICT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "rooms/owner/group/add:epochConflict",
         retryable: true,
-        details_schema: ::core::option::Option::None,
+        details_schema: ::core::option::Option::Some(
+            "{\"additionalProperties\":false,\"properties\":{\"hostEpoch\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"hostEpoch\"],\"type\":\"object\"}",
+        ),
     };
     /// `rooms/owner/group/add:hostUnreachable`
     ///
-    /// The named host could not be resolved, advertises no transport this recipient speaks, or did not answer. Nothing was changed.
+    /// The named host could not be resolved, advertises no transport this recipient speaks, or did not answer. The outcome is unknown — the host may have accepted the advance — so the recipient keeps the pending admission and the next request to it settles it (item 6).
     ///
     /// Declared `retryable: true`.
     pub const HOST_UNREACHABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

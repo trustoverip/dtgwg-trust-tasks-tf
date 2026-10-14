@@ -40,6 +40,14 @@ errorCodes:
   - code: rooms/owner/group/create:alreadyExists
     meaning: "The recipient already holds group state for this room. Its current epoch is carried in `details.epoch`."
     retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: [epoch]
+      properties:
+        epoch:
+          type: integer
+          minimum: 1
 related:
   - rooms/create
   - rooms/owner/register
@@ -70,7 +78,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming recipient:
 
-1. **MUST** refuse with `noSigningKey` unless it holds the key `signingKeyId` names and the caller may name it — the same gate as [`rooms/owner/issue-membership`](../../../issue-membership/0.1/spec.md).
+1. **MUST** refuse with `noSigningKey` unless it holds the key `signingKeyId` names and the caller may name it — the same gates as [`rooms/owner/issue-membership`](../../../issue-membership/0.1/spec.md) apply to naming the key, but nothing is signed, so a limit on what the key may sign (a signing quota) is not consumed or consulted.
 2. **MUST** refuse with `alreadyExists`, and change nothing, when it already holds group state for `roomId` — whether it formed that group or joined it by a Welcome. Replacing a group would discard the key schedule every sealed record of the room depends on.
 3. **MUST** form the group with exactly one leaf, whose credential identifies `member` (absent: the caller), and **MUST** retain the group state durably before answering.
 4. **MUST** answer with the room epoch, 1, and **MUST NOT** return any of the group's secrets.
