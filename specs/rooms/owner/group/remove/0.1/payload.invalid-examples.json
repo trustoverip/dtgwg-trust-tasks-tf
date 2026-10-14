@@ -1,0 +1,46 @@
+[
+  {
+    "note": "No member. Removal names whom it removes; a recipient asked to choose would be deciding who leaves.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community"
+    }
+  },
+  {
+    "note": "No host. Removal is an epoch advance at the room's host; without one there is nowhere to advance, and a local-only removal would seal to keys no other member holds.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "A member that is not a DID. A leaf identifies a party by DID; a name identifies nobody the group knows.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "bob"
+    }
+  },
+  {
+    "note": "An unbounded reason. Free text carried to another party is bounded (SPEC §7.3 item 19).",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

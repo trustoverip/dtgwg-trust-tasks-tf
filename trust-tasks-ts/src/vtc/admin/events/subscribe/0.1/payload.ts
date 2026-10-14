@@ -3,7 +3,7 @@
  * Source: specs/vtc/admin/events/subscribe/0.1/payload.schema.json
  */
 
-import type { Ext, ResumeToken, Topic } from "../../../../../_shared/components.js";
+import type { Ext, ResumeToken, Topic_VtcAdminEventsV0_1 as Topic } from "../../../../../_shared/components.js";
 
 
 /**

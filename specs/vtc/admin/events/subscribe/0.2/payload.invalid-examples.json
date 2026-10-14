@@ -1,0 +1,67 @@
+[
+  {
+    "note": "`topics` is required — a subscription to nothing would open a stream that can only ever send heartbeats.",
+    "payload": {}
+  },
+  {
+    "note": "Empty `topics` — minItems: 1, for the same reason.",
+    "payload": {
+      "topics": []
+    }
+  },
+  {
+    "note": "Repeated topic — uniqueItems: true.",
+    "payload": {
+      "topics": ["actions", "actions"]
+    }
+  },
+  {
+    "note": "`topics` outside the closed enum — each topic is bound to the read that authorizes it.",
+    "payload": {
+      "topics": ["actions", "everything"]
+    }
+  },
+  {
+    "note": "Unknown top-level member — a hint channel has no filter beyond topics; `memberDid` would make it a per-record watch.",
+    "payload": {
+      "topics": ["members"],
+      "memberDid": "did:web:carol.example"
+    }
+  },
+  {
+    "note": "`since` with a line break — the resume token travels as the SSE `id` field, which cannot contain one.",
+    "payload": {
+      "topics": ["actions"],
+      "since": "evt.000142\r\n"
+    }
+  },
+  {
+    "note": "Response without `resumed` — the console could not tell whether it must re-read every topic.",
+    "variant": "response",
+    "payload": {
+      "topics": ["actions"],
+      "heartbeatSeconds": 25,
+      "resumeToken": "evt.000142"
+    }
+  },
+  {
+    "note": "Response with no effective topics — a caller who may read none of the requested topics is refused with permissionDenied rather than given a stream that is silent by construction.",
+    "variant": "response",
+    "payload": {
+      "topics": [],
+      "heartbeatSeconds": 25,
+      "resumed": false,
+      "resumeToken": "evt.000142"
+    }
+  },
+  {
+    "note": "`heartbeatSeconds` above 60 — a console waiting twice that long would show a dead stream as live for minutes.",
+    "variant": "response",
+    "payload": {
+      "topics": ["actions"],
+      "heartbeatSeconds": 300,
+      "resumed": false,
+      "resumeToken": "evt.000142"
+    }
+  }
+]
