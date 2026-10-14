@@ -11,6 +11,34 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.1 — 2026-10-14
+
+
+### Added
+
+- **vtc**: Verifier identities list — the OpenID4VP verifier's state for administrators (#761)
+
+vtc/oid4vp/identities/list/0.1 lets a community's configuration
+  administrator read the OpenID4VP verifier identities the community presents
+  to swiyu and EUDI wallets, and what stops each from serving one.
+
+  A verifier identity is installed out of band — a DID registered with an
+  ecosystem, an access certificate from a registrar, trust statements from a
+  registry — and each part expires on its own schedule. A wallet that refuses
+  a request object tells the community nothing. Per identity the response
+  gives the client identifier wallets see, the DID and signing method, where
+  the key is held (cached, or kept by the community's agent), the access
+  certificate's subject, issuer and validity, each verifier_info attestation
+  with its expiry, whether it is the default, and whether a session could be
+  opened on it now. Problems use a fixed vocabulary with error/warning
+  severity: invalid key custody, no loaded signer, no link to the agent, a
+  missing, not-yet-valid, expired or expiring certificate, a missing identity
+  trust statement, an expired or expiring statement; and, community-wide, a
+  default identity that is not installed, or no https public URL.
+
+  The response never carries key material, nor the identifier under which the
+  agent holds a key.
+
 ## 0.26.0 — 2026-10-13
 
 

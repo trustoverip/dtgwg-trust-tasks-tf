@@ -31,6 +31,36 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.0...trust-tasks-rs-v0.31.1) — 2026-10-14
+
+
+### Added
+
+- **vtc**: Verifier identities list — the OpenID4VP verifier's state for administrators ([#761](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/761))
+
+vtc/oid4vp/identities/list/0.1 lets a community's configuration
+  administrator read the OpenID4VP verifier identities the community presents
+  to swiyu and EUDI wallets, and what stops each from serving one.
+
+  A verifier identity is installed out of band — a DID registered with an
+  ecosystem, an access certificate from a registrar, trust statements from a
+  registry — and each part expires on its own schedule. A wallet that refuses
+  a request object tells the community nothing. Per identity the response
+  gives the client identifier wallets see, the DID and signing method, where
+  the key is held (cached, or kept by the community's agent), the access
+  certificate's subject, issuer and validity, each verifier_info attestation
+  with its expiry, whether it is the default, and whether a session could be
+  opened on it now. Problems use a fixed vocabulary with error/warning
+  severity: invalid key custody, no loaded signer, no link to the agent, a
+  missing, not-yet-valid, expired or expiring certificate, a missing identity
+  trust statement, an expired or expiring statement; and, community-wide, a
+  default identity that is not installed, or no https public URL.
+
+  The response never carries key material, nor the identifier under which the
+  agent holds a key.
+
+
+
 ## [0.31.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.30.2...trust-tasks-rs-v0.31.0) — 2026-10-13
 
 
