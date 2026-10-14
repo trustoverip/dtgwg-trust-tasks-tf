@@ -11,6 +11,16 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.3 — 2026-10-14
+
+
+### Documentation
+
+- **vtc/rooms/community/members/remove**: Link rooms/owner/group/remove (#769)
+
+#768 named the task in prose only, because it was not yet on main and the build
+  refuses links to missing specifications. #767 has since merged.
+
 ## 0.26.2 — 2026-10-14
 
 

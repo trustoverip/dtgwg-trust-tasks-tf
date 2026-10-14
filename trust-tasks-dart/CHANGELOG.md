@@ -11,6 +11,16 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.8.3 — 2026-10-14
+
+
+### Documentation
+
+- **vtc/rooms/community/members/remove**: Link rooms/owner/group/remove (#769)
+
+#768 named the task in prose only, because it was not yet on main and the build
+  refuses links to missing specifications. #767 has since merged.
+
 ## 0.8.2 — 2026-10-14
 
 
