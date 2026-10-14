@@ -24,7 +24,7 @@
     },
     "ownerDid": {
       "type": "string",
-      "description": "The accountable party. Absent means the caller — a registration is normally made by the owner it names, and defaulting saves a surface repeating the DID it just authenticated as. Present and different is legitimate: an operator registering on behalf of the party who will answer for the room."
+      "description": "The accountable party, and the issuer of the rooms/create document the recipient sends on its behalf: the recipient signs it with a key of this DID that it holds, never as itself. Absent means the caller — a registration is normally made by the owner it names. A recipient holding no key for it refuses with permissionDenied before contacting the host."
     },
     "retentionPolicy": {
       "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RetentionPolicy",

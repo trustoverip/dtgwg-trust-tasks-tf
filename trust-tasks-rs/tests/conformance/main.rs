@@ -1098,6 +1098,14 @@ mod rooms {
         mod anchor {
             mod v0_1;
         }
+        mod group {
+            mod add {
+                mod v0_1;
+            }
+            mod create {
+                mod v0_1;
+            }
+        }
         mod invite {
             mod v0_1;
         }

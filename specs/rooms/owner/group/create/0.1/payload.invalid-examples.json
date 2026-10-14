@@ -1,0 +1,36 @@
+[
+  {
+    "note": "No signingKeyId. Control of the room's key is the entitlement to found its group; a request that omits it asks the recipient to decide whose room this is.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "note": "A member that is not a DID. The leaf identifies a party other members' key holders will see in every commit; a bare name identifies nobody.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "member": "alice"
+    }
+  },
+  {
+    "note": "A group secret offered by the caller. The group's secrets are created inside the recipient; a request that carried one would let the caller choose the key schedule every member then trusts.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "groupSecret": "AAAA"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

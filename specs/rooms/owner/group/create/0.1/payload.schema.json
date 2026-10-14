@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/group/create/0.1",
+  "title": "Rooms Owner Group Create \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "signingKeyId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room whose group is formed. Its identity exists already; the recipient MUST hold a signing key for it."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The room's signing key, named as to rooms/owner/issue-membership. Control of it is the entitlement: forming the room's group is the founding act of its membership."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The DID the owner's leaf identifies \u2014 the subject of the owner's membership and authority credentials. Absent means the caller."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Group Create \u2014 response payload",
+      "description": "Success response to rooms/owner/group/create. Type https://trusttasks.org/spec/rooms/owner/group/create/0.1#response. The room and the epoch its group was formed at; never a secret.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "epoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The room whose group was formed."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The room epoch the group is at: 1, the epoch a host records when a room is registered."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 pub mod anchor;
 pub mod claim;
+pub mod group;
 pub mod invite;
 pub mod issue_authority;
 pub mod issue_membership;
