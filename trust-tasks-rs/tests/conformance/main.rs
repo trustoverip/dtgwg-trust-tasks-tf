@@ -1910,6 +1910,13 @@ mod vtc {
             mod v0_1;
         }
     }
+    mod oid4vp {
+        mod identities {
+            mod list {
+                mod v0_1;
+            }
+        }
+    }
     mod operator {
         mod offline_write {
             mod v0_1;

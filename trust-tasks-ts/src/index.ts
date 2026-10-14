@@ -780,6 +780,7 @@ export * as VtcMembersSolicitVmc_v0_1 from "./vtc/members/solicit-vmc/0.1/payloa
 export * as VtcMembersStepUpPasskeyNotice_v0_1 from "./vtc/members/step-up-passkey-notice/0.1/payload.js";
 export * as VtcMembersUpdate_v0_1 from "./vtc/members/update/0.1/payload.js";
 export * as VtcMembersVmc_v0_1 from "./vtc/members/vmc/0.1/payload.js";
+export * as VtcOid4vpIdentitiesList_v0_1 from "./vtc/oid4vp/identities/list/0.1/payload.js";
 export * as VtcOperatorOfflineWrite_v0_1 from "./vtc/operator/offline-write/0.1/payload.js";
 export * as VtcPoliciesTest_v0_1 from "./vtc/policies/test/0.1/payload.js";
 export * as VtcRecognitionCheck_v0_1 from "./vtc/recognition/check/0.1/payload.js";
