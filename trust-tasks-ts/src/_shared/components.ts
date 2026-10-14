@@ -1277,7 +1277,24 @@ export type TickLength = string;
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
-export type Topic = "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config";
+export type Topic_VtcAdminEventsV0_1 =
+  | "actions"
+  | "acknowledgements"
+  | "joinRequests"
+  | "members"
+  | "singleAdminMode"
+  | "config";
+/**
+ * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
+ */
+export type Topic_VtcAdminEventsV0_2 =
+  | "actions"
+  | "acknowledgements"
+  | "joinRequests"
+  | "members"
+  | "singleAdminMode"
+  | "config"
+  | "rooms";
 /**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */

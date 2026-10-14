@@ -1105,6 +1105,9 @@ mod rooms {
             mod create {
                 mod v0_1;
             }
+            mod remove {
+                mod v0_1;
+            }
         }
         mod invite {
             mod v0_1;
@@ -1643,9 +1646,11 @@ mod vtc {
         mod events {
             mod event {
                 mod v0_1;
+                mod v0_2;
             }
             mod subscribe {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod invites {

@@ -2331,6 +2331,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/owner/group/create/0.1#response" => <crate::specs::rooms::owner::group::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/group/remove/0.1" => <crate::specs::rooms::owner::group::remove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/group/remove/0.1#response" => <crate::specs::rooms::owner::group::remove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/invite/0.1" => <crate::specs::rooms::owner::invite::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3413,10 +3419,19 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/admin/events/event/0.1" => <crate::specs::vtc::admin::events::event::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/event/0.2" => <crate::specs::vtc::admin::events::event::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1" => <crate::specs::vtc::admin::events::subscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1#response" => <crate::specs::vtc::admin::events::subscribe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.2" => <crate::specs::vtc::admin::events::subscribe::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.2#response" => <crate::specs::vtc::admin::events::subscribe::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => <crate::specs::vtc::admin::invites::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -6716,6 +6731,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/group/remove/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::rooms::owner::group::remove::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/invite/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::owner::invite::v0_1::Payload,
         >()),
@@ -7774,9 +7796,21 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/event/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::admin::events::event::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::admin::events::subscribe::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::admin::events::subscribe::v0_2::Payload,
             >())
         }
         #[cfg(feature = "vtc")]
@@ -10817,6 +10851,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/group/remove/0.1" => {
+            Some(crate::specs::rooms::owner::group::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/invite/0.1" => {
             Some(crate::specs::rooms::owner::invite::v0_1::ERROR_CODES)
         }
@@ -11743,8 +11782,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/event/0.2" => {
+            Some(crate::specs::vtc::admin::events::event::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1" => {
             Some(crate::specs::vtc::admin::events::subscribe::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.2" => {
+            Some(crate::specs::vtc::admin::events::subscribe::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]

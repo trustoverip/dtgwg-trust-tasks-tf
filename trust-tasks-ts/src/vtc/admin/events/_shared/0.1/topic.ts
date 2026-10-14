@@ -25,4 +25,4 @@ export interface VTCAdminEventsSharedDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../../_shared/components.js".
  */
-export type { ResumeToken, Topic } from "../../../../../_shared/components.js";
+export type { ResumeToken, Topic_VtcAdminEventsV0_1 as Topic } from "../../../../../_shared/components.js";
