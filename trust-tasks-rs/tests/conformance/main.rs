@@ -590,6 +590,7 @@ mod external {
         mod issue {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
     }
     mod sign {
