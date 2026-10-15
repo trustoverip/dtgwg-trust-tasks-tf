@@ -11,6 +11,48 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.6 — 2026-10-15
+
+
+### Specifications
+
+- **external**: Credentials/issue 0.2 — batched presigned requests with signed length and checksum, multipart and head, for direct uploads (#775)
+
+rooms/blobs/upload/begin/0.2 lets a host answer with direct-to-storage
+  targets whose PUT binds each part's exact length and SHA-256 (item 17),
+  and commit/0.2 has the host verify the object at storage and complete a
+  multipart upload before recording (item 3). A host that holds no storage
+  credential asks its custodian for each request through
+  external/credentials/issue on an s3-static-presign account, and 0.1 can
+  express none of it: one GET/PUT/DELETE per issuance, no signed headers,
+  no multipart operations, no HEAD.
+
+  external/credentials/issue 0.2:
+  - the payload takes either `scope` (session and token models, as 0.1)
+    or `presign` (s3-static-presign only): one object, at most one
+    multipart upload of it, up to 128 operations — put, get, head, delete,
+    create-multipart, upload-part, list-parts, complete-multipart,
+    abort-multipart;
+  - the custodian signs Content-Length and x-amz-checksum-sha256 into put
+    and upload-part, uploadId/partNumber into the query,
+    x-amz-checksum-algorithm into create-multipart, x-amz-mp-object-size
+    into complete-multipart, x-amz-checksum-mode into head, so storage is
+    the enforcer;
+  - every operation is presigned, none performed: issuance keeps needing
+    no egress, and verifying the object stays the host's duty;
+  - the binding ceiling is unchanged: each operation is authorized by
+    put / get / delete (multipart writes by put, head by get, abort by
+    delete), so no account record or other task changes shape;
+  - a batch counts once against the binding's rate;
+  - new errors requestShapeMismatch and invalidBatch; the sealed cleartext
+    for presign is a PresignedRequestSet; the response's bundle is bounded
+    at 256 KiB, maxDocumentBytes declared.
+
+  external/_shared/0.1 gains PresignOperation and PresignedRequestSet
+  (additive); CONVENTIONS §6 names the new cleartext. Bindings regenerated.
+  rooms/blobs/upload/{begin,commit}/0.2 do not name
+  external/credentials/issue, so they are unchanged.
+
 ## 0.8.5 — 2026-10-15
 
 
