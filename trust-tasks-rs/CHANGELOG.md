@@ -31,6 +31,46 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.5...trust-tasks-rs-v0.31.6) — 2026-10-15
+
+
+### Added
+
+- **vta/witness**: Vta/witness/request — the VTA runs a witnessed session for its principal's relationship ([#777](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/777))
+
+A Verifiable Witness Credential is issued to the participating party of a
+  witness/session, who presents its relationship credential bound to the
+  session's challenge. A principal whose keys and credentials live in a VTA
+  cannot do that from a client that holds neither. This adds
+  vta/witness/request/0.1: the client names a witness, the relationship
+  (relationshipDid, counterpartyDid, the enclosing thread) and credentials by
+  vault handle; the VTA opens the session as the relationship DID, builds and
+  signs the presentation itself, submits, verifies the VWC as a verifier of
+  the evidence would (issuer = session recipient = response signer,
+  taskContext/taskDigest over the session document as sent, subject and
+  object digest, vwcDigestMultibase), and stores it in the credential vault
+  with its evidence — the session document as sent and the submit #response
+  as received. It answers with the vault handle, the digest and the two
+  evidence documents (which carry the VWC); never a key, a presentation or
+  the challenge.
+
+  Membership evidence is optional. A VMC naming the relationship DID rides
+  in the relationship presentation; one naming a member DID needs an
+  explicit memberDid, and the VTA builds a second presentation by that DID
+  bound to the same session. witness/session/submit/0.1 has no member for
+  it, so its carriage is the witness's own (SPEC 4.5.1 leaves an ext
+  namespace's semantics to its controller); the OpenVTC carriage is cited
+  non-normatively.
+
+  Authorization is standing over every context the task touches, expressed
+  as the new witnessRequest capability (witness-request in device/_shared
+  0.1), which is not sign and is not satisfied by sign. Errors: notFound,
+  credentialMismatch, noMatchingProtocol, witnessUnreachable (retryable),
+  witnessRefused, challengeMismatch, presentationInvalid (the witness's own
+  code and message in details), vwcInvalid.
+
+
+
 ## [0.31.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.4...trust-tasks-rs-v0.31.5) — 2026-10-15
 
 
