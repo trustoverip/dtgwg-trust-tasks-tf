@@ -1,0 +1,57 @@
+[
+  {
+    "note": "No host. Renewal is an epoch advance at the room's host; a group advanced without one would seal to keys the host refuses, and every write after it would fail.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "note": "No room. A recipient asked to choose which room to renew would be deciding which room's epoch moves.",
+    "payload": {
+      "host": "did:webvh:example.com:northwind-community"
+    }
+  },
+  {
+    "note": "A host that is not a DID. The epoch advance is addressed to the host's DID, and the request's proof covers that recipient; a URL names no party a proof can be bound to.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "https://example.com/rooms"
+    }
+  },
+  {
+    "note": "A member to renew for. Renewal changes no membership; a member named here would be a removal or an admission wearing another task's name, and those are rooms/owner/group/remove and rooms/owner/group/add.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "An unbounded reason. Free text carried to another party is bounded (SPEC §7.3 item 19).",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response at epoch 1. Renewal advances the epoch, and a room is registered at 1, so the epoch after any renewal is at least 2.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "epoch": 1
+    }
+  }
+]

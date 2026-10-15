@@ -66,6 +66,7 @@ errorCodes:
 related:
   - rooms/owner/group/create
   - rooms/owner/group/add
+  - rooms/owner/group/renew
   - rooms/owner/transfer
   - rooms/keys/commit
   - rooms/epoch/mint
@@ -96,8 +97,8 @@ A conforming recipient:
 
 1. **MUST** refuse with `noGroup` when it holds no group for `roomId`, with `notMember` when `member` has no leaf in it, and with `ownLeaf` when `member` is the recipient's own leaf.
 2. **MUST** build the commit removing `member`'s leaf, and the epoch link that seals the outgoing epoch's storage key under the incoming one, **without** applying the commit to the group it holds. (A committer cannot process its own commit later, so what it keeps is the advanced group state alongside the one it holds.)
-3. **MUST** retain that pending removal — the advanced state, the link and the commit — durably **before** sending anything to the host. A recipient holds at most one pending advance per room, whether an admission or a removal, and settles any it finds (item 6) before building another.
-4. **MUST** advance the room at `host` with [`rooms/epoch/mint`](../../../../epoch/mint/0.1/spec.md), carrying the new epoch, the link, the commit and a presentation of the caller's `admin` authority, bound to `host`.
+3. **MUST** retain that pending removal — the advanced state, the link and the commit — durably **before** sending anything to the host. A recipient holds at most one pending advance per room, whether an admission, a removal or a renewal, and settles any it finds (item 6) before building another.
+4. **MUST** advance the room at `host` with [`rooms/epoch/mint`](../../../../epoch/mint/0.1/spec.md), carrying the new epoch, the link, the commit and a presentation of the caller's `admin` authority — minted as [`rooms/keys/present`](../../../../keys/present/0.2/spec.md) would mint it — in a document addressed to `host` whose proof covers its `recipient` ([SPEC §4.8.2](/SPEC.md#482-audience-binding)). The presentation is bound to the room, not to a host; the document's `recipient` is what binds the advance to `host`.
 5. **MUST** apply the pending removal only once the host has accepted the advance, and **MUST** discard it, leaving the group unchanged, when the host **refuses** it. When the outcome is unknown — the host could not be reached, or did not answer — it **MUST** keep the pending removal for item 6.
 6. **MUST**, when it finds a pending advance at a later request, ask the host it was sent to for the room's epoch — with [`rooms/info`](../../../../info/0.1/spec.md), under the caller's `read` authority — and apply it if the host is at its epoch, or discard it if the host is still at the epoch before it. A host anywhere else has moved on without it: discard it and refuse with `epochConflict`.
 

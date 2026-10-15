@@ -88,6 +88,9 @@ errorCodes:
         action:
           type: string
           enum: [read, write, curate, admin]
+  - code: rooms/keys/act:sealedRoomMint
+    meaning: "The document is a rooms/epoch/mint for a room whose MLS group the recipient holds. A sealed room's epoch advances only with a commit of its group, which a client cannot make, and a mint without one leaves every member's key holder behind the host. Renew a sealed room with rooms/owner/group/renew, which the owner's key holder performs."
+    retryable: false
 related:
   - rooms/keys/seal
   - rooms/keys/present
@@ -102,6 +105,9 @@ related:
   - rooms/epoch/chain
   - rooms/epoch/commits
   - rooms/epoch/mint
+  - rooms/owner/group/add
+  - rooms/owner/group/remove
+  - rooms/owner/group/renew
   - rooms/blobs/get
   - rooms/blobs/chunk
   - rooms/blobs/upload/begin
@@ -146,7 +152,7 @@ The recipient completes a document only when its `type` is one of these host-bou
 | `rooms/usage/0.1` | `admin` | yes |
 | `rooms/epoch/chain/0.1` | `read` | yes |
 | `rooms/epoch/commits/0.1` | `read` | yes |
-| `rooms/epoch/mint/0.1` | `admin` | yes |
+| `rooms/epoch/mint/0.1` | `admin` | yes — an `open` room only: see Recipient item 9 |
 | `rooms/blobs/get/0.1`, `rooms/blobs/get/0.2` | `read` | yes |
 | `rooms/blobs/chunk/0.1` | — | no: a download chunk's authority is the open download, which the member's `rooms/blobs/get` opened |
 | `rooms/blobs/upload/begin/0.2` | `write` | yes |
@@ -164,6 +170,7 @@ A conforming **producer** (the member's own client):
 1. **MUST** use this task only when it acts **as** the member. A party acting under a chain the member attenuated to it is an agent, and **MUST** use [`rooms/keys/present`](../../present/0.2/spec.md) and sign as itself.
 2. **MUST** build `document` as the room request it will send — `id`, `type`, `recipient` (the host), `issuedAt` and `payload` — with no `proof`, and with no `presentation` in `payload`. It **MAY** set `issuer` to name the member it acts as, and **MUST** set it when it may act as more than one member of the room. It **MUST NOT** put its own identifier, or the key holder's, in any member of `document`.
 3. **MUST** send the returned document to its `recipient` unaltered, and **MUST NOT** send it to anyone else.
+4. **MUST NOT** ask to complete a `rooms/epoch/mint` for an `attributed` or `private` room. Its epoch advances only with a commit of its group, which the producer cannot make; the owner renews it with [`rooms/owner/group/renew`](../../../owner/group/renew/0.1/spec.md).
 
 ### Recipient
 
@@ -177,6 +184,7 @@ A conforming **recipient** (the key holder):
 6. **MUST NOT** change any other member of `document`, and **MUST NOT** add its own identifier or its caller's to it. The member is the only party the returned document names besides its recipient.
 7. **MUST NOT** send the document anywhere: it returns it. A key holder that sent it would be making an outbound request the caller cannot see the answer to, and the caller is the party that needs it.
 8. **MUST** refuse with the standard `malformedRequest` a document whose `issuedAt` it would not accept as fresh, or whose `expiresAt` has passed — a document is signed to be sent now — and one whose payload already carries a `presentation`, or does not validate against its type's schema once the presentation is inserted.
+9. **MUST** refuse with `sealedRoomMint` a document of type `rooms/epoch/mint` for a room it holds group state for — for any member it serves, not only the member item 2 resolves — and **MUST** do so before resolving the member. On a sealed room the room's epoch is the MLS group's epoch plus one, and the document carries no commit, because the caller holds no group key to make one: a host advances anyway ([`rooms/epoch/mint`](../../../epoch/mint/0.1/spec.md)), and then every member's key holder is an epoch behind the room, every write is refused as sealed under a superseded epoch, and the owner's next admission or removal fails `epochConflict`. A sealed room is renewed with [`rooms/owner/group/renew`](../../../owner/group/renew/0.1/spec.md). For a room it holds no group state for it cannot tell the tier, and completes a mint as the table says; Producer item 4 is what keeps a sealed room's mint from reaching it.
 
 A key holder serving several members — several principals, or several personas of one — keeps one set of credentials per member per room, and uses only those of the member item 2 resolved.
 

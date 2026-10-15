@@ -52,6 +52,8 @@ related:
   - rooms/create
   - rooms/owner/register
   - rooms/owner/group/add
+  - rooms/owner/group/remove
+  - rooms/owner/group/renew
   - rooms/keys/welcome
   - rooms/keys/seal
 ---

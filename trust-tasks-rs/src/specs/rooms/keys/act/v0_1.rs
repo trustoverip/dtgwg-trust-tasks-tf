@@ -1308,6 +1308,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::PRINCIPAL_AMBIGUOUS,
     error_codes::ISSUER_NOT_PRINCIPAL,
     error_codes::ACTION_NOT_HELD,
+    error_codes::SEALED_ROOM_MINT,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -1374,5 +1375,15 @@ pub mod error_codes {
         details_schema: ::core::option::Option::Some(
             "{\"additionalProperties\":false,\"properties\":{\"action\":{\"enum\":[\"read\",\"write\",\"curate\",\"admin\"],\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
         ),
+    };
+    /// `rooms/keys/act:sealedRoomMint`
+    ///
+    /// The document is a rooms/epoch/mint for a room whose MLS group the recipient holds. A sealed room's epoch advances only with a commit of its group, which a client cannot make, and a mint without one leaves every member's key holder behind the host. Renew a sealed room with rooms/owner/group/renew, which the owner's key holder performs.
+    ///
+    /// Declared `retryable: false`.
+    pub const SEALED_ROOM_MINT: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "rooms/keys/act:sealedRoomMint",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

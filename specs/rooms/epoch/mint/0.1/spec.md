@@ -50,6 +50,11 @@ errorCodes:
 related:
   - rooms/create
   - rooms/records/put
+  - rooms/owner/group/add
+  - rooms/owner/group/remove
+  - rooms/owner/group/renew
+  - rooms/keys/act
+  - rooms/keys/commit
 ---
 
 ## Abstract
@@ -99,6 +104,25 @@ that is a message stream rather than a library wants exactly the behaviour the p
 above calls losing its past. It is optional in the schema for the additional reason that
 this member was added to an already-published version, where requiring it would break every
 conforming producer.
+
+### On a sealed room, the producer is the owner's key holder
+
+On an `attributed` or `private` room the room's epoch is the MLS group's epoch plus one, so
+an advance is only correct together with an advance of the group, carried here as `commit`.
+A host **MUST** advance without one, as above — it cannot tell a sealed room's missing
+commit from an open room that has none to send — and a mint without one moves the host and
+no member: every key holder stays at the old epoch, and the host refuses what they seal
+under it.
+
+*This paragraph is non-normative.* The party that can produce a correct mint for a sealed
+room is therefore the one holding the owner's group: the owner's key holder, through
+[`rooms/owner/group/add`](../../../owner/group/add/0.1/spec.md),
+[`rooms/owner/group/remove`](../../../owner/group/remove/0.1/spec.md) and
+[`rooms/owner/group/renew`](../../../owner/group/renew/0.1/spec.md), the last of which
+renews a room without changing its membership. A member's own client holds no group key,
+and [`rooms/keys/act`](../../../keys/act/0.1/spec.md) refuses to complete a mint for a room
+whose group it holds. On an `open` room there is no group, and any holder of `admin` may
+mint directly.
 
 ## Status of this Document
 

@@ -1117,6 +1117,9 @@ mod rooms {
             mod remove {
                 mod v0_1;
             }
+            mod renew {
+                mod v0_1;
+            }
         }
         mod invite {
             mod v0_1;

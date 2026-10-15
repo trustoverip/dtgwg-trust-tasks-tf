@@ -54,6 +54,9 @@ related:
   - rooms/keys/welcome
   - rooms/keys/open
   - rooms/epoch/mint
+  - rooms/owner/group/add
+  - rooms/owner/group/remove
+  - rooms/owner/group/renew
 ---
 
 ## Abstract
