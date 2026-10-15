@@ -31,6 +31,51 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.6...trust-tasks-rs-v0.31.7) — 2026-10-15
+
+
+### Added
+
+- **vta/witness**: The client carries the witness messages — vta/witness/{open,present,accept} replace vta/witness/request ([#779](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/779))
+
+vta/witness/request/0.1 ([#777](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/777)) had the VTA make both round trips to the
+  witness itself, as the principal's relationship DID. It cannot: a witness
+  checks that the transport-proven sender of each document is its issuer and
+  replies to that sender, and the relationship DID's one mediator connection
+  belongs to whoever holds the relationship, normally the client. So the
+  client carries the messages and the VTA builds, signs and verifies, in
+  three steps:
+
+  - vta/witness/open/0.1: checks key custody, the credentials and the member
+    link up front, opens a session record, and returns the witness/session
+    document signed as relationshipDid for the client to send.
+  - vta/witness/present/0.1: takes the witness's session #response verbatim,
+    checks it is the witness's for this session, builds the relationship
+    presentation (and the member presentation) bound to its challenge and
+    domain, and returns the signed witness/session/submit document.
+  - vta/witness/accept/0.1: takes the submit #response verbatim, verifies the
+    VWC as #777 did, stores it with its evidence, and answers as #777 did.
+
+  The record is keyed by the session id within the caller's contexts,
+  expires, holds no presentation or challenge, and moves opened -> presented
+  -> accepted. Every handed-back document is checked against it (type,
+  issuer = the witness, recipient = relationshipDid, threadId, the witness's
+  proof) before it is read, so nothing from another session can be spliced
+  in. Each step is safe to repeat: open's duplicate is inert, present's
+  duplicates are spent by the witness's single-use challenge, and accept
+  answers the same outcome again without storing twice.
+
+  Shared rules are in vta/_shared/0.5/CONVENTIONS.md and the shared shapes
+  (SessionId, CarriedDocument) in witness-party.schema.json. The
+  witnessRequest capability now covers the three tasks.
+
+  vta/witness/request/0.1 is published (release #778), so it is not edited:
+  it is retired in place, supersededBy vta/witness/open/0.1, with a status
+  note naming its successors, why it cannot be implemented, and that no
+  implementation shipped it.
+
+
+
 ## [0.31.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.5...trust-tasks-rs-v0.31.6) — 2026-10-15
 
 
