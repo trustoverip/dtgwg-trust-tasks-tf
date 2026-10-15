@@ -234,6 +234,99 @@
           "$ref": "#/$defs/BlobRef"
         }
       }
+    },
+    "TransferMode": {
+      "title": "TransferMode",
+      "type": "string",
+      "enum": [
+        "direct",
+        "proxied"
+      ],
+      "description": "How a blob's bytes move. `proxied`: through the host, as chunk documents (rooms/blobs/upload/chunk, rooms/blobs/chunk). `direct`: straight between the member and the storage the room is assigned to, over time-limited URLs the host issues for one object and one method each; the host authorizes every object and verifies every upload, and never carries a byte. Which mode applies is the host's answer, from what the producer accepts, what the room's storage can do, and the room's tier."
+    },
+    "PartPlan": {
+      "title": "PartPlan",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "partSize",
+        "partCount",
+        "partDigests"
+      ],
+      "description": "How the uploader will cut a blob for direct transfer, committed before any byte moves: one storage object, written in `partCount` parts of `partSize` bytes (the last may be shorter), each with its digest. Independent of the chunk manifest, because storage imposes part sizes a chunk document cannot carry; the chunk manifest still describes the blob and readers still check it.\n\nConsistency rules JSON Schema cannot state: `partCount` MUST equal ceil(size / partSize) for the manifest's `size`, and `partDigests` MUST have exactly `partCount` items. Every digest MUST be sha2-256, because it is what the storage itself checks the part against.",
+      "properties": {
+        "partSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824,
+          "description": "Bytes per part. One part of the whole blob's size is a single-object write."
+        },
+        "partCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "partDigests": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+          },
+          "description": "The sha2-256 digest of each part's ciphertext, in order."
+        }
+      }
+    },
+    "TransferTarget": {
+      "title": "TransferTarget",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "method",
+        "url",
+        "expiresAt"
+      ],
+      "description": "One time-limited URL at the room's storage, issued by the host for one object and one method. A bearer credential for its lifetime: whoever holds it may perform exactly that request. A host MUST bind it to one object, one method and — for a write — the part's exact length and checksum, so that storage itself refuses any other bytes, and MUST give it the shortest practical lifetime, never more than 5 minutes. No party logs it.",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1023,
+          "description": "The part this target writes, or 0 for a read of the whole object."
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "PUT",
+            "GET"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 8192,
+          "description": "Where to send the request. HTTPS only."
+        },
+        "headers": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "propertyNames": {
+            "maxLength": 128
+          },
+          "description": "Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the storage stops honouring the URL. A request begun after it is refused by the storage."
+        }
+      }
     }
   }
 }

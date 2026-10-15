@@ -239,6 +239,70 @@ type FileManifest struct {
 	BlobRef BlobRef              `json:"blobRef"`
 }
 
+// TransferMode How a blob's bytes move. `proxied`: through the host, as chunk documents
+// (rooms/blobs/upload/chunk, rooms/blobs/chunk). `direct`: straight between the member
+// and the storage the room is assigned to, over time-limited URLs the host issues for one
+// object and one method each; the host authorizes every object and verifies every upload,
+// and never carries a byte. Which mode applies is the host's answer, from what the
+// producer accepts, what the room's storage can do, and the room's tier.
+type TransferMode string
+
+// Values TransferMode may take, per this specification's schema.
+const (
+	TransferModeDirect  TransferMode = "direct"
+	TransferModeProxied TransferMode = "proxied"
+)
+
+// PartPlan How the uploader will cut a blob for direct transfer, committed before any
+// byte moves: one storage object, written in `partCount` parts of `partSize` bytes (the
+// last may be shorter), each with its digest. Independent of the chunk manifest, because
+// storage imposes part sizes a chunk document cannot carry; the chunk manifest still
+// describes the blob and readers still check it. Consistency rules JSON Schema cannot
+// state: `partCount` MUST equal ceil(size / partSize) for the manifest's `size`, and
+// `partDigests` MUST have exactly `partCount` items. Every digest MUST be sha2-256,
+// because it is what the storage itself checks the part against.
+type PartPlan struct {
+	// Bytes per part. One part of the whole blob's size is a single-object write.
+	PartSize  int64 `json:"partSize"`
+	PartCount int64 `json:"partCount"`
+
+	// The sha2-256 digest of each part's ciphertext, in order.
+	PartDigests []DigestMultibase `json:"partDigests"`
+}
+
+// TransferTargetMethod TransferTargetMethod is a closed set of string values.
+type TransferTargetMethod string
+
+// Values TransferTargetMethod may take, per this specification's schema.
+const (
+	TransferTargetMethodPut TransferTargetMethod = "PUT"
+	TransferTargetMethodGet TransferTargetMethod = "GET"
+)
+
+// TransferTarget One time-limited URL at the room's storage, issued by the host for one
+// object and one method. A bearer credential for its lifetime: whoever holds it may
+// perform exactly that request. A host MUST bind it to one object, one method and — for a
+// write — the part's exact length and checksum, so that storage itself refuses any other
+// bytes, and MUST give it the shortest practical lifetime, never more than 5 minutes. No
+// party logs it.
+type TransferTarget struct {
+	// The part this target writes, or 0 for a read of the whole object.
+	Index  int64                `json:"index"`
+	Method TransferTargetMethod `json:"method"`
+
+	// Where to send the request. HTTPS only.
+	URL string `json:"url"`
+
+	// Headers the request MUST carry exactly as given — for a write, the part's length and
+	// checksum, which the URL's signature covers. A client adds nothing the storage would
+	// treat as signed.
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// When the storage stops honouring the URL. A request begun after it is refused by the
+	// storage.
+	ExpiresAt string `json:"expiresAt"`
+}
+
 // DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
 // the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the
 // one `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash

@@ -448,7 +448,7 @@ pub mod error_codes {
     };
     /// `rooms/keys/welcome:alreadyJoined`
     ///
-    /// The recipient already holds group state for this room.
+    /// The recipient already holds group state for this room for the member the invitation names. State it holds for another member it serves is not a join by this one.
     ///
     /// Declared `retryable: false`.
     pub const ALREADY_JOINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

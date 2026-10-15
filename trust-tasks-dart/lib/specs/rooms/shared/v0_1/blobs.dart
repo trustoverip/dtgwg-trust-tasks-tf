@@ -505,3 +505,132 @@ class FileManifest {
         'blobRef': blobRef,
       };
 }
+
+/// How a blob's bytes move. `proxied`: through the host, as chunk documents
+/// (rooms/blobs/upload/chunk, rooms/blobs/chunk). `direct`: straight between the
+/// member and the storage the room is assigned to, over time-limited URLs the host
+/// issues for one object and one method each; the host authorizes every object and
+/// verifies every upload, and never carries a byte. Which mode applies is the host's
+/// answer, from what the producer accepts, what the room's storage can do, and the
+/// room's tier.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const TransferMode(String value) {
+  static const TransferMode direct = TransferMode('direct');
+  static const TransferMode proxied = TransferMode('proxied');
+
+  /// Every value this specification's schema permits.
+  static const List<TransferMode> values = <TransferMode>[direct, proxied];
+}
+
+/// How the uploader will cut a blob for direct transfer, committed before any byte
+/// moves: one storage object, written in `partCount` parts of `partSize` bytes (the
+/// last may be shorter), each with its digest. Independent of the chunk manifest,
+/// because storage imposes part sizes a chunk document cannot carry; the chunk
+/// manifest still describes the blob and readers still check it. Consistency rules
+/// JSON Schema cannot state: `partCount` MUST equal ceil(size / partSize) for the
+/// manifest's `size`, and `partDigests` MUST have exactly `partCount` items. Every
+/// digest MUST be sha2-256, because it is what the storage itself checks the part
+/// against.
+class PartPlan {
+  const PartPlan({
+    required this.partSize,
+    required this.partCount,
+    required this.partDigests,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory PartPlan.fromJson(Map<String, dynamic> json) => PartPlan(
+        partSize: json['partSize'] as int,
+        partCount: json['partCount'] as int,
+        partDigests: (json['partDigests'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+      );
+
+  /// Bytes per part. One part of the whole blob's size is a single-object write.
+  final int partSize;
+  final int partCount;
+
+  /// The sha2-256 digest of each part's ciphertext, in order.
+  final List<DigestMultibase> partDigests;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'partSize': partSize,
+        'partCount': partCount,
+        'partDigests': partDigests,
+      };
+}
+
+/// TransferTargetMethod is a closed set of string values defined by this
+/// specification's schema.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const TransferTargetMethod(String value) {
+  static const TransferTargetMethod put = TransferTargetMethod('PUT');
+  static const TransferTargetMethod get = TransferTargetMethod('GET');
+
+  /// Every value this specification's schema permits.
+  static const List<TransferTargetMethod> values = <TransferTargetMethod>[
+    put,
+    get
+  ];
+}
+
+/// One time-limited URL at the room's storage, issued by the host for one object and
+/// one method. A bearer credential for its lifetime: whoever holds it may perform
+/// exactly that request. A host MUST bind it to one object, one method and — for a
+/// write — the part's exact length and checksum, so that storage itself refuses any
+/// other bytes, and MUST give it the shortest practical lifetime, never more than 5
+/// minutes. No party logs it.
+class TransferTarget {
+  const TransferTarget({
+    required this.index,
+    required this.method,
+    required this.url,
+    this.headers,
+    required this.expiresAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory TransferTarget.fromJson(Map<String, dynamic> json) => TransferTarget(
+        index: json['index'] as int,
+        method: TransferTargetMethod(json['method'] as String),
+        url: json['url'] as String,
+        headers: json['headers'] == null
+            ? null
+            : (json['headers'] as Map<String, dynamic>)
+                .map((k, v) => MapEntry(k, v as String)),
+        expiresAt: json['expiresAt'] as String,
+      );
+
+  /// The part this target writes, or 0 for a read of the whole object.
+  final int index;
+  final TransferTargetMethod method;
+
+  /// Where to send the request. HTTPS only.
+  final String url;
+
+  /// Headers the request MUST carry exactly as given — for a write, the part's length
+  /// and checksum, which the URL's signature covers. A client adds nothing the storage
+  /// would treat as signed.
+  final Map<String, String>? headers;
+
+  /// When the storage stops honouring the URL. A request begun after it is refused by
+  /// the storage.
+  final String expiresAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'index': index,
+        'method': method.value,
+        'url': url,
+        if (headers != null) 'headers': headers!,
+        'expiresAt': expiresAt,
+      };
+}

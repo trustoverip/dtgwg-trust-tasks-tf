@@ -1343,6 +1343,10 @@ export type TrafficStage =
  */
 export type TransferId = string;
 /**
+ * How a blob's bytes move. `proxied`: through the host, as chunk documents (rooms/blobs/upload/chunk, rooms/blobs/chunk). `direct`: straight between the member and the storage the room is assigned to, over time-limited URLs the host issues for one object and one method each; the host authorizes every object and verifies every upload, and never carries a byte. Which mode applies is the host's answer, from what the producer accepts, what the room's storage can do, and the room's tier.
+ */
+export type TransferMode = "direct" | "proxied";
+/**
  * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
  */
 export type Ulid = string;
@@ -6864,6 +6868,25 @@ export interface OfferCredentials {
    */
   authority: string;
 }
+/**
+ * How the uploader will cut a blob for direct transfer, committed before any byte moves: one storage object, written in `partCount` parts of `partSize` bytes (the last may be shorter), each with its digest. Independent of the chunk manifest, because storage imposes part sizes a chunk document cannot carry; the chunk manifest still describes the blob and readers still check it.
+ *
+ * Consistency rules JSON Schema cannot state: `partCount` MUST equal ceil(size / partSize) for the manifest's `size`, and `partDigests` MUST have exactly `partCount` items. Every digest MUST be sha2-256, because it is what the storage itself checks the part against.
+ */
+export interface PartPlan {
+  /**
+   * Bytes per part. One part of the whole blob's size is a single-object write.
+   */
+  partSize: number;
+  partCount: number;
+  /**
+   * The sha2-256 digest of each part's ciphertext, in order.
+   *
+   * @minItems 1
+   * @maxItems 1024
+   */
+  partDigests: [DigestMultibase, ...DigestMultibase[]];
+}
 export interface PasskeyVerificationMethod {
   /**
    * The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
@@ -8909,6 +8932,30 @@ export interface TrafficOutcome {
    * Short human-readable explanation. Not machine-parsed.
    */
   detail?: string;
+}
+/**
+ * One time-limited URL at the room's storage, issued by the host for one object and one method. A bearer credential for its lifetime: whoever holds it may perform exactly that request. A host MUST bind it to one object, one method and — for a write — the part's exact length and checksum, so that storage itself refuses any other bytes, and MUST give it the shortest practical lifetime, never more than 5 minutes. No party logs it.
+ */
+export interface TransferTarget {
+  /**
+   * The part this target writes, or 0 for a read of the whole object.
+   */
+  index: number;
+  method: "PUT" | "GET";
+  /**
+   * Where to send the request. HTTPS only.
+   */
+  url: string;
+  /**
+   * Headers the request MUST carry exactly as given — for a write, the part's length and checksum, which the URL's signature covers. A client adds nothing the storage would treat as signed.
+   */
+  headers?: {
+    [k: string]: string | undefined;
+  };
+  /**
+   * When the storage stops honouring the URL. A request begun after it is refused by the storage.
+   */
+  expiresAt: string;
 }
 export interface TransportObservation {
   /**

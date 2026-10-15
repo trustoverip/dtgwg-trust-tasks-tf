@@ -45,7 +45,7 @@ errorCodes:
     meaning: "The recipient holds no valid, unconsumed invitation from this room for this party."
     retryable: false
   - code: rooms/keys/welcome:alreadyJoined
-    meaning: "The recipient already holds group state for this room."
+    meaning: "The recipient already holds group state for this room for the member the invitation names. State it holds for another member it serves is not a join by this one."
     retryable: false
   - code: rooms/keys/welcome:welcomeInvalid
     meaning: "The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree."
@@ -92,8 +92,11 @@ single-use; a second Welcome under the same invitation is `notInvited`, not a se
 
 ### Joining twice is refused, not merged
 
-A recipient already holding group state for `roomId` **MUST** answer `alreadyJoined`. Two
-group states for one room is a condition nothing downstream can resolve: an
+A recipient already holding group state for `roomId` for the member the invitation names
+**MUST** answer `alreadyJoined`. A key holder serving several members — several principals,
+or several personas of one — keeps one group state per member per room; state it holds for
+another member is not a join by this one and **MUST NOT** cause `alreadyJoined`. Two
+group states for one member in one room is a condition nothing downstream can resolve: an
 [`open`](../../open/0.1/spec.md) call has no way to choose, and choosing wrong returns
 "did not open" for a record the member can plainly see. Leaving and rejoining is a removal
 followed by a fresh invitation, not a second Welcome.

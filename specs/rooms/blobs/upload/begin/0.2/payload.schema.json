@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/blobs/upload/begin/0.2",
+  "title": "Rooms Blobs — Upload — Begin — payload",
+  "description": "Open an upload of one file's ciphertext into a data room, committing to its size and to the digest of every chunk before any byte moves, reserving room for it against every limit that applies, and saying how its bytes may move — straight to the room's storage, or through the host under a single-use upload key. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation",
+    "manifest"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "maxLength": 2048,
+      "description": "The room the file is for. The host verifies the presentation against credentials this identifier issued, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `write` action at this room's scope. Its leaf's subject must be the party the host authenticated for this request."
+    },
+    "uploadKey": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "maxLength": 256,
+      "description": "A did:key the producer generated for this upload alone, for a proxied transfer: it signs the upload's chunk, commit and abort documents, and nothing else, and the host never records it as the owner or the uploader. Ed25519 (`z6Mk…`) MUST be accepted. A producer that omits it accepts only direct transfer."
+    },
+    "manifest": {
+      "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/BlobManifest",
+      "description": "The ciphertext manifest. Its digest is the BlobRef the blob will have once committed."
+    },
+    "directParts": {
+      "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/PartPlan",
+      "description": "How the producer will cut the blob for direct transfer. Present means the producer accepts direct transfer; absent means it accepts only proxied."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Blobs — Upload — Begin — response payload",
+      "description": "Success response to rooms/blobs/upload/begin. Type https://trusttasks.org/spec/rooms/blobs/upload/begin/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "mode",
+        "missing",
+        "expiresAt"
+      ],
+      "properties": {
+        "uploadId": {
+          "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferId"
+        },
+        "mode": {
+          "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferMode",
+          "description": "How this upload's bytes move: `direct` to the room's storage over `targets`, or `proxied` through the host as rooms/blobs/upload/chunk documents signed by `uploadKey`."
+        },
+        "missing": {
+          "type": "array",
+          "maxItems": 4096,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ChunkIndex"
+          },
+          "description": "The indices the host does not yet hold, in ascending order: chunk indices in proxied mode, part indices in direct mode. Every index on a new upload; only what is left on a resumed one; none when `alreadyCommitted` is true. Empty means the upload can be committed."
+        },
+        "expiresAt": {
+          "$ref": "../../../../../vta/_shared/0.1/backup-transfer.schema.json#/$defs/ExpiresAt"
+        },
+        "targets": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "$ref": "../../../../_shared/0.1/blobs.schema.json#/$defs/TransferTarget"
+          },
+          "description": "Direct mode only: a PUT target for each of some or all of the `missing` parts. A host MAY issue targets for only some of them; the producer begins again, with the identical manifest and plan, for the rest and for any whose target lapsed. Absent in proxied mode."
+        },
+        "alreadyCommitted": {
+          "type": "boolean",
+          "description": "True when the manifest's BlobRef is already committed in this room. `missing` is then empty, nothing was reserved, and commit returns the existing blob without charging it again. Absent or false on every other answer."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

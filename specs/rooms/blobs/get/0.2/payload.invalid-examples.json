@@ -1,0 +1,77 @@
+[
+  {
+    "note": "No presentation — a host serves a room's blobs only to a room-issued chain conferring `read`.",
+    "payload": {
+      "roomId": "did:example:room",
+      "blobRef": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk"
+    }
+  },
+  {
+    "note": "No room — a blob is looked up in one room, never across rooms.",
+    "payload": {
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "blobRef": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk"
+    }
+  },
+  {
+    "note": "A BlobRef in hex — BlobRefs are multibase-encoded multihashes.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "blobRef": "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8a55"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the manifest — the reader could verify neither the blob nor its chunks.",
+    "payload": {
+      "downloadId": "7a1c2e4b-5d6f-4a8b-9c0d-1e2f3a4b5c6d",
+      "expiresAt": "2026-10-10T12:10:00Z",
+      "mode": "proxied"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `mode` — the reader could not tell whether to fetch from storage or through the host.",
+    "payload": {
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      },
+      "downloadId": "7a1c2e4b-5d6f-4a8b-9c0d-1e2f3a4b5c6d",
+      "expiresAt": "2026-10-10T12:10:01Z"
+    }
+  },
+  {
+    "note": "`direct` as a string — whether the reader accepts a storage URL, which shows its address to the provider, must be unambiguous.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "blobRef": "zQmYtUc4iTCbbfVSDNKvtQqrfyezPPnFvE33wFmutw9PBBk",
+      "direct": "yes"
+    }
+  }
+]

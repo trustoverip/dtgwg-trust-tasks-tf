@@ -1,0 +1,197 @@
+[
+  {
+    "note": "No manifest — the host would have nothing to check chunks against and nothing to reserve.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "uploadKey": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "No presentation — a host authorizes room writes from the room-issued chain only, never from an ACL of its own.",
+    "payload": {
+      "roomId": "did:example:room",
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      },
+      "uploadKey": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "A chunk larger than the 256 KiB ceiling — its chunk document would not survive a 1 MiB mediator message.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 300000,
+          "chunkCount": 1,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      },
+      "uploadKey": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "A plaintext member in the manifest — the host is given ciphertext facts only; names belong in the sealed record.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "manifest": {
+        "size": 300000,
+        "name": "term-sheet.pdf",
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      },
+      "uploadKey": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+    }
+  },
+  {
+    "note": "An upload key that is not a did:key — a resolvable DID is an identity with a history; the upload key must be one minted for this upload and nothing else.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      },
+      "uploadKey": "did:webvh:example.com:people:alice"
+    }
+  },
+  {
+    "note": "A part plan with no digests — storage could not be told what bytes to accept, so a direct write would be bound to nothing.",
+    "payload": {
+      "roomId": "did:example:room",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.signature",
+        "authority": [
+          "eyJhbGciOiJFZERTQSJ9.authority-room.signature"
+        ]
+      },
+      "manifest": {
+        "size": 300000,
+        "chunks": {
+          "chunkSize": 262144,
+          "chunkCount": 2,
+          "chunkDigests": [
+            "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc",
+            "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX"
+          ]
+        },
+        "digest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      },
+      "directParts": {
+        "partSize": 300000,
+        "partCount": 1
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `missing` — a resuming member could not tell which chunks to send.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "expiresAt": "2026-10-10T11:00:01Z",
+      "mode": "proxied"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `mode` — the producer could not tell whether to write to storage or send chunk documents.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "missing": [
+        0
+      ],
+      "expiresAt": "2026-10-10T11:00:01Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A plain-HTTP target — a presigned URL is a bearer credential and travels over HTTPS only.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "mode": "direct",
+      "missing": [
+        0
+      ],
+      "expiresAt": "2026-10-10T11:00:01Z",
+      "targets": [
+        {
+          "index": 0,
+          "method": "PUT",
+          "url": "http://storage.example/o?sig=x",
+          "expiresAt": "2026-10-10T10:05:01Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A target with a method no transfer uses — a URL is issued for one method, and a write is a PUT.",
+    "payload": {
+      "uploadId": "3e0f5a7c-9b21-4d8e-a6c4-2f1b0d9e8c7a",
+      "mode": "direct",
+      "missing": [
+        0
+      ],
+      "expiresAt": "2026-10-10T11:00:01Z",
+      "targets": [
+        {
+          "index": 0,
+          "method": "DELETE",
+          "url": "https://storage.example/o?sig=x",
+          "expiresAt": "2026-10-10T10:05:01Z"
+        }
+      ]
+    }
+  }
+]

@@ -1035,19 +1035,24 @@ mod rooms {
         }
         mod get {
             mod v0_1;
+            mod v0_2;
         }
         mod upload {
             mod abort {
                 mod v0_1;
+                mod v0_2;
             }
             mod begin {
                 mod v0_1;
+                mod v0_2;
             }
             mod chunk {
                 mod v0_1;
+                mod v0_2;
             }
             mod commit {
                 mod v0_1;
+                mod v0_2;
             }
         }
     }
@@ -1072,6 +1077,9 @@ mod rooms {
         mod v0_1;
     }
     mod keys {
+        mod act {
+            mod v0_1;
+        }
         mod backfill {
             mod v0_1;
         }
@@ -1092,6 +1100,7 @@ mod rooms {
         }
         mod seal {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod owner {

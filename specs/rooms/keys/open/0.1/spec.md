@@ -83,6 +83,12 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 A caller who is not authorized to open records for the room is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
+A key holder serving several members — several principals, or several personas of one — keeps
+one group state per member per room, and **MUST** open with the group state of the member its
+caller acts as. State it holds for another member **MUST NOT** be used to open a record for this
+one, and a record that does not open under the caller's member's state is `didNotOpen` or
+`unknownEpoch`, never a retry under another member's.
+
 ## Security & Privacy
 
 **The key never crosses.** That is the whole design. An oracle that returned key material

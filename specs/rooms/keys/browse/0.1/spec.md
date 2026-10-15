@@ -82,7 +82,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 **The entitlement is being the recipient's own principal.** A key holder holds one member's room keys; this asks it to use their credentials to look.
 
-A conforming consumer **MUST** accept this only from the party whose keys it holds, **MUST** refuse it for a room it holds no group state for, and **MUST** present a `read` grant scoped to this room and granted to the recipient itself — never one conferring more.
+A conforming consumer **MUST** accept this only from the party whose keys it holds, **MUST** refuse it for a room it holds no group state for, and **MUST** present a `read` grant scoped to this room and granted to its principal, in `rooms/records/list` documents issued and signed by the principal — never one conferring more. As in [`rooms/keys/read`](../../read/0.1/spec.md), the recipient acts as its principal and its own identifier **MUST NOT** reach the host.
 
 Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, `issuer`, `recipient` or `proof` establishes *who sent this* and *that it is unaltered* — never that they were entitled to the outcome.
 

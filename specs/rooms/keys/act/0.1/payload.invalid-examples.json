@@ -1,0 +1,129 @@
+[
+  {
+    "note": "A document that already carries a proof — the recipient signs as the member; a document signed by anyone else first would carry the client's identifier to the host.",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "recipient": "did:webvh:example.com:northwind-community",
+        "issuedAt": "2026-01-01T00:00:00Z",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "verificationMethod": "did:key:z6Mkclient#z6Mkclient"
+        }
+      }
+    }
+  },
+  {
+    "note": "No recipient — the member's signature must be bound to the host it is for, or the completed document could be replayed to any host serving the room.",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "issuedAt": "2026-01-01T00:00:00Z",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        }
+      }
+    }
+  },
+  {
+    "note": "A type outside the rooms family — this task is not a general signing oracle; the schema refuses anything that is not a room request before the table is consulted.",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/acl/grant/0.1#request",
+        "recipient": "did:webvh:example.com:northwind-community",
+        "issuedAt": "2026-01-01T00:00:00Z",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        }
+      }
+    }
+  },
+  {
+    "note": "No issuedAt — a document signed to be sent now must be placeable in time.",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "recipient": "did:webvh:example.com:northwind-community",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        }
+      }
+    }
+  },
+  {
+    "note": "Two documents in one request — one signature is asked for one operation.",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "recipient": "did:webvh:example.com:northwind-community",
+        "issuedAt": "2026-01-01T00:00:00Z",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        }
+      },
+      "documents": [
+        {
+          "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+          "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+          "recipient": "did:webvh:example.com:northwind-community",
+          "issuedAt": "2026-01-01T00:00:00Z",
+          "payload": {
+            "roomId": "did:webvh:example.com:rooms:northwind",
+            "key": "giXFLTGBdnnQJRoIsktuIg"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without the member it signed as — the client could not tell whose identity its request now carries.",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "recipient": "did:webvh:example.com:northwind-community",
+        "issuedAt": "2026-01-01T00:00:00Z",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        },
+        "issuer": "did:webvh:example.com:people:alice",
+        "proof": {
+          "type": "DataIntegrityProof"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response document without a proof — an unsigned document authenticates nobody at the host.",
+    "payload": {
+      "principal": "did:webvh:example.com:people:alice",
+      "document": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "recipient": "did:webvh:example.com:northwind-community",
+        "issuedAt": "2026-01-01T00:00:00Z",
+        "payload": {
+          "roomId": "did:webvh:example.com:rooms:northwind",
+          "key": "giXFLTGBdnnQJRoIsktuIg"
+        },
+        "issuer": "did:webvh:example.com:people:alice"
+      }
+    }
+  }
+]
