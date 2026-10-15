@@ -133,7 +133,8 @@ in two places:
   custodian's DID key opens nothing recorded earlier. The payload names its context and account
   inside the seal, and a bundle naming another account is refused.
 - **`external/credentials/issue`**, outward. The custodian seals an
-  `ExternalCredentialPayload` to the caller's **key-agreement key**: for a `did:key`, the X25519
+  `ExternalCredentialPayload` — or, from version 0.2 for `s3-static-presign`, a
+  `PresignedRequestSet` — to the caller's **key-agreement key**: for a `did:key`, the X25519
   derivation of its Ed25519 key; otherwise the first X25519 `keyAgreement` verification method
   of the caller's resolved DID document. The bundle's producer assertion is `PinnedOnly`, and
   its anchor is the response document's REQUIRED proof, which covers the armor and so its

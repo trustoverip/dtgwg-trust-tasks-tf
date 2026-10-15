@@ -250,6 +250,47 @@ class CredentialScopeCeiling {
       };
 }
 
+/// One S3 request a custodian presigns for an `s3-static-presign` account
+/// (external/credentials/issue 0.2 and later). Each is authorized by one
+/// `ProviderObjectAction` in the binding's ceiling, so the ceiling's vocabulary stays
+/// what can happen to an object rather than how the protocol does it: `put`
+/// (PutObject), `create-multipart` (CreateMultipartUpload), `upload-part`
+/// (UploadPart), `list-parts` (ListParts) and `complete-multipart`
+/// (CompleteMultipartUpload) need `put`; `get` (GetObject) and `head` (HeadObject)
+/// need `get`; `delete` (DeleteObject) and `abort-multipart` (AbortMultipartUpload)
+/// need `delete`, because each destroys bytes storage holds.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const PresignOperation(String value) {
+  static const PresignOperation put = PresignOperation('put');
+  static const PresignOperation get = PresignOperation('get');
+  static const PresignOperation head = PresignOperation('head');
+  static const PresignOperation delete = PresignOperation('delete');
+  static const PresignOperation createMultipart =
+      PresignOperation('create-multipart');
+  static const PresignOperation uploadPart = PresignOperation('upload-part');
+  static const PresignOperation listParts = PresignOperation('list-parts');
+  static const PresignOperation completeMultipart =
+      PresignOperation('complete-multipart');
+  static const PresignOperation abortMultipart =
+      PresignOperation('abort-multipart');
+
+  /// Every value this specification's schema permits.
+  static const List<PresignOperation> values = <PresignOperation>[
+    put,
+    get,
+    head,
+    delete,
+    createMultipart,
+    uploadPart,
+    listParts,
+    completeMultipart,
+    abortMultipart
+  ];
+}
+
 /// Who may use an account, and how far. One binding per consumer per account. A
 /// binding is checked before anything is signed: the caller must be `consumer`, proven
 /// by the request's own proof; the request must sit inside `scopeCeiling`; its TTL
@@ -868,11 +909,12 @@ class AccountSetupArtifacts {
 /// data. Each task states the key it is sealed to: a single-use wrapping key from
 /// keys/import-wrapping-key for external/accounts/secret/set, and the caller's
 /// key-agreement key for external/credentials/issue. Its cleartext is an
-/// ExternalSecretPayload or an ExternalCredentialPayload. The only form in which
-/// secret material crosses the wire in this family, in either direction: the seal is
-/// what keeps a terminating proxy, a relay, a request log or a debug dump of "the
-/// response" from ever holding a usable secret, whatever transport carried the
-/// document.
+/// ExternalSecretPayload, an ExternalCredentialPayload or, from
+/// external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The
+/// only form in which secret material crosses the wire in this family, in either
+/// direction: the seal is what keeps a terminating proxy, a relay, a request log or a
+/// debug dump of "the response" from ever holding a usable secret, whatever transport
+/// carried the document.
 typedef SealedTransferBundle = String;
 
 /// The cleartext inside the sealed bundle of external/accounts/secret/set. It names
@@ -922,3 +964,125 @@ class ExternalSecretPayload {
 /// by `kind`. Never appears on the wire outside a seal, and a consumer keeps it in
 /// memory only.
 typedef ExternalCredentialPayload = Object?;
+
+/// The HTTP method the signature covers: GET for `get` and `list-parts`, HEAD for
+/// `head`, PUT for `put` and `upload-part`, POST for `create-multipart` and
+/// `complete-multipart`, DELETE for `delete` and `abort-multipart`.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const PresignedRequestSetRequestsItemMethod(String value) {
+  static const PresignedRequestSetRequestsItemMethod get =
+      PresignedRequestSetRequestsItemMethod('GET');
+  static const PresignedRequestSetRequestsItemMethod head =
+      PresignedRequestSetRequestsItemMethod('HEAD');
+  static const PresignedRequestSetRequestsItemMethod put =
+      PresignedRequestSetRequestsItemMethod('PUT');
+  static const PresignedRequestSetRequestsItemMethod post =
+      PresignedRequestSetRequestsItemMethod('POST');
+  static const PresignedRequestSetRequestsItemMethod delete =
+      PresignedRequestSetRequestsItemMethod('DELETE');
+
+  /// Every value this specification's schema permits.
+  static const List<PresignedRequestSetRequestsItemMethod> values =
+      <PresignedRequestSetRequestsItemMethod>[get, head, put, post, delete];
+}
+
+/// PresignedRequestSetRequestsItem, generated from its schema.
+class PresignedRequestSetRequestsItem {
+  const PresignedRequestSetRequestsItem({
+    required this.index,
+    required this.operation,
+    required this.method,
+    required this.url,
+    this.headers,
+    required this.expiresAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory PresignedRequestSetRequestsItem.fromJson(Map<String, dynamic> json) =>
+      PresignedRequestSetRequestsItem(
+        index: json['index'] as int,
+        operation: PresignOperation(json['operation'] as String),
+        method: PresignedRequestSetRequestsItemMethod(json['method'] as String),
+        url: json['url'] as String,
+        headers: json['headers'] == null
+            ? null
+            : (json['headers'] as Map<String, dynamic>)
+                .map((k, v) => MapEntry(k, v as String)),
+        expiresAt: json['expiresAt'] as String,
+      );
+
+  /// The position of the operation in the request's `presign.requests` that this
+  /// answers.
+  final int index;
+  final PresignOperation operation;
+
+  /// The HTTP method the signature covers: GET for `get` and `list-parts`, HEAD for
+  /// `head`, PUT for `put` and `upload-part`, POST for `create-multipart` and
+  /// `complete-multipart`, DELETE for `delete` and `abort-multipart`.
+  final PresignedRequestSetRequestsItemMethod method;
+
+  /// The presigned URL, its query carrying the signature, the expiry and — for the
+  /// multipart operations — the upload id and part number the signature covers.
+  final String url;
+
+  /// The signed headers, which the request MUST carry exactly as given: for `put` and
+  /// `upload-part`, `Content-Length` and `x-amz-checksum-sha256`; for
+  /// `create-multipart`, `x-amz-checksum-algorithm`; for `complete-multipart`,
+  /// `x-amz-mp-object-size`; for `head`, `x-amz-checksum-mode`. A consumer adds nothing
+  /// storage would treat as signed.
+  final Map<String, String>? headers;
+
+  /// When storage stops honouring the URL. Storage checks expiry when a request begins.
+  final String expiresAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'index': index,
+        'operation': operation.value,
+        'method': method.value,
+        'url': url,
+        if (headers != null) 'headers': headers!,
+        'expiresAt': expiresAt,
+      };
+}
+
+/// The cleartext inside the sealed bundle of external/credentials/issue 0.2 and later
+/// for an `s3-static-presign` account: one presigned request per requested operation,
+/// all on one object, in the order requested. Never appears on the wire outside a
+/// seal, and a consumer keeps it in memory only and never logs a URL from it. Each
+/// request is a bearer credential until it expires: whoever holds it may make that one
+/// request, and nothing else.
+class PresignedRequestSet {
+  const PresignedRequestSet({
+    required this.kind,
+    required this.requests,
+    required this.expiresAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory PresignedRequestSet.fromJson(Map<String, dynamic> json) =>
+      PresignedRequestSet(
+        kind: json['kind'] as String,
+        requests: (json['requests'] as List<dynamic>)
+            .map((e) => PresignedRequestSetRequestsItem.fromJson(
+                e as Map<String, dynamic>))
+            .toList(),
+        expiresAt: json['expiresAt'] as String,
+      );
+
+  final String kind;
+  final List<PresignedRequestSetRequestsItem> requests;
+
+  /// The earliest `expiresAt` of the requests: when the set stops being whole.
+  final String expiresAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kind': kind,
+        'requests': requests.map((e) => e.toJson()).toList(),
+        'expiresAt': expiresAt,
+      };
+}

@@ -227,6 +227,7 @@ export * as ExternalAccountsSetup_v0_1 from "./external/accounts/setup/0.1/paylo
 export * as ExternalAccountsSuspend_v0_1 from "./external/accounts/suspend/0.1/payload.js";
 export * as ExternalAccountsUpdate_v0_1 from "./external/accounts/update/0.1/payload.js";
 export * as ExternalCredentialsIssue_v0_1 from "./external/credentials/issue/0.1/payload.js";
+export * as ExternalCredentialsIssue_v0_2 from "./external/credentials/issue/0.2/payload.js";
 export * as ExternalSign_v0_1 from "./external/sign/0.1/payload.js";
 export * as GitNsShared_v0_1 from "./git-ns/_shared/0.1/git-ns.js";
 export * as GitNsShared_v0_2 from "./git-ns/_shared/0.2/git-ns.js";

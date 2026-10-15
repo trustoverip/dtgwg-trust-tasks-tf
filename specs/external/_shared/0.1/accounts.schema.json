@@ -520,6 +520,22 @@
         }
       }
     },
+    "PresignOperation": {
+      "title": "PresignOperation",
+      "type": "string",
+      "enum": [
+        "put",
+        "get",
+        "head",
+        "delete",
+        "create-multipart",
+        "upload-part",
+        "list-parts",
+        "complete-multipart",
+        "abort-multipart"
+      ],
+      "description": "One S3 request a custodian presigns for an `s3-static-presign` account (external/credentials/issue 0.2 and later). Each is authorized by one `ProviderObjectAction` in the binding's ceiling, so the ceiling's vocabulary stays what can happen to an object rather than how the protocol does it: `put` (PutObject), `create-multipart` (CreateMultipartUpload), `upload-part` (UploadPart), `list-parts` (ListParts) and `complete-multipart` (CompleteMultipartUpload) need `put`; `get` (GetObject) and `head` (HeadObject) need `get`; `delete` (DeleteObject) and `abort-multipart` (AbortMultipartUpload) need `delete`, because each destroys bytes storage holds."
+    },
     "AccountBinding": {
       "title": "AccountBinding",
       "type": "object",
@@ -920,7 +936,7 @@
       "minLength": 64,
       "maxLength": 65536,
       "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$",
-      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
+      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
     },
     "ExternalSecretPayload": {
       "title": "ExternalSecretPayload",
@@ -1100,6 +1116,90 @@
           }
         }
       ]
+    },
+    "PresignedRequestSet": {
+      "title": "PresignedRequestSet",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "requests",
+        "expiresAt"
+      ],
+      "description": "The cleartext inside the sealed bundle of external/credentials/issue 0.2 and later for an `s3-static-presign` account: one presigned request per requested operation, all on one object, in the order requested. Never appears on the wire outside a seal, and a consumer keeps it in memory only and never logs a URL from it. Each request is a bearer credential until it expires: whoever holds it may make that one request, and nothing else.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "presignedRequests"
+        },
+        "requests": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "operation",
+              "method",
+              "url",
+              "expiresAt"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 127,
+                "description": "The position of the operation in the request's `presign.requests` that this answers."
+              },
+              "operation": {
+                "$ref": "#/$defs/PresignOperation"
+              },
+              "method": {
+                "type": "string",
+                "enum": [
+                  "GET",
+                  "HEAD",
+                  "PUT",
+                  "POST",
+                  "DELETE"
+                ],
+                "description": "The HTTP method the signature covers: GET for `get` and `list-parts`, HEAD for `head`, PUT for `put` and `upload-part`, POST for `create-multipart` and `complete-multipart`, DELETE for `delete` and `abort-multipart`."
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://",
+                "maxLength": 8192,
+                "description": "The presigned URL, its query carrying the signature, the expiry and — for the multipart operations — the upload id and part number the signature covers."
+              },
+              "headers": {
+                "type": "object",
+                "maxProperties": 16,
+                "additionalProperties": {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                "propertyNames": {
+                  "pattern": "^[A-Za-z0-9-]{1,64}$"
+                },
+                "description": "The signed headers, which the request MUST carry exactly as given: for `put` and `upload-part`, `Content-Length` and `x-amz-checksum-sha256`; for `create-multipart`, `x-amz-checksum-algorithm`; for `complete-multipart`, `x-amz-mp-object-size`; for `head`, `x-amz-checksum-mode`. A consumer adds nothing storage would treat as signed."
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When storage stops honouring the URL. Storage checks expiry when a request begins."
+              }
+            }
+          }
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The earliest `expiresAt` of the requests: when the set stops being whole."
+        }
+      }
     }
   }
 }

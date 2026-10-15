@@ -589,6 +589,7 @@ mod external {
     mod credentials {
         mod issue {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod sign {

@@ -139,6 +139,30 @@ type CredentialScopeCeiling struct {
 	Scopes   *[]string               `json:"scopes,omitempty"`
 }
 
+// PresignOperation One S3 request a custodian presigns for an `s3-static-presign` account
+// (external/credentials/issue 0.2 and later). Each is authorized by one
+// `ProviderObjectAction` in the binding's ceiling, so the ceiling's vocabulary stays what
+// can happen to an object rather than how the protocol does it: `put` (PutObject),
+// `create-multipart` (CreateMultipartUpload), `upload-part` (UploadPart), `list-parts`
+// (ListParts) and `complete-multipart` (CompleteMultipartUpload) need `put`; `get`
+// (GetObject) and `head` (HeadObject) need `get`; `delete` (DeleteObject) and
+// `abort-multipart` (AbortMultipartUpload) need `delete`, because each destroys bytes
+// storage holds.
+type PresignOperation string
+
+// Values PresignOperation may take, per this specification's schema.
+const (
+	PresignOperationPut               PresignOperation = "put"
+	PresignOperationGet               PresignOperation = "get"
+	PresignOperationHead              PresignOperation = "head"
+	PresignOperationDelete            PresignOperation = "delete"
+	PresignOperationCreateMultipart   PresignOperation = "create-multipart"
+	PresignOperationUploadPart        PresignOperation = "upload-part"
+	PresignOperationListParts         PresignOperation = "list-parts"
+	PresignOperationCompleteMultipart PresignOperation = "complete-multipart"
+	PresignOperationAbortMultipart    PresignOperation = "abort-multipart"
+)
+
 // AccountBinding Who may use an account, and how far. One binding per consumer per
 // account. A binding is checked before anything is signed: the caller must be `consumer`,
 // proven by the request's own proof; the request must sit inside `scopeCeiling`; its TTL
@@ -379,7 +403,8 @@ type AccountSetupArtifacts struct {
 // Each task states the key it is sealed to: a single-use wrapping key from
 // keys/import-wrapping-key for external/accounts/secret/set, and the caller's
 // key-agreement key for external/credentials/issue. Its cleartext is an
-// ExternalSecretPayload or an ExternalCredentialPayload. The only form in which secret
+// ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue
+// 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret
 // material crosses the wire in this family, in either direction: the seal is what keeps a
 // terminating proxy, a relay, a request log or a debug dump of "the response" from ever
 // holding a usable secret, whatever transport carried the document.
@@ -408,6 +433,60 @@ type ExternalSecretPayload struct {
 // external/credentials/issue, discriminated by `kind`. Never appears on the wire outside
 // a seal, and a consumer keeps it in memory only.
 type ExternalCredentialPayload = json.RawMessage
+
+// PresignedRequestSetRequestsItemMethod The HTTP method the signature covers: GET for
+// `get` and `list-parts`, HEAD for `head`, PUT for `put` and `upload-part`, POST for
+// `create-multipart` and `complete-multipart`, DELETE for `delete` and `abort-multipart`.
+type PresignedRequestSetRequestsItemMethod string
+
+// Values PresignedRequestSetRequestsItemMethod may take, per this specification's schema.
+const (
+	PresignedRequestSetRequestsItemMethodGet    PresignedRequestSetRequestsItemMethod = "GET"
+	PresignedRequestSetRequestsItemMethodHead   PresignedRequestSetRequestsItemMethod = "HEAD"
+	PresignedRequestSetRequestsItemMethodPut    PresignedRequestSetRequestsItemMethod = "PUT"
+	PresignedRequestSetRequestsItemMethodPost   PresignedRequestSetRequestsItemMethod = "POST"
+	PresignedRequestSetRequestsItemMethodDelete PresignedRequestSetRequestsItemMethod = "DELETE"
+)
+
+// PresignedRequestSetRequestsItem PresignedRequestSetRequestsItem is a generated payload
+// type.
+type PresignedRequestSetRequestsItem struct {
+	// The position of the operation in the request's `presign.requests` that this answers.
+	Index     int64            `json:"index"`
+	Operation PresignOperation `json:"operation"`
+
+	// The HTTP method the signature covers: GET for `get` and `list-parts`, HEAD for `head`,
+	// PUT for `put` and `upload-part`, POST for `create-multipart` and `complete-multipart`,
+	// DELETE for `delete` and `abort-multipart`.
+	Method PresignedRequestSetRequestsItemMethod `json:"method"`
+
+	// The presigned URL, its query carrying the signature, the expiry and — for the multipart
+	// operations — the upload id and part number the signature covers.
+	URL string `json:"url"`
+
+	// The signed headers, which the request MUST carry exactly as given: for `put` and
+	// `upload-part`, `Content-Length` and `x-amz-checksum-sha256`; for `create-multipart`,
+	// `x-amz-checksum-algorithm`; for `complete-multipart`, `x-amz-mp-object-size`; for
+	// `head`, `x-amz-checksum-mode`. A consumer adds nothing storage would treat as signed.
+	Headers *map[string]string `json:"headers,omitempty"`
+
+	// When storage stops honouring the URL. Storage checks expiry when a request begins.
+	ExpiresAt string `json:"expiresAt"`
+}
+
+// PresignedRequestSet The cleartext inside the sealed bundle of
+// external/credentials/issue 0.2 and later for an `s3-static-presign` account: one
+// presigned request per requested operation, all on one object, in the order requested.
+// Never appears on the wire outside a seal, and a consumer keeps it in memory only and
+// never logs a URL from it. Each request is a bearer credential until it expires: whoever
+// holds it may make that one request, and nothing else.
+type PresignedRequestSet struct {
+	Kind     string                            `json:"kind"`
+	Requests []PresignedRequestSetRequestsItem `json:"requests"`
+
+	// The earliest `expiresAt` of the requests: when the set stops being whole.
+	ExpiresAt string `json:"expiresAt"`
+}
 
 // DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
 // the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the

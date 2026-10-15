@@ -1086,6 +1086,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/external/credentials/issue/0.1#response" => <crate::specs::external::credentials::issue::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "external")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.2" => <crate::specs::external::credentials::issue::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.2#response" => <crate::specs::external::credentials::issue::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/external/sign/0.1" => <crate::specs::external::sign::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "external")]
         #[cfg(not(test))]
@@ -5692,6 +5698,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "external")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::external::credentials::issue::v0_2::Payload,
+            >())
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/external/sign/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::external::sign::v0_1::Payload,
         >()),
@@ -10000,6 +10013,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "external")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.2" => {
+            Some(crate::specs::external::credentials::issue::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/external/sign/0.1" => {
             Some(crate::specs::external::sign::v0_1::ERROR_CODES)
         }
@@ -12939,6 +12957,12 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
 pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
     #[allow(clippy::match_single_binding)]
     match type_uri {
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.2" => <crate::specs::external::credentials::issue::v0_2::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "external")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/external/credentials/issue/0.2#response" => <crate::specs::external::credentials::issue::v0_2::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign-jws/0.1" => <crate::specs::keys::sign_jws::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
