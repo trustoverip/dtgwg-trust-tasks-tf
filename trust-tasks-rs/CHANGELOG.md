@@ -31,6 +31,45 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.3...trust-tasks-rs-v0.31.4) — 2026-10-15
+
+
+### Added
+
+- **rooms**: Rooms/owner/group/renew renews a sealed room; rooms/keys/act refuses a sealed room's mint ([#773](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/773))
+
+A sealed room (`attributed` / `private`) had no correct way to renew, and
+  one way to brick itself that looked like a renewal.
+
+  - rooms/epoch/mint advances a host without a commit (a host MUST), and on a
+    sealed room the room epoch is the MLS group epoch + 1. rooms/keys/act/0.1
+    completes a mint for a member's client, which holds no group key and so
+    sends no commit: the host moves to N+1, every member's key holder stays at
+    N, every write is refused as sealed under a superseded epoch, and the
+    owner's next rooms/owner/group/{add,remove} fails epochConflict.
+  - Only membership changes advanced a sealed room's epoch, so a room whose
+    membership was stable lapsed after its epoch lifetime with no remedy.
+
+  rooms/owner/group/renew/0.1 (new, Owner -> KeyHolder): the sibling of
+  group/{create,add,remove}. The key holder advances the group with a commit
+  that changes no membership (self-update or empty commit), builds the epoch
+  link, retains the pending advance durably before sending (at most one per
+  room, shared with add/remove), mints at the host with the commit, the link
+  and the owner's admin presentation, applies only on acceptance, discards on
+  refusal, keeps on an unknown outcome and settles via rooms/info. Errors:
+  noGroup, noAuthority, epochConflict (details.hostEpoch), hostUnreachable,
+  hostRefused.
+
+  rooms/keys/act/0.1 (draft, edited in place): recipient item 9 refuses a
+  rooms/epoch/mint for a room it holds group state for, for any member it
+  serves, with the new rooms/keys/act:sealedRoomMint naming
+  rooms/owner/group/renew; producer item 4 says not to ask. Open rooms keep
+  renewing through act. The wire shape is unchanged; a draft MAY change
+  without a version bump (SPEC §5.2/§5.3), and a 0.2 would leave 0.1
+  permitting the defect it exists to close.
+
+
+
 ## [0.31.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.2...trust-tasks-rs-v0.31.3) — 2026-10-15
 
 
