@@ -1217,6 +1217,10 @@ export type Sensitivity = "normal" | "high";
  */
 export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
 /**
+ * The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.
+ */
+export type SessionId = string;
+/**
  * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
  */
 export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
@@ -4484,6 +4488,10 @@ export interface CapabilityScopeListed {
 export interface CapabilityScopeNone {
   scope: "none";
 }
+/**
+ * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.
+ */
+export interface CarriedDocument {}
 /**
  * The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.
  *

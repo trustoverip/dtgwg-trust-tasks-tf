@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/witness/accept/0.1",
+  "title": "VTA Witness — Accept — payload",
+  "description": "A client hands its VTA the witness's answer to the submission; the VTA verifies the Verifiable Witness Credential it carries against the session, and stores it in the credential vault with its evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sessionId",
+    "response"
+  ],
+  "properties": {
+    "sessionId": {
+      "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/SessionId"
+    },
+    "response": {
+      "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/CarriedDocument",
+      "description": "The witness/session/submit/0.1 #response the witness returned, exactly as received, under the witness's proof. It carries the VWC and its vwcDigestMultibase."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Evidence": {
+      "title": "Evidence",
+      "description": "The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "outcome"
+      ],
+      "properties": {
+        "session": {
+          "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/CarriedDocument",
+          "description": "The witness/session document that opened the session, as the VTA built it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it."
+        },
+        "outcome": {
+          "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/CarriedDocument",
+          "description": "The witness/session/submit #response, as handed back, under the witness's proof. It carries the VWC and its vwcDigestMultibase."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Witness — Accept — response payload",
+      "description": "The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "credentialId",
+        "witness",
+        "vwcDigestMultibase",
+        "evidence"
+      ],
+      "properties": {
+        "sessionId": {
+          "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/SessionId"
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The credential-vault handle the VWC is now stored under, with its evidence."
+        },
+        "witness": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The witness that issued the VWC: the session's witness, since a VWC issued by any other party is refused, not stored."
+        },
+        "vwcDigestMultibase": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included."
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

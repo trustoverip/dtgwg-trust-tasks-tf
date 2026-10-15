@@ -1,0 +1,21 @@
+[
+  {
+    "note": "The credentials are bound to the session at vta/witness/open; present takes only the witness's answer, so no later step can change what is shown.",
+    "payload": {
+      "sessionId": "urn:uuid:3a2b1c0d-0000-4000-8000-000000000201",
+      "response": {
+        "id": "urn:uuid:3a2b1c0d-0000-4000-8000-000000000202",
+        "type": "https://trusttasks.org/spec/witness/session/0.1#response",
+        "payload": {}
+      },
+      "relationshipCredentialId": "vrc-other"
+    }
+  },
+  {
+    "note": "The witness's answer is carried whole, as the document it returned: a challenge on its own carries no proof the VTA could attribute to the witness.",
+    "payload": {
+      "sessionId": "urn:uuid:3a2b1c0d-0000-4000-8000-000000000201",
+      "response": "z5ZQ8hLqv3yXkJpT2mW9cRb4NfDs7AeGu"
+    }
+  }
+]

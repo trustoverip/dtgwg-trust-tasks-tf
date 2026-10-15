@@ -3416,6 +3416,24 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response" => <crate::specs::vta::webvh::servers::retire_orphan::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.1" => <crate::specs::vta::witness::accept::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.1#response" => <crate::specs::vta::witness::accept::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.1" => <crate::specs::vta::witness::open::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.1#response" => <crate::specs::vta::witness::open::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.1" => <crate::specs::vta::witness::present::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.1#response" => <crate::specs::vta::witness::present::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/request/0.1" => <crate::specs::vta::witness::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -7901,6 +7919,21 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::witness::accept::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::witness::open::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::witness::present::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/request/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::witness::request::v0_1::Payload,
         >()),
@@ -11992,6 +12025,21 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1" => {
             Some(crate::specs::vta::webvh::servers::retire_orphan::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.1" => {
+            Some(crate::specs::vta::witness::accept::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.1" => {
+            Some(crate::specs::vta::witness::open::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.1" => {
+            Some(crate::specs::vta::witness::present::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

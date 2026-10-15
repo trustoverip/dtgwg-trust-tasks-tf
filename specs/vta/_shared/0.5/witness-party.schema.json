@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/_shared/0.5/witness-party",
+  "title": "Witnessed party — shared definitions for the vta/witness/* tasks",
+  "description": "A VTA can act as the participating party of a witnessed session (witness/session/0.1, witness/session/submit/0.1) for its principal: it builds and signs, as the principal's relationship DID, every document the party sends, and verifies and stores what the witness returns. The client carries the documents between the VTA and the witness. The normative rules (the session binding, custody, authorization, retries) are in CONVENTIONS.md beside this file. Not itself a Trust Task specification: the `_shared` folder is skipped by the registry build and the codegen.",
+  "$defs": {
+    "SessionId": {
+      "title": "SessionId",
+      "description": "The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "CarriedDocument": {
+      "title": "CarriedDocument",
+      "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.",
+      "type": "object",
+      "minProperties": 1
+    }
+  }
+}

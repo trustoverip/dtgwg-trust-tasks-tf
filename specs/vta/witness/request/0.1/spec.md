@@ -3,7 +3,8 @@ slug: vta/witness/request
 version: "0.1"
 title: "VTA Witness — Request"
 summary: "A client asks its VTA to run a witnessed session for one of its principal's relationships — open the session with a named witness as the relationship DID, present the credentials it holds, verify the Verifiable Witness Credential returned, and store it with its evidence."
-status: draft
+status: retired
+supersededBy: vta/witness/open/0.1
 targetFrameworkVersion: "0.6.0"
 category: credentials
 keywords:
@@ -131,7 +132,9 @@ The VTA is a **party** here, never a witness. A witness has value only as a thir
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is **retired** per [SPEC §5.3](/SPEC.md#53-maturity-levels), superseded by the [`vta/witness/open`](../../open/0.1/spec.md), [`vta/witness/present`](../../present/0.1/spec.md) and [`vta/witness/accept`](../../accept/0.1/spec.md) tasks, whose shared rules are in the [witnessed-party conventions](../../../_shared/0.5/CONVENTIONS.md). No implementation shipped it.
+
+It cannot be implemented as written. It has the VTA send both documents of the session to the witness as the relationship DID, but a witness checks that the transport-proven sender of each document is its `issuer` and replies to that sender, and the relationship DID's transport belongs to whoever holds the relationship — normally the client, not the VTA. The successor tasks keep the custody, the checks and the evidence this task specified, and have the client carry the documents. New implementations MUST use them.
 
 ## Conformance
 

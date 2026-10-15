@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/witness/open/0.1",
+  "title": "VTA Witness — Open — payload",
+  "description": "A client asks its VTA to open a witnessed session for one of its principal's relationships: the VTA checks custody and the credentials to be presented, and returns the witness/session document, built and signed as the principal's relationship DID, for the client to send to the witness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "witness",
+    "relationshipDid",
+    "counterpartyDid",
+    "relationshipThreadId",
+    "relationshipCredentialId"
+  ],
+  "properties": {
+    "witness": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The witness to be witnessed by, as its public DID: the recipient of every document of the session, and the issuer of every answer the VTA will accept for it. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision."
+    },
+    "relationshipDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The principal's relationship DID for this relationship: the participating party, the issuer of every document of the session, and the DID the client sends them from. The VTA must hold a key of it in a context the caller may act in."
+    },
+    "counterpartyDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented."
+    },
+    "relationshipThreadId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The threadId of the relationship exchange the session is nested in, set as `parentThreadId` on every document of the session, as witness/session requires of a producer."
+    },
+    "relationshipCredentialId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another."
+    },
+    "membership": {
+      "$ref": "#/$defs/Membership",
+      "description": "The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented. Bound to the session here."
+    },
+    "storeAs": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The credential-vault handle to store the VWC under at vta/witness/accept. Absent, the VTA derives one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Membership": {
+      "title": "Membership",
+      "description": "A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The credential-vault handle of the membership credential."
+        },
+        "memberDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Witness — Open — response payload",
+      "description": "The session id and the witness/session document to send.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "document",
+        "expiresAt"
+      ],
+      "properties": {
+        "sessionId": {
+          "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/SessionId"
+        },
+        "document": {
+          "$ref": "../../../_shared/0.5/witness-party.schema.json#/$defs/CarriedDocument",
+          "description": "The witness/session/0.1 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the VTA's record of the session expires. The client must hand back the witness's answers before then."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

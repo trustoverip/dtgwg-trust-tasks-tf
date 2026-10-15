@@ -1,0 +1,9 @@
+[
+  {
+    "note": "The VWC is handed back inside the witness's signed response, never on its own: without the response the VTA has no outcome evidence to store.",
+    "payload": {
+      "sessionId": "urn:uuid:3a2b1c0d-0000-4000-8000-000000000201",
+      "vwc": { "type": ["VerifiableCredential", "DTGCredential", "StatementCredential"] }
+    }
+  }
+]

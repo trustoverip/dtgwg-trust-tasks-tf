@@ -1632,6 +1632,15 @@ mod vta {
         }
     }
     mod witness {
+        mod accept {
+            mod v0_1;
+        }
+        mod open {
+            mod v0_1;
+        }
+        mod present {
+            mod v0_1;
+        }
         mod request {
             mod v0_1;
         }
