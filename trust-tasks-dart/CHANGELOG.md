@@ -11,6 +11,44 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.8.4 — 2026-10-15
+
+
+### Added
+
+- **rooms**: Act as the member's persona — rooms/keys/act, seal 0.2, direct-to-storage blob transfer (#771)
+
+A member of a data room is the DID the room admitted — usually a persona
+  their key holder (VTA) holds for them — but the member's own client (CLI,
+  extension, phone) holds none of that DID's keys. Until now it could reach a
+  host only through rooms/keys/present, which grants the leaf to the caller,
+  and then signed with its own key: the host recorded the client's did:key as
+  the actor and, on an attributed room, as the author of every record.
+
+  - rooms/keys/act/0.1 (new): the client builds a host-bound room request
+    without presentation or proof; the key holder completes it as the member
+    (the member's own authority narrowed to the one action a closed table
+    fixes per type, granted to the member; issuer = member; the member's
+    authentication proof) and returns it for the client to send. Refused to
+    delegates, which keep using rooms/keys/present.
+  - rooms/keys/seal/0.2: optional signAsPrincipal — the key holder signs the
+    SealedRecordBody as its author (a member the caller acts as) before
+    sealing, so the record is attributed to the member.
+  - rooms/blobs/upload/{begin,chunk,commit,abort}/0.2 and rooms/blobs/get/0.2:
+    two transfer modes. Direct: the host authorizes and reserves as before,
+    then issues per-part presigned PUTs (one object, one method, exact length
+    and SHA-256 as signed headers, <= 5 min), verifies the object at storage
+    before commit records it, and serves reads with a presigned GET. Proxied:
+    bytes through the host as chunk documents signed by a single-use upload
+    key the begin names, so file bytes never pass through the key holder.
+    A host SHOULD NOT offer direct transfer on a private room unless its
+    policy allows; the response always names the mode.
+  - In place (drafts, wire unchanged): rooms/keys/{read,browse,backfill}
+    present as the principal and never let the key holder's own identifier
+    reach the host; rooms/keys/welcome and rooms/keys/open keep one group
+    state per member per room.
+  - rooms/_shared/0.1/blobs: TransferMode, PartPlan, TransferTarget (additive).
+
 ## 0.8.3 — 2026-10-14
 
 
