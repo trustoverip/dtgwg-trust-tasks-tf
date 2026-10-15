@@ -452,7 +452,8 @@ export type Capability_DeviceV0_1 =
   | "external-accounts-manage"
   | "external-auth-use"
   | "pcs-vetter"
-  | "pcs-applicant";
+  | "pcs-applicant"
+  | "witness-request";
 /**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
@@ -478,7 +479,8 @@ export type Capability_DeviceV0_2 =
   | "externalAccountsManage"
   | "externalAuthUse"
   | "pcsVetter"
-  | "pcsApplicant";
+  | "pcsApplicant"
+  | "witnessRequest";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */

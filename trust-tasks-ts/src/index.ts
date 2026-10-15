@@ -679,6 +679,7 @@ export * as VtaWebvhServersReconcile_v0_1 from "./vta/webvh/servers/reconcile/0.
 export * as VtaWebvhServersRegister_v1_0 from "./vta/webvh/servers/register/1.0/payload.js";
 export * as VtaWebvhServersRemove_v1_0 from "./vta/webvh/servers/remove/1.0/payload.js";
 export * as VtaWebvhServersRetireOrphan_v0_1 from "./vta/webvh/servers/retire-orphan/0.1/payload.js";
+export * as VtaWitnessRequest_v0_1 from "./vta/witness/request/0.1/payload.js";
 export * as BackupShared_v0_1 from "./vtc/_shared/0.1/backup.js";
 export * as CeremonyShared_v0_1 from "./vtc/_shared/0.1/ceremony.js";
 export * as CommunityPresentationShared_v0_1 from "./vtc/_shared/0.1/community-presentation.js";

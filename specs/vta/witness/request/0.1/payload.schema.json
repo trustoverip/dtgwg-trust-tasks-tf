@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/witness/request/0.1",
+  "title": "VTA Witness — Request — payload",
+  "description": "A client asks its VTA to run a witnessed session for one of its principal's relationships: open a witness/session with the named witness as the relationship DID the VTA holds, present the relationship credential (and, optionally, the membership evidence) from its credential vault, verify the Verifiable Witness Credential the witness returns, and store it in the vault with its evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "witness",
+    "relationshipDid",
+    "counterpartyDid",
+    "relationshipThreadId",
+    "relationshipCredentialId"
+  ],
+  "properties": {
+    "witness": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The witness to run the session with, as its public DID: the recipient of the witness/session and witness/session/submit documents the VTA sends, and the issuer of the VWC it must return. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision (witness/session, Security & Privacy)."
+    },
+    "relationshipDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The principal's relationship DID for this relationship: the participating party, and the issuer of both documents the VTA sends to the witness. The VTA signs them, and the relationship presentation, with a key of this DID it holds in a context the caller may act in; never as itself."
+    },
+    "counterpartyDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "description": "The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented."
+    },
+    "relationshipThreadId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The threadId of the relationship exchange the session is nested in. The VTA sets it as `parentThreadId` on every document of the session, as witness/session requires of a producer."
+    },
+    "relationshipCredentialId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request."
+    },
+    "membership": {
+      "$ref": "#/$defs/Membership",
+      "description": "The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented."
+    },
+    "storeAs": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The credential-vault handle to store the VWC under. Absent, the VTA derives one. Supplying it lets a caller recognise its own result after an ambiguous failure."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Membership": {
+      "title": "Membership",
+      "description": "A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The credential-vault handle of the membership credential."
+        },
+        "memberDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness."
+        }
+      }
+    },
+    "Evidence": {
+      "title": "Evidence",
+      "description": "The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "outcome"
+      ],
+      "properties": {
+        "session": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The witness/session document that opened the session, as the VTA sent it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it."
+        },
+        "outcome": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The witness/session/submit #response, as the VTA received it, under the witness's proof. It carries the VWC and its vwcDigestMultibase."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Witness — Request — response payload",
+      "description": "The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId",
+        "witness",
+        "vwcDigestMultibase",
+        "evidence"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The credential-vault handle the VWC is now stored under, with its evidence."
+        },
+        "witness": {
+          "type": "string",
+          "pattern": "^did:",
+          "description": "The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored."
+        },
+        "vwcDigestMultibase": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included."
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

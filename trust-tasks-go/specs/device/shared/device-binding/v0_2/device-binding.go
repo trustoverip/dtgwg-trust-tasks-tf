@@ -123,6 +123,7 @@ const (
 	CapabilityExternalAuthUse        Capability = "externalAuthUse"
 	CapabilityPcsVetter              Capability = "pcsVetter"
 	CapabilityPcsApplicant           Capability = "pcsApplicant"
+	CapabilityWitnessRequest         Capability = "witnessRequest"
 )
 
 // DeviceAttestation Producer-supplied attestation at registration time, verifiable by the

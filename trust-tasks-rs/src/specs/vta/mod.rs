@@ -15,3 +15,4 @@ pub mod pcs;
 pub mod restore;
 pub mod services;
 pub mod webvh;
+pub mod witness;

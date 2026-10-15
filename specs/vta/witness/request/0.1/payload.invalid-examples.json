@@ -1,0 +1,47 @@
+[
+  {
+    "note": "The relationship credential is named by vault handle, never carried: a request that ships the credential itself is rejected, because the VTA presents only what its vault holds.",
+    "payload": {
+      "witness": "did:webvh:QmWitness:witness.example.org:a",
+      "relationshipDid": "did:key:z6MkrAliceForBobRelationshipKey333333333333333",
+      "counterpartyDid": "did:key:z6MkrBobForAliceRelationshipKey444444444444444",
+      "relationshipThreadId": "urn:uuid:9e8d7c6b-0000-4000-8000-000000000a01",
+      "relationshipCredential": {
+        "type": ["VerifiableCredential", "RelationshipCredential"]
+      }
+    }
+  },
+  {
+    "note": "relationshipThreadId is required: witness/session obliges the producer to set parentThreadId on every document of the session.",
+    "payload": {
+      "witness": "did:webvh:QmWitness:witness.example.org:a",
+      "relationshipDid": "did:key:z6MkrAliceForBobRelationshipKey333333333333333",
+      "counterpartyDid": "did:key:z6MkrBobForAliceRelationshipKey444444444444444",
+      "relationshipCredentialId": "vrc-alice-to-bob"
+    }
+  },
+  {
+    "note": "The witness is named by DID; a URL is not a party the VTA can resolve transports for or check the VWC's issuer against.",
+    "payload": {
+      "witness": "https://witness.example.org/a",
+      "relationshipDid": "did:key:z6MkrAliceForBobRelationshipKey333333333333333",
+      "counterpartyDid": "did:key:z6MkrBobForAliceRelationshipKey444444444444444",
+      "relationshipThreadId": "urn:uuid:9e8d7c6b-0000-4000-8000-000000000a01",
+      "relationshipCredentialId": "vrc-alice-to-bob"
+    }
+  },
+  {
+    "note": "A member presentation is never supplied by the caller: membership names a vault handle and, optionally, the member DID, and the VTA builds the presentation itself.",
+    "payload": {
+      "witness": "did:webvh:QmWitness:witness.example.org:a",
+      "relationshipDid": "did:key:z6MkrAliceForBobRelationshipKey333333333333333",
+      "counterpartyDid": "did:key:z6MkrBobForAliceRelationshipKey444444444444444",
+      "relationshipThreadId": "urn:uuid:9e8d7c6b-0000-4000-8000-000000000a01",
+      "relationshipCredentialId": "vrc-alice-to-bob",
+      "membership": {
+        "credentialId": "vmc-community-example",
+        "memberPresentation": {}
+      }
+    }
+  }
+]

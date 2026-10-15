@@ -1631,6 +1631,11 @@ mod vta {
             }
         }
     }
+    mod witness {
+        mod request {
+            mod v0_1;
+        }
+    }
 }
 #[cfg(feature = "vtc")]
 mod vtc {
