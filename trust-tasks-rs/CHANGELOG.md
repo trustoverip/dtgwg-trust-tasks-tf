@@ -31,6 +31,56 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.7...trust-tasks-rs-v0.31.8) — 2026-10-15
+
+
+### Specifications
+
+- **external**: Credentials/issue 0.3 — at most 64 presigned requests per batch, responseTooLarge when the sealed answer would exceed its bound ([#781](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/781))
+
+0.2 let a presign batch hold 128 operations and bounded the response's
+  sealedCredential at 262144 characters, on the estimate that 128 presigned
+  requests are about 128 KiB of cleartext and a third more once armored.
+  That estimate does not hold: a sealed-transfer bundle's overhead depends
+  on how its cleartext is encoded inside the seal and can be several times
+  the cleartext, and objectKey and uploadId may each be 1024 characters, so
+  a long key or upload id lengthens every URL in the set. A batch of 128
+  could produce an answer the schema forbids, and 0.2 said nothing about
+  what a custodian does then.
+
+  external/credentials/issue 0.3 (draft; a narrowed constraint, so a new
+  MINOR per SPEC §5.2):
+  - PresignBatch.requests maxItems 128 -> 64; every prose 128 for this task
+    updated (summary, Direct uploads, Definitions, examples, Security).
+  - New error external/credentials/issue:responseTooLarge: a custodian whose
+    sealed answer to a valid batch would exceed the sealedCredential bound
+    refuses it — never truncates the set, never answers over the bound —
+    with optional details.maxOperations; the caller SHOULD split and ask
+    again. It is a new conformance item 7, after the batch, ceiling and TTL
+    checks and before the rate check; a refused batch does not count
+    against the binding's rate. The custodian learns the size by presigning
+    and sealing (no provider contact), so noKeyAgreement precedes it, and a
+    set built and refused is discarded unreturned and unlogged.
+  - The maxDocumentBytes rationale is corrected; sealedCredential stays at
+    262144 and maxDocumentBytes at 65536 / 294912, which still hold a bundle
+    at its bound plus the echoed batch, envelope and proof.
+
+  Why cap rather than raise the bound: presigned requests are bearer
+  authority until they expire (five minutes at most for direct-upload
+  targets), so presigning more than can be used before expiry only widens
+  exposure; 64 parts of S3's 5 MiB minimum is 320 MiB per batch, and larger
+  uploads use larger parts or ask again; a larger answer must cross
+  mediators, DIDComm envelopes whose nesting multiplies base64 expansion,
+  and memory-constrained custodians and hosts.
+
+  Invalid examples: a 65-operation batch (request) and a response echoing
+  65 operations. external/_shared/0.1 already names PresignedRequestSet for
+  "0.2 and later" and keeps its own 128 bound for 0.2, so it is unchanged.
+  rooms/blobs/upload/begin/0.2's 128 part targets per answer stays true: a
+  host fills such an answer with two issuances. Bindings regenerated.
+
+
+
 ## [0.31.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.6...trust-tasks-rs-v0.31.7) — 2026-10-15
 
 
