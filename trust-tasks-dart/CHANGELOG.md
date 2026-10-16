@@ -11,6 +11,23 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.8.14 — 2026-10-16
+
+
+### Specifications
+
+- **vtc/registry/sync-jobs/retry**: 0.2 — bring a job waiting on its backoff forward (#802)
+
+0.1 requeues only failed jobs, so an operator who fixes what the registry
+  was refusing, or configures a registry for a community that ran without one,
+  has no way to stop members waiting out a backoff that can reach an hour.
+
+  0.2 accepts a pending job by jobId and adds allWaiting (exactly one of
+  jobId, allFailed, allWaiting). A held job, one deliberately delayed such as
+  a batched removal, is never brought forward and is skipped as held.
+  notFailed is replaced by inFlight and held; requeued[].from says whether
+  each job was failed or pending. 0.1 is unchanged.
+
 ## 0.8.13 — 2026-10-16
 
 
