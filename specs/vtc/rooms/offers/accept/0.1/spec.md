@@ -87,7 +87,7 @@ related:
 
 **VTC Rooms — Offers — Accept** completes an admission the community offered ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.1/spec.md)).
 
-On an `open` room there is no group, and accepting records that the member took up the offer. On an `attributed` or `private` room the member sends a KeyPackage their own key holder minted against the offer's invitation ([`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.1/spec.md)). The community has its VTA add it to the room's group ([`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.1/spec.md), with the community itself as host), and answers with the **Welcome**. The member's surface hands that to their own key holder ([`rooms/keys/welcome`](../../../../../rooms/keys/welcome/0.1/spec.md)), which checks the invitation again and joins.
+On an `open` room there is no group, and accepting records that the member took up the offer. On an `attributed` or `private` room the member sends a KeyPackage their own key holder minted against the offer's invitation ([`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.1/spec.md)). The community has its VTA add it to the room's group ([`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.2/spec.md), with the community itself as host), and answers with the **Welcome**. The member's surface hands that to their own key holder ([`rooms/keys/welcome`](../../../../../rooms/keys/welcome/0.1/spec.md)), which checks the invitation again and joins.
 
 The Welcome travels only between the community's VTA, the community and the member, over the member's own authenticated exchange with the community, and opens nothing for any of them but the member.
 
@@ -99,7 +99,9 @@ A member's surface may lose the answer. So the community keeps the Welcome it re
 - a repeated accept carrying a **different** KeyPackage is `alreadyAccepted`: the group already holds the first, and a second leaf for the same member is not what was offered;
 - once the Welcome is no longer kept, a repeat is `alreadyAccepted`, and the member asks to be removed and re-admitted.
 
-When the community cannot tell whether its VTA added the member — no answer, or the room's epoch advance not yet confirmed — it answers `admissionPending` and records nothing as admitted. Retrying the identical request is safe: the VTA settles a pending admission against the room's epoch before acting again ([`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.1/spec.md) item 6), and the community answers from what it settles.
+When the community cannot tell whether its VTA added the member — no answer, or the room's epoch advance not yet confirmed — it answers `admissionPending` and records nothing as admitted. Retrying the identical request is safe: the community repeats its own request to its VTA, unchanged, and the VTA settles a pending admission against the room's epoch before acting again ([`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.2/spec.md) item 6), and answers a request that repeats the admission it made — the same member, a KeyPackage with the same `KeyPackageRef` — with that admission's Welcome rather than refusing it (item 8). That holds whether the VTA's answer was lost before or after it applied the admission. The community answers from what its VTA returns. Only when the VTA no longer keeps that Welcome does it refuse `alreadyMember`, and the community then answers `alreadyAccepted`.
+
+A community's VTA therefore serves [`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.2/spec.md) at `0.2` or later: under `0.1` the repeat is refused and the Welcome is lost.
 
 ## Status of this Document
 
@@ -122,6 +124,8 @@ A conforming **community** (`recipient`):
 ## Authorization
 
 The entitlement is **being the member the offer is addressed to**, proven by the document's proof and checked against the community's own membership record at execution time. No administrative standing is involved. The community's VTA then applies its own gates to the admission it is asked to make, as for any owner.
+
+**Signing as the member.** The DID an offer is addressed to is often one whose keys are held by the member's key holder — a persona their agent holds for them in one community — so the surface the member acts from cannot sign this request itself. It builds the request and has its key holder complete and sign it as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.3/spec.md) at `0.3` or later, which carries no presentation for this type and completes an acceptance only with a KeyPackage it minted itself for the member and the room. The community sees the member's signature and nothing of the surface or the key holder.
 
 ## Request
 
