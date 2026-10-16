@@ -7,6 +7,7 @@ pub mod chain;
 pub mod commit;
 pub mod file_key;
 pub mod key_package;
+pub mod label;
 pub mod list;
 pub mod open;
 pub mod present;

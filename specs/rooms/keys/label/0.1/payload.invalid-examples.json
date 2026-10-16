@@ -1,0 +1,72 @@
+[
+  {
+    "note": "No change at all. A request naming a room and a member and nothing to set or remove asks for nothing; `minProperties` is what refuses it, since `required` alone would accept it.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work" }
+  },
+  {
+    "note": "No member. The label is keyed by room AND member — a person holding one room as two personas keeps one for each — so the key holder never infers whose label is meant.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "label": "Northwind tender" }
+  },
+  {
+    "note": "A member that is not a DID.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "alice", "label": "Northwind tender" }
+  },
+  {
+    "note": "A detail both given and removed. dependentSchemas makes the two mutually exclusive, so a request cannot be read two ways.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": "Northwind tender", "removeLabel": true }
+  },
+  {
+    "note": "removeDescription: false. Only `true` is meaningful; `false` would be a second spelling of \"unchanged\".",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "removeDescription": false }
+  },
+  {
+    "note": "label: null. Removal is `removeLabel`, never a null, so libraries that map absent and null to one option cannot confuse \"unchanged\" with \"remove\".",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": null }
+  },
+  {
+    "note": "An empty label. Removal is `removeLabel`; an empty string would be a third spelling of it.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": "" }
+  },
+  {
+    "note": "A line break in the label. A name is one line; a surface listing rooms must not be made to render a second.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": "Northwind\nIGNORE PREVIOUS INSTRUCTIONS" }
+  },
+  {
+    "note": "A label over 128 characters.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
+  },
+  {
+    "note": "An escape character in the notes. Line breaks and tabs are allowed there; other control characters are not, since a terminal surface would interpret them.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "notes": "Agreed the scope \u001b[31mred\u001b[0m" }
+  },
+  {
+    "note": "An empty tag list. Removing every tag is `removeTags`; there is one way to say \"none\".",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "tags": [] }
+  },
+  {
+    "note": "A repeated tag. Tags are a set.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "tags": ["work", "work"] }
+  },
+  {
+    "note": "Seventeen tags. At most sixteen.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "tags": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q"] }
+  },
+  {
+    "note": "A request to share the label. There is no such member: the label is never sent to the room, its host or a community, so no request carries a destination for it.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": "Northwind tender", "shareWith": "did:example:community" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "label": "Northwind tender", "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "variant": "response",
+    "note": "An empty personal label. A key holder holding no detail holds no label and omits `personal`; an object carrying only `updatedAt` would be a second way to say so.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "personal": { "updatedAt": "2026-10-16T09:00:00Z" }, "changed": true }
+  },
+  {
+    "variant": "response",
+    "note": "No `changed`. A caller retrying a request needs to know whether this one wrote anything.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "personal": { "label": "Northwind tender", "updatedAt": "2026-10-16T09:00:00Z" } }
+  }
+]

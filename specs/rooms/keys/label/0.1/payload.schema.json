@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/label/0.1",
+  "title": "Rooms Keys Label — payload",
+  "description": "Set, change or remove the member's own personal label for one room they hold: its name, description, notes and tags, kept by their key holder for their eyes only. Each detail given replaces the stored one; a detail absent is unchanged; `removeX` removes one. At least one change is required (`minProperties` counts `roomId` and `member`; `ext` is not a change, which Recipient item 3 holds), and a detail cannot be both given and removed. Nothing here reaches the room, its host, its owner or a community. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "member"
+  ],
+  "minProperties": 3,
+  "dependentSchemas": {
+    "removeLabel": { "not": { "required": ["label"] } },
+    "removeDescription": { "not": { "required": ["description"] } },
+    "removeNotes": { "not": { "required": ["notes"] } },
+    "removeTags": { "not": { "required": ["tags"] } }
+  },
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID, as rooms/keys/list returns it."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context."
+    },
+    "label": {
+      "$ref": "../../../_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelName",
+      "description": "The member's new name for the room, replacing any they had. Absent: unchanged."
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelDescription",
+      "description": "The member's new description, replacing any they had. Absent: unchanged."
+    },
+    "notes": {
+      "$ref": "../../../_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelNotes",
+      "description": "The member's new notes, replacing any they had. Absent: unchanged."
+    },
+    "tags": {
+      "$ref": "../../../_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelTags",
+      "description": "The member's tags, replacing the whole set. Absent: unchanged. Remove every tag with `removeTags`."
+    },
+    "removeLabel": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove the member's name for the room. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `label: null`, because a nullable optional member makes \"unchanged\" and \"remove\" the same value in libraries that map both to one absent option."
+    },
+    "removeDescription": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove the member's description. Only `true` is accepted."
+    },
+    "removeNotes": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove the member's notes. Only `true` is accepted."
+    },
+    "removeTags": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove every tag. Only `true` is accepted."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Label — response payload",
+      "description": "Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "member",
+        "changed"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Repeated from the request."
+        },
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "Repeated from the request."
+        },
+        "personal": {
+          "$ref": "../../../_shared/0.1/personal-label.schema.json#/$defs/PersonalLabel",
+          "description": "The label as it now stands. Absent when no detail remains: removing the last one removes the label."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

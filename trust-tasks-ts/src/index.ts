@@ -426,6 +426,7 @@ export * as RegistryRecordQuery_v0_1 from "./registry/record/query/0.1/payload.j
 export * as RegistryRecordRead_v0_1 from "./registry/record/read/0.1/payload.js";
 export * as RegistryRecordUpdate_v0_1 from "./registry/record/update/0.1/payload.js";
 export * as BlobsShared_v0_1 from "./rooms/_shared/0.1/blobs.js";
+export * as PersonalLabelShared_v0_1 from "./rooms/_shared/0.1/personal-label.js";
 export * as RoomShared_v0_1 from "./rooms/_shared/0.1/room.js";
 export * as RoomsBlobsChunk_v0_1 from "./rooms/blobs/chunk/0.1/payload.js";
 export * as RoomsBlobsGet_v0_1 from "./rooms/blobs/get/0.1/payload.js";
@@ -454,7 +455,9 @@ export * as RoomsKeysCommit_v0_1 from "./rooms/keys/commit/0.1/payload.js";
 export * as RoomsKeysFileKey_v0_1 from "./rooms/keys/file-key/0.1/payload.js";
 export * as RoomsKeysFileKey_v0_2 from "./rooms/keys/file-key/0.2/payload.js";
 export * as RoomsKeysKeyPackage_v0_1 from "./rooms/keys/key-package/0.1/payload.js";
+export * as RoomsKeysLabel_v0_1 from "./rooms/keys/label/0.1/payload.js";
 export * as RoomsKeysList_v0_1 from "./rooms/keys/list/0.1/payload.js";
+export * as RoomsKeysList_v0_2 from "./rooms/keys/list/0.2/payload.js";
 export * as RoomsKeysOpen_v0_1 from "./rooms/keys/open/0.1/payload.js";
 export * as RoomsKeysOpen_v0_2 from "./rooms/keys/open/0.2/payload.js";
 export * as RoomsKeysPresent_v0_1 from "./rooms/keys/present/0.1/payload.js";

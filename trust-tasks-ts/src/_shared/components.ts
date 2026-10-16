@@ -860,6 +860,170 @@ export type OobKey = string;
  */
 export type Origin = string;
 /**
+ * What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.
+ */
+export type PersonalLabelDescription = string;
+/**
+ * The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.
+ */
+export type PersonalLabelName = string;
+/**
+ * Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.
+ */
+export type PersonalLabelNotes = string;
+/**
+ * A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.
+ */
+export type PersonalLabelTag = string;
+/**
+ * The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say "none".
+ *
+ * @minItems 1
+ * @maxItems 16
+ */
+export type PersonalLabelTags =
+  | [PersonalLabelTag]
+  | [PersonalLabelTag, PersonalLabelTag]
+  | [PersonalLabelTag, PersonalLabelTag, PersonalLabelTag]
+  | [PersonalLabelTag, PersonalLabelTag, PersonalLabelTag, PersonalLabelTag]
+  | [PersonalLabelTag, PersonalLabelTag, PersonalLabelTag, PersonalLabelTag, PersonalLabelTag]
+  | [PersonalLabelTag, PersonalLabelTag, PersonalLabelTag, PersonalLabelTag, PersonalLabelTag, PersonalLabelTag]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ]
+  | [
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag,
+      PersonalLabelTag
+    ];
+/**
  * A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.
  */
 export type PlaceName = string;
@@ -7122,6 +7286,19 @@ export interface PeerDepth {
   count: number;
   bytes: number;
   oldestAgeSeconds?: number;
+}
+/**
+ * A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.
+ */
+export interface PersonalLabel {
+  label?: PersonalLabelName;
+  description?: PersonalLabelDescription;
+  notes?: PersonalLabelNotes;
+  tags?: PersonalLabelTags;
+  /**
+   * When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.
+   */
+  updatedAt: string;
 }
 /**
  * A community's published position on personhood.
