@@ -1918,7 +1918,7 @@ pub mod error_codes {
     };
     /// `external/credentials/issue:responseTooLarge`
     ///
-    /// The presign batch is valid, but its sealed answer would exceed the bound on `sealedCredential` (262144 characters). The custodian refuses it rather than truncate the set or answer over the bound, and it does not count against the binding's rate. `details.maxOperations`, when the custodian can compute it, is how many of the batch's operations, taken in order, would fit. The caller splits the batch and asks again.
+    /// The presign batch is valid, but its sealed answer would exceed the bound on `sealedCredential` (262144 characters). The custodian refuses it rather than truncate the set or answer over the bound, and it does not count against the binding's rate. `details.maxOperations`, when the custodian gives it, is a count of the batch's first operations, taken in order, whose answer is certain to fit if they are asked for alone; it may be lower than the most that would fit, and it is a statement about these operations only. The caller splits the batch and asks again, and handles another `responseTooLarge` on any part.
     ///
     /// Declared `retryable: false`.
     /// Declares a `detailsSchema` for the error's `details` member.
