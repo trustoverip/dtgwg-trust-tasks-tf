@@ -104,6 +104,8 @@ errorCodes:
   - code: keys/sign-jws:payloadInvalid
     meaning: The payload cannot be signed as given — `payloadBase64Url` is not the canonical unpadded base64url encoding of any byte string, or `payload` holds a value RFC 8785 cannot serialise exactly (a number outside IEEE 754 double precision, a lone surrogate).
     retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
   - keys/sign
   - keys/sign-sshsig
