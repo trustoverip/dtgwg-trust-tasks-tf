@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/admit/0.1",
+  "title": "VTC Members Admit — payload",
+  "description": "An administrator admits a DID as a member of the community without a join request, at a community role it names.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "role"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The DID to admit. It holds no access-control entry at the community, or only one of the `application` community role (a non-member holding resource grants), and no live membership."
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The community role the membership will hold, in the community's wire form (`member`, `moderator`, `issuer`, `custom:<name>`). Required, so that what an approver is shown is what was asked for. Never `admin`, never `application`, and never a role whose authority would confer authority-conferring capabilities; a role other than `member` is subject to the role-assignment rules of Conformance item 3."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S",
+      "description": "A human-readable label for the new access-control entry, as `acl/grant` carries one. Confers nothing. Not blank."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, for the community's audit trail and for the administrators asked to approve it if the admission is referred. Never published to the subject or beyond the community."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Admit — response payload",
+      "description": "Success response to vtc/members/admit/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/admit/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.",
+      "$ref": "../../../_shared/0.1/admission.schema.json#/$defs/AdmittedMembership",
+      "unevaluatedProperties": false
+    }
+  }
+}

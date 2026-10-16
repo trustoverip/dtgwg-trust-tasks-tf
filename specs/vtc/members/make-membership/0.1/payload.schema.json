@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/make-membership/0.1",
+  "title": "VTC Members Make-Membership — payload",
+  "description": "An administrator gives an existing access-control entry that has no member record — typically the community's bootstrap administrator — the member record and credentials a completed join would have given it, at the role the entry already holds. The entry itself is not changed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Make-Membership — response payload",
+      "description": "Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.",
+      "$ref": "../../../_shared/0.1/admission.schema.json#/$defs/AdmittedMembership",
+      "unevaluatedProperties": false
+    }
+  }
+}

@@ -1,0 +1,49 @@
+[
+  {
+    "note": "No subject.",
+    "payload": {
+      "reason": "Bootstrap administrator."
+    }
+  },
+  {
+    "note": "A role. Making an entry a membership keeps the role the entry holds; it never chooses one.",
+    "payload": {
+      "subject": "did:web:carol.example",
+      "role": "member"
+    }
+  },
+  {
+    "note": "A label. No entry is written, so there is nothing to label.",
+    "payload": {
+      "subject": "did:web:carol.example",
+      "label": "Carol"
+    }
+  },
+  {
+    "note": "A subject that is not a DID.",
+    "payload": {
+      "subject": "carol"
+    }
+  },
+  {
+    "note": "A reason over 1024 characters.",
+    "payload": {
+      "subject": "did:web:carol.example",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A negative status-list index.",
+    "payload": {
+      "subject": "did:web:carol.example",
+      "role": "admin",
+      "status": "admitted",
+      "returning": false,
+      "approval": "approved",
+      "statusListIndex": -1,
+      "vmc": {},
+      "roleVac": {}
+    }
+  }
+]

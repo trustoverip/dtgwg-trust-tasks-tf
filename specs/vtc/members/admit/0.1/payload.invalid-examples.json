@@ -1,0 +1,112 @@
+[
+  {
+    "note": "No role. The role is required so that what an approver is shown is what was asked for; a producer with no reason to choose sends `member`.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "No subject.",
+    "payload": {
+      "role": "member"
+    }
+  },
+  {
+    "note": "A subject that is not a DID.",
+    "payload": {
+      "subject": "alice@example.com",
+      "role": "member"
+    }
+  },
+  {
+    "note": "An empty role, which a consumer might otherwise read as a default.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": ""
+    }
+  },
+  {
+    "note": "A blank label: whitespace only. A label exists to be read.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "label": "   "
+    }
+  },
+  {
+    "note": "A label over the 256 characters an access-control entry's label may carry.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "A reason over 1024 characters.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "An authority member smuggled into the payload. A direct admission seats a role and nothing else; capabilities are granted with acl/grant.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "capabilities": {
+        "scope": "ceiling"
+      }
+    }
+  },
+  {
+    "note": "Bare, un-namespaced ext key (SPEC §4.5.1).",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "ext": {
+        "bare": {}
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response with no credentials. An admission that answered without the VMC and role VAC would send the requester back for them.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "status": "admitted",
+      "returning": false,
+      "approval": "policyAllowed",
+      "statusListIndex": 1
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An approval value outside the three ways an admission can execute.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "status": "admitted",
+      "returning": false,
+      "approval": "auto",
+      "statusListIndex": 1,
+      "vmc": {},
+      "roleVac": {}
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A status other than `admitted`. A refusal is a trust-task-error and a referral is trust-task-next-step; neither is this response.",
+    "payload": {
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "role": "member",
+      "status": "pending",
+      "returning": false,
+      "approval": "policyAllowed",
+      "statusListIndex": 1,
+      "vmc": {},
+      "roleVac": {}
+    }
+  }
+]

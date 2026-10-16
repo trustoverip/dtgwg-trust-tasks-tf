@@ -355,6 +355,10 @@ export type Admission = "automatic" | "review";
  */
 export type AnchorCadence = "never" | "renewal" | "manual";
 /**
+ * How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.
+ */
+export type Approval = "policyAllowed" | "approved" | "waived";
+/**
  * An explicit statement of the capabilities a subject may approve. Exactly one of `ceiling` (the role's full approve ceiling), `none`, or `listed` with a NON-EMPTY list of CapabilityRef.
  */
 export type ApproveCapabilityScope = CapabilityScopeCeiling | CapabilityScopeNone | ApproveCapabilityScopeListed;
@@ -3778,6 +3782,45 @@ export interface AdminRightRow {
    * Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass.
    */
   breakGlass?: BreakGlass;
+}
+/**
+ * A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.
+ */
+export interface AdmittedMembership {
+  /**
+   * The DID admitted.
+   */
+  subject: string;
+  /**
+   * The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.
+   */
+  role: string;
+  /**
+   * The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.
+   */
+  label?: string;
+  /**
+   * Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.
+   */
+  status: "admitted";
+  /**
+   * True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.
+   */
+  returning: boolean;
+  approval: Approval;
+  /**
+   * The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.
+   */
+  statusListIndex: number;
+  /**
+   * The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.
+   */
+  vmc: {};
+  /**
+   * The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: ["role:<name>"] }`, the shape vtc/join-requests/decide returns.
+   */
+  roleVac: {};
+  ext?: Ext;
 }
 /**
  * An agent name bound to a DID. A name is only ever authoritative in the DID→name direction: the DID document's `alsoKnownAs` is what proves the binding, because anyone controlling a domain can point a name at somebody else's DID.

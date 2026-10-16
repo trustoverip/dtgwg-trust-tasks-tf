@@ -1885,6 +1885,9 @@ mod vtc {
         mod admin_remove {
             mod v0_1;
         }
+        mod admit {
+            mod v0_1;
+        }
         mod authority_reduced_notice {
             mod v0_1;
         }
@@ -1895,6 +1898,9 @@ mod vtc {
             mod v0_1;
         }
         mod list {
+            mod v0_1;
+        }
+        mod make_membership {
             mod v0_1;
         }
         mod personhood {
