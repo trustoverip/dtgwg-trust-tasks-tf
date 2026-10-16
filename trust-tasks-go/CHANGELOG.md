@@ -11,6 +11,84 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.10 — 2026-10-16
+
+
+### Added
+
+- **vtc/members**: Admit and make-membership — direct admission by an administrator, decided by the community's admission policy (#784)
+
+Two new draft tasks for admitting a member without a join request, as one
+  governed ceremony:
+
+  - vtc/members/admit/0.1 ("Add a member"): a DID with no access-control
+    entry (or only an `application` entry) is admitted at a community role the
+    administrator names. The community writes the entry, the member record and
+    a revocation slot and issues the VMC and role VAC, as a completed join
+    would. A former member (removed record, no entry) is re-admitted and
+    reported `returning`.
+  - vtc/members/make-membership/0.1 ("Make this a membership"): an existing
+    live entry with no member record (typically the bootstrap administrator)
+    gets the member record and credentials at the role it already holds; the
+    entry itself is not changed.
+
+  The rules no policy can change:
+  - the requester holds `vtc.members.manage` (permissionDenied);
+  - a role other than `member` takes `vtc.roles.assign`, and the entry it
+    seats is bounded by the requester's own;
+  - `admin`, `application` and any role conferring authority-conferring
+    capabilities are never seated (`roleNotPermitted`);
+  - make-membership refuses an `application` entry, an expired or suspended
+    entry, a live membership and a removed record.
+
+  The community's admission policy then admits, refers (parked in the action
+  list, answered with trust-task-next-step, approved only by another holder of
+  `vtc.members.manage` who is neither requester nor subject, every check
+  re-run at execution, exactly once) or refuses (`deniedByPolicy`). Step-up
+  and consent are described as the model the tasks are designed for, not
+  required (SPEC §7.3 item 13).
+
+  Both answer with the same AdmittedMembership (subject, role, label?,
+  status, returning, approval policyAllowed|approved|waived,
+  statusListIndex, vmc, roleVac), shared in vtc/_shared/0.1/admission.
+
+  The wire shape and codes are those of the Verifiable Trust Infrastructure
+  implementation (vtc-service), which bound the tasks ahead of this
+  specification with local types; generated types replace them.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+
+
+### Specifications
+
+- **external**: Credentials/issue 0.3 — details.maxOperations is a guaranteed-to-fit count, clarified in place (#783)
+
+0.3 said `details.maxOperations` on `responseTooLarge` was "how many of the
+  batch's operations, taken in order, would fit", which left open whether a
+  consumer may rely on it or must treat it as a hint.
+
+  It is a guarantee, and now says so:
+
+  - Producer (Conformance item 7): a custodian that gives `maxOperations`
+    MUST give a count k such that the same request, with `presign.requests`
+    cut to its first k operations (and `uploadId` left out if none of them
+    needs one, as item 4 requires), is answered within the bound on
+    `sealedCredential`, the account and binding as they were at the refusal.
+    It MAY be conservative — a sealed bundle's length varies with its
+    ciphertext's randomness, so a count computed from an upper bound on the
+    sealed length is sometimes lower than the most that would fit. It MUST
+    NOT give a count it has not established fits; it omits the member when it
+    cannot compute one or when not even one operation fits. The count speaks
+    for those operations in that order only.
+  - Consumer (item 5): SHOULD split by it (else in half); the first part fits,
+    the rest carries no promise, and the consumer MUST handle another
+    `responseTooLarge` on any part or any other batch by splitting again. It
+    MUST NOT treat the count as a size that fits other operations. A single
+    operation refused this way cannot be split and SHOULD NOT be retried.
+  - The `responseTooLarge` meaning, the "What changed from 0.2" list and the
+    refusal example say the same.
+
 ## 0.8.9 — 2026-10-15
 
 
