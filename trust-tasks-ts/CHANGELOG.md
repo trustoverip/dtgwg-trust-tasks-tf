@@ -11,6 +11,35 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.13 — 2026-10-16
+
+
+### Added
+
+- **vta/witness**: List — read back stored witness credentials with their outcome evidence (#800)
+
+vta/witness/accept stores a VWC with its outcome evidence (the
+  witness/session document and the witness's submit #response), and its
+  answer was the client's only copy of that evidence: vault/credentials/query
+  returns body-free descriptors and vault/credentials/get the credential alone.
+  A client that stopped between accept returning and recording the result, or
+  another device of the same principal, could see the VWC and not present it,
+  since a VWC without its evidence counts for nothing at a verifier.
+
+  vta/witness/list/0.1 returns every stored VWC the caller may read, each as
+  accept answered it (credentialId, witness, relationshipDid,
+  vwcDigestMultibase) plus acceptedAt and the evidence byte for byte, the VWC
+  travelling once inside evidence.outcome. Filters relationshipDid and witness
+  (AND-combined); pageSize (<= 100) / cursor / truncated as vta/credentials/list.
+  Only VWCs in contexts the caller may act in (witnessRequest, never sign alone),
+  active vault entries only; an unreachable or unknown DID matches nothing,
+  never an error. Lists VWCs accepted under 0.1 and 0.2 alike. A read:
+  sideEffects none, discloses secret, so request and response proofs and
+  issuedAt are REQUIRED; retention transient.
+
+  accept/0.2's "Reading the evidence back later" and the 0.6 conventions now
+  point at it. Bindings regenerated (Rust, TS, Go, Dart).
+
 ## 0.26.12 — 2026-10-16
 
 
