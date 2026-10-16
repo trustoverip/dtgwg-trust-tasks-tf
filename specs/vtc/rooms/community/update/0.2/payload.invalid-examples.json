@@ -1,0 +1,124 @@
+[
+  {
+    "note": "No room.",
+    "payload": {
+      "label": "Board pack 2027",
+      "reason": "The board renamed its working papers."
+    }
+  },
+  {
+    "note": "No reason. A change to what administrators and offered members see is recorded with why it was made.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "label": "Board pack 2027"
+    }
+  },
+  {
+    "note": "Nothing to change. A request that names no detail would be audited as a change that is none.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "A description and its removal at once.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "description": "Papers for the board.",
+      "removeDescription": true,
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "`removeDescription: false`. Only `true` means anything; a false one would be a request that changes nothing while looking as though it might.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "removeDescription": false,
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "An empty label. A room always has a name.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "label": "",
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "An empty description. Removing one is `removeDescription`; an empty string would display as a description that says nothing.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "description": "",
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "A label longer than 128 characters.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "label": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "A repeated tag. Tags are a set.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "tags": [
+        "board",
+        "board"
+      ],
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "A visibility. The tier is fixed for the life of the room; nothing here reaches the room itself.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "label": "Board pack",
+      "visibility": "open",
+      "reason": "Tidying up."
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "label": "Board pack 2027",
+      "reason": "Tidying up.",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A `roomProfile` the specification does not define.",
+    "payload": {
+      "room": {
+        "room": {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "ownerDid": "did:example:community",
+          "visibility": "private",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": 1792368000,
+          "retentionDays": 90,
+          "createdAt": 1760436000,
+          "updatedAt": 1760520000
+        },
+        "label": "Board pack — 2027",
+        "storageConfig": "local",
+        "admitted": 6,
+        "offered": 1,
+        "ownerAuthorityValidUntil": "2027-10-14T10:00:00Z",
+        "createdBy": "did:example:administrator"
+      },
+      "changed": true,
+      "roomProfile": "queued"
+    }
+  }
+]

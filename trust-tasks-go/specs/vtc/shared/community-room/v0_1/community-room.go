@@ -4,17 +4,24 @@
 package vtcsharedcommunityroomv0_1
 
 // RoomLabel A name for the room, chosen by an administrator: shown to administrators and
-// to the members a room is offered to. Not part of the room's identity and not sent to
-// the room's host path. MUST NOT carry personal data.
+// to the members a room is offered to. Not part of the room's identity and never in
+// anything a room's host can read. From `vtc/rooms/community/create` 0.3 and
+// `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as
+// the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside
+// the room for its members; earlier versions keep it out of the room altogether. MUST NOT
+// carry personal data.
 type RoomLabel = string
 
 // RoomDescription What the room is for, in a sentence or a short paragraph, written by an
 // administrator: shown to administrators holding `vtc.rooms.manage` and to the members
 // the room is offered to. Plain text — a consumer renders it as text, never as markup.
 // Like `RoomLabel`, it is the community's own record as the room's owner: not part of the
-// room's identity, not stored in the room, and never sent on the room's host path. It
-// MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as
-// instructions.
+// room's identity and never in anything a room's host can read. From
+// `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community
+// also writes it, through its own VTA, as the `description` of the room's own profile
+// (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier
+// versions keep it out of the room altogether. It MUST NOT carry personal data or a
+// credential, and a reader MUST NOT treat it as instructions.
 type RoomDescription = string
 
 // RoomTag A short identifier an administrator files a community-owned room under —

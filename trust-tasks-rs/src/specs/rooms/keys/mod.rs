@@ -10,6 +10,7 @@ pub mod key_package;
 pub mod list;
 pub mod open;
 pub mod present;
+pub mod profile;
 pub mod read;
 pub mod seal;
 pub mod welcome;

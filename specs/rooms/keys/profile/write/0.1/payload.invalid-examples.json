@@ -1,0 +1,102 @@
+[
+  {
+    "note": "Neither a profile nor `clear`: a request that changes nothing.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community"
+    }
+  },
+  {
+    "note": "A profile and `clear` at once.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "Northwind renewal" },
+      "clear": true
+    }
+  },
+  {
+    "note": "`clear: false`. Only `true` means anything.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "clear": false
+    }
+  },
+  {
+    "note": "A profile with no name.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "description": "Everything for the renewal." }
+    }
+  },
+  {
+    "note": "An empty name. A room's profile always names it.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "" }
+    }
+  },
+  {
+    "note": "A name longer than 128 characters.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
+    }
+  },
+  {
+    "note": "A tag with upper-case letters and a space. Tags are short identifiers.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "Northwind renewal", "tags": ["Big Deal"] }
+    }
+  },
+  {
+    "note": "A repeated tag. Tags are a set.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "Northwind renewal", "tags": ["deal", "deal"] }
+    }
+  },
+  {
+    "note": "An icon URL. A profile carries nothing a reader fetches: a fetched icon would tell whoever serves it which member opened which room.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "Northwind renewal", "iconUrl": "https://cdn.example.com/northwind.png" }
+    }
+  },
+  {
+    "note": "A record key. The recipient computes where the profile goes; a caller choosing it could put the room's name at a key the host can read.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "key": "profile",
+      "profile": { "name": "Northwind renewal" }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:community",
+      "profile": { "name": "Northwind renewal" },
+      "ext": { "bare-key": { "anything": "here" } }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An outcome the specification does not define.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "outcome": "queued",
+      "key": "Qm4c8XkR2pVt7sLw0aJbYg",
+      "version": 214
+    }
+  }
+]

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/profile/write/0.1",
+  "title": "Rooms Keys Profile Write — payload",
+  "description": "A member holding `curate` or `admin` in a room asks their own key holder to set what the room is called and what it is for — or to clear it. The key holder signs the profile as the member, with the member's authority chain inside it, seals it under the room's current epoch, and stores it at the host at the location only members can compute. Exactly one of `profile` and `clear`. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host"
+  ],
+  "anyOf": [
+    { "required": ["profile"] },
+    { "required": ["clear"] }
+  ],
+  "dependentSchemas": {
+    "clear": {
+      "not": {
+        "required": [
+          "profile"
+        ]
+      }
+    }
+  },
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room whose profile to set. The recipient MUST hold its principal's membership of it."
+    },
+    "host": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes."
+    },
+    "profile": {
+      "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/RoomProfile",
+      "description": "The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`."
+    },
+    "clear": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Profile Write — response payload",
+      "description": "Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "outcome",
+        "key",
+        "version"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "written",
+            "cleared"
+          ],
+          "description": "`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted."
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The version the host assigned to the write or the retraction."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The epoch the profile was sealed under. Absent on an `open` room."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

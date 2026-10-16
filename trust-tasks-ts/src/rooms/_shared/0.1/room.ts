@@ -14,4 +14,4 @@ export interface RoomsSharedTypes {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AnchorCadence, AuthorityPresentation, CredentialRevocation, DataCommitment, EpochAnchor, EpochLink, HeadVersion, ReadVerification, RecordCount, RecordMetadata, RecordMetadataV2, RecordTrace, RetentionPolicy, RevocationEntry, RevocationHead, RevocationList, RoomRevocation, SealedRecord, SubjectRevocation, Visibility } from "../../../_shared/components.js";
+export type { AnchorCadence, AuthorityPresentation, CredentialRevocation, DataCommitment, EpochAnchor, EpochLink, HeadVersion, ReadVerification, RecordCount, RecordMetadata, RecordMetadataV2, RecordTrace, RetentionPolicy, RevocationEntry, RevocationHead, RevocationList, RoomProfile, RoomRevocation, SealedRecord, SubjectRevocation, Visibility } from "../../../_shared/components.js";

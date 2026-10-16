@@ -1,0 +1,65 @@
+[
+  {
+    "note": "No host. Nothing maps a room to its host, so the caller must name it.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board"
+    }
+  },
+  {
+    "note": "A host that is not a DID. The recipient resolves the host as a DID and speaks only the transports its document advertises; a URL would be an address the caller chose.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "host": "https://rooms.example.com"
+    }
+  },
+  {
+    "note": "A record key. The caller cannot know where the profile is — that is the point — so it cannot name one.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "host": "did:webvh:example.com:community",
+      "key": "room-profile"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "host": "did:webvh:example.com:community",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown status. `found`, `absent` and `cleared` are three different sentences to a member; a fourth would be one no surface knows how to say.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "status": "unknown"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A profile with no name. A room's profile always names it.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "status": "found",
+      "profile": {
+        "description": "Papers for the board."
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A rejection with a reason the specification does not define.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "status": "absent",
+      "rejected": [
+        { "epoch": 5, "version": 93, "reason": "looksWrong" }
+      ]
+    }
+  }
+]

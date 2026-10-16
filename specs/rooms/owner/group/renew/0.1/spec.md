@@ -81,6 +81,8 @@ Until this task a sealed room had no correct way to renew. Admissions and remova
 
 A member's own client holds no group key, so it cannot make a commit; [`rooms/keys/act`](../../../../keys/act/0.1/spec.md) therefore refuses to complete a `rooms/epoch/mint` for a sealed room, and names this task.
 
+*This paragraph is non-normative.* The advance moves the room's profile too: the profile is stored per epoch, so a key holder that also serves [`rooms/keys/profile/write`](../../../../keys/profile/write/0.1/spec.md) reads it before advancing and re-writes it under the new epoch afterwards, which is what lets a member who joins now — or reads only from where they joined — see what the room is. See that specification's *Keeping the profile readable across epochs*.
+
 ## Status of this Document
 
 This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).

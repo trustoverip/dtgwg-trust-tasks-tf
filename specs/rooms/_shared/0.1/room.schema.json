@@ -90,7 +90,7 @@
         "author",
         "proof"
       ],
-      "description": "The plaintext inside `SealedRecord.ciphertext` on an `attributed` or `private` room, as JSON, signed by its author. Client to client: no host task carries it, because a host receives only ciphertext. Defined so that every member's client writes and reads the same thing.\n\n**Producing.** A writer builds the object without `proof`, signs it with a W3C Data Integrity proof whose `verificationMethod` is a key of `author` and whose `proofPurpose` is `assertionMethod`, and seals the result (its UTF-8 JSON bytes) under the AEAD that binds the same `roomId`, `key`, `version` and epoch. A writer MUST support `eddsa-jcs-2022`; `ecdsa-jcs-2019` MAY be used for a hardware-backed signer.\n\n**Reading.** After opening a record a reader MUST, before showing any member of it or trusting its `file`: (1) parse it as this object and refuse an unknown member; (2) verify `proof` against `author`'s DID document, for `assertionMethod`; (3) check that `roomId`, `key` and `version` equal the location the record was read from; (4) on an `attributed` room, check that `author` equals the `author` the host recorded for the record. A reader MUST refuse a record that fails any of these, and MUST NOT show it with a warning instead.\n\n**Why the location is signed as well as sealed.** The AEAD stops the host relocating ciphertext, but every member can open and re-seal a record. Without `roomId`, `key` and `version` under the author's signature, a member could copy another member's signed body to a new key or a later version, and on a `private` room, where the host records no author, readers would attribute it to the original author.",
+      "description": "The plaintext inside `SealedRecord.ciphertext` on an `attributed` or `private` room, as JSON, signed by its author. Client to client: no host task carries it, because a host receives only ciphertext. Defined so that every member's client writes and reads the same thing.\n\n**Producing.** A writer builds the object without `proof`, signs it with a W3C Data Integrity proof whose `verificationMethod` is a key of `author` and whose `proofPurpose` is `assertionMethod`, and seals the result (its UTF-8 JSON bytes) under the AEAD that binds the same `roomId`, `key`, `version` and epoch. A writer MUST support `eddsa-jcs-2022`; `ecdsa-jcs-2019` MAY be used for a hardware-backed signer.\n\n**Reading.** After opening a record a reader MUST, before showing any member of it or trusting its `file`: (1) parse it as this object and refuse an unknown member; (2) verify `proof` against `author`'s DID document, for `assertionMethod`; (3) check that `roomId`, `key` and `version` equal the location the record was read from; (4) on an `attributed` room, check that `author` equals the `author` the host recorded for the record. A reader MUST refuse a record that fails any of these, and MUST NOT show it with a warning instead.\n\n**Why the location is signed as well as sealed.** The AEAD stops the host relocating ciphertext, but every member can open and re-seal a record. Without `roomId`, `key` and `version` under the author's signature, a member could copy another member's signed body to a new key or a later version, and on a `private` room, where the host records no author, readers would attribute it to the original author.\n\n**A profile record.** A body carrying `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its records: it MUST carry none of `title`, `description`, `body`, `tags` and `file`, and the rules for locating, accepting and choosing it are `RoomProfileStatement`'s, applied on top of the four above. A reader that opens one in the course of reading or listing the room's records SHOULD NOT present it as a record — it is how the room describes itself, not something a member wrote into it. A reader that predates `roomProfile` refuses it by rule (1), which shows nothing rather than something wrong.",
       "properties": {
         "roomId": {
           "type": "string",
@@ -137,6 +137,10 @@
         "file": {
           "$ref": "blobs.schema.json#/$defs/FileManifest",
           "description": "Present when the record carries a file. Its `blobRef` MUST be the one the record names in `blobs`."
+        },
+        "roomProfile": {
+          "$ref": "#/$defs/RoomProfileStatement",
+          "description": "Present only on the room's profile record, which then carries no `title`, `description`, `body`, `tags` or `file`. See `RoomProfileStatement`."
         },
         "proof": {
           "type": "object",
@@ -666,6 +670,90 @@
         "digest": {
           "$ref": "../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
           "description": "SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence."
+        }
+      }
+    },
+    "RoomProfile": {
+      "title": "RoomProfile",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "description": "What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\n\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\n\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\n\n**Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description."
+        },
+        "tags": {
+          "type": "array",
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+          },
+          "description": "Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here."
+        },
+        "emoji": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16,
+          "description": "One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand."
+        }
+      }
+    },
+    "RoomProfileStatement": {
+      "title": "RoomProfileStatement",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "issuedAt",
+        "authority"
+      ],
+      "description": "The room's profile as a record carries it: the `roomProfile` member of a `SealedRecordBody`, signed by its author like every record body, with the evidence a reader needs to decide whether the author was entitled to say it.\n\n**Where it is: one record per epoch, at a key only members can compute.** On an `attributed` or `private` room the profile written under epoch `E` is stored at the record key\n\n    profile_key(E) = base64url-nopad(HKDF-SHA256(ikm = storage_key(E), salt = \"\", info = \"openvtc/room/profile/v1\" || roomId || u64be(E), L = 16))\n\nwhere `storage_key(E)` is the room's storage key for epoch `E` — the one records sealed under `E` are sealed with, as for a file key (`blobs.schema.json`) — `roomId` is its UTF-8 bytes exactly as on the wire, `u64be` is as `blobs.schema.json` defines it, and `salt` is the empty string. The result is 22 characters, the shape of any random record key, so to the host it is one more opaque record and the family's rule that a sealed room's keys are opaque (`RecordMetadata.key`) holds for it as for any other. A member finds it knowing nothing but the room and the epoch, which is all a member who has just joined has. Since `storage_key(E)` never leaves a member's key holder, it is the key holder that computes it (`rooms/keys/profile/read`, `rooms/keys/profile/write`).\n\nOn an `open` room, which has no storage key and hides nothing from its host, the profile is the record at the fixed key `room-profile`, and its `cleartext.body` is the UTF-8 JSON of the signed `SealedRecordBody` — the object the sealed tiers seal — so that a reader verifies one thing on every tier. A writer SHOULD also set `cleartext.title` to the profile's `name`.\n\nThe record is written with `rooms/records/put` like any other, so a host enforces only `write` on it and cannot tell it from any other record. Whether its author could say what the room is called is therefore decided by readers, from what the statement carries.\n\n**Who may write it.** The author's `authority` must confer `curate` or `admin` at the room's scope: `admin` because naming the room is part of governing it, `curate` because it is the standing to judge what the room's shared knowledge is, and a room's name and purpose are the first thing a member reads of it. `write` alone never suffices: every member able to add a record could otherwise rename the room for everyone.\n\n**Accepting one.** A reader resolving a room's profile MUST apply to the record at the profile's location the `SealedRecordBody` reading rules (1)–(4) — on an `open` room to the body parsed from `cleartext.body`, with rule (4) against the author the host recorded — and MUST also refuse it unless:\n  1. it carries `roomProfile` and none of `title`, `description`, `body`, `tags` and `file`;\n  2. on a sealed tier, the epoch it was sealed under is `E`, the epoch whose key located it;\n  3. `authority` verifies as a host verifies a chain (`AuthorityPresentation`): at most 8 links, leaf first; every link's `proof` made with a key its own `issuer` lists for `assertionMethod`; the last link issued by `roomId`; no link widening what its parent conferred, in actions, scope or validity; the whole conferring `curate` or `admin` at this room's scope; the leaf's subject equal to the body's `author`, which stands in for a host's presenter binding; and every link valid at `issuedAt` rather than at the moment of reading. The reader MUST NOT dereference a link it was not given;\n  4. `issuedAt` is no later than five minutes after, and no earlier than one hour before, the `updatedAt` the host reports for the record;\n  5. where the reader holds a `RevocationList` for the room, verified as a host verifies one, no link of `authority` is revoked by an entry whose `revokedAt` is at or before `issuedAt`.\nA reader MUST ignore a profile that fails any of these, as though it were absent — and, unlike an ordinary record, SHOULD say that it did, naming the author where the tier discloses one: a profile written by somebody without the standing to write it is somebody trying to rename the room.\n\n**Revocation is not retroactive.** A profile written while its author held the standing to write it stays valid after that author is removed, their grant lapses, or a `room` entry resets every credential. The statement was made with authority; withdrawing the authority withdraws what the author may do next, not what they already did, and the alternative — every member's view of the room's name going blank when whoever named it is removed — is something nobody asked for. It is not a back door. A removed party cannot write afterwards, because a host refuses every presentation a list it holds revokes; a statement back-dated into a grant its author no longer holds fails item 4 unless the host colludes; and removal advances the room's epoch, after which the owner's key holder re-writes the profile under the new epoch as the owner (`rooms/keys/profile/write`), so on the ordinary path the removed author's statement is superseded by the same act that removes them.\n\n**Choosing among several.** There is at most one profile per epoch, because there is one record per key. A reader at epoch `C` takes the profile at `profile_key(C)`; if there is none, or it fails the checks above, it tries `C - 1`, and so on down to the earliest epoch it can derive a storage key for, and takes the first one it accepts — the newest. It MUST NOT prefer an older profile to a newer one it accepts. A record at a profile location that is `retracted` is a profile deliberately cleared — retraction is `rooms/records/curate`, for which a host requires `curate` — and the walk stops there: the room has no profile. A profile accepted below `C` is **stale**: written before the room's latest epoch advance and not re-written since. A member of a `fromJoin` room cannot walk back at all, which is why the profile is re-written at every advance.\n\n**Size.** A writer SHOULD set `padding` so that the UTF-8 JSON of the signed body is a multiple of 1024 bytes, so that a host comparing ciphertext lengths learns nothing about how long the name or the description is. A reader ignores `padding`.",
+      "properties": {
+        "profile": {
+          "$ref": "#/$defs/RoomProfile"
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the author made this statement: signed with it, the instant `authority` is evaluated at, and bounded against the host's `updatedAt` for the record so that it cannot be back-dated into a grant the author no longer holds."
+        },
+        "authority": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string"
+          },
+          "description": "The author's authority chain, LEAF FIRST, ending with a credential the room issued, conferring `curate` or `admin` on `author` at this room's scope. The credentials themselves, never a zero-knowledge presentation: a reader is a member, who already sees `author`. Carried in the statement because readers, not the host, decide whether its author could say it, and a reader fetches no link it was not given. Capped at 8, as a presentation is."
+        },
+        "padding": {
+          "type": "string",
+          "maxLength": 8192,
+          "description": "Ignored by readers; see **Size**. A writer SHOULD use spaces."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
         }
       }
     }

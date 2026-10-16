@@ -342,6 +342,218 @@ class FileManifest {
       };
 }
 
+/// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
+/// reverse-DNS namespace; structure under each namespace is opaque to the framework.
+typedef Ext = Map<String, dynamic>;
+
+/// What a room says about itself to its own members: a name and, optionally, a
+/// description, short tags and an emoji, so that a member's wallet, portal or CLI can
+/// show what each room is rather than a DID. **It lives in the room, and only there.**
+/// A profile is carried in a record of the room (`RoomProfileStatement`), sealed on
+/// `attributed` and `private` rooms like every other record, so the room's host stores
+/// ciphertext and learns neither the name nor anything else here. It is never put in a
+/// credential — credentials are presented to hosts — nor in a host's record of the
+/// room, in `rooms/create` or `rooms/owner/register`, or in any member a host can
+/// read. On an `open` room it is cleartext, as everything in an open room is. **Plain
+/// text, never instructions.** Every member is free text chosen by whoever wrote the
+/// profile and shown to every member of the room. A reader renders `name`,
+/// `description` and `tags` as text — never as markup, never as a link it follows —
+/// removes or replaces control characters before showing them, and MUST NOT treat any
+/// of it as instructions, which matters most for an agent acting for a member. A
+/// writer MUST NOT put personal data or a credential in any member. **Growth.** A new
+/// optional member arrives in a later version of this component. A reader refuses a
+/// member it does not know (the `SealedRecordBody` rules), so a profile carrying one
+/// is not shown by a reader that predates it, and a writer SHOULD NOT use a member it
+/// cannot expect the room's readers to know. An ecosystem extension goes in `ext`,
+/// which a reader that does not understand it ignores. A change no earlier reader
+/// could survive is a new statement under a new derivation label
+/// (`openvtc/room/profile/v2`), written beside this one until the room's readers have
+/// moved.
+class RoomProfile {
+  const RoomProfile({
+    required this.name,
+    this.description,
+    this.tags,
+    this.emoji,
+    this.ext,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RoomProfile.fromJson(Map<String, dynamic> json) => RoomProfile(
+        name: json['name'] as String,
+        description: json['description'] as String?,
+        tags: json['tags'] == null
+            ? null
+            : (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
+        emoji: json['emoji'] as String?,
+        ext: json['ext'] as Map<String, dynamic>?,
+      );
+
+  /// The room's name as its members see it. Plain text, one line. Bounded like the label
+  /// a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can
+  /// write the same name here that it shows its administrators and the members it offers
+  /// the room to.
+  final String name;
+
+  /// What the room is for, in a sentence or a short paragraph. Plain text. Absent when
+  /// the room has none; an empty string is not a description.
+  final String? description;
+
+  /// Short identifiers the room files itself under, as a set: order carries no meaning.
+  /// A member's surface MAY filter or group rooms by them. They are the room's own and
+  /// shown to its members — distinct from the tags a community files the rooms it owns
+  /// under for its administrators, which are never written here.
+  final List<String>? tags;
+
+  /// One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY
+  /// show beside the name. Text, rendered as text: never an image, never a URL, never
+  /// anything a reader fetches, since a fetched icon would tell whoever serves it which
+  /// member opened which room, and when. A reader that cannot render it shows nothing in
+  /// its place.
+  final String? emoji;
+
+  /// Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it
+  /// does not understand.
+  final Ext? ext;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'name': name,
+        if (description != null) 'description': description!,
+        if (tags != null) 'tags': tags!,
+        if (emoji != null) 'emoji': emoji!,
+        if (ext != null) 'ext': ext!,
+      };
+}
+
+/// The room's profile as a record carries it: the `roomProfile` member of a
+/// `SealedRecordBody`, signed by its author like every record body, with the evidence
+/// a reader needs to decide whether the author was entitled to say it. **Where it is:
+/// one record per epoch, at a key only members can compute.** On an `attributed` or
+/// `private` room the profile written under epoch `E` is stored at the record key
+/// profile_key(E) = base64url-nopad(HKDF-SHA256(ikm = storage_key(E), salt = "", info
+/// = "openvtc/room/profile/v1" || roomId || u64be(E), L = 16)) where `storage_key(E)`
+/// is the room's storage key for epoch `E` — the one records sealed under `E` are
+/// sealed with, as for a file key (`blobs.schema.json`) — `roomId` is its UTF-8 bytes
+/// exactly as on the wire, `u64be` is as `blobs.schema.json` defines it, and `salt` is
+/// the empty string. The result is 22 characters, the shape of any random record key,
+/// so to the host it is one more opaque record and the family's rule that a sealed
+/// room's keys are opaque (`RecordMetadata.key`) holds for it as for any other. A
+/// member finds it knowing nothing but the room and the epoch, which is all a member
+/// who has just joined has. Since `storage_key(E)` never leaves a member's key holder,
+/// it is the key holder that computes it (`rooms/keys/profile/read`,
+/// `rooms/keys/profile/write`). On an `open` room, which has no storage key and hides
+/// nothing from its host, the profile is the record at the fixed key `room-profile`,
+/// and its `cleartext.body` is the UTF-8 JSON of the signed `SealedRecordBody` — the
+/// object the sealed tiers seal — so that a reader verifies one thing on every tier. A
+/// writer SHOULD also set `cleartext.title` to the profile's `name`. The record is
+/// written with `rooms/records/put` like any other, so a host enforces only `write` on
+/// it and cannot tell it from any other record. Whether its author could say what the
+/// room is called is therefore decided by readers, from what the statement carries.
+/// **Who may write it.** The author's `authority` must confer `curate` or `admin` at
+/// the room's scope: `admin` because naming the room is part of governing it, `curate`
+/// because it is the standing to judge what the room's shared knowledge is, and a
+/// room's name and purpose are the first thing a member reads of it. `write` alone
+/// never suffices: every member able to add a record could otherwise rename the room
+/// for everyone. **Accepting one.** A reader resolving a room's profile MUST apply to
+/// the record at the profile's location the `SealedRecordBody` reading rules (1)–(4) —
+/// on an `open` room to the body parsed from `cleartext.body`, with rule (4) against
+/// the author the host recorded — and MUST also refuse it unless: 1. it carries
+/// `roomProfile` and none of `title`, `description`, `body`, `tags` and `file`; 2. on
+/// a sealed tier, the epoch it was sealed under is `E`, the epoch whose key located
+/// it; 3. `authority` verifies as a host verifies a chain (`AuthorityPresentation`):
+/// at most 8 links, leaf first; every link's `proof` made with a key its own `issuer`
+/// lists for `assertionMethod`; the last link issued by `roomId`; no link widening
+/// what its parent conferred, in actions, scope or validity; the whole conferring
+/// `curate` or `admin` at this room's scope; the leaf's subject equal to the body's
+/// `author`, which stands in for a host's presenter binding; and every link valid at
+/// `issuedAt` rather than at the moment of reading. The reader MUST NOT dereference a
+/// link it was not given; 4. `issuedAt` is no later than five minutes after, and no
+/// earlier than one hour before, the `updatedAt` the host reports for the record; 5.
+/// where the reader holds a `RevocationList` for the room, verified as a host verifies
+/// one, no link of `authority` is revoked by an entry whose `revokedAt` is at or
+/// before `issuedAt`. A reader MUST ignore a profile that fails any of these, as
+/// though it were absent — and, unlike an ordinary record, SHOULD say that it did,
+/// naming the author where the tier discloses one: a profile written by somebody
+/// without the standing to write it is somebody trying to rename the room.
+/// **Revocation is not retroactive.** A profile written while its author held the
+/// standing to write it stays valid after that author is removed, their grant lapses,
+/// or a `room` entry resets every credential. The statement was made with authority;
+/// withdrawing the authority withdraws what the author may do next, not what they
+/// already did, and the alternative — every member's view of the room's name going
+/// blank when whoever named it is removed — is something nobody asked for. It is not a
+/// back door. A removed party cannot write afterwards, because a host refuses every
+/// presentation a list it holds revokes; a statement back-dated into a grant its
+/// author no longer holds fails item 4 unless the host colludes; and removal advances
+/// the room's epoch, after which the owner's key holder re-writes the profile under
+/// the new epoch as the owner (`rooms/keys/profile/write`), so on the ordinary path
+/// the removed author's statement is superseded by the same act that removes them.
+/// **Choosing among several.** There is at most one profile per epoch, because there
+/// is one record per key. A reader at epoch `C` takes the profile at `profile_key(C)`;
+/// if there is none, or it fails the checks above, it tries `C - 1`, and so on down to
+/// the earliest epoch it can derive a storage key for, and takes the first one it
+/// accepts — the newest. It MUST NOT prefer an older profile to a newer one it
+/// accepts. A record at a profile location that is `retracted` is a profile
+/// deliberately cleared — retraction is `rooms/records/curate`, for which a host
+/// requires `curate` — and the walk stops there: the room has no profile. A profile
+/// accepted below `C` is **stale**: written before the room's latest epoch advance and
+/// not re-written since. A member of a `fromJoin` room cannot walk back at all, which
+/// is why the profile is re-written at every advance. **Size.** A writer SHOULD set
+/// `padding` so that the UTF-8 JSON of the signed body is a multiple of 1024 bytes, so
+/// that a host comparing ciphertext lengths learns nothing about how long the name or
+/// the description is. A reader ignores `padding`.
+class RoomProfileStatement {
+  const RoomProfileStatement({
+    required this.profile,
+    required this.issuedAt,
+    required this.authority,
+    this.padding,
+    this.ext,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RoomProfileStatement.fromJson(Map<String, dynamic> json) =>
+      RoomProfileStatement(
+        profile: RoomProfile.fromJson(json['profile'] as Map<String, dynamic>),
+        issuedAt: json['issuedAt'] as String,
+        authority: (json['authority'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+        padding: json['padding'] as String?,
+        ext: json['ext'] as Map<String, dynamic>?,
+      );
+
+  final RoomProfile profile;
+
+  /// When the author made this statement: signed with it, the instant `authority` is
+  /// evaluated at, and bounded against the host's `updatedAt` for the record so that it
+  /// cannot be back-dated into a grant the author no longer holds.
+  final String issuedAt;
+
+  /// The author's authority chain, LEAF FIRST, ending with a credential the room issued,
+  /// conferring `curate` or `admin` on `author` at this room's scope. The credentials
+  /// themselves, never a zero-knowledge presentation: a reader is a member, who already
+  /// sees `author`. Carried in the statement because readers, not the host, decide
+  /// whether its author could say it, and a reader fetches no link it was not given.
+  /// Capped at 8, as a presentation is.
+  final List<String> authority;
+
+  /// Ignored by readers; see **Size**. A writer SHOULD use spaces.
+  final String? padding;
+
+  /// Ecosystem-defined extension members per SPEC.md §4.5.1.
+  final Ext? ext;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'profile': profile.toJson(),
+        'issuedAt': issuedAt,
+        'authority': authority,
+        if (padding != null) 'padding': padding!,
+        if (ext != null) 'ext': ext!,
+      };
+}
+
 /// The plaintext inside `SealedRecord.ciphertext` on an `attributed` or `private`
 /// room, as JSON, signed by its author. Client to client: no host task carries it,
 /// because a host receives only ciphertext. Defined so that every member's client
@@ -362,7 +574,14 @@ class FileManifest {
 /// `roomId`, `key` and `version` under the author's signature, a member could copy
 /// another member's signed body to a new key or a later version, and on a `private`
 /// room, where the host records no author, readers would attribute it to the original
-/// author.
+/// author. **A profile record.** A body carrying `roomProfile` is the room's own
+/// profile (`RoomProfileStatement`) and not one of its records: it MUST carry none of
+/// `title`, `description`, `body`, `tags` and `file`, and the rules for locating,
+/// accepting and choosing it are `RoomProfileStatement`'s, applied on top of the four
+/// above. A reader that opens one in the course of reading or listing the room's
+/// records SHOULD NOT present it as a record — it is how the room describes itself,
+/// not something a member wrote into it. A reader that predates `roomProfile` refuses
+/// it by rule (1), which shows nothing rather than something wrong.
 class SealedRecordBody {
   const SealedRecordBody({
     required this.roomId,
@@ -374,6 +593,7 @@ class SealedRecordBody {
     this.body,
     this.tags,
     this.file,
+    this.roomProfile,
     required this.proof,
   });
 
@@ -393,6 +613,10 @@ class SealedRecordBody {
         file: json['file'] == null
             ? null
             : FileManifest.fromJson(json['file'] as Map<String, dynamic>),
+        roomProfile: json['roomProfile'] == null
+            ? null
+            : RoomProfileStatement.fromJson(
+                json['roomProfile'] as Map<String, dynamic>),
         proof: json['proof'] as Map<String, dynamic>,
       );
 
@@ -422,6 +646,10 @@ class SealedRecordBody {
   /// names in `blobs`.
   final FileManifest? file;
 
+  /// Present only on the room's profile record, which then carries no `title`,
+  /// `description`, `body`, `tags` or `file`. See `RoomProfileStatement`.
+  final RoomProfileStatement? roomProfile;
+
   /// The author's Data Integrity proof over every other member.
   final Map<String, dynamic> proof;
 
@@ -436,6 +664,7 @@ class SealedRecordBody {
         if (body != null) 'body': body!,
         if (tags != null) 'tags': tags!,
         if (file != null) 'file': file!.toJson(),
+        if (roomProfile != null) 'roomProfile': roomProfile!.toJson(),
         'proof': proof,
       };
 }
