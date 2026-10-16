@@ -9,6 +9,7 @@ pub mod list;
 pub mod make_membership;
 pub mod personhood;
 pub mod purge;
+pub mod registry_consent;
 pub mod removal_notice;
 pub mod removed;
 pub mod renew;

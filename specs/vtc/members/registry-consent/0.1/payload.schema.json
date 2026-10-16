@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/registry-consent/0.1",
+  "title": "VTC Members Registry Consent — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["publishConsent"],
+  "properties": {
+    "publishConsent": {
+      "type": "boolean",
+      "description": "The member's own decision on trust-registry publication: `true` consents to the community publishing their membership in its trust registry, `false` withdraws that consent. Applies to the member who signed the document, and to no one else."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Registry Consent — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["did", "publishConsent", "changed", "registrySync", "effectiveAt"],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The member whose consent this is: the document's signer."
+        },
+        "publishConsent": {
+          "type": "boolean",
+          "description": "The consent now recorded on the member record."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "Whether this document changed the recorded consent. `false` when the member restated the value already recorded."
+        },
+        "registrySync": {
+          "type": "string",
+          "enum": ["queued", "notConfigured", "unchanged"],
+          "description": "What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it)."
+        },
+        "effectiveAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
