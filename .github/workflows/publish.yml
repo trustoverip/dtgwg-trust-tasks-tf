@@ -529,10 +529,24 @@ jobs:
       # falls back to guessing from commit messages — only a warning, so nothing
       # goes red. git-cliff is for the non-Rust changelogs, from the same
       # cliff.toml release-plz reads, so every part of a release reads alike.
+      #
+      # release-plz is PINNED to 0.3.171. install-action ships the static
+      # x86_64-unknown-linux-musl build, and 0.3.172 is the first to carry
+      # pest >= 2.9.3, which refuses to parse when stacker::remaining_stack()
+      # reports under 64 KiB. On musl that figure is wrong for the main thread
+      # (rust-lang/stacker#155: pthread_getattr_np reports only the stack mapped
+      # so far, ~128 KiB), so Tera fails on the first line of every changelog
+      # template — `Template parse error: --> 1:1 | # Changelog | stack limit
+      # reached` — and no Release PR can be built. `ulimit -s` cannot help; the
+      # gnu build and 0.3.171 (pest 2.9.2) both work. Unpin once a release-plz
+      # release carries a stacker with #155 fixed: check by running
+      # `release-plz update` from the musl build on a commit with unreleased
+      # changes. (The publish job is unaffected — release-plz/action installs
+      # its own default, 0.3.160.)
       - name: Install release-plz, cargo-semver-checks and git-cliff
         uses: taiki-e/install-action@v2
         with:
-          tool: release-plz,cargo-semver-checks,git-cliff
+          tool: release-plz@0.3.171,cargo-semver-checks,git-cliff
 
       - name: Open or update the Release PR
         env:
