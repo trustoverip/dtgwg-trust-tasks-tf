@@ -2073,12 +2073,15 @@ mod vtc {
         mod community {
             mod create {
                 mod v0_1;
+                mod v0_2;
             }
             mod get {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod members {
                 mod add {
@@ -2091,6 +2094,9 @@ mod vtc {
                     mod v0_1;
                     mod v0_2;
                 }
+            }
+            mod update {
+                mod v0_1;
             }
         }
         mod get {
@@ -2110,6 +2116,7 @@ mod vtc {
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod storage {

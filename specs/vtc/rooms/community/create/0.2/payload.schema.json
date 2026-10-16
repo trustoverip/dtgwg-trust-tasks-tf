@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/create/0.2",
+  "title": "VTC Rooms Community Create — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "label",
+    "visibility",
+    "reason"
+  ],
+  "properties": {
+    "label": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomLabel"
+    },
+    "description": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomDescription",
+      "description": "What the room is for, shown beside its label. Absent: the room has none until an administrator gives it one with vtc/rooms/community/update."
+    },
+    "tags": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomTags",
+      "description": "Tags to file the room under, for administrators' filtering. Absent: none."
+    },
+    "visibility": {
+      "$ref": "../../../../../rooms/_shared/0.1/room.schema.json#/$defs/Visibility",
+      "description": "The tier, fixed for the life of the room. The community's rooms policy decides which it may create."
+    },
+    "retentionPolicy": {
+      "$ref": "../../../../../rooms/_shared/0.1/room.schema.json#/$defs/RetentionPolicy",
+      "description": "Whether the room keeps its history readable across a membership change. Immutable; absent means `chained`."
+    },
+    "retentionDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 36500,
+      "description": "How long the room is kept after it lapses. Absent: the community's default."
+    },
+    "storageConfig": {
+      "$ref": "../../../../../vtc/_shared/0.1/room-storage.schema.json#/$defs/StorageConfigId",
+      "description": "The storage config to receive the room's uploads. Absent: what the community's rooms policy decides, else its default config."
+    },
+    "reason": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Create — response payload",
+      "description": "Success response to vtc/rooms/community/create. Type https://trusttasks.org/spec/vtc/rooms/community/create/0.2#response. The room as created, owned by the community.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room"
+      ],
+      "properties": {
+        "room": {
+          "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/CommunityRoomV2"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

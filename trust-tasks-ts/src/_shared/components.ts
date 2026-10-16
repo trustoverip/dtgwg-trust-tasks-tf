@@ -1119,9 +1119,32 @@ export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retir
  */
 export type RoleName = string;
 /**
+ * What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity, not stored in the room, and never sent on the room's host path. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
+ */
+export type RoomDescription = string;
+/**
  * A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and not sent to the room's host path. MUST NOT carry personal data.
  */
 export type RoomLabel = string;
+/**
+ * A short identifier an administrator files a community-owned room under — `board`, `working-group`, `finance` — so the room list can be filtered. Lower-case letters, digits and hyphens, starting with a letter or digit. Owner-side tracking metadata for holders of `vtc.rooms.manage` only: never shown to members, never sent on the room's host path, and it confers nothing.
+ */
+export type RoomTag = string;
+/**
+ * The room's tags, at most eight, as a set: order carries no meaning. An empty list means the room has none — a tag grants nothing, so empty has no more dangerous reading.
+ *
+ * @maxItems 8
+ */
+export type RoomTags =
+  | []
+  | [RoomTag]
+  | [RoomTag, RoomTag]
+  | [RoomTag, RoomTag, RoomTag]
+  | [RoomTag, RoomTag, RoomTag, RoomTag]
+  | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag]
+  | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag]
+  | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag]
+  | [RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag, RoomTag];
 /**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
  */
@@ -4702,6 +4725,49 @@ export interface CommunityRoom {
   createdBy?: string;
 }
 /**
+ * What vtc/rooms/community/{create,get,list}/0.2 and vtc/rooms/community/update/0.1 return: `CommunityRoom` plus the details an administrator keeps track of a room by — `description`, `tags`, and who last changed them and when. A separate definition, not a change to `CommunityRoom`, so that the 0.1 versions of those tasks keep the exact shape they published. The room's creation is `room.createdAt` and `createdBy`.
+ */
+export interface CommunityRoomV2 {
+  room: HostedRoom;
+  label: RoomLabel;
+  /**
+   * Absent when the room has none.
+   */
+  description?: RoomDescription;
+  /**
+   * Absent or empty when the room has none.
+   */
+  tags?: RoomTags;
+  /**
+   * The storage config receiving the room's new uploads.
+   */
+  storageConfig?: StorageConfigId;
+  /**
+   * Members in state `admitted`.
+   */
+  admitted: number;
+  /**
+   * Offers not yet accepted or withdrawn.
+   */
+  offered: number;
+  /**
+   * When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before.
+   */
+  ownerAuthorityValidUntil?: string;
+  /**
+   * The administrator who created it.
+   */
+  createdBy?: string;
+  /**
+   * When `label`, `description` or `tags` last changed. Absent until the first change after creation. Distinct from `room.updatedAt`, which is the host record's and moves with the room's epoch and lifecycle.
+   */
+  detailsUpdatedAt?: string;
+  /**
+   * The administrator who made that change. Present exactly when `detailsUpdatedAt` is. The earlier values and who set them are in the community's audit trail, not here.
+   */
+  detailsUpdatedBy?: string;
+}
+/**
  * A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.
  *
  * This document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.
@@ -6958,6 +7024,30 @@ export interface OfferCredentials {
    * The Verifiable Authority Credential granting `actions` until `validUntil`.
    */
   authority: string;
+}
+/**
+ * What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.
+ */
+export interface OfferV2 {
+  roomId: string;
+  /**
+   * The room's host: this community.
+   */
+  host: string;
+  label: RoomLabel;
+  /**
+   * Absent when the room has none.
+   */
+  description?: RoomDescription;
+  visibility: Visibility;
+  actions: MemberActions;
+  validUntil: string;
+  offeredAt: string;
+  /**
+   * `open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.
+   */
+  state: "open" | "accepted";
+  credentials: OfferCredentials;
 }
 /**
  * One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).

@@ -1,0 +1,25 @@
+[
+  {
+    "note": "A page size above the maximum.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "note": "A tag filter that is not an identifier.",
+    "payload": {
+      "tag": "Finance Team"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "limit": 50,
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]
