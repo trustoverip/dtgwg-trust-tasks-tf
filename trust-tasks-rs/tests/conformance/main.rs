@@ -1114,6 +1114,7 @@ mod rooms {
         mod group {
             mod add {
                 mod v0_1;
+                mod v0_2;
             }
             mod create {
                 mod v0_1;
