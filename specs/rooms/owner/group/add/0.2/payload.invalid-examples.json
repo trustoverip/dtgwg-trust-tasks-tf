@@ -1,0 +1,51 @@
+[
+  {
+    "note": "No member. An owner admits a party, not a KeyPackage: naming who is meant is what lets the recipient refuse a KeyPackage for somebody else.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "keyPackage": "AAEAAgADAAQ"
+    }
+  },
+  {
+    "note": "No host. Admission advances the room's epoch at its host; a recipient asked to guess where would be keeping a hosting register it must not keep.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "keyPackage": "AAEAAgADAAQ"
+    }
+  },
+  {
+    "note": "A KeyPackage in standard base64 with padding. The family carries MLS messages as base64url without padding, and accepting both would give one KeyPackage two spellings.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "keyPackage": "AAEAAgADAAQ+/w=="
+    }
+  },
+  {
+    "note": "A Welcome in the request. The recipient produces the Welcome; a caller supplying one is asking it to deliver group secrets it did not create.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "keyPackage": "AAEAAgADAAQ",
+      "welcome": "AAEAAgADAAQ"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "keyPackage": "AAEAAgADAAQ",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]
