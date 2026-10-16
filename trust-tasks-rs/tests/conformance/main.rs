@@ -1097,8 +1097,12 @@ mod rooms {
             mod v0_1;
             mod v0_2;
         }
+        mod label {
+            mod v0_1;
+        }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod read {
             mod v0_1;

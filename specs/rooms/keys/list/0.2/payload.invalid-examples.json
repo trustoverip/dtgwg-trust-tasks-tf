@@ -1,0 +1,37 @@
+[
+  {
+    "note": "A roomId filter. The request carries no filter: a filter would turn this into \"is my principal in THAT room\", which is a different question with a different answer and no authorization story of its own. `includePersonal` changes what an entry carries, never which entries come back.",
+    "payload": { "roomId": "did:webvh:example.com:rooms:northwind" }
+  },
+  {
+    "note": "A member filter. The recipient answers for the members its caller may act as; naming one would be a way to ask whether the recipient serves a member the caller does not act as.",
+    "payload": { "member": "did:example:alice-work" }
+  },
+  {
+    "note": "Paging members. Rooms are bounded by how many a person is in, so there is no cursor to issue and none to accept.",
+    "payload": { "limit": 50, "cursor": "eyJhZnRlciI6MX0" }
+  },
+  {
+    "note": "includePersonal as a string. It is a boolean; a string \"false\" would read as true in too many languages.",
+    "payload": { "includePersonal": "false" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "variant": "response",
+    "note": "An entry with no member. 0.2 names whose group state each entry is, so a room held as two personas is two distinguishable entries and a client can name the one it means.",
+    "payload": { "rooms": [ { "roomId": "did:webvh:example.com:rooms:northwind", "epoch": 4, "earliestReadableEpoch": 1 } ] }
+  },
+  {
+    "variant": "response",
+    "note": "An empty personal label. A member with no label has no `personal`; an object carrying only `updatedAt` would be a second way to say so.",
+    "payload": { "rooms": [ { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "epoch": 4, "earliestReadableEpoch": 1, "personal": { "updatedAt": "2026-10-16T09:00:00Z" } } ] }
+  },
+  {
+    "variant": "response",
+    "note": "A personal label with no `updatedAt`. Every label says when it last changed, so a client showing it on several devices can tell which copy is current.",
+    "payload": { "rooms": [ { "roomId": "did:webvh:example.com:rooms:northwind", "member": "did:example:alice-work", "epoch": 4, "earliestReadableEpoch": 1, "personal": { "label": "Northwind tender" } } ] }
+  }
+]
