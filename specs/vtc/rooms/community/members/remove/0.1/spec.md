@@ -91,7 +91,16 @@ A conforming **community** (`recipient`):
 1. **MUST** refuse a caller without `vtc.rooms.manage` with `permissionDenied`, and **MUST** answer `notFound` for a room it does not own and `notInRoom` for a member holding neither an admission nor an open offer.
 2. On a sealed tier, for an admitted member, **MUST** have its VTA remove them and advance the room before recording the removal, and **MUST** record it only once the VTA has answered that it did.
 3. **MUST** withdraw an open offer, so it is never listed or accepted again.
-4. **MUST** say in its record and its answer that removal does not recall what was read.
+4. **MUST NOT** represent a removal, in its record of it or in its answer, as recalling what the member already read, re-sealing what was written before it, or revoking the member's authority credential. The answer says what the removal did in its structured members, and nothing more is required of it: `member.state` is `removed`; `member.validUntil` is when a host stops honouring the member's authority credential; and `epoch`, present only on a sealed tier for an admitted member, is the first epoch sealed without them. Where `epoch` is absent nothing was withdrawn cryptographically — an `open` room, or an offer withdrawn.
+
+A conforming **producer** (the administrator's surface):
+
+1. **SHOULD** show the requester, before the request is signed — and before any step-up gesture bound to it — what removal does and does not do on the room's tier (*What removal means, and does not*, above), and **SHOULD** show `validUntil` from the member's record.
+2. **SHOULD** report the answer from its structured members — `validUntil`, and `epoch` where present — and **MUST NOT** report an `open` room's removal, or any removal, as ending access to what the member already read.
+
+### Why the answer carries no notice
+
+What a removal does not do is the same for every removal on a tier, so a sentence saying it in every answer carries nothing the caller cannot render from this specification, from the tier, and from `validUntil` and `epoch` — and it would be server-chosen prose shown to an administrator as guidance, in one language, after the decision was made. The moment it matters is **before** the requester commits, when a step-up gesture binds them to this one document, which is why the producer requirements put it there. An implementation **MAY** still carry such a statement under `ext`; a caller **MUST NOT** depend on one.
 
 ## Authorization
 
