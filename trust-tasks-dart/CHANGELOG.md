@@ -11,6 +11,83 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.8.11 — 2026-10-16
+
+
+### Specifications
+
+- **rooms/keys**: Act 0.2 — the member is the subject, and a document that names no room names its member (#787)
+
+`rooms/keys/act/0.1` declared `subjectPath: /document/payload/roomId` and
+  resolved the member to act as "among the members of the document's room".
+  Three types in its own table carry no `roomId` — `rooms/blobs/chunk/0.1`
+  (`downloadId`, `index`) and `rooms/blobs/upload/{commit,abort}/0.2`
+  (`uploadId`) — and for them 0.1 defined neither the subject nor how the
+  recipient finds the document's room, while a producer MAY omit `issuer`.
+  A conforming request could leave the recipient nothing to resolve the
+  member from.
+
+  act 0.2:
+  - The table: these types carry no `roomId`; the member is the document's
+    `issuer`, which the producer MUST set to the member whose request
+    opened the transfer.
+  - Producer item 2: `issuer` MUST be set for a type that names no room
+    (MAY → MUST for those types; unchanged otherwise).
+  - Recipient item 2a: for a type that names no room, act as `issuer` if it
+    is a member the recipient holds keys for and the caller may act as;
+    otherwise `issuerNotPrincipal`; `issuer` absent is `principalAmbiguous`.
+    The recipient MUST NOT pick a member for the caller (not its only one,
+    not one inferred from the transfer identifier).
+  - `subjectPath` moves to `/document/issuer`. The subject is the party
+    whose authority the task exercises (`actsAsSubject: true`) — the
+    member, whose key signs — which is the question a delegated-execution
+    policy point asks of `subjectPath` ("does the executing agent speak
+    for this subject?") and exactly what Recipient item 2 decides. The room
+    is the resource the completed document addresses, not a party the caller
+    speaks for, and three of the table's types do not name one. Where
+    `issuer` is absent (a room-naming type, one candidate member) the
+    subject is the member item 2 resolves, and a recipient evaluating
+    policy or audit against the subject MUST use it and MUST NOT treat the
+    unresolved pointer as "no subject".
+  - `principalAmbiguous` / `issuerNotPrincipal` meanings cover the
+    room-less case. No code added; payload and response schemas unchanged
+    except the `issuer` description.
+  - Examples: a direct upload's commit completed as the member; a chunk
+    refused `principalAmbiguous`. Invalid example: a non-DID `issuer`.
+
+- **rooms/keys**: File-key and open 0.2 — unknownEpoch says `removed` when catching up cannot help (#786)
+
+`rooms/keys/file-key/0.1` gave `unknownEpoch` two reasons in a closed
+  details schema — `notDelivered` and `beyondChain` — and defined
+  `notDelivered` as "E is later than any epoch it holds". A removal leaves
+  the oracle's group where it was, so a file sealed after the oracle's
+  principal was removed matches that definition too. The oracle could only
+  say `notDelivered`, telling the caller to catch up with the room's
+  commits, and no commit will ever make that epoch derivable for a removed
+  member: a caller following the reason retried forever.
+  `rooms/keys/open/0.1` declared `unknownEpoch` with no details schema at
+  all, so a caller could not tell the two cases apart there either, and an
+  implementation already sends an undeclared `reason: removed`.
+
+  file-key 0.2:
+  - `unknownEpoch.details.reason` gains `removed`, and `details` gains
+    `removedAtEpoch` (integer, minimum 1).
+  - Oracle item 4: `removed`, with `removedAtEpoch`, when a commit the
+    oracle processed removed its principal from the room's group at
+    `removedAtEpoch` and E is at or after it — no later commit will make E
+    derivable, so the caller MUST NOT be told to catch up. It takes
+    precedence: an oracle that knows of such a removal MUST NOT answer
+    `notDelivered` for an E at or after it.
+  - Caller: acts on `details.reason`, never on the message; after `removed`
+    it MUST NOT retry after catching up.
+  - A `removed` refusal example, a Security & Privacy sentence, and a
+    "What changed from 0.1" section.
+
+  open 0.2 declares the same three reasons and the same details schema for
+  `rooms/keys/open:unknownEpoch`, with the same conformance text
+  (`beyondChain` for an epoch earlier than the oracle's current one that its
+  retained chain does not reach).
+
 ## 0.8.10 — 2026-10-16
 
 
