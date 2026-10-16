@@ -53,7 +53,7 @@ The **VTC Members — Update** Trust Task changes a member's role or non-credent
 
 It deliberately **cannot** promote a member to `admin`: that is a higher-trust operation with its own approval flow, not a metadata patch, so `role: admin` is refused here.
 
-Nor can it **grant** registry consent. `publishConsent` is the member's own privacy decision: it becomes `true` only through the member's `registryConsent` on [`vtc/join-requests/submit`](../../../join-requests/submit/0.3/spec.md) — including a rejoin, which writes a fresh member record. Approving a join does not consent on the applicant's behalf, and an update does not either. An administrator may **withdraw** consent (`true` → `false`, for example a takedown) and may restate the current value; an update that would raise it (`false` → `true`) is refused with `consentGrantForbidden`.
+Nor can it **grant** registry consent. `publishConsent` is the member's own privacy decision: it becomes `true` only by the member's own act: `registryConsent` on [`vtc/join-requests/submit`](../../../join-requests/submit/0.3/spec.md) — including a rejoin, which writes a fresh member record — or [`vtc/members/registry-consent`](../../registry-consent/0.1/spec.md), which the member signs. Approving a join does not consent on the applicant's behalf, and an update does not either. An administrator may **withdraw** consent (`true` → `false`, for example a takedown) and may restate the current value; an update that would raise it (`false` → `true`) is refused with `consentGrantForbidden`.
 
 `label` is an operator-facing display name for the member, editable unlike the
 DID it labels. That asymmetry is the point: an operator reviewing a roster of
@@ -67,7 +67,7 @@ Producer: supply `did` and the fields to change. Carry a proof. **MUST NOT** sup
 
 Consumer: verify the community-admin capability. Resolve the member; if none, return `notFound`. If `role` is `admin`, return `adminRoleForbidden` and change nothing. If `publishConsent` is `true` and the member record's `publishConsent` is not, return `consentGrantForbidden` and change nothing — no other field in the same request is applied, so a partial update is never mistaken for a full one. Otherwise apply the supplied fields, cap `extensions` at the maintainer's limit, and return the updated `MemberResponse`. Audit the change.
 
-An update that sets `publishConsent` from `true` to `false` withdraws the member's registry consent. The community **SHOULD** then remove the member's published trust-registry record at its next registry sync, and **MUST NOT** publish the member again until consent is given anew by the member.
+An update that sets `publishConsent` from `true` to `false` withdraws the member's registry consent. The community **SHOULD** then remove the member's published trust-registry record at its next registry sync, and **MUST NOT** publish the member again until consent is given anew by the member. It **MUST** record this document's `issuedAt` as the consent change now in force, so that a member's earlier-issued [`vtc/members/registry-consent`](../../registry-consent/0.1/spec.md) grant arriving later is refused as `superseded` rather than undoing the withdrawal.
 
 ## Security & Privacy
 

@@ -1082,6 +1082,7 @@ mod rooms {
         mod act {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod backfill {
             mod v0_1;
@@ -1922,6 +1923,9 @@ mod vtc {
             }
         }
         mod purge {
+            mod v0_1;
+        }
+        mod registry_consent {
             mod v0_1;
         }
         mod removal_notice {

@@ -446,6 +446,7 @@ export * as RoomsEpochPrune_v0_1 from "./rooms/epoch/prune/0.1/payload.js";
 export * as RoomsInfo_v0_1 from "./rooms/info/0.1/payload.js";
 export * as RoomsKeysAct_v0_1 from "./rooms/keys/act/0.1/payload.js";
 export * as RoomsKeysAct_v0_2 from "./rooms/keys/act/0.2/payload.js";
+export * as RoomsKeysAct_v0_3 from "./rooms/keys/act/0.3/payload.js";
 export * as RoomsKeysBackfill_v0_1 from "./rooms/keys/backfill/0.1/payload.js";
 export * as RoomsKeysBrowse_v0_1 from "./rooms/keys/browse/0.1/payload.js";
 export * as RoomsKeysChain_v0_1 from "./rooms/keys/chain/0.1/payload.js";
@@ -801,6 +802,7 @@ export * as VtcMembersPersonhoodAssert_v0_2 from "./vtc/members/personhood/asser
 export * as VtcMembersPersonhoodChallenge_v0_1 from "./vtc/members/personhood/challenge/0.1/payload.js";
 export * as VtcMembersPersonhoodRevoke_v0_1 from "./vtc/members/personhood/revoke/0.1/payload.js";
 export * as VtcMembersPurge_v0_1 from "./vtc/members/purge/0.1/payload.js";
+export * as VtcMembersRegistryConsent_v0_1 from "./vtc/members/registry-consent/0.1/payload.js";
 export * as VtcMembersRemovalNotice_v0_1 from "./vtc/members/removal-notice/0.1/payload.js";
 export * as VtcMembersRemoved_v0_1 from "./vtc/members/removed/0.1/payload.js";
 export * as VtcMembersRenew_v0_1 from "./vtc/members/renew/0.1/payload.js";

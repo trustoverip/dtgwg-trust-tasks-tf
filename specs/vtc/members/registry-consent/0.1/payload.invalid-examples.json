@@ -1,0 +1,28 @@
+[
+  {
+    "note": "Missing `publishConsent` — the document is the member's decision, and an empty one decides nothing.",
+    "payload": {}
+  },
+  {
+    "note": "`publishConsent` as a string — consent is a boolean, never a value a consumer has to interpret.",
+    "payload": { "publishConsent": "yes" }
+  },
+  {
+    "note": "A `did` naming the member — the subject is the signer, and a task that took a target could be used to consent for someone else.",
+    "payload": { "publishConsent": true, "did": "did:example:someone-else" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": { "publishConsent": true, "ext": { "bare": true } }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `registrySync` — the member is owed an answer about publication, not only about the record.",
+    "payload": { "did": "did:example:member", "publishConsent": true, "changed": true, "effectiveAt": "2026-10-16T09:00:01Z" }
+  },
+  {
+    "variant": "response",
+    "note": "`registrySync` outside the closed set — `published` would claim a registry write the community has only queued.",
+    "payload": { "did": "did:example:member", "publishConsent": true, "changed": true, "registrySync": "published", "effectiveAt": "2026-10-16T09:00:01Z" }
+  }
+]

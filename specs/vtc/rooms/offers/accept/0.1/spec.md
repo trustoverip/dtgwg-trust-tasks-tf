@@ -125,6 +125,8 @@ A conforming **community** (`recipient`):
 
 The entitlement is **being the member the offer is addressed to**, proven by the document's proof and checked against the community's own membership record at execution time. No administrative standing is involved. The community's VTA then applies its own gates to the admission it is asked to make, as for any owner.
 
+**Signing as the member.** The DID an offer is addressed to is often one whose keys are held by the member's key holder — a persona their agent holds for them in one community — so the surface the member acts from cannot sign this request itself. It builds the request and has its key holder complete and sign it as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.3/spec.md) at `0.3` or later, which carries no presentation for this type and completes an acceptance only with a KeyPackage it minted itself for the member and the room. The community sees the member's signature and nothing of the surface or the key holder.
+
 ## Request
 
 ### Accepting a private room
