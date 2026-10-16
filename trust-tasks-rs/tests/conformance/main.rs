@@ -1094,6 +1094,7 @@ mod rooms {
         }
         mod file_key {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
