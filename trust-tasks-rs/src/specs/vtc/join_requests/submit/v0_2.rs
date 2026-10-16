@@ -1537,6 +1537,10 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::PRESENTATION_INVALID,
     error_codes::ATTRIBUTES_MISSING,
     error_codes::ATTRIBUTES_UNREQUESTED,
+    error_codes::CHALLENGE_NOT_ISSUED,
+    error_codes::CHALLENGE_ALREADY_USED,
+    error_codes::CHALLENGE_EXPIRED,
+    error_codes::CHALLENGE_MISMATCH,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -1590,5 +1594,48 @@ pub mod error_codes {
         details_schema: ::core::option::Option::Some(
             "{\"additionalProperties\":false,\"properties\":{\"types\":{\"items\":{\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"types\"],\"type\":\"object\"}",
         ),
+    };
+    /// `vtc/join-requests/submit:challengeNotIssued`
+    ///
+    /// The submission's hidden-vetting proof is bound to a challenge, but the community holds no challenge for the applicant's DID — none was requested, or it expired and has since been discarded. The applicant requests a new challenge over `vtc/vetting/pcs-challenge`, builds the proof over it, and sends again.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_NOT_ISSUED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/submit:challengeNotIssued",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
+    /// `vtc/join-requests/submit:challengeAlreadyUsed`
+    ///
+    /// The challenge the proof is bound to was spent by an earlier submission or supplement. Challenges are single-use. The applicant requests a new one, rebuilds the proof, and sends again.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_ALREADY_USED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/submit:challengeAlreadyUsed",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
+    /// `vtc/join-requests/submit:challengeExpired`
+    ///
+    /// The challenge the proof is bound to is past its `expiresAt`. The details MAY carry `expiredAt`. The applicant requests a new one, rebuilds the proof, and sends again.
+    ///
+    /// Declared `retryable: false`.
+    /// Declares a `detailsSchema` for the error's `details` member.
+    pub const CHALLENGE_EXPIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/submit:challengeExpired",
+        retryable: false,
+        details_schema: ::core::option::Option::Some(
+            "{\"properties\":{\"expiredAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"type\":\"object\"}",
+        ),
+    };
+    /// `vtc/join-requests/submit:challengeMismatch`
+    ///
+    /// The proof is bound to a challenge other than the one the community holds open for this applicant — typically one it replaced when the applicant asked again. This attempt spends the open challenge. The applicant requests a new one, rebuilds the proof, and sends again.
+    ///
+    /// Declared `retryable: false`.
+    pub const CHALLENGE_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/join-requests/submit:challengeMismatch",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
     };
 }

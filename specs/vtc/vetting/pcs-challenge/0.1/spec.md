@@ -174,6 +174,13 @@ A community keeps the challenge until it is spent or expires, and SHOULD sweep e
 rather than leave them. Nothing about it is worth keeping afterwards: it proves freshness at the
 moment it is consumed and has no evidentiary value later.
 
+A community MAY keep a value-free marker of a spent challenge — its expiry and when it was spent,
+never the challenge itself — until that expiry, so that a repeated submission is told the
+challenge was used rather than that none was issued; it sweeps the marker as it would the expired
+challenge. The codes a submission or supplement is refused with are defined by
+[`vtc/join-requests/submit`](../../../join-requests/submit/0.3/spec.md#hidden-vetting-challenge)
+and [`vtc/join-requests/supplement`](../../../join-requests/supplement/0.1/spec.md#hidden-vetting-challenge).
+
 ### Consent/purpose
 
 The challenge is collected for one submission attempt by the applicant that asked for it. Reusing
