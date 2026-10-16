@@ -11,6 +11,280 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.12 — 2026-10-16
+
+
+### Added
+
+- **vtc/members**: Registry-consent — a member grants or withdraws their own trust-registry consent (#798)
+
+
+### Documentation
+
+- **keys**: Sign-jws and sign-csr name their known implementation (#792)
+
+keys/sign-jws/0.1 and keys/sign-csr/0.1 declared no knownImplementations,
+  so the registry showed "Not declared" for both, although a runtime
+  implementation exists: OpenVTC/verifiable-trust-infrastructure#2057 (VTA
+  custodian; merged 2026-10-13 at dda501d) serves both tasks. Its test
+  suite reproduces the sign-jws example's signing input and SHA-256 digest,
+  and checks that a sign-csr request's signature verifies.
+
+  Front matter only; no wire or binding change.
+
+
+
+### Specifications
+
+- **witness**: Add 0.2 — a member presentation on submit, and outcome evidence on personhood/assert, replace the ext stop-gaps (#799)
+
+Two members implementations carried in a vendor extension,
+  ext["org.openvtc.witness"], become specified members, so any witness and
+  any community reads them.
+
+  - witness/session/submit/0.2: optional memberPresentation — a VP by the
+    member DID, for authentication, bound to the session's challenge and
+    domain, carrying the eligibility credentials (a membership credential
+    naming the member DID). Neither party nor the witness; a failure where
+    relied on is presentationInvalid; a witness not using it MUST NOT treat it
+    as satisfying anything. The member DID never appears in the VWC, and the
+    witness keeps neither it nor the presentation. Privacy: links the pairwise
+    relationship DID to the member DID at the witness; proves co-possession in
+    one session, not one person; the alternatives are recorded.
+  - witness/session/0.2: same payload; its outcomeEvidence names
+    submit/0.2#response. The declaration belongs to the initiating document's
+    specification (SPEC §7.3 item 20, §4.9.4 check 3), so a 0.1 session cannot
+    close with a 0.2 submit. Versions pair one to one.
+  - vtc/members/personhood/assert/0.2: optional outcomeEvidence (1–16
+    entries, each {session, outcome} carried byte for byte). A VWC counts only
+    from a trusted witness, paired by §4.9.4's four checks and the witnessing
+    checks; unpaired entries are ignored. A member presents only the VWCs it
+    selects.
+  - witness/_shared/0.1/outcome-evidence: OutcomeEvidence, shared by
+    personhood/assert/0.2 and vta/witness/accept/0.2.
+  - vta/witness/{open,present,accept}/0.2 + vta/_shared/0.6 conventions:
+    conduct 0.2 sessions; present puts the member presentation in
+    memberPresentation; open drops memberLinkUnsupported; a 0.2 session is
+    continued only by 0.2 tasks. The 0.1 tasks are unchanged.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **rooms/keys**: Act 0.3 — a member takes up a community's offer of a room as themself, with only a KeyPackage their key holder minted (#797)
+
+`vtc/rooms/offers/list/0.1` and `vtc/rooms/offers/accept/0.1` must be signed
+  as the DID the community addressed its offer to. That DID is the member as
+  the community knows them — typically a persona their key holder holds — so
+  no surface the member acts from can sign either, and `rooms/keys/act/0.2`
+  could not complete them: its `type` pattern admits only `rooms/`, and its
+  closed table lists neither. A member could be offered a room and never
+  reach it.
+
+  act 0.3:
+  - The table gains `vtc/rooms/offers/list/0.1` and
+    `vtc/rooms/offers/accept/0.1`, with no presentation inserted: the member
+    holds no room authority yet, and the community checks the offer against
+    the document's proof. The `type` pattern admits `vtc/rooms/offers/` beside
+    `rooms/` and nothing else of the vtc family (new invalid example: an
+    administrator's `vtc/rooms/community/members/add` is refused by schema).
+  - Producer item 2: `issuer` REQUIRED for the offer types (the DID the offer
+    is addressed to); `recipient` is the community.
+  - Recipient item 2b (new): for the offer types, act as `issuer` iff the
+    recipient holds a key `issuer`'s DID document lists for `authentication`
+    and the caller may act as it; `issuerNotPrincipal` otherwise,
+    `principalAmbiguous` when absent; never pick for the caller. No room
+    credential is required.
+  - Recipient item 10 / Producer item 5 (new): an acceptance's `keyPackage`
+    is completed only when the recipient minted it with rooms/keys/key-package
+    for that room and that member and still holds its private half (unused,
+    unexpired), compared by KeyPackageRef, never by its leaf credential;
+    otherwise the new code `keyPackageNotHeld`.
+  - Security & Privacy: why item 10 is required — a KeyPackage the key holder
+    did not mint becomes the member's leaf with keys someone else holds (the
+    client), opening every later record and signing group messages as the
+    member outside the key holder and beyond any withdrawal of the client's
+    standing; the leaf credential is signed by the leaf key, not the member's
+    DID, so the community cannot tell, and only the minting key holder can.
+    And why the offer types belong in act rather than a task of their own:
+    same entitlement, same delegate refusal (item 3), same closed table — one
+    signing-as-the-member surface to audit, not two — and a key holder that
+    accepted itself would call the community and route the answer, which item
+    7 rules out.
+  - Examples: an acceptance completed as the member; a `keyPackageNotHeld`
+    refusal.
+
+  vtc/rooms/offers/{list,accept}/0.1, in place: one paragraph each under
+  Authorization pointing a surface without the member's keys at act 0.3.
+  Prose only; their wire is unchanged (SPEC §5.2 editorial, as #783).
+
+- **vtc/rooms/community/members/remove**: The answer says what removal did in its structured members, not in a notice — clarified in place (#796)
+
+Item 4 required the community to "say in its record and its answer that
+  removal does not recall what was read", but the response schema has no
+  member to say it in (`additionalProperties: false`). An implementation
+  could comply only through `ext`, which a caller cannot depend on — so the
+  requirement promised callers something the wire never guaranteed.
+
+  Two ways out: add an optional `notice` member, or drop "and its answer".
+  This drops it, and puts the obligation where it does its work:
+
+  - Community item 4: MUST NOT represent a removal, in its record or answer,
+    as recalling what was read, re-sealing what was written, or revoking the
+    authority credential. The answer's structured members are what it says:
+    `member.state` `removed`, `member.validUntil` (when a host stops honouring
+    the authority credential), and `epoch` (sealed tier, admitted member: the
+    first epoch sealed without them; absent means nothing was withdrawn
+    cryptographically — an open room, or a withdrawn offer).
+  - Producer (new): the administrator's surface SHOULD show what removal does
+    and does not do on the room's tier, and the member's `validUntil`, before
+    the request is signed and before any step-up gesture bound to it; SHOULD
+    report the answer from `validUntil`/`epoch`; MUST NOT report any removal
+    as ending access to what was already read.
+  - New subsection *Why the answer carries no notice*.
+
+  Why not a field: the statement is identical for every removal on a tier, so
+  it carries nothing the caller cannot render from the specification, the
+  tier, `validUntil` and `epoch`; as a field it would be server-chosen,
+  unlocalised prose shown to an administrator as guidance; and it would
+  arrive after the decision. The moment it matters is before the requester
+  commits, when a bound step-up ties them to this one document — which is a
+  producer obligation, not a response member. An implementation MAY still
+  carry a statement under `ext`; a caller MUST NOT depend on one.
+
+- **rooms/owner/group**: Add 0.2 — a repeated admission is answered with its Welcome, not alreadyMember (#795)
+
+`rooms/owner/group/add/0.1` item 6 settles a pending admission at the next
+  request, which keeps the room and the owner's group in step across a lost
+  host reply. But the next request is, in the case that matters, the same
+  request again: the caller lost the answer and retries. 0.1 settled the
+  pending admission, found `member` already in the group, and refused the
+  retry `alreadyMember`. The Welcome — the only way the newcomer can join —
+  was returned to nobody. The same happens when the recipient applied the
+  admission and its own reply to its caller was lost. `vtc/rooms/offers/accept`
+  already promises its callers that retrying is safe; under 0.1 it was not.
+
+  add 0.2:
+  - Item 8 (new): the recipient keeps, with the group state, the last
+    admission it applied for the room — `member`, the KeyPackage's
+    `KeyPackageRef` (RFC 9420 §5.2), epoch, Welcome and ratchet tree — until
+    its next advance of the room or 24 hours, whichever comes first. A request
+    naming the same room, the same `member` (string-equal) and a KeyPackage of
+    the same `KeyPackageRef` is answered, once item 1 and the authorization
+    checks pass, with that admission's epoch, Welcome and tree; the recipient
+    does not advance the room, contact the host, change its group or build a
+    fresh Welcome. Anything else for a member with a leaf is `alreadyMember`.
+  - Item 6 hands over to item 8 when the pending admission it applies is the
+    one the request repeats.
+  - New section *Repeating an admission*: why re-serving is safe (the Welcome
+    is HPKE-sealed to the KeyPackage's init key and addressed by its
+    KeyPackageRef, RFC 9420 §12.4.3.1; the joiner discards the private half on
+    use or expiry, so a late copy opens nothing), why the match is exact (equal
+    KeyPackageRefs mean byte-identical KeyPackages, hence the same init key; a
+    different KeyPackage for the same member would be a second leaf), and why
+    retention is short.
+  - `alreadyMember` and `hostUnreachable` meanings updated; retention and
+    exposure rationales say what is kept. No code added; payload and response
+    schemas unchanged.
+
+  vtc/rooms/offers/accept/0.1, in place: "Repeating an accept" now points at
+  group/add 0.2 items 6 and 8, says the community repeats its own request to
+  its VTA unchanged, and that the community's VTA serves group/add at 0.2 or
+  later. Prose only; its wire is unchanged, and it now describes what its own
+  existing retry promise requires (SPEC §5.2 editorial, as #783).
+
+- **vtc/vetting/vetters/pcs-root**: A member may recover a lost enrolment answer within the same label (#791)
+
+pcs-root/0.1 refused every second enrolment under a label as
+  alreadyEnrolled. That is right for counting, but it made a lost answer
+  unrecoverable for the rest of the label: if the community issued and the
+  answer never reached the vetter in a form it could open (late arrival, a
+  client restart losing the blinding state, a transport drop), the vetter
+  held no credential and was locked out of hidden vetting until the next
+  vetter/<YYYY-MM> label. This happened in a live run.
+
+  vtc/vetting/vetters/pcs-root/0.1 (draft, in place per SPEC §5.2), new
+  "Recovering a lost answer" section under Authorization:
+  - A community MAY answer a second request under a label the member is
+    enrolled in with a fresh issuance over the new blinded request, when its
+    `id` is the one recorded for the member. Every first-enrolment check still
+    applies (live grant, proof, issuedAt, wrongLabel, badRequest).
+  - It MUST NOT re-issue unless its suite binds the blinded request to the
+    secret `id` is derived from, so every credential under one `id` yields
+    the same tags. That binding is what stops a re-issue counting as a second
+    vetter; without it the community refuses with alreadyEnrolled.
+  - A different `id` is still identifierRebound. No second enrolment is
+    recorded. Re-issues SHOULD be bounded per member per label, refused beyond
+    the bound with alreadyEnrolled, and audited.
+  - What this gives up is "exactly one credential object per member per
+    label", not "each member counted once". Distinctness is by tag.
+  - Client note: re-run vta/pcs/root-request for the label (it replaces the
+    blinding state and keeps the key, so the `id`), send, and pass the answer
+    to vta/pcs/root-accept. alreadyEnrolled now means the community does not
+    re-issue, or no longer will for this label.
+
+  The alreadyEnrolled meaning, the proof rationale and the "record only after
+  signing" note say the same. hidden/publish/0.1's pointer to pcs-root no
+  longer says a second enrolment is impossible. Bindings regenerated.
+
+  The issue's alternative, an administrator task to clear an enrolment, is
+  not taken: re-issuance under the same `id` recovers without an operator
+  and without a record of the member's enrolment being erased.
+
+- **vtc/join-requests**: Submit and supplement say why a hidden-vetting challenge was refused (#790)
+
+A hidden-vetting proof is bound to a single-use challenge issued over
+  vtc/vetting/pcs-challenge, and the community spends that challenge when it
+  counts the proof. Neither vtc/join-requests/submit nor
+  vtc/join-requests/supplement declared a code for a refused challenge, so
+  implementations fell back to malformedRequest. An applicant could not tell
+  an expired challenge from a spent one, or either from a client bug.
+
+  submit/0.2, submit/0.3 and supplement/0.1 (draft, in place per SPEC §5.2)
+  each declare four codes under the task's own name, none retryable:
+  - challengeNotIssued: no challenge held for the applicant's DID;
+  - challengeAlreadyUsed: spent by an earlier submission or supplement;
+  - challengeExpired: past expiresAt, details MAY carry expiredAt (the
+    details schema does not close the object, so an implementation's own
+    markers still validate);
+  - challengeMismatch: bound to a value other than the open challenge,
+    which this attempt spends.
+
+  A new "Hidden-vetting challenge" section in each says where the proof
+  travels (extensions.hiddenVetting), that counting it spends the open
+  challenge whether or not the applicant is then admitted, that the message
+  never echoes the challenge value, that the value is discarded on use, and
+  that a value-free spent marker MAY be kept until expiry so a repeat attempt
+  is told challengeAlreadyUsed rather than challengeNotIssued. Recovery is a
+  new challenge and a new proof. submit/0.3 adds that a producer SHOULD name
+  its criterion on a hidden-vetting submission. supplement/0.1's
+  `extensions` is no longer described as wholly uninterpreted, and
+  pcs-challenge/0.1's Retention permits the spent marker and points at the
+  codes.
+
+  The issue's note about several hidden-vetting criteria spending one
+  challenge is moot: vtc/vetting/hidden/publish refuses a second criterion
+  (otherCriterion, #734). Bindings regenerated (Rust ERROR_CODES).
+
+- **vtc/members/update**: PublishConsent may be withdrawn by an administrator, never granted — consentGrantForbidden (#789)
+
+A member's consent to trust-registry publication is the member's own
+  privacy decision, given with `registryConsent` on vtc/join-requests/submit.
+  update/0.1 listed `publishConsent` among the fields an administrator may
+  change with no direction, so an administrator could raise it and publish
+  someone who said no.
+
+  vtc/members/update/0.1 (draft, in place per SPEC §5.2):
+  - `publishConsent` MAY lower consent (true -> false, e.g. a takedown) and
+    MAY restate the current value. It MUST NOT raise it: consent becomes true
+    only through the member's own registryConsent on a join submit, including
+    a rejoin, which writes a fresh member record.
+  - New error vtc/members/update:consentGrantForbidden (not retryable),
+    checked after notFound and adminRoleForbidden. A refused raise rejects the
+    whole update; no other field in the request is applied.
+  - A withdrawal: the community SHOULD remove the member's published registry
+    record at its next sync, and MUST NOT publish the member again until the
+    member consents anew.
+  - Security & Privacy says why consent runs one way. Bindings regenerated.
+
 ## 0.8.11 — 2026-10-16
 
 
