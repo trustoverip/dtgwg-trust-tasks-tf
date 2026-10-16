@@ -12,6 +12,8 @@ The client carries them because the witness answers the relationship DID. A witn
 | 2 | [`vta/witness/present`](../../witness/present/0.2/spec.md) | Verifies the witness's session response, builds the presentations, and returns the signed `witness/session/submit` document | Hands back the witness's session `#response`; sends the submit document |
 | 3 | [`vta/witness/accept`](../../witness/accept/0.2/spec.md) | Verifies the VWC and stores it with its evidence | Hands back the witness's submit `#response` |
 
+A stored VWC is read back, with its evidence, by [`vta/witness/list`](../../witness/list/0.1/spec.md), which keeps no session record and is not a step of a session.
+
 Each of those specifications references this file rather than restating it, and conformance is anchored here. The shared wire shapes are in [`witness-party.schema.json`](witness-party.schema.json), and the outcome evidence in the witness family's [`outcome-evidence.schema.json`](../../../witness/_shared/0.1/outcome-evidence.schema.json).
 
 These are the conventions of the **0.2** tasks, which conduct sessions under `witness/session/0.2` and `witness/session/submit/0.2` and carry the member presentation in the submit payload's own `memberPresentation`. The 0.1 tasks keep [their own conventions](../0.5/CONVENTIONS.md). A session opened by `vta/witness/open/0.2` is continued only by `vta/witness/present/0.2` and `vta/witness/accept/0.2`; a task of the other version **MUST** answer it with `<slug>:sessionUnknown`, as for any session in a state that does not admit it (§3 item 2).

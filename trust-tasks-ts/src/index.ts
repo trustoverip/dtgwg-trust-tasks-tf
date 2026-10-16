@@ -689,6 +689,7 @@ export * as VtaWebvhServersRemove_v1_0 from "./vta/webvh/servers/remove/1.0/payl
 export * as VtaWebvhServersRetireOrphan_v0_1 from "./vta/webvh/servers/retire-orphan/0.1/payload.js";
 export * as VtaWitnessAccept_v0_1 from "./vta/witness/accept/0.1/payload.js";
 export * as VtaWitnessAccept_v0_2 from "./vta/witness/accept/0.2/payload.js";
+export * as VtaWitnessList_v0_1 from "./vta/witness/list/0.1/payload.js";
 export * as VtaWitnessOpen_v0_1 from "./vta/witness/open/0.1/payload.js";
 export * as VtaWitnessOpen_v0_2 from "./vta/witness/open/0.2/payload.js";
 export * as VtaWitnessPresent_v0_1 from "./vta/witness/present/0.1/payload.js";

@@ -1641,6 +1641,9 @@ mod vta {
             mod v0_1;
             mod v0_2;
         }
+        mod list {
+            mod v0_1;
+        }
         mod open {
             mod v0_1;
             mod v0_2;

@@ -69,6 +69,7 @@ related:
   - vta/witness/open
   - vta/witness/present
   - witness/session/submit
+  - vta/witness/list
   - vault/credentials/get
 ---
 
@@ -126,7 +127,7 @@ It travels once, inside `evidence.outcome`, under the witness's proof. A second 
 
 ### Reading the evidence back later
 
-The VTA stores both evidence documents with the VWC, so that a later presentation of the VWC can ship them. [`vault/credentials/get/0.1`](../../../../vault/credentials/get/0.1/spec.md) returns a stored credential and nothing beside it; reading the evidence back by handle is outside this task, and this response is the client's copy until a credential-vault task returns it.
+The VTA stores both evidence documents with the VWC, so that a later presentation of the VWC can ship them. [`vault/credentials/get/0.1`](../../../../vault/credentials/get/0.1/spec.md) returns a stored credential and nothing beside it. [`vta/witness/list`](../../list/0.1/spec.md) reads back every stored VWC with its evidence, exactly as stored, so a client that lost this response — or another device of the same principal — can still present the VWC.
 
 ## Request
 
