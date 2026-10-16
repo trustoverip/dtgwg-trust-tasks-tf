@@ -80,6 +80,24 @@ errorCodes:
       from `notFound` because the applicant is entitled to know the outcome of
       their own request, and because retrying will never change it.
     retryable: false
+  - code: vtc/join-requests/supplement:challengeNotIssued
+    meaning: "The supplement's hidden-vetting proof is bound to a challenge, but the community holds no challenge for the applicant's DID — none was requested, or it expired and has since been discarded. The applicant requests a new challenge over `vtc/vetting/pcs-challenge`, builds the proof over it, and sends again."
+    retryable: false
+  - code: vtc/join-requests/supplement:challengeAlreadyUsed
+    meaning: "The challenge the proof is bound to was spent by an earlier submission or supplement. Challenges are single-use. The applicant requests a new one, rebuilds the proof, and sends again."
+    retryable: false
+  - code: vtc/join-requests/supplement:challengeExpired
+    meaning: "The challenge the proof is bound to is past its `expiresAt`. The details MAY carry `expiredAt`. The applicant requests a new one, rebuilds the proof, and sends again."
+    retryable: false
+    detailsSchema:
+      type: object
+      properties:
+        expiredAt:
+          type: string
+          format: date-time
+  - code: vtc/join-requests/supplement:challengeMismatch
+    meaning: "The proof is bound to a challenge other than the one the community holds open for this applicant — typically one it replaced when the applicant asked again. This attempt spends the open challenge. The applicant requests a new one, rebuilds the proof, and sends again."
+    retryable: false
 related:
   - vtc/join-requests/submit
   - vtc/join-requests/status
@@ -128,11 +146,24 @@ What a consumer **MUST NOT** do is carry a superseded presentation's attestation
 
 **`requestId`** — the request to supplement, **OPTIONAL**, for the same reason it is optional on [`join-requests/withdraw`](../../withdraw/0.1/spec.md) and [`join-requests/status`](../../status/0.1/spec.md): an applicant whose submit response was lost never received an id. When it is absent the consumer resolves the request from the authenticated applicant's own identifier; a consumer that is given one **MUST** prefer it over inferring the request from the caller.
 
-**`extensions`** — an opaque bag the applicant may carry alongside the presentation, **OPTIONAL**, stored verbatim and not interpreted by this task. It replaces the bag on the request on the same terms as `vp`.
+**`extensions`** — an opaque bag the applicant may carry alongside the presentation, **OPTIONAL**, stored verbatim and not interpreted by this task, except for its `hiddenVetting` member (see [Hidden-vetting challenge](#hidden-vetting-challenge)). It replaces the bag on the request on the same terms as `vp`.
 
 **`requestId` (response)** — the request that was re-decided, always returned even when the request omitted it, so an applicant who used the id-less form learns which request they answered.
 
 **`verdict` (response)** — what the community decided, in the same shape [`join-requests/submit`](../../submit/0.2/spec.md) returns. Deliberately the same: a supplement has exactly the outcomes a submission has, and a client that can read one can read the other without a second code path.
+
+### Hidden-vetting challenge
+
+A hidden-vetting proof travels as the `hiddenVetting` member of `extensions`, and is bound to the single-use challenge the community issued the applicant over [`vtc/vetting/pcs-challenge`](../../../vetting/pcs-challenge/0.1/spec.md). When a consumer counts that proof it spends the applicant's open challenge — whether or not the applicant is then admitted, and including on a mismatch — and refuses the supplement, changing nothing else, with the code that says why:
+
+- `challengeNotIssued` — it holds no challenge for the applicant's DID: none was requested, or it expired and was swept;
+- `challengeAlreadyUsed` — the challenge was spent by an earlier submission or supplement;
+- `challengeExpired` — the challenge is past its `expiresAt`; `details` **MAY** carry `expiredAt`;
+- `challengeMismatch` — the proof is bound to a value other than the open challenge.
+
+A consumer **MUST NOT** answer any of these with `malformedRequest`, and its `message` **MUST NOT** echo the challenge value. It **MUST** discard the challenge value when it spends it. It **MAY** keep a value-free spent marker — the challenge's expiry and when it was spent, never the value — until that expiry, so that a repeated attempt is answered `challengeAlreadyUsed` rather than `challengeNotIssued`; the marker is swept as an expired challenge is.
+
+None of the four is retryable: the same document cannot succeed. The remedy is the same for all of them — request a new challenge, build a new proof over it, and send again, which is a new document — but they say different things. `challengeExpired` and `challengeNotIssued` are usually time: the applicant was slow, or the client asked too early. `challengeAlreadyUsed` is a resubmission or a race. `challengeMismatch` is usually a client defect, such as reusing a challenge after asking for another, and a client **SHOULD** report it as its own fault rather than the applicant's.
 
 ## Request
 

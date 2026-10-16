@@ -1104,7 +1104,7 @@ pub mod error_codes {
     };
     /// `vtc/vetting/vetters/pcs-root:alreadyEnrolled`
     ///
-    /// This member already holds a credential under `label`. One per member per label is what makes distinct tags distinct people.
+    /// This member has already enrolled under `label`, and the community will not issue to them again under it — it does not re-issue, or the member has used the re-issues it allows (see Recovering a lost answer). One enrolment per member per label is what makes distinct tags distinct people. The member enrols again at the next label.
     ///
     /// Declared `retryable: false`.
     pub const ALREADY_ENROLLED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

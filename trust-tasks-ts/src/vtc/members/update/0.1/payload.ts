@@ -20,7 +20,7 @@ export interface VTCMembersUpdatePayload {
    */
   label?: string | null;
   /**
-   * New directory-publish consent.
+   * New directory-publish consent. May only withdraw consent (`true` → `false`) or restate the current value; `true` for a member whose record does not already carry it is refused with `consentGrantForbidden`. Consent is the member's own, given by `registryConsent` on `vtc/join-requests/submit`.
    */
   publishConsent?: boolean;
   departurePreference?: "purge" | "tombstone" | "historical" | "policydefault";
@@ -89,7 +89,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "publishConsent": {
       "type": "boolean",
-      "description": "New directory-publish consent."
+      "description": "New directory-publish consent. May only withdraw consent (`true` → `false`) or restate the current value; `true` for a member whose record does not already carry it is refused with `consentGrantForbidden`. Consent is the member's own, given by `registryConsent` on `vtc/join-requests/submit`."
     },
     "departurePreference": {
       "type": "string",
