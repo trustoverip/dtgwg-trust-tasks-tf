@@ -568,6 +568,7 @@ export * as DidTemplateShared_v0_2 from "./vta/_shared/0.2/did-template.js";
 export * as DidKeyRolesShared_v0_3 from "./vta/_shared/0.3/did-key-roles.js";
 export * as PcsEngineShared_v0_4 from "./vta/_shared/0.4/pcs-engine.js";
 export * as WitnessPartyShared_v0_5 from "./vta/_shared/0.5/witness-party.js";
+export * as WitnessPartyShared_v0_6 from "./vta/_shared/0.6/witness-party.js";
 export * as VtaAppStateDelete_v1_0 from "./vta/app-state/delete/1.0/payload.js";
 export * as VtaAppStateGetMany_v1_0 from "./vta/app-state/get-many/1.0/payload.js";
 export * as VtaAppStateGet_v1_0 from "./vta/app-state/get/1.0/payload.js";
@@ -686,8 +687,11 @@ export * as VtaWebvhServersRegister_v1_0 from "./vta/webvh/servers/register/1.0/
 export * as VtaWebvhServersRemove_v1_0 from "./vta/webvh/servers/remove/1.0/payload.js";
 export * as VtaWebvhServersRetireOrphan_v0_1 from "./vta/webvh/servers/retire-orphan/0.1/payload.js";
 export * as VtaWitnessAccept_v0_1 from "./vta/witness/accept/0.1/payload.js";
+export * as VtaWitnessAccept_v0_2 from "./vta/witness/accept/0.2/payload.js";
 export * as VtaWitnessOpen_v0_1 from "./vta/witness/open/0.1/payload.js";
+export * as VtaWitnessOpen_v0_2 from "./vta/witness/open/0.2/payload.js";
 export * as VtaWitnessPresent_v0_1 from "./vta/witness/present/0.1/payload.js";
+export * as VtaWitnessPresent_v0_2 from "./vta/witness/present/0.2/payload.js";
 export * as VtaWitnessRequest_v0_1 from "./vta/witness/request/0.1/payload.js";
 export * as AdmissionShared_v0_1 from "./vtc/_shared/0.1/admission.js";
 export * as BackupShared_v0_1 from "./vtc/_shared/0.1/backup.js";
@@ -793,6 +797,7 @@ export * as VtcMembersCredentials_v0_1 from "./vtc/members/credentials/0.1/paylo
 export * as VtcMembersList_v0_1 from "./vtc/members/list/0.1/payload.js";
 export * as VtcMembersMakeMembership_v0_1 from "./vtc/members/make-membership/0.1/payload.js";
 export * as VtcMembersPersonhoodAssert_v0_1 from "./vtc/members/personhood/assert/0.1/payload.js";
+export * as VtcMembersPersonhoodAssert_v0_2 from "./vtc/members/personhood/assert/0.2/payload.js";
 export * as VtcMembersPersonhoodChallenge_v0_1 from "./vtc/members/personhood/challenge/0.1/payload.js";
 export * as VtcMembersPersonhoodRevoke_v0_1 from "./vtc/members/personhood/revoke/0.1/payload.js";
 export * as VtcMembersPurge_v0_1 from "./vtc/members/purge/0.1/payload.js";
@@ -907,5 +912,8 @@ export * as WebvhWitnessKeyDelete_v0_1 from "./webvh/witness/key/delete/0.1/payl
 export * as WebvhWitnessKeyList_v0_1 from "./webvh/witness/key/list/0.1/payload.js";
 export * as WebvhWitnessPublish_v0_1 from "./webvh/witness/publish/0.1/payload.js";
 export * as WebvhWitnessSign_v0_1 from "./webvh/witness/sign/0.1/payload.js";
+export * as OutcomeEvidenceShared_v0_1 from "./witness/_shared/0.1/outcome-evidence.js";
 export * as WitnessSession_v0_1 from "./witness/session/0.1/payload.js";
+export * as WitnessSession_v0_2 from "./witness/session/0.2/payload.js";
 export * as WitnessSessionSubmit_v0_1 from "./witness/session/submit/0.1/payload.js";
+export * as WitnessSessionSubmit_v0_2 from "./witness/session/submit/0.2/payload.js";

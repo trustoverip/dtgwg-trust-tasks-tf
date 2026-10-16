@@ -3452,16 +3452,34 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/witness/accept/0.1#response" => <crate::specs::vta::witness::accept::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.2" => <crate::specs::vta::witness::accept::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.2#response" => <crate::specs::vta::witness::accept::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/open/0.1" => <crate::specs::vta::witness::open::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/open/0.1#response" => <crate::specs::vta::witness::open::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.2" => <crate::specs::vta::witness::open::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.2#response" => <crate::specs::vta::witness::open::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/present/0.1" => <crate::specs::vta::witness::present::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/present/0.1#response" => <crate::specs::vta::witness::present::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.2" => <crate::specs::vta::witness::present::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.2#response" => <crate::specs::vta::witness::present::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/request/0.1" => <crate::specs::vta::witness::request::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3936,6 +3954,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/members/personhood/assert/0.1#response" => <crate::specs::vtc::members::personhood::assert::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/members/personhood/assert/0.2" => <crate::specs::vtc::members::personhood::assert::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/members/personhood/assert/0.2#response" => <crate::specs::vtc::members::personhood::assert::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1" => <crate::specs::vtc::members::personhood::challenge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4601,10 +4625,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/witness/session/0.1#response" => <crate::specs::witness::session::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "witness")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/0.2" => <crate::specs::witness::session::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/0.2#response" => <crate::specs::witness::session::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/witness/session/submit/0.1" => <crate::specs::witness::session::submit::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "witness")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/witness/session/submit/0.1#response" => <crate::specs::witness::session::submit::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/submit/0.2" => <crate::specs::witness::session::submit::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/submit/0.2#response" => <crate::specs::witness::session::submit::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         _ => None,
     }
 }
@@ -7993,13 +8029,28 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::witness::accept::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/open/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::witness::open::v0_1::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::witness::open::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/present/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::witness::present::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::witness::present::v0_2::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -8494,6 +8545,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/members/personhood/assert/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::members::personhood::assert::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/members/personhood/assert/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::members::personhood::assert::v0_2::Payload,
             >())
         }
         #[cfg(feature = "vtc")]
@@ -9190,8 +9248,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "witness")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::witness::session::v0_2::Payload,
+        >()),
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/witness/session/submit/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::witness::session::submit::v0_1::Payload,
+        >()),
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/submit/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::witness::session::submit::v0_2::Payload,
         >()),
         _ => None,
     }
@@ -12139,13 +12207,28 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/accept/0.2" => {
+            Some(crate::specs::vta::witness::accept::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/open/0.1" => {
             Some(crate::specs::vta::witness::open::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/open/0.2" => {
+            Some(crate::specs::vta::witness::open::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/witness/present/0.1" => {
             Some(crate::specs::vta::witness::present::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/witness/present/0.2" => {
+            Some(crate::specs::vta::witness::present::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -12551,6 +12634,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/members/personhood/assert/0.1" => {
             Some(crate::specs::vtc::members::personhood::assert::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/members/personhood/assert/0.2" => {
+            Some(crate::specs::vtc::members::personhood::assert::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -13114,8 +13202,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "witness")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/0.2" => {
+            Some(crate::specs::witness::session::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/witness/session/submit/0.1" => {
             Some(crate::specs::witness::session::submit::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "witness")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/witness/session/submit/0.2" => {
+            Some(crate::specs::witness::session::submit::v0_2::ERROR_CODES)
         }
         _ => None,
     }

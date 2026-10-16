@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/witness/present/0.2",
+  "title": "VTA Witness — Present — payload",
+  "description": "A client hands its VTA the witness's answer to the session it opened; the VTA verifies that the answer is the witness's own, builds the presentations bound to its challenge and domain, and returns the witness/session/submit document, signed as the relationship DID, for the client to send.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sessionId",
+    "response"
+  ],
+  "properties": {
+    "sessionId": {
+      "$ref": "../../../_shared/0.6/witness-party.schema.json#/$defs/SessionId"
+    },
+    "response": {
+      "$ref": "../../../_shared/0.6/witness-party.schema.json#/$defs/CarriedDocument",
+      "description": "The witness/session/0.2 #response the witness returned, exactly as received, under the witness's proof."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Witness — Present — response payload",
+      "description": "The witness/session/submit document to send.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "document"
+      ],
+      "properties": {
+        "sessionId": {
+          "$ref": "../../../_shared/0.6/witness-party.schema.json#/$defs/SessionId"
+        },
+        "document": {
+          "$ref": "../../../_shared/0.6/witness-party.schema.json#/$defs/CarriedDocument",
+          "description": "The witness/session/submit/0.2 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in `memberPresentation`. For the client to send from relationshipDid unaltered."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

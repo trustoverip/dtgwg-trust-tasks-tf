@@ -1,0 +1,207 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "did": "did:key:z6Mk",
+      "presentation": {},
+      "__x__": true
+    }
+  },
+  {
+    "note": "`presentation` is required.",
+    "payload": {
+      "did": "did:key:z6Mk"
+    }
+  },
+  {
+    "note": "`did` is required.",
+    "payload": {
+      "presentation": {}
+    }
+  },
+  {
+    "note": "An empty outcomeEvidence array is refused — absent means no witnessing evidence, and an empty list says nothing absence does not.",
+    "payload": {
+      "did": "did:key:z6Mk",
+      "presentation": {},
+      "outcomeEvidence": []
+    }
+  },
+  {
+    "note": "An outcome-evidence entry carries both documents — a session document alone cannot show the session completed (SPEC §4.9.4).",
+    "payload": {
+      "did": "did:key:z6Mk",
+      "presentation": {},
+      "outcomeEvidence": [
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "An outcome-evidence entry has exactly session and outcome — the VWC rides in the presentation, never beside the evidence.",
+    "payload": {
+      "did": "did:key:z6Mk",
+      "presentation": {},
+      "outcomeEvidence": [
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          },
+          "vwc": {}
+        }
+      ]
+    }
+  },
+  {
+    "note": "At most 16 entries travel with one presentation.",
+    "payload": {
+      "did": "did:key:z6Mk",
+      "presentation": {},
+      "outcomeEvidence": [
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        },
+        {
+          "session": {
+            "id": "urn:uuid:1"
+          },
+          "outcome": {
+            "id": "urn:uuid:2"
+          }
+        }
+      ]
+    }
+  }
+]

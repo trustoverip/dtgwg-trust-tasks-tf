@@ -5813,6 +5813,10 @@ export interface EpochLink {
   nonce: string;
 }
 /**
+ * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
+ */
+export interface EvidenceDocument {}
+/**
  * The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
  */
 export interface Exposure {
@@ -6920,6 +6924,19 @@ export interface OfferCredentials {
    * The Verifiable Authority Credential granting `actions` until `validUntil`.
    */
   authority: string;
+}
+/**
+ * One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).
+ */
+export interface OutcomeEvidence {
+  /**
+   * The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).
+   */
+  session: EvidenceDocument;
+  /**
+   * The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.
+   */
+  outcome: EvidenceDocument;
 }
 /**
  * How the uploader will cut a blob for direct transfer, committed before any byte moves: one storage object, written in `partCount` parts of `partSize` bytes (the last may be shorter), each with its digest. Independent of the chunk manifest, because storage imposes part sizes a chunk document cannot carry; the chunk manifest still describes the blob and readers still check it.

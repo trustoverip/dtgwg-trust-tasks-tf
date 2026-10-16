@@ -1,0 +1,26 @@
+[
+  {
+    "note": "vp is required — a submission with no presentation gives the witness nothing to verify.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected; ecosystem data belongs under `ext` (SPEC.md §4.5.1). Attestation evidence rides inside the presentation or under a namespaced ext, never as an ad-hoc member.",
+    "payload": {
+      "vp": {},
+      "attestation": "secure-enclave"
+    }
+  },
+  {
+    "note": "memberPresentation is a presentation object, never a bare DID or a string — a witness given a member DID with nothing signed by it has no evidence the submitter holds the member key.",
+    "payload": {
+      "vp": {},
+      "memberPresentation": "did:webvh:QmAlice:alice.example.com"
+    }
+  },
+  {
+    "note": "memberPresentation does not replace vp — the relationship presentation is still required, and a submission carrying only the member presentation gives the witness no relationship credential to attest.",
+    "payload": {
+      "memberPresentation": {}
+    }
+  }
+]
