@@ -24,8 +24,8 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: >-
-    The community signs on the strength of who is asking: a member holding a live vetter grant, at
-    most once per class label. A proofless request would let anyone claim another member's one
+    The community signs on the strength of who is asking: a member holding a live vetter grant,
+    enrolled once per class label. A proofless request would let anyone claim another member's one
     enrolment, and the community cannot tell afterwards — the credential it issued is one it
     deliberately cannot recognise.
 issuedAtRequirement:
@@ -53,7 +53,7 @@ errorCodes:
     meaning: "`label` is not the label this community is currently issuing under."
     retryable: false
   - code: vtc/vetting/vetters/pcs-root:alreadyEnrolled
-    meaning: "This member already holds a credential under `label`. One per member per label is what makes distinct tags distinct people."
+    meaning: "This member has already enrolled under `label`, and the community will not issue to them again under it — it does not re-issue, or the member has used the re-issues it allows (see Recovering a lost answer). One enrolment per member per label is what makes distinct tags distinct people. The member enrols again at the next label."
     retryable: false
   - code: vtc/vetting/vetters/pcs-root:identifierRebound
     meaning: "`id` is not the identifier this member was bound to at their first enrolment. A member holding two identifiers could be counted twice in one proof."
@@ -94,9 +94,48 @@ records at the moment of issuance, not against anything in the request: per
 [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements) the proof establishes who is asking and
 nothing about what they may have.
 
-Two further checks are authorization, not validation, and a consumer MUST make both: this member
-has not already enrolled under this label, and the identifier presented is the one they were bound
-to. Both exist because the counting rule downstream assumes one credential per member per label.
+Two further checks are authorization, not validation, and a consumer MUST make both: the
+identifier presented is the one this member was bound to, and this member has not already enrolled
+under this label — unless the community re-issues to them under it, as
+[Recovering a lost answer](#recovering-a-lost-answer) allows. Both exist because the counting rule
+downstream assumes one tag-set per member per label: the identifier check holds a member to one
+secret, and the enrolment check holds them to one enrolment under it.
+
+### Recovering a lost answer
+
+The community issues and the vetter unblinds, so an answer that never reaches the vetter in a form
+it can open — it arrived after the client stopped waiting, the client restarted and lost the
+blinding state, the transport dropped it — leaves the member enrolled and holding no credential.
+Refusing every later request as `alreadyEnrolled` would lock them out of hidden vetting until the
+next label.
+
+A community MAY therefore answer a second request under a label the member is already enrolled
+in with a fresh issuance over the new blinded request, when the request's `id` is the one recorded
+for the member. It MUST make every other check as for a first enrolment — a live vetter grant, the
+document proof, `issuedAt` freshness, `wrongLabel`, `badRequest` — and:
+
+1. MUST NOT re-issue unless the suite it publishes binds the blinded request to the secret `id` is
+   derived from, so that every credential issued over a request under one `id` yields the same
+   tags under a label as every other. That binding is what keeps a re-issue from counting as a
+   second vetter; a community whose suite does not provide it refuses with `alreadyEnrolled`.
+2. MUST refuse a request whose `id` is not the recorded one with `identifierRebound`, as at any
+   label; a re-issue is never a way to change identifiers.
+3. MUST NOT record a second enrolment: it is the same member under the same label, bound to the
+   same identifier. It SHOULD bound the re-issues it serves per member per label (a small number
+   suffices to recover from a lost answer), MUST refuse beyond that bound with `alreadyEnrolled`,
+   and SHOULD audit each re-issue.
+
+What this gives up is the guarantee that the community issued exactly one credential object per
+member per label, not that it counts each member once: distinctness is by tag, and a member
+holding two credentials under one `id` makes the same tags with either. A community that does not
+re-issue keeps refusing with `alreadyEnrolled`.
+
+A vetter whose answer was lost recovers by enrolling again under the same label with the same
+`id` — for a VTA-held key, [`vta/pcs/root-request`](../../../../../vta/pcs/root-request/0.1/spec.md)
+again, which replaces the blinding state for the label and keeps the key, and so the `id` — and
+passes the new answer to [`vta/pcs/root-accept`](../../../../../vta/pcs/root-accept/0.1/spec.md). A
+refusal with `alreadyEnrolled` means this community does not re-issue, or no longer will for this
+label; the vetter enrols at the next one.
 
 ## Definitions
 
@@ -147,7 +186,8 @@ The community answers with the blind pre-credential, in the sub-schema reachable
 
 A community SHOULD record the enrolment only after the signature exists: losing the record costs
 a repeated enrolment the vetter asks for, while recording one that was never signed costs the
-member their single enrolment for the period.
+member their single enrolment for the period — or, at a community that re-issues, one of the
+re-issues it allows.
 
 ### The blind pre-credential
 

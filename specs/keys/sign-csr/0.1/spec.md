@@ -98,6 +98,8 @@ errorCodes:
         reason:
           type: string
           maxLength: 256
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
   - keys/sign-jws
   - keys/sign

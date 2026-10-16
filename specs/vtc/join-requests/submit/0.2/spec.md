@@ -72,6 +72,24 @@ errorCodes:
           maxItems: 32
           items:
             type: string
+  - code: vtc/join-requests/submit:challengeNotIssued
+    meaning: "The submission's hidden-vetting proof is bound to a challenge, but the community holds no challenge for the applicant's DID — none was requested, or it expired and has since been discarded. The applicant requests a new challenge over `vtc/vetting/pcs-challenge`, builds the proof over it, and sends again."
+    retryable: false
+  - code: vtc/join-requests/submit:challengeAlreadyUsed
+    meaning: "The challenge the proof is bound to was spent by an earlier submission or supplement. Challenges are single-use. The applicant requests a new one, rebuilds the proof, and sends again."
+    retryable: false
+  - code: vtc/join-requests/submit:challengeExpired
+    meaning: "The challenge the proof is bound to is past its `expiresAt`. The details MAY carry `expiredAt`. The applicant requests a new one, rebuilds the proof, and sends again."
+    retryable: false
+    detailsSchema:
+      type: object
+      properties:
+        expiredAt:
+          type: string
+          format: date-time
+  - code: vtc/join-requests/submit:challengeMismatch
+    meaning: "The proof is bound to a challenge other than the one the community holds open for this applicant — typically one it replaced when the applicant asked again. This attempt spends the open challenge. The applicant requests a new one, rebuilds the proof, and sends again."
+    retryable: false
 ---
 
 ## Abstract
@@ -97,6 +115,19 @@ Consumer: verify the proof and the presentation; if the VP fails verification or
 **Requested attributes.** Producer: answer the manifest's `requestedAttributes` in `attributes`, one entry per attribute given, and nothing it does not ask for. The values are self-asserted; the proof binds them to the applicant and attests nothing further.
 
 Consumer: refuse with `attributesMissing`, naming the types, when a required requested attribute is not answered, and with `attributesUnrequested`, naming the types, when an entry names a type the manifest does not request. **MUST** store the answers with the request and show them to its reviewers as the applicant's own statement — never as verified — and **MUST NOT** let a join policy treat one as attested evidence. Their retention is the request's: they are deleted with it.
+
+### Hidden-vetting challenge
+
+A hidden-vetting proof travels as the `hiddenVetting` member of `extensions`, and is bound to the single-use challenge the community issued the applicant over [`vtc/vetting/pcs-challenge`](../../../vetting/pcs-challenge/0.1/spec.md). When a consumer counts that proof it spends the applicant's open challenge — whether or not the applicant is then admitted, and including on a mismatch — and refuses the submission, changing nothing else, with the code that says why:
+
+- `challengeNotIssued` — it holds no challenge for the applicant's DID: none was requested, or it expired and was swept;
+- `challengeAlreadyUsed` — the challenge was spent by an earlier submission or supplement;
+- `challengeExpired` — the challenge is past its `expiresAt`; `details` **MAY** carry `expiredAt`;
+- `challengeMismatch` — the proof is bound to a value other than the open challenge.
+
+A consumer **MUST NOT** answer any of these with `malformedRequest`, and its `message` **MUST NOT** echo the challenge value. It **MUST** discard the challenge value when it spends it. It **MAY** keep a value-free spent marker — the challenge's expiry and when it was spent, never the value — until that expiry, so that a repeated attempt is answered `challengeAlreadyUsed` rather than `challengeNotIssued`; the marker is swept as an expired challenge is.
+
+None of the four is retryable: the same document cannot succeed. The remedy is the same for all of them — request a new challenge, build a new proof over it, and send again, which is a new document — but they say different things. `challengeExpired` and `challengeNotIssued` are usually time: the applicant was slow, or the client asked too early. `challengeAlreadyUsed` is a resubmission or a race. `challengeMismatch` is usually a client defect, such as reusing a challenge after asking for another, and a client **SHOULD** report it as its own fault rather than the applicant's.
 
 ## Authorization
 
