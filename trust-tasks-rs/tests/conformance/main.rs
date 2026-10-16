@@ -2011,6 +2011,7 @@ mod vtc {
             }
             mod retry {
                 mod v0_1;
+                mod v0_2;
             }
         }
     }

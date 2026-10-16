@@ -826,6 +826,7 @@ export * as VtcRegistryRecordsList_v0_1 from "./vtc/registry/records/list/0.1/pa
 export * as VtcRegistrySyncJobsDiscard_v0_1 from "./vtc/registry/sync-jobs/discard/0.1/payload.js";
 export * as VtcRegistrySyncJobsList_v0_1 from "./vtc/registry/sync-jobs/list/0.1/payload.js";
 export * as VtcRegistrySyncJobsRetry_v0_1 from "./vtc/registry/sync-jobs/retry/0.1/payload.js";
+export * as VtcRegistrySyncJobsRetry_v0_2 from "./vtc/registry/sync-jobs/retry/0.2/payload.js";
 export * as VtcRelationshipsGraph_v0_1 from "./vtc/relationships/graph/0.1/payload.js";
 export * as VtcRelationshipsGraph_v0_2 from "./vtc/relationships/graph/0.2/payload.js";
 export * as VtcRelationshipsList_v0_1 from "./vtc/relationships/list/0.1/payload.js";

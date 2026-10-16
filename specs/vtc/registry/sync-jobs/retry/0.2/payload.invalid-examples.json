@@ -1,0 +1,38 @@
+[
+  {
+    "note": "None of jobId, allFailed or allWaiting. The oneOf makes the discriminator mandatory — an empty payload must not be readable as 'retry everything'.",
+    "payload": {}
+  },
+  {
+    "note": "Both jobId and allFailed. Ambiguous intent: a consumer would have to choose between one job and all of them, so the schema refuses rather than letting each implementation pick.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "allFailed": true }
+  },
+  {
+    "note": "Both jobId and allWaiting. The same ambiguity as with allFailed.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "allWaiting": true }
+  },
+  {
+    "note": "Both allFailed and allWaiting. Repairing a shared cause and hurrying a backoff are two decisions; a producer wanting both sends two requests.",
+    "payload": { "allFailed": true, "allWaiting": true }
+  },
+  {
+    "note": "allFailed: false. The const pins it to true so the member means 'do the bulk operation' and never 'do something else'; a false here is a client that meant to send jobId.",
+    "payload": { "allFailed": false }
+  },
+  {
+    "note": "allWaiting: false. Pinned to true for the same reason as allFailed.",
+    "payload": { "allWaiting": false }
+  },
+  {
+    "note": "Empty jobId. minLength 1 stops a dropped identifier arriving as a well-formed request naming nothing.",
+    "payload": { "jobId": "" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false catches `force`, which a caller might assume would also release a held job. Nothing does.",
+    "payload": { "allWaiting": true, "force": true }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "jobId": "07c6c189-8272-4761-96e9-0ef869380665", "ext": { "reason": "operator retry" } }
+  }
+]
