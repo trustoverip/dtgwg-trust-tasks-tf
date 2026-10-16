@@ -1081,6 +1081,7 @@ mod rooms {
     mod keys {
         mod act {
             mod v0_1;
+            mod v0_2;
         }
         mod backfill {
             mod v0_1;
