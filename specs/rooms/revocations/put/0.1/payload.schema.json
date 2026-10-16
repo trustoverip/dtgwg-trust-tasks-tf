@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/revocations/put/0.1",
+  "title": "Rooms Revocations Put — payload",
+  "description": "An administrator of a room delivers the room's signed RevocationList to its host, which refuses every withdrawn credential from the moment it accepts the list.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation",
+    "list"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room. MUST equal `list.roomId`."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `admin` action at this room's scope, verified against the list the host already holds — not against the list being delivered. The list's authority is the room's signature on it; the presentation decides only who may make a host process one."
+    },
+    "list": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RevocationList",
+      "description": "The room's signed, cumulative list. A host accepts it only under the rules of `RevocationList`: the room's own key, a higher sequence, and every live entry of the list it holds still present."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Revocations Put — response payload",
+      "description": "Success response to rooms/revocations/put. Type https://trusttasks.org/spec/rooms/revocations/put/0.1#response. The list the host now holds and enforces, and the moment from which it does.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "head",
+        "inForceAt"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "head": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RevocationHead",
+          "description": "The list the host holds after this request. Equal to the delivered list's head when it was accepted or was a repeat."
+        },
+        "inForceAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host began refusing what the list withdraws. On a repeat, when it began refusing it the first time."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

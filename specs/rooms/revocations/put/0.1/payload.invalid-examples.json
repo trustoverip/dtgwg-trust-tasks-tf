@@ -1,0 +1,102 @@
+[
+  {
+    "note": "No list. The task delivers the room's signed list; a delivery carrying none withdraws nothing and is refused rather than read as an empty list.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-admin.sig"]
+      }
+    }
+  },
+  {
+    "note": "An unsigned list. The list's authority is the room's signature; without one it is anybody's assertion.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-admin.sig"]
+      },
+      "list": {
+        "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+        "sequence": 1,
+        "issuedAt": "2026-10-16T09:29:58Z",
+        "entries": []
+      }
+    }
+  },
+  {
+    "note": "A list at sequence 0. Sequences start at 1; a host holding none accepts any valid list, so there is no state for 0 to name.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-admin.sig"]
+      },
+      "list": {
+        "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+        "sequence": 0,
+        "issuedAt": "2026-10-16T09:29:58Z",
+        "entries": [],
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "A subject entry with no subject. A withdrawal that names no party would read as withdrawing nobody or everybody; `room` is how everybody is said.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-admin.sig"]
+      },
+      "list": {
+        "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+        "sequence": 2,
+        "issuedAt": "2026-10-16T09:29:58Z",
+        "entries": [
+          { "kind": "subject", "revokedAt": "2026-10-16T09:29:58Z" }
+        ],
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "An entry with no revokedAt. Subject and room entries withdraw what was issued before it, so an entry without one could not be applied, and a credential entry's time is the room's record of when it acted.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-admin.sig"]
+      },
+      "list": {
+        "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+        "sequence": 2,
+        "issuedAt": "2026-10-16T09:29:58Z",
+        "entries": [
+          { "kind": "room" }
+        ],
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "An unknown entry kind. A host that skipped an entry it did not understand would honour a credential the room withdrew.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": ["eyJhbGciOiJFZERTQSJ9.authority-admin.sig"]
+      },
+      "list": {
+        "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+        "sequence": 2,
+        "issuedAt": "2026-10-16T09:29:58Z",
+        "entries": [
+          { "kind": "device", "revokedAt": "2026-10-16T09:29:58Z" }
+        ],
+        "proof": {}
+      }
+    }
+  }
+]

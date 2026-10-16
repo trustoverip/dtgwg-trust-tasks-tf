@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/revocations/get/0.1",
+  "title": "Rooms Revocations Get — payload",
+  "description": "An administrator of a room reads the revocation list its host holds and enforces for it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer the `admin` action at this room's scope. The list names withdrawn parties on `open` and `attributed` rooms, which is the room's administration and not a member's business."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Revocations Get — response payload",
+      "description": "Success response to rooms/revocations/get. Type https://trusttasks.org/spec/rooms/revocations/get/0.1#response. The list the host holds, exactly as the room signed it, or nothing when it holds none.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "list": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RevocationList",
+          "description": "The list the host holds, as the room signed it. Absent when the host holds none. A reader MUST verify it as a host does — the room's own key, this room — before relying on it, and MUST NOT adopt it in place of a list it holds at a higher sequence."
+        },
+        "inForceAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host began enforcing `list`. Present with it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

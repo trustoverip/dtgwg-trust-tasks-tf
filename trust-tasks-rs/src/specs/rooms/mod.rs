@@ -7,4 +7,5 @@ pub mod info;
 pub mod keys;
 pub mod owner;
 pub mod records;
+pub mod revocations;
 pub mod usage;

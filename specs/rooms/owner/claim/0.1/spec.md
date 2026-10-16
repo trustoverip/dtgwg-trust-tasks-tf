@@ -110,7 +110,7 @@ could become a takeover:
    That is a proxy, and a good one — it is the same membership every other room task
    presents and the same one the room's authority chains are rooted beside — but a party
    removed from the MLS group while still holding an unexpired VMC would pass this check.
-   Closing that gap is the room's job, by revoking the credential, not the host's.
+   Closing that gap is the room's job, by revoking the credential ([`rooms/owner/revoke`](../../revoke/0.1/spec.md)), not the host's.
 
 ### Renewing cancels a pending claim
 

@@ -1091,6 +1091,18 @@ export type ResumeToken = string;
  */
 export type RetentionPolicy = "chained" | "fromJoin";
 /**
+ * One withdrawal in a `RevocationList`, discriminated by `kind`.
+ *
+ *   - `credential` withdraws one credential, named by its `id`. It matches the membership credential or any authority link whose `id` equals `credentialId`.
+ *   - `subject` withdraws a party: every credential the room's chain gave them **before** `revokedAt`. It matches the membership credential or any authority link whose `credentialSubject` id **or** `issuer` is `subject` and whose `validFrom` is earlier than `revokedAt`. Matching the issuer as well as the subject withdraws what the party delegated before their removal, which no re-admission revives. A credential carrying no `validFrom` is treated as issued before every entry.
+ *   - `room` withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it. It is how a room resets access — after a compromise, or on a `private` room, where naming a party would disclose who was a member.
+ *
+ * **Keyed on time, so a party can come back.** A `subject` or `room` entry withdraws what was issued before it and nothing after, so a room that re-admits a removed party issues fresh credentials and they verify. A `credential` entry is permanent for that one credential, which nobody re-issues.
+ *
+ * **Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.
+ */
+export type RevocationEntry = CredentialRevocation | SubjectRevocation | RoomRevocation;
+/**
  * One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
  */
 export type Right = "git.ns.admin" | "git.repo.create" | "git.repo.own" | "git.repo.maintain" | "git.commit.sign";
@@ -4221,6 +4233,10 @@ export interface AuthenticatorAttestationResponseRegistration {
 }
 /**
  * What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.
+ *
+ * **Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.
+ *
+ * **A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.
  */
 export interface AuthorityPresentation {
   /**
@@ -4955,6 +4971,24 @@ export interface CredentialReference {
    * When it lapses, or null when it does not.
    */
   expiresAt?: string | null;
+}
+/**
+ * Withdraws one credential — a membership credential or any authority link — by its `id`.
+ */
+export interface CredentialRevocation {
+  kind: "credential";
+  /**
+   * The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.
+   */
+  credentialId: string;
+  /**
+   * When the room made this withdrawal.
+   */
+  revokedAt: string;
+  /**
+   * OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
+   */
+  until?: string;
 }
 /**
  * A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.
@@ -7812,6 +7846,56 @@ export interface ResolvedClaim {
   updatedAt?: string;
 }
 /**
+ * Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.
+ */
+export interface RevocationHead {
+  /**
+   * The list's `sequence`.
+   */
+  sequence: number;
+  /**
+   * SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.
+   */
+  digest: DigestMultibase;
+}
+/**
+ * The room's own statement of which credentials it has withdrawn before they expire — signed by the room, cumulative, and numbered, so that it means the same thing at every host it is delivered to.
+ *
+ * **Why the room signs it, and why it is cumulative.** A host authorizes from credentials the room issued and keeps no roster; a withdrawal kept only as a host's own state would make the room unmovable and the host part of the membership. A list the room signed is room state: it moves with the room, any host it is delivered to reaches the same decision, and nothing a host invents can be mistaken for it. It is cumulative — every list carries every entry still in force — so a host holding any one list holds the room's whole withdrawal state, and a host that missed a list loses nothing once it receives a later one.
+ *
+ * **Producing.** The room's key holder builds the object without `proof` and signs it with a W3C Data Integrity proof whose `verificationMethod` is a key the room's DID document lists for `assertionMethod` and whose `proofPurpose` is `assertionMethod`. A producer MUST support `eddsa-jcs-2022`. Each list's `sequence` is exactly one greater than the last list the room signed, and the producer MUST NOT sign two different lists at one `sequence`.
+ *
+ * **Accepting.** A host MUST refuse a list unless: (1) `roomId` is the room it is delivered for; (2) `proof` verifies with a key of `roomId` listed for `assertionMethod` — a list signed by any other key, however valid the signature, is not the room's; (3) `sequence` is greater than that of the list it holds, or equal with an identical list (a repeat, answered as accepted and changing nothing); (4) it is **append-only** against the list it holds: every entry of the held list appears in it unchanged, unless that entry's `until` has passed. A list that lowers the sequence is a rollback and one that drops a live entry is a reinstatement nobody signed for, and both are refused; two different lists at one `sequence` is the room's key equivocating, and the host keeps the list it holds.
+ *
+ * **Applying.** A credential is revoked by an accepted list when any entry matches it (see `RevocationEntry`). An entry whose `until` has passed MAY be discarded by a host and omitted from later lists; no other entry is ever dropped.
+ *
+ * **Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.
+ */
+export interface RevocationList {
+  /**
+   * The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.
+   */
+  roomId: string;
+  /**
+   * The list's position in the room's sequence: exactly one greater than the last list the room signed. A host accepts only a list whose sequence is above the one it holds, which is what stops a host, a relayer or an attacker holding an old list from rolling the room's withdrawals back.
+   */
+  sequence: number;
+  /**
+   * When the room signed this list.
+   */
+  issuedAt: string;
+  /**
+   * Every withdrawal still in force, in the order the room made them. Empty is valid: a room that has revoked nothing, or whose every entry has lapsed, can still state its sequence.
+   *
+   * @maxItems 4096
+   */
+  entries: RevocationEntry[];
+  /**
+   * The room's Data Integrity proof over every other member, made with a key the room's DID document lists for `assertionMethod`.
+   */
+  proof: {};
+}
+/**
  * The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish "I revoked it now" from "it was already gone".
  *
  * The counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.
@@ -8110,6 +8194,20 @@ export interface RoomMember {
   offeredAt: string;
   admittedAt?: string;
   removedAt?: string;
+}
+/**
+ * Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.
+ */
+export interface RoomRevocation {
+  kind: "room";
+  /**
+   * When the room made this withdrawal.
+   */
+  revokedAt: string;
+  /**
+   * OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
+   */
+  until?: string;
 }
 /**
  * One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.
@@ -8857,6 +8955,24 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.
+ */
+export interface SubjectRevocation {
+  kind: "subject";
+  /**
+   * The party withdrawn. Never the room itself.
+   */
+  subject: string;
+  /**
+   * When the room made this withdrawal.
+   */
+  revokedAt: string;
+  /**
+   * OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
+   */
+  until?: string;
 }
 /**
  * One attestation as a submission carries it: its metadata and its token. The attestation itself is inside the submission's `proof`, in the same order.

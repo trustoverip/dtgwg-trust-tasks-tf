@@ -1,0 +1,54 @@
+[
+  {
+    "note": "No hosts. A withdrawal binds only the hosts that hold it; one delivered nowhere withdraws nothing, while reading to the caller as though it had.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "hosts": [],
+      "withdraw": [{ "kind": "room" }]
+    }
+  },
+  {
+    "note": "No signing key. The recipient signs as the room with a key named explicitly; one looked up from the room would be a mapping nothing maintains.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "hosts": ["did:webvh:example.com:northwind-community"],
+      "withdraw": [{ "kind": "room" }]
+    }
+  },
+  {
+    "note": "A caller-chosen revokedAt. The recipient stamps the time it signs; a caller who dated a withdrawal could reach back past a re-admission, or forward past grants not yet made.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "hosts": ["did:webvh:example.com:northwind-community"],
+      "withdraw": [
+        {
+          "kind": "subject",
+          "subject": "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+          "revokedAt": "2030-01-01T00:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A subject that is not a DID. Credentials name their subject by DID; a name matches no credential and would withdraw nobody while looking as though it had.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "hosts": ["did:webvh:example.com:northwind-community"],
+      "withdraw": [{ "kind": "subject", "subject": "bob" }]
+    }
+  },
+  {
+    "note": "The same host twice. Each host is delivered to once and reported once.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "signingKeyId": "room-northwind-signing",
+      "hosts": [
+        "did:webvh:example.com:northwind-community",
+        "did:webvh:example.com:northwind-community"
+      ]
+    }
+  }
+]

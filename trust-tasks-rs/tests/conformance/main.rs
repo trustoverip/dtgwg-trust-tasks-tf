@@ -1122,6 +1122,7 @@ mod rooms {
             }
             mod remove {
                 mod v0_1;
+                mod v0_2;
             }
             mod renew {
                 mod v0_1;
@@ -1140,6 +1141,9 @@ mod rooms {
         mod register {
             mod v0_1;
         }
+        mod revoke {
+            mod v0_1;
+        }
     }
     mod records {
         mod get {
@@ -1150,6 +1154,14 @@ mod rooms {
         }
         mod put {
             mod v0_2;
+        }
+    }
+    mod revocations {
+        mod get {
+            mod v0_1;
+        }
+        mod put {
+            mod v0_1;
         }
     }
     mod usage {
@@ -2077,6 +2089,7 @@ mod vtc {
                 }
                 mod remove {
                     mod v0_1;
+                    mod v0_2;
                 }
             }
         }

@@ -81,7 +81,7 @@ Removal is an epoch advance, and nothing else is. A membership credential that l
 
 **What removal does not do, and a surface offering it must say so:** it does not recall anything the member already read, and on a `chained` room it does not stop them reading the epochs they were in. It ends their access to what is written from now on.
 
-The member's authority credential is a separate thing and is not touched here. A surface removing someone also lets their authority lapse, or issues none further; until it does, they can still present it to the host for operations their old epochs' keys suffice for — reading what they could already read.
+The member's authority credential is a separate thing and is not touched here — [`0.2`](../../remove/0.2/spec.md) withdraws it at the host first. A surface removing someone with this version also lets their authority lapse, issues none further, or withdraws it with [`rooms/owner/revoke`](../../../revoke/0.1/spec.md); until it does, they can still present it to the host for operations their old epochs' keys suffice for — reading what they could already read.
 
 ## Status of this Document
 

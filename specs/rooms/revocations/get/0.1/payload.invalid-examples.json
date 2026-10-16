@@ -1,0 +1,18 @@
+[
+  {
+    "note": "No presentation. The list is read by the room's administrators only; a host that answered an unauthenticated read would publish who was withdrawn.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "note": "A presentation with an empty authority chain. A chain must end in a credential the room issued; an empty one reaches nothing.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "presentation": {
+        "membership": "eyJhbGciOiJFZERTQSJ9.membership.sig",
+        "authority": []
+      }
+    }
+  }
+]

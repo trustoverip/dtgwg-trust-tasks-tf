@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2",
+  "title": "VTC Rooms Community Members Remove — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "member",
+    "reason"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048
+    },
+    "reason": {
+      "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Members Remove — response payload",
+      "description": "Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member"
+      ],
+      "properties": {
+        "member": {
+          "$ref": "../../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomMember"
+        },
+        "revocation": {
+          "$ref": "../../../../../../rooms/_shared/0.1/room.schema.json#/$defs/RevocationHead",
+          "description": "On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`."
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present with `revocation`: the withdrawal's time."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "On a sealed tier, the room epoch after the removal."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

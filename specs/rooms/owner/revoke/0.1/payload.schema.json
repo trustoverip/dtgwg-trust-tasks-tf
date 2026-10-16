@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/revoke/0.1",
+  "title": "Rooms Owner Revoke — payload",
+  "description": "A room's owner asks their own agent to withdraw credentials the room issued: sign the room's next revocation list as the room, keep it, and deliver it to each host serving the room.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "signingKeyId",
+    "hosts"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room whose credentials are withdrawn. The recipient signs as this room."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Which held key signs as the room — named explicitly, as for rooms/owner/issue-authority, because nothing maps a DID to the key it was minted with. A key that is not one the room's DID document lists for `assertionMethod` produces a list every host refuses."
+    },
+    "hosts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^did:",
+        "maxLength": 2048
+      },
+      "description": "Every host serving the room, as DIDs: its primary, any mirror, and a host it is moving to. A withdrawal binds only the hosts that hold it, so a host left off this list honours what the room withdrew."
+    },
+    "withdraw": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/Withdrawal"
+      },
+      "description": "What to withdraw now. Absent or empty: sign nothing new, and deliver the list the recipient holds — how a host the room has moved to, or one that missed a delivery, is brought up to date."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Why, for the owner's own record. Never put into the list, which reaches every host: it MUST NOT carry personal data or a credential."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Withdrawal": {
+      "title": "Withdrawal",
+      "description": "One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/WithdrawCredential"
+        },
+        {
+          "$ref": "#/$defs/WithdrawSubject"
+        },
+        {
+          "$ref": "#/$defs/WithdrawRoom"
+        }
+      ]
+    },
+    "WithdrawCredential": {
+      "title": "WithdrawCredential",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "credentialId"
+      ],
+      "properties": {
+        "kind": {
+          "const": "credential"
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The `id` of the credential withdrawn."
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "OPTIONAL. The credential's own `validUntil`, after which the entry can be dropped."
+        }
+      }
+    },
+    "WithdrawSubject": {
+      "title": "WithdrawSubject",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "subject"
+      ],
+      "properties": {
+        "kind": {
+          "const": "subject"
+        },
+        "subject": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room."
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "OPTIONAL. When the last credential the room issued them expires, after which the entry can be dropped."
+        }
+      }
+    },
+    "WithdrawRoom": {
+      "title": "WithdrawRoom",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "const": "room"
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "OPTIONAL. When the last credential the room issued before now expires."
+        }
+      }
+    },
+    "Delivery": {
+      "title": "Delivery",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "outcome"
+      ],
+      "description": "What one host did with the list.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "refused",
+            "unreachable"
+          ],
+          "description": "`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again."
+        },
+        "head": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RevocationHead",
+          "description": "The head the host answered with. Present when `accepted`."
+        },
+        "inForceAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host began enforcing the list. Present when `accepted`."
+        },
+        "code": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "The host's error code. Present when `refused`."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Revoke — response payload",
+      "description": "Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "list",
+        "head",
+        "deliveries"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "list": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RevocationList",
+          "description": "The room's current list, as signed. Returned so the owner holds a copy that does not depend on the recipient."
+        },
+        "head": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RevocationHead"
+        },
+        "deliveries": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/Delivery"
+          },
+          "description": "One per host in the request, in its order."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
