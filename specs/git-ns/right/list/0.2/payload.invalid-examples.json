@@ -1,0 +1,43 @@
+[
+  {
+    "note": "`resource` is not forge-qualified — no forge host segment, just an owner/repo pair.",
+    "payload": { "resource": "acme/widgets" }
+  },
+  {
+    "note": "`subject` is a DID URL (carries a fragment), not a bare DID — SPEC's `Did` pattern refuses it.",
+    "payload": { "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK" }
+  },
+  {
+    "note": "`limit` above the declared maximum of 500.",
+    "payload": { "limit": 501 }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `namespaceId`.",
+    "payload": { "namespaceId": "ns_01J8Z6Q4M2" }
+  },
+  {
+    "note": "Response variant: unrecognised `origin` — the enum is closed to `recorded` and `roleDerived`.",
+    "variant": "response",
+    "payload": {
+      "rights": [
+        {
+          "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+          "right": "git.repo.own",
+          "resource": "github.com/acme/widgets",
+          "origin": "inherited",
+          "subjectMember": true,
+          "granterDeparted": false
+        }
+      ]
+    }
+  },
+  {
+    "note": "Response variant: missing required `rights` member.",
+    "variant": "response",
+    "payload": { "nextCursor": null }
+  }
+]

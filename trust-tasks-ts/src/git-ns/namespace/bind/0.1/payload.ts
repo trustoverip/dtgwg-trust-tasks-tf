@@ -3,7 +3,7 @@
  * Source: specs/git-ns/namespace/bind/0.1/payload.schema.json
  */
 
-import type { Ext, ForgeHost, GitNamespace, NamespaceId, Segment } from "../../../../_shared/components.js";
+import type { Ext, ForgeHost_GitNsV0_1 as ForgeHost, GitNamespace_GitNsV0_1 as GitNamespace, NamespaceId, Segment_GitNsV0_1 as Segment } from "../../../../_shared/components.js";
 
 
 /**

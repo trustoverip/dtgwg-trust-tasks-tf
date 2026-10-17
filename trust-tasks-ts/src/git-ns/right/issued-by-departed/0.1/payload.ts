@@ -3,7 +3,7 @@
  * Source: specs/git-ns/right/issued-by-departed/0.1/payload.schema.json
  */
 
-import type { AdminRightRow, BreakGlass, Did_GitNsV0_3 as Did, Ext, Resource, Right, RightOrigin } from "../../../../_shared/components.js";
+import type { AdminRightRow_GitNsV0_5 as AdminRightRow, BreakGlass, Did_GitNsV0_3 as Did, Ext, Resource_GitNsV0_1 as Resource, Right, RightOrigin } from "../../../../_shared/components.js";
 
 
 /**

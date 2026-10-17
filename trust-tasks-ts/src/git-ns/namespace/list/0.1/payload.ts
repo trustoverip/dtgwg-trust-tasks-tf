@@ -3,7 +3,7 @@
  * Source: specs/git-ns/namespace/list/0.1/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, ForgeHost, ForgeId, NamespaceId, Resource, Segment } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, NamespaceId, Resource_GitNsV0_1 as Resource, Segment_GitNsV0_1 as Segment } from "../../../../_shared/components.js";
 
 
 /**

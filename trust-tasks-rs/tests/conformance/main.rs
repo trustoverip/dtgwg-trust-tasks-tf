@@ -616,6 +616,7 @@ mod git_ns {
     mod activity {
         mod list {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod bridge {
@@ -624,20 +625,24 @@ mod git_ns {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod job {
             mod list {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod v0_1;
             mod v0_2;
             mod v0_3;
             mod v0_4;
             mod v0_5;
+            mod v0_6;
         }
         mod result {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod drift {
@@ -645,19 +650,23 @@ mod git_ns {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
     }
     mod namespace {
         mod bind {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod reseat {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod unbind {
             mod v0_1;
@@ -666,60 +675,74 @@ mod git_ns {
     mod projection {
         mod show {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod repo {
         mod adopt {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod archive {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod create {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod transfer {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
     }
     mod right {
         mod break_glass {
             mod v0_1;
+            mod v0_2;
         }
         mod break_glass_notice {
             mod v0_1;
+            mod v0_2;
         }
         mod grant {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod issued_by_departed {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod ratify {
             mod v0_1;
+            mod v0_2;
         }
         mod revoke {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
     }
     mod roles {
         mod reproject {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod view {
@@ -728,6 +751,7 @@ mod git_ns {
         mod v0_3;
         mod v0_4;
         mod v0_5;
+        mod v0_6;
     }
 }
 #[cfg(feature = "git-trust")]
