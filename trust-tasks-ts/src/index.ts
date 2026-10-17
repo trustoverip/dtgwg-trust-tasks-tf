@@ -448,6 +448,7 @@ export * as RoomsInfo_v0_1 from "./rooms/info/0.1/payload.js";
 export * as RoomsKeysAct_v0_1 from "./rooms/keys/act/0.1/payload.js";
 export * as RoomsKeysAct_v0_2 from "./rooms/keys/act/0.2/payload.js";
 export * as RoomsKeysAct_v0_3 from "./rooms/keys/act/0.3/payload.js";
+export * as RoomsKeysAct_v0_4 from "./rooms/keys/act/0.4/payload.js";
 export * as RoomsKeysBackfill_v0_1 from "./rooms/keys/backfill/0.1/payload.js";
 export * as RoomsKeysBrowse_v0_1 from "./rooms/keys/browse/0.1/payload.js";
 export * as RoomsKeysChain_v0_1 from "./rooms/keys/chain/0.1/payload.js";
