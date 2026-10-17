@@ -81,7 +81,7 @@ A conforming **community** (`recipient`):
 
 The entitlement is **being the member the offers are addressed to**, proven by the document's proof and checked against the community's own membership record at execution time. No administrative standing is involved, and none is accepted in its place: an administrator reading another member's offers would be reading credentials that name somebody else. A community answering members separately from administrators answers this on its member audience.
 
-**Signing as the member.** The DID an offer is addressed to is often one whose keys are held by the member's key holder, so the surface the member acts from has this request completed and signed as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.3/spec.md) at `0.3` or later, which carries no presentation for this type.
+**Signing as the member.** The DID an offer is addressed to is often one whose keys are held by the member's key holder, so the surface the member acts from has this request completed and signed as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.4/spec.md) at `0.4` or later — the first version whose table lists this version of this type — which carries no presentation for it.
 
 ## Request
 
