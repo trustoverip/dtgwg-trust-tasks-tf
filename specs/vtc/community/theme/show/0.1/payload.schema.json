@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/community/theme/show/0.1",
+  "title": "VTC Community — Theme — Show — payload",
+  "description": "An empty request: the community has one theme. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Community — Theme — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stylesheet"
+      ],
+      "properties": {
+        "stylesheet": {
+          "type": "string",
+          "maxLength": 32768,
+          "description": "The stored theme stylesheet, in the theme profile of vtc/community/theme/update/0.1. The empty string when the community has none."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the stylesheet was last replaced. Absent when the community never set one."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

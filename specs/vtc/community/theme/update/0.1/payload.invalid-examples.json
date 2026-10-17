@@ -1,0 +1,27 @@
+[
+  {
+    "note": "Missing `stylesheet` — removing the theme is an explicit empty string, never an omitted member.",
+    "payload": {}
+  },
+  {
+    "note": "`dryRun` must be a boolean, not the string a form field would give.",
+    "payload": {
+      "stylesheet": "",
+      "dryRun": "true"
+    }
+  },
+  {
+    "note": "Unknown top-level member — a theme is one stylesheet, not a named built-in.",
+    "payload": {
+      "stylesheet": "",
+      "builtin": "forest"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with no `stored` — a caller must be able to tell a dry run or no-op from a change.",
+    "payload": {
+      "stylesheet": ""
+    }
+  }
+]

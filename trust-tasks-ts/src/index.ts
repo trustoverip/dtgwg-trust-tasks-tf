@@ -759,6 +759,8 @@ export * as VtcCommunityProfileShow_v0_1 from "./vtc/community/profile/show/0.1/
 export * as VtcCommunityProfileUpdate_v0_1 from "./vtc/community/profile/update/0.1/payload.js";
 export * as VtcCommunityRequestedAttributesShow_v0_1 from "./vtc/community/requested-attributes/show/0.1/payload.js";
 export * as VtcCommunityRequestedAttributesUpdate_v0_1 from "./vtc/community/requested-attributes/update/0.1/payload.js";
+export * as VtcCommunityThemeShow_v0_1 from "./vtc/community/theme/show/0.1/payload.js";
+export * as VtcCommunityThemeUpdate_v0_1 from "./vtc/community/theme/update/0.1/payload.js";
 export * as VtcConfigExport_v0_1 from "./vtc/config/export/0.1/payload.js";
 export * as VtcConfigImport_v0_1 from "./vtc/config/import/0.1/payload.js";
 export * as VtcCredentialsReissue_v0_1 from "./vtc/credentials/reissue/0.1/payload.js";

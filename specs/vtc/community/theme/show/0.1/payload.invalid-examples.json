@@ -1,0 +1,21 @@
+[
+  {
+    "note": "The request is empty; a stylesheet belongs in vtc/community/theme/update.",
+    "payload": {
+      "stylesheet": ":root { --brand: #0a7f5c; }"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response with no `stylesheet` — a community with no theme answers the empty string, never an omitted member.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "Response carrying an unknown member.",
+    "payload": {
+      "stylesheet": "",
+      "builtin": "forest"
+    }
+  }
+]
