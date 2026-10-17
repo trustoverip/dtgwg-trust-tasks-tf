@@ -11,6 +11,120 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.15 — 2026-10-17
+
+
+### Added
+
+- **rooms/keys/profile**: A room's own profile — name and description sealed inside the room, readable only by its members (#807)
+
+A member holding keys to many rooms saw a DID per room: nothing a member
+  could read said what a room was, and the community's label for a room it
+  owns reached only administrators and members it was offered to.
+
+  - rooms/_shared/0.1: RoomProfile (name required ≤128, description ≤1000,
+    tags ≤8, one emoji, ext) and RoomProfileStatement — the profile as a
+    SealedRecordBody's new `roomProfile` member, signed by its author, with
+    the author's authority chain and issuedAt. One record per epoch at
+    profile_key(E) = HKDF(storage_key(E), "openvtc/room/profile/v1" ||
+    roomId || u64be(E)) — 22 chars, indistinguishable from a random key, so
+    the host cannot tell which record names the room; fixed key
+    `room-profile` on open rooms. Readers accept only a chain conferring
+    curate or admin, valid at issuedAt, issuedAt within the host's
+    updatedAt window, not revoked at or before issuedAt; newest accepted
+    epoch wins; a retraction (curate-gated at the host) clears it.
+    Revocation is not retroactive.
+  - rooms/keys/profile/read 0.1 (new): the member's key holder derives the
+    location, walks epochs down, fetches as the member, verifies, and
+    answers found/absent/cleared with stale, searched and rejected.
+  - rooms/keys/profile/write 0.1 (new): the key holder signs as the member,
+    embeds the chain, pads, seals under the current epoch and puts; clear
+    retracts. Carries the rule that a key holder advancing an epoch
+    re-writes the profile under the new one (fromJoin members can read it).
+  - vtc/rooms/community/create 0.3, update 0.2: the community's VTA writes
+    label/description (never tags) as the room's profile; the community's
+    own authority confers admin, write and curate; response `roomProfile`.
+  - Editorial pointers in rooms/owner/group/{add 0.2, remove 0.2, renew
+    0.1}; vtc/_shared RoomLabel/RoomDescription say where they now go.
+  - Rust, TypeScript, Go and Dart bindings regenerated.
+
+- **rooms/keys/label**: A member's own private name, description, notes and tags for a room they hold (#806)
+
+A member holding several rooms could tell them apart only by names other
+  parties gave them — the room's own profile, a community's offer label — or
+  by their DIDs. Nothing let a member keep their own name for a room, and a
+  person holding one room as two personas could not even tell the two
+  rooms/keys/list entries apart (implementations carried the member in ext).
+
+  - rooms/keys/label 0.1 (new): set, change or remove the member's personal
+    label for one room — label (one line, 128), description (1000), notes
+    (4000), tags (1–16 × 32) — kept by their key holder, keyed by room AND
+    member, never sent to the room, its host, its owner or a community, never
+    logged. Patch semantics (each detail given replaces, absent unchanged,
+    removeX removes one), idempotent (changed: false on a repeat), no
+    precondition. notHeld answers both "no group state" and "not a member you
+    act as". Delegates refused. Kept and backed up with the group state for
+    that room and member, discarded with it, and not on removal from the room.
+  - rooms/keys/list 0.2: each entry names its `member` (one entry per room
+    and member, for the members the caller may act as); `includePersonal`
+    (off by default) returns each entry's `personal` label. A consumer sends
+    a label nowhere but to the member; a wallet does not hand one to a
+    website unless the member chose to.
+  - rooms/_shared/0.1/personal-label (new): PersonalLabel and its details.
+
+  Informative display precedence: personal label, then the room's own
+  profile name, then the community's offer label, then the DID.
+
+- **vtc/rooms/community**: Update — administrators name, describe and tag the rooms the community owns (#805)
+
+A community could name a room it owns only once, at create, with no
+  description, and nothing could change it afterwards — so neither its
+  administrators nor the members it offers a room to could tell what each
+  room was for.
+
+  - vtc/rooms/community/update 0.1 (new): change a community-owned room's
+    label, description (or removeDescription) and tags. vtc.rooms.manage;
+    proof and issuedAt REQUIRED; reason audited with each changed detail's
+    previous and new value; same values answer changed: false and write
+    nothing; notFound for a room the community only hosts. Designed for
+    no operation-bound step-up: it reaches no key holder and confers
+    nothing.
+  - vtc/rooms/community/create 0.2: optional description and tags.
+  - vtc/rooms/community/get 0.2, list 0.2: CommunityRoomV2 — description,
+    tags, detailsUpdatedAt/detailsUpdatedBy; list filters by tag.
+  - vtc/rooms/offers/list 0.2: OfferV2 carries the room's current
+    description (never its tags).
+  - vtc/_shared/0.1/community-room: additive $defs RoomDescription,
+    RoomTag, RoomTags, CommunityRoomV2, OfferV2 (the RecordMetadataV2
+    pattern), so every 0.1 task keeps its published shape.
+
+  Details stay the community's owner-side record: never in the host
+  record, the room, or anything sent on its host path.
+
+- **rooms**: Revocation — a removal takes effect at the host at once (#804)
+
+A room can now withdraw credentials it issued before they expire, and a
+  host refuses them from the moment it accepts the withdrawal.
+
+  - rooms/_shared/0.1: RevocationList (room-signed, cumulative, sequenced,
+    append-only), RevocationEntry (credential | subject | room, keyed on
+    validFrom vs revokedAt so a party can be re-admitted), RevocationHead.
+    AuthorityPresentation states that every credential's proof must be made
+    by a key of its own issuer, and that a host holding a list refuses any
+    chain containing a revoked link, under every task and version.
+  - rooms/revocations/put 0.1 (new): an admin delivers the list; the host
+    enforces it immediately on every path.
+  - rooms/revocations/get 0.1 (new): an admin reads the held list, to
+    confirm enforcement or recover a lost list.
+  - rooms/owner/revoke 0.1 (new): the owner's key holder signs the next
+    list as the room and pushes it to every host — outbound only.
+  - rooms/owner/group/remove 0.2: withdraws the member first, then
+    advances the group; refuses a private room.
+  - vtc/rooms/community/members/remove 0.2: open and attributed rooms
+    withdraw the member's credentials (and an open offer's) at the host.
+  - Editorial pointers in group/remove 0.1, owner/claim 0.1 and
+    vtc/rooms/community/members/remove 0.1.
+
 ## 0.8.14 — 2026-10-16
 
 
