@@ -69,7 +69,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Theme — Update** Trust Task replaces the community's theme — one stylesheet that its administration console and member portal apply over their built-in look, read back by [`vtc/community/theme/show`](../../show/0.1/spec.md). The stylesheet is restricted to the [theme profile](#the-theme-profile): design tokens, and a small set of cosmetic properties on ordinary elements. Nothing in the profile can fetch a resource, add content, or move or hide an element.
+The **VTC Community — Theme — Update** Trust Task replaces the community's theme — one stylesheet that its administration console and member portal apply over their built-in look, read back by [`vtc/community/theme/show`](../../show/0.1/spec.md). The stylesheet is restricted to the [theme profile](#the-theme-profile): design tokens, and a small set of cosmetic properties on ordinary elements. Nothing in the profile can fetch a resource or add content, and no element rule can move, hide or overlay an element. A token can change whatever a page draws from it — sizes and spacing included — which is why the surfaces where a person decides something are isolated from the theme altogether ([show, client item 2](../../show/0.1/spec.md#conformance)).
 
 With `dryRun: true` the community checks the stylesheet and answers with what it would store, storing nothing. A client uses that to preview a theme exactly as it would be stored before an administrator commits it.
 
@@ -125,7 +125,7 @@ A stylesheet is in the theme profile when every item below holds. The items are 
 
   Every property that can move, size, hide, overlay, clip or add content — `display`, `visibility`, `opacity`, `position`, `inset`, `transform`, `z-index`, `content`, `width`, `height`, `margin`, `padding`, `font-size`, `box-shadow`, `filter`, `clip-path`, `mask`, `pointer-events` among them — is outside it.
 
-The profile is deliberately small. Every admitted property paints only within the element it is declared on, so no rule can draw over another element; and none can make text or a control disappear except by colour, which client item 2 of the show task takes off the table wherever it would matter.
+The profile is deliberately small. Every admitted element property paints only within the element it is declared on, so no rule can draw over another element. What the profile cannot bound is a token: a page that sizes its controls from `--control-h` will draw them at whatever height a theme gives it, and a page that colours its text from `--text` can be made to draw text in the colour of its ground. The profile does not try to bound token values, because which tokens a page has and what it draws from them are the page's own. That is what client item 2 of the show task is for: the surfaces where a person decides, approves, consents or is warned take nothing from the theme, tokens included, so nothing a theme does can change what a person is asked to decide.
 
 ## Definitions
 

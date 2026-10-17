@@ -44,7 +44,7 @@ related:
 
 The **VTC Community — Theme — Show** Trust Task returns the community's theme: one stylesheet, in the restricted theme profile defined by [`vtc/community/theme/update/0.1`](../../update/0.1/spec.md#the-theme-profile), that the community's own pages — its administration console and its member portal, sign-in pages included — apply over their built-in look.
 
-A theme is presentation only. It cannot load anything, cannot add content, and — by the client requirements below — cannot reach any surface on which someone decides, approves, consents or is warned.
+A theme is presentation only. It cannot load anything or add content, and — by the client requirements below — cannot reach any surface on which someone decides, approves, consents or is warned, not even through a design token.
 
 ## Status of this Document
 
@@ -65,7 +65,7 @@ A conforming **community** (`recipient`):
 A conforming **client** — a page that applies the theme:
 
 1. **MUST** check the stylesheet against the theme profile before applying it, and **MUST** apply none of it when any part fails. A community is trusted to have checked; a page that renders what it was given without checking lets a defect in either one reach every administrator.
-2. **MUST** render every surface on which a person decides, approves, declines, consents, signs or is warned — a consent or approval prompt, a step-up, a destructive confirmation, a security or single-administrator banner — in isolation from the theme, so that no stylesheet in the profile can change how that surface is drawn. Isolating by structure (a shadow tree, a separate document) satisfies this; isolating by selector does not, because no selector list can anticipate every rule that might match.
+2. **MUST** render every surface on which a person decides, approves, declines, consents, signs or is warned — a consent or approval prompt, a step-up, a destructive confirmation, a security or single-administrator banner — in isolation from the theme, so that no stylesheet in the profile can change how that surface is drawn. Isolating by structure (a shadow tree, a separate document) satisfies this, provided the isolated surface declares every custom property it reads inside the isolation — custom properties inherit into a shadow tree, so a surface that reads an inherited token is not isolated from it. Isolating by selector does not satisfy this, because no selector list can anticipate every rule that might match.
 3. **MUST** apply the theme beneath its own styles for those surfaces and **MUST NOT** honour a theme on any page that is not the community's own.
 4. **SHOULD** show, somewhere the theme cannot reach, that a custom theme is in force.
 
