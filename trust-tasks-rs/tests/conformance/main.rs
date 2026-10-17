@@ -1084,6 +1084,7 @@ mod rooms {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod backfill {
             mod v0_1;
@@ -1096,6 +1097,9 @@ mod rooms {
         }
         mod file_key {
             mod v0_1;
+            mod v0_2;
+        }
+        mod key_package {
             mod v0_2;
         }
         mod label {
@@ -2132,6 +2136,11 @@ mod vtc {
         }
         mod list {
             mod v0_1;
+        }
+        mod memberships {
+            mod list {
+                mod v0_1;
+            }
         }
         mod offers {
             mod accept {

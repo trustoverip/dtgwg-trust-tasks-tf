@@ -81,6 +81,7 @@ related:
   - rooms/keys/key-package
   - rooms/keys/welcome
   - rooms/owner/group/add
+  - vtc/rooms/memberships/list
 ---
 
 ## Abstract
@@ -102,6 +103,10 @@ A member's surface may lose the answer. So the community keeps the Welcome it re
 When the community cannot tell whether its VTA added the member — no answer, or the room's epoch advance not yet confirmed — it answers `admissionPending` and records nothing as admitted. Retrying the identical request is safe: the community repeats its own request to its VTA, unchanged, and the VTA settles a pending admission against the room's epoch before acting again ([`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.2/spec.md) item 6), and answers a request that repeats the admission it made — the same member, a KeyPackage with the same `KeyPackageRef` — with that admission's Welcome rather than refusing it (item 8). That holds whether the VTA's answer was lost before or after it applied the admission. The community answers from what its VTA returns. Only when the VTA no longer keeps that Welcome does it refuse `alreadyMember`, and the community then answers `alreadyAccepted`.
 
 A community's VTA therefore serves [`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.2/spec.md) at `0.2` or later: under `0.1` the repeat is refused and the Welcome is lost.
+
+### Finishing an acceptance from another surface
+
+*This subsection is informative.* A repeat need not come from the surface that sent the first acceptance. A member who accepted in their community's member portal and closed it before the Welcome reached their key holder finishes in any other surface: it asks the key holder for the room's KeyPackage with [`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.2/spec.md) at `0.2`, which returns the one it already minted for the room, member and invitation; accepts again with it, and is answered with the same Welcome; and hands that Welcome to the key holder. The community's record shows the member `admitted` from the first acceptance, and [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.1/spec.md) says until when the Welcome is kept (`repeatAcceptUntil`). Under `rooms/keys/key-package` at `0.1` the second surface's KeyPackage is a new one, and its acceptance is `alreadyAccepted`.
 
 ## Status of this Document
 

@@ -1,0 +1,44 @@
+[
+  {
+    "note": "No invitation. 0.2 requires one: it is what authorizes the mint, names the member, and identifies the outstanding KeyPackage a second surface is given.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board"
+    }
+  },
+  {
+    "note": "Asking for a fresh KeyPackage. A second mint while one is outstanding is what leaves an acceptance begun in one surface unfinishable from another; the recipient decides, from the room, member and invitation, whether to return the one it holds.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "invitation": "eyJhbGciOi…",
+      "fresh": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "invitation": "eyJhbGciOi…",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No `alreadyMinted`. A surface finishing an acceptance needs to know whether the KeyPackage is the one another surface may already have sent.",
+    "payload": {
+      "keyPackage": "AAEAAgADAAQ",
+      "expiresAt": "2026-10-24T10:00:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No `expiresAt`. 0.2 requires it: it bounds how long an acceptance begun elsewhere can be finished with this KeyPackage.",
+    "payload": {
+      "keyPackage": "AAEAAgADAAQ",
+      "alreadyMinted": true
+    }
+  }
+]

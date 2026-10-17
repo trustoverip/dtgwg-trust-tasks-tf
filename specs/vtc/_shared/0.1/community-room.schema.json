@@ -370,6 +370,75 @@
         }
       }
     },
+    "RoomMembership": {
+      "title": "RoomMembership",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "host",
+        "label",
+        "visibility",
+        "actions",
+        "validUntil",
+        "state",
+        "offeredAt"
+      ],
+      "description": "What vtc/rooms/memberships/list/0.1 returns: one room the community owns, and where the caller's admission to it stands in the community's own record. Unlike `OfferV2` it carries no credentials — those are collected with vtc/rooms/offers/list while an offer is open — and it is listed in every state, for as long as the community keeps the record, not only while an accept can be repeated. `label` and `description` are the room's as they stand when the record is read.",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "host": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The room's host: this community."
+        },
+        "label": {
+          "$ref": "#/$defs/RoomLabel"
+        },
+        "description": {
+          "$ref": "#/$defs/RoomDescription",
+          "description": "Absent when the room has none."
+        },
+        "visibility": {
+          "$ref": "../../../rooms/_shared/0.1/room.schema.json#/$defs/Visibility"
+        },
+        "actions": {
+          "$ref": "#/$defs/MemberActions"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the member's authority credential expires."
+        },
+        "state": {
+          "$ref": "#/$defs/MemberState"
+        },
+        "offeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "admittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community recorded the admission. Present when `state` is `admitted`, and kept when it becomes `removed`."
+        },
+        "removedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present exactly when `state` is `removed`."
+        },
+        "repeatAcceptUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "On an `attributed` or `private` room in state `admitted`: until when the community keeps the Welcome, so that a repeated vtc/rooms/offers/accept carrying the same KeyPackage is answered with it. Absent on an `open` room, in any other state, and once the community no longer keeps it. A surface finding the member admitted but the room absent from its key holder's rooms/keys/list finishes the acceptance before this time, and asks an administrator to re-admit the member after it."
+        }
+      }
+    },
     "Reason": {
       "title": "Reason",
       "type": "string",

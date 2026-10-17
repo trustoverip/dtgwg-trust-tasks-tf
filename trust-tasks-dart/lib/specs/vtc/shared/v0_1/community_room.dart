@@ -607,6 +607,94 @@ class OfferV2 {
       };
 }
 
+/// What vtc/rooms/memberships/list/0.1 returns: one room the community owns, and where
+/// the caller's admission to it stands in the community's own record. Unlike `OfferV2`
+/// it carries no credentials — those are collected with vtc/rooms/offers/list while an
+/// offer is open — and it is listed in every state, for as long as the community keeps
+/// the record, not only while an accept can be repeated. `label` and `description` are
+/// the room's as they stand when the record is read.
+class RoomMembership {
+  const RoomMembership({
+    required this.roomId,
+    required this.host,
+    required this.label,
+    this.description,
+    required this.visibility,
+    required this.actions,
+    required this.validUntil,
+    required this.state,
+    required this.offeredAt,
+    this.admittedAt,
+    this.removedAt,
+    this.repeatAcceptUntil,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RoomMembership.fromJson(Map<String, dynamic> json) => RoomMembership(
+        roomId: json['roomId'] as String,
+        host: json['host'] as String,
+        label: json['label'] as String,
+        description: json['description'] as String?,
+        visibility: Visibility(json['visibility'] as String),
+        actions: (json['actions'] as List<dynamic>)
+            .map((e) => MemberAction(e as String))
+            .toList(),
+        validUntil: json['validUntil'] as String,
+        state: MemberState(json['state'] as String),
+        offeredAt: json['offeredAt'] as String,
+        admittedAt: json['admittedAt'] as String?,
+        removedAt: json['removedAt'] as String?,
+        repeatAcceptUntil: json['repeatAcceptUntil'] as String?,
+      );
+
+  final String roomId;
+
+  /// The room's host: this community.
+  final String host;
+  final RoomLabel label;
+
+  /// Absent when the room has none.
+  final RoomDescription? description;
+  final Visibility visibility;
+  final MemberActions actions;
+
+  /// When the member's authority credential expires.
+  final String validUntil;
+  final MemberState state;
+  final String offeredAt;
+
+  /// When the community recorded the admission. Present when `state` is `admitted`, and
+  /// kept when it becomes `removed`.
+  final String? admittedAt;
+
+  /// Present exactly when `state` is `removed`.
+  final String? removedAt;
+
+  /// On an `attributed` or `private` room in state `admitted`: until when the community
+  /// keeps the Welcome, so that a repeated vtc/rooms/offers/accept carrying the same
+  /// KeyPackage is answered with it. Absent on an `open` room, in any other state, and
+  /// once the community no longer keeps it. A surface finding the member admitted but
+  /// the room absent from its key holder's rooms/keys/list finishes the acceptance
+  /// before this time, and asks an administrator to re-admit the member after it.
+  final String? repeatAcceptUntil;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'roomId': roomId,
+        'host': host,
+        'label': label,
+        if (description != null) 'description': description!,
+        'visibility': visibility.value,
+        'actions': actions.map((e) => e.value).toList(),
+        'validUntil': validUntil,
+        'state': state.value,
+        'offeredAt': offeredAt,
+        if (admittedAt != null) 'admittedAt': admittedAt!,
+        if (removedAt != null) 'removedAt': removedAt!,
+        if (repeatAcceptUntil != null) 'repeatAcceptUntil': repeatAcceptUntil!,
+      };
+}
+
 /// Why the administrator is making this change. Recorded with it in the audit trail.
 /// Attributed to its author on every surface and untrusted: it MUST NOT carry personal
 /// data or a credential, and a reader MUST NOT treat it as instructions.

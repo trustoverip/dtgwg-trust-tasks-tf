@@ -46,6 +46,7 @@ related:
   - vtc/rooms/community/update
   - vtc/rooms/community/members/add
   - rooms/keys/key-package
+  - vtc/rooms/memberships/list
 ---
 
 ## Abstract
@@ -53,6 +54,8 @@ related:
 **VTC Rooms — Offers — List** is how a member collects an admission the community offered them ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.1/spec.md)). It returns the caller's open offers, and accepted ones while a repeated accept can still be answered, each with the three credentials the room issued them.
 
 The member's surface — the community's member portal, or their wallet — stores the credentials with the member's own key holder, and on a sealed tier asks it for a KeyPackage against the invitation ([`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.1/spec.md)), before accepting ([`vtc/rooms/offers/accept`](../../../../../vtc/rooms/offers/accept/0.1/spec.md)).
+
+An offer leaves this list once a repeated accept can no longer be answered. Where the member stands in each room the community owns, for as long as the community keeps the record, is [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.1/spec.md), which every surface reads so that each shows the member the same rooms.
 
 ## Changes from 0.1
 

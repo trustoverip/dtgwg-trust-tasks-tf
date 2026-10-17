@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/key-package/0.2",
+  "title": "Rooms Keys Key-Package — payload",
+  "description": "An invited party asks the agent that will hold its room keys for the MLS KeyPackage the room's owner adds to the group: the one it already holds for this room, member and invitation, or a new one. The private half stays with the agent; only the KeyPackage travels.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "invitation"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny."
+    },
+    "invitation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536,
+      "description": "The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Key-Package — response payload",
+      "description": "Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["keyPackage", "expiresAt", "alreadyMinted"],
+      "properties": {
+        "keyPackage": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it."
+        },
+        "alreadyMinted": {
+          "type": "boolean",
+          "description": "`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -226,6 +226,45 @@ type OfferV2 struct {
 	Credentials OfferCredentials `json:"credentials"`
 }
 
+// RoomMembership What vtc/rooms/memberships/list/0.1 returns: one room the community
+// owns, and where the caller's admission to it stands in the community's own record.
+// Unlike `OfferV2` it carries no credentials — those are collected with
+// vtc/rooms/offers/list while an offer is open — and it is listed in every state, for as
+// long as the community keeps the record, not only while an accept can be repeated.
+// `label` and `description` are the room's as they stand when the record is read.
+type RoomMembership struct {
+	RoomID string `json:"roomId"`
+
+	// The room's host: this community.
+	Host  string    `json:"host"`
+	Label RoomLabel `json:"label"`
+
+	// Absent when the room has none.
+	Description *RoomDescription `json:"description,omitempty"`
+	Visibility  Visibility       `json:"visibility"`
+	Actions     MemberActions    `json:"actions"`
+
+	// When the member's authority credential expires.
+	ValidUntil string      `json:"validUntil"`
+	State      MemberState `json:"state"`
+	OfferedAt  string      `json:"offeredAt"`
+
+	// When the community recorded the admission. Present when `state` is `admitted`, and kept
+	// when it becomes `removed`.
+	AdmittedAt *string `json:"admittedAt,omitempty"`
+
+	// Present exactly when `state` is `removed`.
+	RemovedAt *string `json:"removedAt,omitempty"`
+
+	// On an `attributed` or `private` room in state `admitted`: until when the community
+	// keeps the Welcome, so that a repeated vtc/rooms/offers/accept carrying the same
+	// KeyPackage is answered with it. Absent on an `open` room, in any other state, and once
+	// the community no longer keeps it. A surface finding the member admitted but the room
+	// absent from its key holder's rooms/keys/list finishes the acceptance before this time,
+	// and asks an administrator to re-admit the member after it.
+	RepeatAcceptUntil *string `json:"repeatAcceptUntil,omitempty"`
+}
+
 // Reason Why the administrator is making this change. Recorded with it in the audit
 // trail. Attributed to its author on every surface and untrusted: it MUST NOT carry
 // personal data or a credential, and a reader MUST NOT treat it as instructions.

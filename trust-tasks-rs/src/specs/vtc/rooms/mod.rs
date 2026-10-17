@@ -4,6 +4,7 @@ pub mod community;
 pub mod get;
 pub mod limits;
 pub mod list;
+pub mod memberships;
 pub mod offers;
 pub mod storage;
 pub mod usage;
