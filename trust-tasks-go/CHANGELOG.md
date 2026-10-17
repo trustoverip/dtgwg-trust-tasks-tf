@@ -11,6 +11,75 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.16 — 2026-10-17
+
+
+### Added
+
+- **vtc/community/theme**: Show and update — a community's own stylesheet for its console and member portal (#811)
+
+* feat(vtc/community/theme): show and update — a community's own stylesheet for its console and member portal
+
+  A community could set an accent colour and a logo (vtc/community/branding),
+  and nothing else about how its pages look. Administrators want to restyle
+  their console and member portal at run time, without the operator-only
+  admin_ui directory mode.
+
+  vtc/community/theme/update/0.1 (new, draft):
+  - An administrator replaces one stylesheet; the empty string removes it.
+    Proof and issuedAt REQUIRED; audited by digest, never by text.
+  - `dryRun: true` checks and answers with what would be stored, storing
+    nothing, so a client can preview a theme exactly as stored.
+  - The theme profile (P1-P8): design tokens on :root (light/dark), plus a
+    small set of cosmetic properties on ordinary elements — colours,
+    gradients, bounded borders/radius, font family/weight. No url()/@import/
+    @font-face (a theme loads nothing), no !important, no escapes or `<`, and
+    nothing that can move, size, hide, overlay or add content.
+    `outsideProfile` names the line, column and profile item broken.
+  - maxDocumentBytes 48 KiB both ways, for a 32 KiB stylesheet.
+
+  vtc/community/theme/show/0.1 (new, draft):
+  - Proof OPTIONAL and answerable to an unidentified caller: sign-in pages
+    draw the theme before the visitor holds any identity.
+  - Client requirements: re-check the profile before applying; render every
+    surface where a person decides, approves, consents, signs or is warned
+    in structural isolation from the theme; mark that a custom theme is on.
+
+  Why no second-administrator consent: the profile and the isolation
+  together mean a theme cannot change what another administrator is asked
+  to approve, so it stays an ordinary configuration write.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+
+
+### Specifications
+
+- **rooms/keys**: Act 0.4 — a member lists their offers at vtc/rooms/offers/list 0.2, and sees what each room is for (#810)
+
+rooms/keys/act/0.3's closed table admits vtc/rooms/offers/list/0.1 but not
+  vtc/rooms/offers/list/0.2 (#805), which shows each offered room's current
+  label and description (never its tags). A key holder conforming to act 0.3
+  refuses a 0.2 listing with typeNotActable, so a surface that reads offers
+  through act — pnm, the browser wallet — cannot use 0.2, and a member never
+  sees a room's description before accepting.
+
+  act 0.4:
+  - The table's offers/list row lists vtc/rooms/offers/list/0.1 and
+    vtc/rooms/offers/list/0.2 on the same terms: no presentation inserted,
+    issuer REQUIRED and the DID the offer is addressed to (Producer item 2),
+    resolved without a room credential (Recipient item 2b, which now names
+    list/0.2 too).
+  - New "What changed from 0.3" note; a request example completing a
+    list/0.2 as the member.
+  - Schemas otherwise identical to 0.3 (the type pattern already admits
+    vtc/rooms/offers/); no error code added. vtc/rooms/offers/accept has only
+    0.1, so nothing changes for it.
+
+  vtc/rooms/offers/list/0.2, in place: its "Signing as the member" paragraph
+  pointed at act "0.3 or later", which does not list it; it now points at
+  act 0.4. Prose only; its wire is unchanged (SPEC §5.2 editorial, as #797).
+
 ## 0.8.15 — 2026-10-17
 
 
