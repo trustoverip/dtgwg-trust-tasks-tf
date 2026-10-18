@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/group/remove/0.3",
+  "title": "Rooms Owner Group Remove — payload",
+  "description": "A room's owner asks their own agent to remove a member: withdraw every credential the room gave them, at its host at once, and then remove their leaf from the room's MLS group and advance its epoch. 0.2 adds the withdrawal, made first.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host",
+    "member",
+    "signingKeyId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room whose group loses a member. The recipient MUST hold its group and a signing key for it."
+    },
+    "host": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The room's host, as a DID: where the withdrawal is delivered first and the room's epoch advances."
+    },
+    "mirrors": {
+      "type": "array",
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^did:",
+        "maxLength": 2048
+      },
+      "description": "Any other host serving the room, as DIDs. Each is delivered the withdrawal too: a host that does not hold it honours the member's credentials still."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The DID whose leaf is removed, and whose credentials the room withdraws. Never the recipient's own leaf."
+    },
+    "signingKeyId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Which held key signs the room's revocation list as the room, named explicitly as for rooms/owner/revoke."
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "OPTIONAL. When the last credential the room issued `member` expires, after which the withdrawal can be dropped from the room's list."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential. Never put into the revocation list."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Group Remove — response payload",
+      "description": "Success response to rooms/owner/group/remove. Type https://trusttasks.org/spec/rooms/owner/group/remove/0.3#response. The revocation list in force at the host, and the room's new epoch, which the removed member holds no key for.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "member",
+        "revocation",
+        "epoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The room."
+        },
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "Who was removed."
+        },
+        "revocation": {
+          "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/RevocationHead",
+          "description": "The revocation list carrying the withdrawal, as `host` accepted it."
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The withdrawal's `revokedAt`: credentials the room issued `member` before it are refused, and fresh ones issued after it are not."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "The room epoch after the removal, as the host recorded it."
+        },
+        "mirrorsPending": {
+          "type": "array",
+          "maxItems": 7,
+          "items": {
+            "type": "string",
+            "pattern": "^did:",
+            "maxLength": 2048
+          },
+          "description": "Mirrors that did not confirm the withdrawal. Each still honours the member's credentials until the list is delivered — with rooms/owner/revoke and no `withdraw`. Absent when every mirror confirmed."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

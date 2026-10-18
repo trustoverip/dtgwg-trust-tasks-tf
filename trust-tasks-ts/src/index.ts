@@ -486,12 +486,14 @@ export * as RoomsOwnerGroupAdd_v0_2 from "./rooms/owner/group/add/0.2/payload.js
 export * as RoomsOwnerGroupCreate_v0_1 from "./rooms/owner/group/create/0.1/payload.js";
 export * as RoomsOwnerGroupRemove_v0_1 from "./rooms/owner/group/remove/0.1/payload.js";
 export * as RoomsOwnerGroupRemove_v0_2 from "./rooms/owner/group/remove/0.2/payload.js";
+export * as RoomsOwnerGroupRemove_v0_3 from "./rooms/owner/group/remove/0.3/payload.js";
 export * as RoomsOwnerGroupRenew_v0_1 from "./rooms/owner/group/renew/0.1/payload.js";
 export * as RoomsOwnerInvite_v0_1 from "./rooms/owner/invite/0.1/payload.js";
 export * as RoomsOwnerIssueAuthority_v0_1 from "./rooms/owner/issue-authority/0.1/payload.js";
 export * as RoomsOwnerIssueAuthority_v0_2 from "./rooms/owner/issue-authority/0.2/payload.js";
 export * as RoomsOwnerIssueMembership_v0_1 from "./rooms/owner/issue-membership/0.1/payload.js";
 export * as RoomsOwnerRegister_v0_1 from "./rooms/owner/register/0.1/payload.js";
+export * as RoomsOwnerRegister_v0_2 from "./rooms/owner/register/0.2/payload.js";
 export * as RoomsOwnerRevoke_v0_1 from "./rooms/owner/revoke/0.1/payload.js";
 export * as RoomsOwnerTransfer_v0_1 from "./rooms/owner/transfer/0.1/payload.js";
 export * as RoomsRecordsCurate_v0_1 from "./rooms/records/curate/0.1/payload.js";
