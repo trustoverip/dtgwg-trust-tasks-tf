@@ -11,6 +11,172 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.18 — 2026-10-18
+
+
+### Added
+
+- **vtc/directory**: The member directory — fields, cards, entries, introductions, admin notes, export — and community groups (#817)
+
+Rebuilt on main after #815, #819, #820 and #821. Groups: dynamic-group opt-out, issuance through keys/sign-document, the vtc-group template shape, a 30-day credential default. card/update admits a key delegated under auth/oob/grant/0.2, except for widening to public or turning on external listing. Shared defs named FieldVisibility, CardBlobRef and GroupJoinRequest so they do not collide with the rooms family's Visibility and BlobRef or the existing JoinRequest in generated bindings.
+
+- **auth/oob**: A sign-in grant may delegate signing of named task families to the starter key for the session (#820)
+
+prove/0.2, grant/0.2 and respond/0.2. Step 2 may offer a `signingScope`
+  (task families as slug prefixes); the grant copies it, so the member's
+  assertionMethod signature over the grant is the delegation: the starter
+  key K_b may sign documents of those families as the member, for the
+  session redeem creates, and no longer. The service checks the scope at
+  respond against what step 2 offered.
+
+  grant/0.2 states what a delegated key may never sign, whatever the
+  scope: anything needing an assertionMethod proof or a gesture; anything
+  that confers or withdraws authority (role, capability, ACL entry,
+  membership, credential, key, delegation, session — asking for a
+  credential the member's own agent accepts as an offer, or ending its
+  renewal, is not that, so plain group join/leave is allowed); a consent or a
+  publication beyond the service's members; or an identifier asserted in
+  the member's name to another party. Authority is the member's standing
+  read at execution time, on the session's own surface only.
+
+  Motivated by the VTC member directory (#817): the member portal signs
+  vtc/directory and vtc/groups documents with its sign-in key.
+
+- **keys**: Sign-document — a Data Integrity proof from a held key, as the DID the document names (#819)
+
+A VTC issues DTG credentials as its community DID and as each group's
+  DID, but the keys behind those DIDs are held by its VTA and never leave
+  it. keys/sign cannot produce a Data Integrity proof at a custodian that
+  frames its general oracle, and keys/derive-and-sign-document signs as a
+  derived path, not as a DID with a key record.
+
+  keys/sign-document/0.1 is a narrow sibling of sign-jws and sign-csr:
+
+  - The producer names a key and sends a document without a proof; the
+    custodian canonicalises it (RFC 8785), writes the proof configuration
+    (cryptosuite, verificationMethod, created) and signs only the
+    eddsa-jcs-2022 hash data. No caller-supplied signing input.
+  - Issuer binding: the document's issuer (or issuer.id) and/or controller
+    must name a DID the key is a verification method of, compared
+    verbatim, and that DID's document must list the key under the
+    requested proofPurpose (assertionMethod or authentication only). A
+    document naming neither is refused, as is one already carrying a
+    proof (never stripped, never extended into a set).
+  - Ed25519 / eddsa-jcs-2022 only: the P-256 keys custodians hold are
+    bound to foreign protocols that fix the curve, and none is an
+    issuer's.
+  - Gated on its own signDocument capability (sign-document in 0.1),
+    registered in device/_shared; sign is neither required nor accepted.
+  - An unknown key and one outside the producer's scope are the same
+    keys:notFound.
+
+  Bindings regenerated (Rust, TS, Go, Dart); no version bumps.
+
+- **persona/contact**: Stars, petnames, lists and directory links kept only by the holder's agent; admin events 0.3 add directory and groups (#815)
+
+A member directory needs the four things a member keeps about others — a
+  star, a private nickname, a personal list, a link to a directory entry — and
+  none of them may live at the community: a VTC that stored them would hold the
+  graph of who watches whom. They go in the member's own agent, beside the
+  contact they are about.
+
+  - persona/_shared/0.1/contact-annotations (new): Petname (<= 64, one line),
+    ListId, ListIds, ListName, ListColour, ListOrder, DirectoryEntryId (opaque,
+    pattern + maxLength only) and DirectoryRef {vtcDid, entryId}, ContactList.
+  - persona/contact/put 1.1: starred, petname, lists, directoryRef (+ notes)
+    as contact-level annotations, never part of a revision. A second,
+    annotating form (contactId, no document) changes them without appending a
+    revision; each given replaces, removeX removes, absent is unchanged. New
+    codes notFound and listUnknown.
+  - persona/contact/get 1.1: returns the contact's current annotations with any
+    revision; `starred` always present.
+  - persona/contact/list 1.1: annotations on every summary (not notes);
+    filters starred, listId and directoryVtcDid; listUnknown.
+  - persona/contact/lists/{list,show,put,delete} 1.0 (new): the holder's
+    lists, context-scoped. Membership is set on the contact, so it has one
+    writer; delete takes every contact off the list and deletes no contact.
+  - Every one says the annotations never leave the holder's agent, and that
+    being on a list, starred or given a petname must not be inferable by the
+    person annotated or by any community — including through what the
+    holder's client reads from a directory.
+  - vtc/admin/events/{subscribe,event} 0.3 + _shared/0.3: topics `directory`
+    (holders of vtc.directory.admin or vtc.directory.notes) and `groups`
+    (holders of vtc.groups.manage, per qualified group). Hints only: no
+    record, record id or DID in any member, ext included. Otherwise 0.2.
+
+  1.0 and 0.2 are unchanged. Design: VTI docs/05-design-notes/vtc-member-directory.md
+  §6, §7.3, §10.2, §11.3.
+
+
+
+### Specifications
+
+- **rooms/owner**: Register 0.2 reports the room's revocation list; group/remove 0.3 settles a refused redelivery (#821)
+
+Two gaps found implementing room revocation (#804) in OpenVTC/verifiable-trust-infrastructure.
+
+  rooms/owner/register 0.2. rooms/owner/revoke requires a key holder to deliver
+  the room's revocation list to a host before answering a registration, and
+  register 0.1 declared no outcome for "registered, but the list did not reach
+  the host". 0.2 answers success (the registration took effect) and adds a
+  `revocation` response member: the list's head and `status` inForce / pending /
+  refused (+ the host's `code`). hostUnreachable / hostRefused now report the
+  registration only. The recipient SHOULD keep delivering a pending list on its
+  own and MUST NOT repeat a refused one; a caller MUST treat anything but
+  inForce as a room served without its withdrawals, MAY redeliver with
+  rooms/owner/revoke (no withdraw), and MUST NOT re-register to repair it.
+  Retention moves to durable for the outstanding delivery only. A 0.1 request in
+  that state SHOULD still be refused with a message saying the room is
+  registered — the least harmful answer 0.1 can give.
+
+  rooms/owner/group/remove 0.3. 0.2 item 8 redelivers a pending removal's list
+  and did not say what to do when the host refuses the repeat. Discarding it as
+  item 6 does is unsafe here: the first delivery's outcome is unknown, so a
+  `stale` (host accepted a later list) or `permissionDenied` refusal may come
+  from a host enforcing this very list, and dropping the list would make the
+  key holder's next list fail notAppendOnly or collide at a sequence the host
+  holds. Item 8 now: listInvalid / entryNotPermitted / sequenceConflict discard
+  the whole removal (list only while still held), as item 6; stale with a later
+  held list delivers that list and confirms through it; anything else discards
+  the advance and keeps the list. Whatever is discarded, the settling request
+  is refused with the new code earlierRemovalRefused {member, code, listKept}
+  (at another task, its own hostRefused), so a removal reported pending never
+  vanishes inside a later success. Schemas unchanged.
+
+- **rooms**: A curated record keeps the version its body was sealed at (#816)
+
+Curation MUST assign a record a new version (rooms/records/curate/0.1),
+  and every curation but a retraction keeps the body. But a sealed body is
+  bound — by the AEAD's associated data and by its author's signature
+  (SealedRecordBody, rule 3) — to the version it was sealed at, and nothing
+  in a stored or served record remembered that version. So archiving,
+  restoring or pinning a record on an `attributed` or `private` room left it
+  opening for nobody: every reader opened it at the new version. Two halves
+  of the rooms family were contradicting each other.
+
+  - SealedRecord gains an optional `version`: the version the ciphertext was
+    sealed at, where that is no longer the record's own. A host records it
+    when it stores a body, never changes it while the body is kept, and MUST
+    serve it whenever it differs from the record's version — absent
+    otherwise, so no record changes shape until a curation needs it. It is
+    inside `sealed`, so the data commitment covers it.
+  - Readers open and verify at it, and MUST refuse a `sealed.version`
+    greater than the record's own (a body cannot be sealed for a version the
+    room had not reached). SealedRecordBody's rule (3) now checks the body
+    against the location it was sealed at.
+  - A record curated by a host predating the member opens at neither version.
+    A reader MAY try earlier versions, newest first, never above the record's
+    own: the AEAD makes a wrong guess fail rather than mislead, and the
+    author's signed location makes the one that opens the one the author
+    wrote, so recovery does not trust the host for the answer.
+  - rooms/records/curate/0.1 states the rule from its side: a curation MUST
+    NOT alter a kept record's sealed content.
+
+  Edited in place, as #807 added `roomProfile` to SealedRecordBody: the rooms
+  family and its shared component are `draft`, and the addition is optional.
+  Libraries regenerated (Rust, TS, Go, Dart); one negative example added
+  (sealed.version 0).
+
 ## 0.26.17 — 2026-10-18
 
 
