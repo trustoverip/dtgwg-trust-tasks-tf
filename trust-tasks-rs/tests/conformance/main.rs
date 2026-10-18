@@ -794,6 +794,9 @@ mod keys {
     mod sign_csr {
         mod v0_1;
     }
+    mod sign_document {
+        mod v0_1;
+    }
     mod sign_jws {
         mod v0_1;
     }

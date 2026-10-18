@@ -13,5 +13,6 @@ pub mod set_exportability;
 pub mod show;
 pub mod sign;
 pub mod sign_csr;
+pub mod sign_document;
 pub mod sign_jws;
 pub mod sign_sshsig;

@@ -95,6 +95,7 @@ extension type const Capability(String value) {
   static const Capability signSshsig = Capability('signSshsig');
   static const Capability signJws = Capability('signJws');
   static const Capability signCsr = Capability('signCsr');
+  static const Capability signDocument = Capability('signDocument');
   static const Capability externalAccountsManage =
       Capability('externalAccountsManage');
   static const Capability externalAuthUse = Capability('externalAuthUse');
@@ -122,6 +123,7 @@ extension type const Capability(String value) {
     signSshsig,
     signJws,
     signCsr,
+    signDocument,
     externalAccountsManage,
     externalAuthUse,
     pcsVetter,

@@ -141,6 +141,7 @@
         "signSshsig",
         "signJws",
         "signCsr",
+        "signDocument",
         "externalAccountsManage",
         "externalAuthUse",
         "pcsVetter",
