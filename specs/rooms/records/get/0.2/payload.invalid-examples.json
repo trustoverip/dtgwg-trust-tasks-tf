@@ -18,6 +18,25 @@
   {
     "variant": "response",
     "note": "An empty blobs array — absence is how 'no file' is written; an empty array would give one record two spellings.",
-    "payload": { "key": "9f2c1a7e", "version": 3, "blobs": [] }
+    "payload": {
+      "key": "9f2c1a7e",
+      "version": 3,
+      "blobs": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A sealed-at version of 0 — `sealed.version` names the version a body was sealed at, and no record is ever at version 0.",
+    "payload": {
+      "key": "9f2c1a7e",
+      "version": 5,
+      "status": "deprecated",
+      "sealed": {
+        "ciphertext": "c2VhbGVk",
+        "nonce": "bm9uY2U",
+        "epoch": 1,
+        "version": 0
+      }
+    }
   }
 ]
