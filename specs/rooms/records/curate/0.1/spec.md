@@ -115,6 +115,14 @@ A curated record **MUST** receive a new version from the room's counter. A demot
 members are expected to converge on is a change like any other, and a status change that
 left the version alone would be invisible to every `sinceVersion` watermark in the room.
 
+A curation **MUST NOT** alter a kept record's sealed content. On the `attributed` and
+`private` tiers the body is bound — by the AEAD and by its author's signature — to the
+version it was sealed at, so moving the record to a new version while keeping its body
+would leave it opening for nobody. The host therefore keeps the version the body was sealed
+at and serves it as `sealed.version` whenever it differs from the record's own
+([`SealedRecord`](../../../_shared/0.1/room.schema.json)), and readers open the body there. A
+retraction drops the body, so it has nothing to keep.
+
 ### Pinning is orthogonal to status
 
 `pinned` and `status` answer different questions — "what matters here" and "is this still

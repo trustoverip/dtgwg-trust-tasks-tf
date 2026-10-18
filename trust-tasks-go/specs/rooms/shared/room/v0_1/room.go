@@ -95,10 +95,11 @@ type AuthorityPresentation struct {
 // ciphertext lengths, for no benefit, since a reader decrypts the whole record either
 // way.
 type SealedRecord struct {
-	// The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`,
-	// `version` and `epoch`, so a host that relocates it to another key, version, epoch or
-	// room produces a mismatch and the open fails. The record cannot be moved undetected even
-	// though the host holds every byte of it.
+	// The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the
+	// version it was sealed at, and `epoch`, so a host that relocates it to another key,
+	// version, epoch or room produces a mismatch and the open fails. The record cannot be
+	// moved undetected even though the host holds every byte of it. The version it was sealed
+	// at is `version` below where present, and the record's own `version` otherwise.
 	Ciphertext string `json:"ciphertext"`
 
 	// AEAD nonce, base64url.
@@ -108,6 +109,27 @@ type SealedRecord struct {
 	// right ciphertext, and bound into the associated data so that relabelling it fails
 	// authentication rather than causing a reader to try the wrong key.
 	Epoch int64 `json:"epoch"`
+
+	// The version this ciphertext was sealed at, where that is no longer the record's own
+	// `version`. A record's version moves when it is curated (`rooms/records/curate`, which
+	// MUST assign a new one so that every `sinceVersion` watermark sees the change), but a
+	// curation other than a retraction keeps the body — and the body is bound, by the AEAD
+	// and by its author's signature (`SealedRecordBody`), to the version it was written at.
+	// Without this member a curated record would be opened at a version it was never sealed
+	// for, and would not open for anyone. A host MUST record the version a body was sealed at
+	// when it stores it, MUST NOT change it while that body is kept — a curation alters a
+	// record's standing, never its sealed content — and MUST include it whenever it differs
+	// from the record's `version`. It is absent where the two are equal, which is every
+	// record that has not been curated since it was written, so the members a record carries
+	// are unchanged until a curation needs this one. It is part of `sealed`, and so of the
+	// record the data commitment covers (`CommittedRecord`): a host cannot change it without
+	// changing the root. A reader opens and verifies the body at this version, and MUST
+	// refuse a record whose `sealed.version` is greater than its own `version` — a body
+	// cannot have been sealed for a version the room had not reached. A host that pairs a
+	// newer version with an older body of the same key is rolling the record back; that is a
+	// change to the committed record like any other, visible to the comparisons
+	// `CommittedRecord` exists for.
+	Version *int64 `json:"version,omitempty"`
 }
 
 // SealedRecordBody The plaintext inside `SealedRecord.ciphertext` on an `attributed` or
@@ -122,11 +144,21 @@ type SealedRecord struct {
 // showing any member of it or trusting its `file`: (1) parse it as this object and refuse
 // an unknown member; (2) verify `proof` against `author`'s DID document, for
 // `assertionMethod`; (3) check that `roomId`, `key` and `version` equal the location the
-// record was read from; (4) on an `attributed` room, check that `author` equals the
-// `author` the host recorded for the record. A reader MUST refuse a record that fails any
-// of these, and MUST NOT show it with a warning instead. **Why the location is signed as
-// well as sealed.** The AEAD stops the host relocating ciphertext, but every member can
-// open and re-seal a record. Without `roomId`, `key` and `version` under the author's
+// record was sealed at — the record's `roomId` and `key`, and `sealed.version` where
+// present, else the record's `version` (`SealedRecord`); (4) on an `attributed` room,
+// check that `author` equals the `author` the host recorded for the record. A reader MUST
+// refuse a record that fails any of these, and MUST NOT show it with a warning instead.
+// **A record curated before `sealed.version` existed.** A host that predates
+// `SealedRecord.version` moved such a record's version without recording the one it was
+// sealed at, so it opens at neither. Where a record carries no `sealed.version` and does
+// not open at its own `version`, a reader MAY try each earlier version in turn, newest
+// first, and use the first at which it opens; rule (3) then checks the body against that
+// version. It MUST NOT try a version greater than the record's own. The AEAD makes a
+// wrong guess fail rather than mislead, and the author's signature over the location
+// makes the version that opened the one the author wrote — so the search recovers the
+// record without trusting the host for the answer. **Why the location is signed as well
+// as sealed.** The AEAD stops the host relocating ciphertext, but every member can open
+// and re-seal a record. Without `roomId`, `key` and `version` under the author's
 // signature, a member could copy another member's signed body to a new key or a later
 // version, and on a `private` room, where the host records no author, readers would
 // attribute it to the original author. **A profile record.** A body carrying
@@ -144,7 +176,9 @@ type SealedRecordBody struct {
 	// The record's key, as in `rooms/records/put`.
 	Key string `json:"key"`
 
-	// The version the writer intended the record to take, as sealed with `rooms/keys/seal`.
+	// The version the writer intended the record to take, as sealed with `rooms/keys/seal`:
+	// the version the body is bound to. A record curated since keeps its body and moves to a
+	// new version, and carries this one as `sealed.version` (`SealedRecord`).
 	Version int64 `json:"version"`
 
 	// The DID of the party that wrote the record: the member, or the agent acting under an

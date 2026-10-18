@@ -909,6 +909,31 @@ mod persona {
             mod v1_0;
         }
     }
+    mod contact {
+        mod get {
+            mod v1_1;
+        }
+        mod list {
+            mod v1_1;
+        }
+        mod lists {
+            mod delete {
+                mod v1_0;
+            }
+            mod list {
+                mod v1_0;
+            }
+            mod put {
+                mod v1_0;
+            }
+            mod show {
+                mod v1_0;
+            }
+        }
+        mod put {
+            mod v1_1;
+        }
+    }
     mod facet {
         mod delete {
             mod v1_0;
@@ -1717,10 +1742,12 @@ mod vtc {
             mod event {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod subscribe {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
         }
         mod invites {

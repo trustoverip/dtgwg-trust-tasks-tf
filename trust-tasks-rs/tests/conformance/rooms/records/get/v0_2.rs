@@ -56,6 +56,10 @@ fn rejects_invalid_response_examples() {
             "An empty blobs array — absence is how 'no file' is written; an empty array would give one record two spellings.",
             "{\n  \"blobs\": [],\n  \"key\": \"9f2c1a7e\",\n  \"version\": 3\n}",
         ),
+        (
+            "A sealed-at version of 0 — `sealed.version` names the version a body was sealed at, and no record is ever at version 0.",
+            "{\n  \"key\": \"9f2c1a7e\",\n  \"sealed\": {\n    \"ciphertext\": \"c2VhbGVk\",\n    \"epoch\": 1,\n    \"nonce\": \"bm9uY2U\",\n    \"version\": 0\n  },\n  \"status\": \"deprecated\",\n  \"version\": 5\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/lists/list/1.0",
+  "title": "Persona Contact Lists List — payload",
+  "description": "Enumerate the holder's contact lists in one context, in the holder's chosen order. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "cursor": { "type": "string", "maxLength": 4096 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 100 },
+    "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Lists List — response payload",
+      "description": "Success response to persona/contact/lists/list. Type https://trusttasks.org/spec/persona/contact/lists/list/1.0#response. Lists ordered by `order`, ties by `name`; members are found with persona/contact/list and `listId`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lists"],
+      "properties": {
+        "lists": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ContactList" }
+        },
+        "nextCursor": { "type": "string", "maxLength": 4096 },
+        "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

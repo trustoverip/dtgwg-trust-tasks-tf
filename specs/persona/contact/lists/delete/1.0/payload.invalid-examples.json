@@ -1,0 +1,20 @@
+[
+  {
+    "note": "`listId` is required — a delete names one list; there is no delete-all.",
+    "payload": { "contextId": "ctx-personal" }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false catches `deleteContacts`. Deleting a list never deletes a contact; that is persona/contact/delete, one contact at a time.",
+    "payload": { "contextId": "ctx-personal", "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X", "deleteContacts": true }
+  },
+  {
+    "note": "Response without `existed` — a repeated delete must be distinguishable from the first.",
+    "variant": "response",
+    "payload": { "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X", "contactsUpdated": 0 }
+  },
+  {
+    "note": "Response echoing the list's name — additionalProperties: false; nothing deleted is echoed into logs that outlive it.",
+    "variant": "response",
+    "payload": { "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X", "existed": true, "contactsUpdated": 3, "name": "People I don't trust" }
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/_shared/0.1/contact-annotations",
+  "title": "Contact annotations — the holder's own marks on their contacts",
+  "description": "Types for what a holder keeps ABOUT the people in their address book, as distinct from what those people disclosed: a star, a private nickname (a petname), the holder's own lists, and a link from a contact to the community directory entry it was made through. Used by persona/contact/{put,get,list} 1.1 and persona/contact/lists/* 1.0.\n\nTHE BOUNDARY. Annotations are the holder's opinion of others and are kept by the holder's own agent and nowhere else. They are never disclosed to the contact they are about, to a community whose directory the contact appears in, to a verifier, or in any document the agent signs, presents or seals for the holder. A community never stores who its members star or list: if it did, its operator would hold the social graph of who watches whom. Being on a holder's list MUST NOT be inferable by the person listed or by any community.\n\nAnnotations are contact-level, not revision-level. They are the holder's current view of a relationship, not evidence of what a counterparty asserted, so changing one appends no revision and a revision carries none.\n\nPlain text throughout: a consumer renders a petname or a list name as text, never as markup, and an agent reading one MUST NOT treat it as instructions. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "ListId": {
+      "title": "ListId",
+      "description": "Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.",
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "ListIds": {
+      "title": "ListIds",
+      "description": "The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \"none\".",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/ListId" }
+    },
+    "Petname": {
+      "title": "Petname",
+      "description": "The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
+    },
+    "ListName": {
+      "title": "ListName",
+      "description": "The holder's name for one of their lists (\"Mentors\", \"Met at the spring meetup\"), on one line: no control characters. Unique within a context, compared exactly.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
+    },
+    "ListColour": {
+      "title": "ListColour",
+      "description": "A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.",
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+    },
+    "ListOrder": {
+      "title": "ListOrder",
+      "description": "Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "DirectoryEntryId": {
+      "title": "DirectoryEntryId",
+      "description": "A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "DirectoryRef": {
+      "title": "DirectoryRef",
+      "description": "Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vtcDid", "entryId"],
+      "properties": {
+        "vtcDid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^did:[a-z0-9]+:",
+          "description": "The DID of the community whose directory holds the entry."
+        },
+        "entryId": {
+          "$ref": "#/$defs/DirectoryEntryId",
+          "description": "The entry, as that community's directory identifies it."
+        }
+      }
+    },
+    "ContactList": {
+      "title": "ContactList",
+      "description": "One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["listId", "name", "order", "contactCount", "createdAt", "updatedAt"],
+      "properties": {
+        "listId": { "$ref": "#/$defs/ListId" },
+        "name": { "$ref": "#/$defs/ListName" },
+        "colour": { "$ref": "#/$defs/ListColour" },
+        "order": { "$ref": "#/$defs/ListOrder" },
+        "contactCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many of the context's contacts are on the list now."
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it."
+        }
+      }
+    }
+  }
+}

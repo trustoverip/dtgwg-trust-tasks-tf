@@ -1,0 +1,46 @@
+[
+  {
+    "note": "`contextId` is required — lists are context-scoped, and a listing never crosses contexts.",
+    "payload": {}
+  },
+  {
+    "note": "`limit` above 500.",
+    "payload": { "contextId": "ctx-personal", "limit": 1000 }
+  },
+  {
+    "note": "Unknown member — additionalProperties: false catches `includeContacts`; a list's contacts come from persona/contact/list with `listId`, paged, never inlined into every list.",
+    "payload": { "contextId": "ctx-personal", "includeContacts": true }
+  },
+  {
+    "note": "A list without `contactCount` — the record shape always carries it, so a client can show sizes without a second read.",
+    "variant": "response",
+    "payload": {
+      "lists": [
+        {
+          "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X",
+          "name": "Mentors",
+          "order": 10,
+          "createdAt": "2026-10-18T08:00:00Z",
+          "updatedAt": "2026-10-18T08:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A colour that is not six-digit lowercase hex — one way to write each colour.",
+    "variant": "response",
+    "payload": {
+      "lists": [
+        {
+          "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X",
+          "name": "Mentors",
+          "colour": "teal",
+          "order": 10,
+          "contactCount": 3,
+          "createdAt": "2026-10-18T08:00:00Z",
+          "updatedAt": "2026-10-18T08:00:00Z"
+        }
+      ]
+    }
+  }
+]
