@@ -1,0 +1,58 @@
+[
+  {
+    "note": "Room bindings name at least one action.",
+    "payload": {
+      "groupId": "grp_W5k2N8xRb3Qz7TpL",
+      "binding": {
+        "kind": "room",
+        "roomId": "did:example:room",
+        "actions": [],
+        "validFor": "P30D"
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`admin` is never a member action on a community room.",
+    "payload": {
+      "groupId": "grp_W5k2N8xRb3Qz7TpL",
+      "binding": {
+        "kind": "room",
+        "roomId": "did:example:room",
+        "actions": [
+          "admin"
+        ],
+        "validFor": "P30D"
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Grants are CapabilityRef objects; no wildcard.",
+    "payload": {
+      "groupId": "grp_W5k2N8xRb3Qz7TpL",
+      "binding": {
+        "kind": "grants",
+        "grants": [
+          "*"
+        ]
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`validFor` is whole days.",
+    "payload": {
+      "groupId": "grp_W5k2N8xRb3Qz7TpL",
+      "binding": {
+        "kind": "room",
+        "roomId": "did:example:room",
+        "actions": [
+          "read"
+        ],
+        "validFor": "1 year"
+      },
+      "reason": "x"
+    }
+  }
+]

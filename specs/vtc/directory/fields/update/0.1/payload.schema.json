@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/fields/update/0.1",
+  "title": "VTC Directory — Fields — Update — payload",
+  "description": "An administrator changes a directory field's label, help text, constraints, order, ceiling or default visibility, or disables or re-enables a base field. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "key"
+  ],
+  "properties": {
+    "key": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+    },
+    "label": {
+      "$ref": "../../../_shared/0.1/field-definition.schema.json#/$defs/FieldLabel"
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/field-definition.schema.json#/$defs/FieldDescription"
+    },
+    "constraints": {
+      "$ref": "../../../_shared/0.1/field-definition.schema.json#/$defs/FieldConstraints",
+      "description": "Replaces the constraints whole. Values already stored that no longer satisfy them stay until their writer next changes them; projections show them unchanged."
+    },
+    "ceiling": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/Audience"
+    },
+    "defaultVisibility": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/Audience"
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "searchable": {
+      "type": "boolean"
+    },
+    "facet": {
+      "type": "boolean"
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Base fields only: `false` disables the field (hidden from every projection, values kept), `true` re-enables it."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Fields — Update — response payload",
+      "description": "The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field"
+      ],
+      "properties": {
+        "field": {
+          "$ref": "../../../_shared/0.1/field-definition.schema.json#/$defs/FieldDefinition"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

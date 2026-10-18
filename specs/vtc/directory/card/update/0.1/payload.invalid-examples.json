@@ -1,0 +1,35 @@
+[
+  {
+    "note": "`onlyMe` is not an audience.",
+    "payload": {
+      "visibility": {
+        "bio": "onlyMe"
+      }
+    }
+  },
+  {
+    "note": "Discoverability replaces whole: all three members are REQUIRED.",
+    "payload": {
+      "discoverability": {
+        "listing": "hidden"
+      }
+    }
+  },
+  {
+    "note": "Field keys are FieldKey identifiers.",
+    "payload": {
+      "values": {
+        "Display Name": "Carol"
+      }
+    }
+  },
+  {
+    "note": "There is no target: a member updates only their own card.",
+    "payload": {
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR",
+      "values": {
+        "displayName": "Carol"
+      }
+    }
+  }
+]

@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/_shared/0.1/directory-card",
+  "title": "DirectoryCard — shared definitions for the vtc/directory/* spec family",
+  "description": "A Verifiable Trust Community's member directory: the card a member keeps about themselves, the projection of it another caller is shown, and the identifiers and audiences both are built from. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nTHREE OWNERS. The community owns the field schema (`field-definition.schema.json`). The member owns their card: its values, a visibility per field, and their discoverability. The viewer owns what they think of others — stars, personal lists, private notes, petnames — and none of that is defined here, because none of it is stored by the community.\n\nPROJECTION. Another caller never reads a card; they read a projection of it. A field leaves the community only where all three hold: the visibility the MEMBER chose covers the viewer, the community's CEILING for the field covers the viewer, and the community's directory policy permits it. The three are intersected, never unioned. A withheld field is ABSENT from a projection, never present-and-null, and a subject with nothing visible is indistinguishable from no subject.\n\nNO DID IS NEEDED. Entries are addressed by `EntryId`, which is not derived from and does not reveal any DID of the member. Showing the member's DID is a field (`did`) like any other.",
+  "$defs": {
+    "EntryId": {
+      "title": "EntryId",
+      "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
+      "type": "string",
+      "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "Audience": {
+      "title": "Audience",
+      "description": "Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\n\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.",
+      "type": "string",
+      "enum": [
+        "admins",
+        "groups",
+        "connections",
+        "members",
+        "public"
+      ]
+    },
+    "FieldKey": {
+      "title": "FieldKey",
+      "description": "Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
+    },
+    "CardBlobRef": {
+      "title": "CardBlobRef",
+      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "mediaType"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes."
+        },
+        "mediaType": {
+          "type": "string",
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/avif"
+          ],
+          "description": "Media type of the stored bytes."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 262144,
+          "description": "Size in bytes of the stored bytes."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`."
+        },
+        "urlExpiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Projection only: when `url` stops working."
+        }
+      }
+    },
+    "VerifiedValue": {
+      "title": "VerifiedValue",
+      "description": "The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "issuer",
+        "verifiedAt"
+      ],
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "The disclosed claim value."
+        },
+        "issuer": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "DID of the credential's issuer, shown as the field's verification badge."
+        },
+        "credentialType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The most specific `type` of the credential the claim came from."
+        },
+        "verifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community verified the presentation."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the credential expires, where it does. The community withdraws the value once it passes."
+        }
+      }
+    },
+    "FieldValue": {
+      "title": "FieldValue",
+      "description": "The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.",
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2000
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        {
+          "$ref": "#/$defs/CardBlobRef"
+        },
+        {
+          "$ref": "#/$defs/VerifiedValue"
+        }
+      ]
+    },
+    "CardValues": {
+      "title": "CardValues",
+      "description": "A card's stored values, keyed by field. Holds `member`-, `admin`- and `credential`-sourced fields only; derived fields (`role`, `joinedAt`, `did`, `personhood`) are read from the community's own records when a projection is made, never stored here. At most 64 values, and at most 16 KiB serialized excluding the blobs a `CardBlobRef` names.",
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "#/$defs/FieldKey"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/FieldValue"
+      }
+    },
+    "FieldVisibility": {
+      "title": "FieldVisibility",
+      "description": "The audience the member chose for each field. A field with no entry here takes its definition's `defaultVisibility`. The community MUST NOT widen a member's choice: widening a field's ceiling or default changes no visibility already recorded.",
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "#/$defs/FieldKey"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/Audience"
+      }
+    },
+    "Listing": {
+      "title": "Listing",
+      "description": "Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.",
+      "type": "string",
+      "enum": [
+        "listed",
+        "findable",
+        "hidden"
+      ]
+    },
+    "Discoverability": {
+      "title": "Discoverability",
+      "description": "The member's three discoverability decisions, made separately.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "listing",
+        "search",
+        "external"
+      ],
+      "properties": {
+        "listing": {
+          "$ref": "#/$defs/Listing"
+        },
+        "search": {
+          "type": "string",
+          "enum": [
+            "byName",
+            "exactNickname",
+            "off"
+          ],
+          "description": "What a member's search may match. `byName`: `displayName` or `nickname`. `exactNickname`: only an exact `nickname`. `off`: nothing. A DID is never a search key for a non-administrator, whatever this says."
+        },
+        "external": {
+          "type": "boolean",
+          "description": "Whether the member publishes a public card — the fields whose visibility is `public`, signed by the member — through the community's trust registry. A second consent, separate from registry-publication consent (`publishConsent`), which it requires. A community that cannot yet publish external cards refuses `true` with `notAvailable`."
+        }
+      }
+    },
+    "Introductions": {
+      "title": "Introductions",
+      "description": "Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.",
+      "type": "string",
+      "enum": [
+        "anyone",
+        "groups",
+        "connections",
+        "off"
+      ]
+    },
+    "DirectoryCard": {
+      "title": "DirectoryCard",
+      "description": "A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "values",
+        "visibility",
+        "discoverability",
+        "introductions",
+        "revision",
+        "updatedAt"
+      ],
+      "properties": {
+        "entryId": {
+          "$ref": "#/$defs/EntryId"
+        },
+        "values": {
+          "$ref": "#/$defs/CardValues"
+        },
+        "visibility": {
+          "$ref": "#/$defs/FieldVisibility"
+        },
+        "discoverability": {
+          "$ref": "#/$defs/Discoverability"
+        },
+        "introductions": {
+          "$ref": "#/$defs/Introductions"
+        },
+        "groupAudience": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
+          },
+          "description": "The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Incremented on every accepted change to the card, by its subject or by an administrator's assertion."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the card last changed."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection."
+        }
+      }
+    },
+    "EntryFields": {
+      "title": "EntryFields",
+      "description": "The fields of one entry that a particular viewer may see, keyed by field: the intersection of the member's visibility, the community's ceiling and policy, plus any derived fields that intersection admits. A withheld field is ABSENT, never null.",
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "#/$defs/FieldKey"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/FieldValue"
+      }
+    },
+    "DirectoryEntry": {
+      "title": "DirectoryEntry",
+      "description": "One entry as a particular viewer sees it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "fields"
+      ],
+      "properties": {
+        "entryId": {
+          "$ref": "#/$defs/EntryId"
+        },
+        "fields": {
+          "$ref": "#/$defs/EntryFields"
+        },
+        "connected": {
+          "type": "boolean",
+          "description": "Present, and `true`, only when the viewer is one of the two parties to an attributed, in-force verified relationship with this entry's member that the community can see. Absent otherwise — never `false`, which would disclose that the community looked and found none. Relationships known only to the viewer's own agent are badged by that agent, not here."
+        },
+        "sharedGroups": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
+          },
+          "description": "The community groups the viewer and this member both belong to, among those whose membership the viewer may see. Absent when there are none."
+        }
+      }
+    },
+    "JSContactCard": {
+      "title": "JSContactCard",
+      "description": "One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.",
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

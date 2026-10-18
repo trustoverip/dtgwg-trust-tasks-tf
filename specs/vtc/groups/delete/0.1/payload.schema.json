@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/delete/0.1",
+  "title": "VTC Groups — Delete — payload",
+  "description": "A group manager deletes a group: its bindings are withdrawn first, its members' credential renewal stops and its authorization credential is revoked, and only then is the group removed. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId",
+    "reason"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Delete — response payload",
+      "description": "The success response to a vtc/groups/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/delete/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groupId",
+        "state"
+      ],
+      "properties": {
+        "groupId": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "deleted",
+            "deleting"
+          ],
+          "description": "`deleted`: done. `deleting`: the group no longer admits anyone and its bindings are being withdrawn; it disappears when they are."
+        },
+        "bindingsRemoved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "membersRemoved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

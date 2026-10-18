@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/notes/export/0.1",
+  "title": "VTC Directory — Notes — Export — payload",
+  "description": "An administrator exports every administrative note about one member, redacted ones included, to answer that member's subject-access request. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId",
+    "reason"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Notes — Export — response payload",
+      "description": "The success response to a vtc/directory/notes/export/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/export/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "notes",
+        "exportedAt"
+      ],
+      "properties": {
+        "entryId": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "notes": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {
+            "$ref": "../../../_shared/0.1/admin-note.schema.json#/$defs/AdminNote"
+          },
+          "description": "Every note about the entry, oldest first, with the text of redacted notes included."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

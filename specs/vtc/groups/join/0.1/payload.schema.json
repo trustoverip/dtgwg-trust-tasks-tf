@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/join/0.1",
+  "title": "VTC Groups — Join — payload",
+  "description": "A member joins an open group at once, or asks to join a group that takes requests; where the group issues credentials, they are offered a membership credential issued by the group's DID. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "message": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/JoinRequestMessage"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Join — response payload",
+      "description": "The success response to a vtc/groups/join/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/join/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groupId",
+        "outcome",
+        "credentialId"
+      ],
+      "properties": {
+        "groupId": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "joined",
+            "requested",
+            "optOutWithdrawn"
+          ],
+          "description": "`joined`: a member now. `requested`: a request awaits a manager. `optOutWithdrawn`: the caller's opt-out of a dynamic group is undone, but its rule does not admit them now; they become a member when it does."
+        },
+        "member": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupMember",
+          "description": "Present when `outcome` is `joined`."
+        },
+        "request": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupJoinRequest",
+          "description": "Present when `outcome` is `requested`."
+        },
+        "credentialId": {
+          "anyOf": [
+            {
+              "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupCredentialId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The membership credential offered, or null when the group issues none or the outcome is `requested`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

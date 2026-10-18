@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/introduce/0.1",
+  "title": "VTC Directory — Introduce — payload",
+  "description": "A member asks the community to introduce them to another member's entry, offering a fresh pairwise DID to reply to. The answer is always `accepted`, so the request reveals nothing about the other member. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId",
+    "replyTo"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "replyTo": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "A pairwise DID the sender's agent minted for this relationship alone. The introduced member answers it directly, never through the community."
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "A short note to the introduced member. Plain text."
+    },
+    "share": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+      },
+      "description": "Fields of the sender's own card to include. The community fills their values from the card and drops any whose visibility does not already cover the recipient."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Introduce — response payload",
+      "description": "The success response to a vtc/directory/introduce/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/introduce/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "accepted",
+          "description": "Always `accepted`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

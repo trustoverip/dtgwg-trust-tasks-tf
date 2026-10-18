@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/create/0.1",
+  "title": "VTC Groups — Create — payload",
+  "description": "An administrator creates a community group: the community's VTA mints the group's own DID and, where it issues credentials, the community authorises it to issue membership credentials; the group is recorded only afterwards. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "kind",
+    "visibility",
+    "showMembers",
+    "reason"
+  ],
+  "properties": {
+    "name": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupName"
+    },
+    "description": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupDescription"
+    },
+    "kind": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupKind"
+    },
+    "rule": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/DynamicRule",
+      "description": "REQUIRED for a dynamic group; refused on a static one."
+    },
+    "joinPolicy": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/JoinPolicy",
+      "description": "Static groups only. Absent: `closed`."
+    },
+    "visibility": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupAudience"
+    },
+    "showMembers": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupAudience"
+    },
+    "issuesCredentials": {
+      "type": "boolean",
+      "description": "Whether the group's DID issues its members a membership credential. Absent: true."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Create — response payload",
+      "description": "The success response to a vtc/groups/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group"
+      ],
+      "properties": {
+        "group": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/Group"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

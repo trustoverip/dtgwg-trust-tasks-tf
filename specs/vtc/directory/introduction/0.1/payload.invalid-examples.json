@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`replyTo` is REQUIRED.",
+    "payload": {
+      "introductionId": "intro_N4k8W2qYc6Vd1MsKx",
+      "from": {
+        "entryId": "dir_H3n8W2qYc6Vd1MsK",
+        "fields": {}
+      }
+    }
+  },
+  {
+    "note": "The sender is identified by entry, never by membership DID.",
+    "payload": {
+      "introductionId": "intro_N4k8W2qYc6Vd1MsKx",
+      "from": {
+        "did": "did:example:dan",
+        "fields": {}
+      },
+      "replyTo": "did:peer:2.x"
+    }
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "note": "`groupId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "Groups are addressed by GroupId, not by DID.",
+    "payload": {
+      "groupId": "did:webvh:QmGroupScid:community.example:group-dids:grp_W5k2N8xRb3Qz7TpL"
+    }
+  }
+]

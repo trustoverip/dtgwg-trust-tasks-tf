@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "format": "jscontact"
+    }
+  },
+  {
+    "note": "Only JSContact is defined.",
+    "payload": {
+      "format": "vcard",
+      "reason": "x"
+    }
+  }
+]

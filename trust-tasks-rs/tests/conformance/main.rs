@@ -1848,6 +1848,62 @@ mod vtc {
         }
     }
     mod directory {
+        mod card {
+            mod assert {
+                mod v0_1;
+            }
+            mod present {
+                mod v0_1;
+            }
+            mod show {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+        }
+        mod entries {
+            mod list {
+                mod v0_1;
+            }
+            mod show {
+                mod v0_1;
+            }
+        }
+        mod export {
+            mod v0_1;
+        }
+        mod fields {
+            mod define {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod retire {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+        }
+        mod introduce {
+            mod v0_1;
+        }
+        mod introduction {
+            mod v0_1;
+        }
+        mod notes {
+            mod append {
+                mod v0_1;
+            }
+            mod export {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+        }
         mod query {
             mod v0_1;
         }
@@ -1874,6 +1930,59 @@ mod vtc {
             mod v0_1;
         }
         mod show {
+            mod v0_1;
+        }
+    }
+    mod groups {
+        mod bindings {
+            mod add {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod remove {
+                mod v0_1;
+            }
+        }
+        mod create {
+            mod v0_1;
+        }
+        mod delete {
+            mod v0_1;
+        }
+        mod join {
+            mod v0_1;
+        }
+        mod leave {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod members {
+            mod add {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod remove {
+                mod v0_1;
+            }
+        }
+        mod requests {
+            mod decide {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod update {
             mod v0_1;
         }
     }

@@ -1,0 +1,8 @@
+[
+  {
+    "note": "`entryId` is REQUIRED: notes are read for one member at a time.",
+    "payload": {
+      "limit": 10
+    }
+  }
+]

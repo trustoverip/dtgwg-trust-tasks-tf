@@ -1,0 +1,17 @@
+[
+  {
+    "note": "`presentation` is REQUIRED.",
+    "payload": {
+      "fields": [
+        "org.example.registration"
+      ]
+    }
+  },
+  {
+    "note": "At least one field.",
+    "payload": {
+      "fields": [],
+      "presentation": "x"
+    }
+  }
+]

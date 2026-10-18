@@ -34,6 +34,10 @@ errorCodes:
   - code: vtc/directory/query:notFound
     meaning: No member with that DID, or none whose directory projection is visible to this caller.
     retryable: false
+related:
+  - vtc/directory/entries/show
+  - vtc/directory/entries/list
+  - vtc/directory/card/update
 ---
 
 ## Abstract
@@ -41,6 +45,10 @@ errorCodes:
 The **VTC Directory — Query** Trust Task returns the subset of a member's record that the community's directory policy permits this caller to see. `fields` narrows the request; the policy decides what is actually returned.
 
 The projection is a **policy decision, not a database read**. Two callers asking for the same subject and the same fields can legitimately receive different answers, because the directory ceremony evaluates who is asking against what the subject consented to publish.
+
+## Relationship to the directory family
+
+This task predates the member directory's card model. Its successor is [`vtc/directory/entries/show`](../../entries/show/0.1/spec.md), which addresses a member by an opaque, community-scoped entry identifier and returns the full projection — the member's own visibility choices intersected with the community's ceilings and policy. New producers **SHOULD** use `entries/show`. A community that serves both **SHOULD** answer this task through the same projection, so the two never disagree about what a caller may see; addressing by DID here remains subject to the `notFound` rule below.
 
 ## Conformance
 

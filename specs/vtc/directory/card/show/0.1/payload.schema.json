@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/card/show/0.1",
+  "title": "VTC Directory — Card — Show — payload",
+  "description": "A member reads their own directory card whole: every value, the visibility of each field, their discoverability and introduction settings, and its revision. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Card — Show — response payload",
+      "description": "The success response to a vtc/directory/card/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "card",
+        "missingRequired"
+      ],
+      "properties": {
+        "card": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/DirectoryCard"
+        },
+        "missingRequired": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+          },
+          "description": "Required fields the card has no value for. While any is missing the entry is not listed, whatever `discoverability.listing` says."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

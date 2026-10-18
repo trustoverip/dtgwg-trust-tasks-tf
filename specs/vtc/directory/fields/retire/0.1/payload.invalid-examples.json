@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`reason` is REQUIRED for an act that schedules erasure.",
+    "payload": {
+      "key": "org.example.employer"
+    }
+  },
+  {
+    "note": "Keys are FieldKey identifiers, not labels.",
+    "payload": {
+      "key": "Employer Name",
+      "reason": "x"
+    }
+  }
+]

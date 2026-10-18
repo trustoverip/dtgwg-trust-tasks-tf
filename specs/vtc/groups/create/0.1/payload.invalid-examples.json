@@ -1,0 +1,40 @@
+[
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "name": "WG",
+      "kind": "static",
+      "visibility": "members",
+      "showMembers": "members"
+    }
+  },
+  {
+    "note": "A rule condition names a known fact.",
+    "payload": {
+      "name": "WG",
+      "kind": "dynamic",
+      "rule": {
+        "all": [
+          {
+            "fact": "bio",
+            "op": "exists"
+          }
+        ]
+      },
+      "visibility": "members",
+      "showMembers": "members",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`groupDid` is minted by the community's VTA, never supplied.",
+    "payload": {
+      "name": "WG",
+      "kind": "static",
+      "visibility": "members",
+      "showMembers": "members",
+      "reason": "x",
+      "groupDid": "did:example:g"
+    }
+  }
+]

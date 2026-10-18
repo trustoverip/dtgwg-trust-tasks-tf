@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/_shared/0.1/field-definition",
+  "title": "FieldDefinition — shared definitions for the vtc/directory/fields/* tasks",
+  "description": "The community's directory schema, one definition per field: what the field is, who writes its value, the widest audience it may ever reach (`ceiling`), the audience a new card gives it (`defaultVisibility`), and whether it is searchable or a facet. Every community has the same base fields, which it may disable and whose ceilings it may change; administrators define more. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "FieldType": {
+      "title": "FieldType",
+      "description": "The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.",
+      "type": "string",
+      "enum": ["text", "longText", "url", "email", "phone", "enum", "multiEnum", "date", "country", "image", "did", "claim"]
+    },
+    "FieldSource": {
+      "title": "FieldSource",
+      "description": "Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.",
+      "type": "string",
+      "enum": ["member", "admin", "credential", "derived"]
+    },
+    "FieldState": {
+      "title": "FieldState",
+      "description": "`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.",
+      "type": "string",
+      "enum": ["active", "disabled", "retired"]
+    },
+    "EnumOption": {
+      "title": "EnumOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "label"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$",
+          "description": "The stored value."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "What a reader is shown for it."
+        }
+      }
+    },
+    "ClaimSelector": {
+      "title": "ClaimSelector",
+      "description": "Which claim a `claim` field accepts, from which credentials and issuers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credentialType", "claimPath"],
+      "properties": {
+        "credentialType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "A `type` the presented credential MUST carry."
+        },
+        "claimPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "JSON Pointer (RFC 6901) to the claim within `credentialSubject`."
+        },
+        "issuers": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^did:", "maxLength": 2048 },
+          "description": "Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides."
+        }
+      }
+    },
+    "FieldConstraints": {
+      "title": "FieldConstraints",
+      "description": "Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxLength": { "type": "integer", "minimum": 1, "maximum": 2000 },
+        "minLength": { "type": "integer", "minimum": 0, "maximum": 2000 },
+        "pattern": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "ECMA-262 regular expression a text value MUST match."
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/EnumOption" },
+          "description": "The permitted values of an `enum` or `multiEnum` field."
+        },
+        "maxItems": { "type": "integer", "minimum": 1, "maximum": 32 },
+        "minDate": { "type": "string", "format": "date" },
+        "maxDate": { "type": "string", "format": "date" },
+        "claim": { "$ref": "#/$defs/ClaimSelector" }
+      }
+    },
+    "FieldLabel": {
+      "title": "FieldLabel",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "What readers see as the field's name. Plain text."
+    },
+    "FieldDescription": {
+      "title": "FieldDescription",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "FieldInput": {
+      "title": "FieldInput",
+      "description": "What an administrator supplies to define a community field. `key`, `type` and `source` are fixed for the field's life.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "label", "type", "source", "ceiling", "defaultVisibility"],
+      "properties": {
+        "key": { "$ref": "directory-card.schema.json#/$defs/FieldKey" },
+        "label": { "$ref": "#/$defs/FieldLabel" },
+        "description": { "$ref": "#/$defs/FieldDescription" },
+        "type": { "$ref": "#/$defs/FieldType" },
+        "constraints": { "$ref": "#/$defs/FieldConstraints" },
+        "source": {
+          "type": "string",
+          "enum": ["member", "admin", "credential"],
+          "description": "As `FieldSource`, less `derived`, which only base fields carry."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether a card must hold a value for its entry to be listed. Never a condition of membership. Absent: false."
+        },
+        "ceiling": { "$ref": "directory-card.schema.json#/$defs/Audience" },
+        "defaultVisibility": {
+          "$ref": "directory-card.schema.json#/$defs/Audience",
+          "description": "The audience a card gives the field until its member chooses. MUST NOT be wider than `ceiling`."
+        },
+        "searchable": {
+          "type": "boolean",
+          "description": "Whether a member's search may match the field, within what the searcher may see. Absent: false."
+        },
+        "facet": {
+          "type": "boolean",
+          "description": "Whether the field may be filtered on and counted. Only `enum`, `multiEnum` and `country` fields may be facets. Absent: false."
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000,
+          "description": "Display order, ascending."
+        }
+      }
+    },
+    "FieldDefinition": {
+      "title": "FieldDefinition",
+      "description": "One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "label", "type", "source", "base", "ceiling", "defaultVisibility", "required", "searchable", "facet", "order", "state"],
+      "properties": {
+        "key": { "$ref": "directory-card.schema.json#/$defs/FieldKey" },
+        "label": { "$ref": "#/$defs/FieldLabel" },
+        "description": { "$ref": "#/$defs/FieldDescription" },
+        "type": { "$ref": "#/$defs/FieldType" },
+        "constraints": { "$ref": "#/$defs/FieldConstraints" },
+        "source": { "$ref": "#/$defs/FieldSource" },
+        "base": {
+          "type": "boolean",
+          "description": "`true` for a base field, present in every community; `false` for a field this community defined."
+        },
+        "jsContactPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key."
+        },
+        "required": { "type": "boolean" },
+        "ceiling": { "$ref": "directory-card.schema.json#/$defs/Audience" },
+        "defaultVisibility": { "$ref": "directory-card.schema.json#/$defs/Audience" },
+        "searchable": { "type": "boolean" },
+        "facet": { "type": "boolean" },
+        "order": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "state": { "$ref": "#/$defs/FieldState" },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the field was retired. Present only on a retired field."
+        },
+        "purgeAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the values of a retired field are purged. Present only on a retired field."
+        },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling."
+        }
+      }
+    },
+    "ListingDefaults": {
+      "title": "ListingDefaults",
+      "description": "The community's listing settings. `defaultListing`: the listing a new card starts with (default `listed`). There is no floor: every member may always choose `hidden`, and a community cannot hold an entry above its member's choice. Raising `defaultListing` affects new cards only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["defaultListing"],
+      "properties": {
+        "defaultListing": { "$ref": "directory-card.schema.json#/$defs/Listing" }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "key": "displayName"
+    }
+  },
+  {
+    "note": "`includeRetired` is a boolean.",
+    "payload": {
+      "includeRetired": "yes"
+    }
+  }
+]

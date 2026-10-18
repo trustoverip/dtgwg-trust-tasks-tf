@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/card/assert/0.1",
+  "title": "VTC Directory — Card — Assert — payload",
+  "description": "An administrator writes the values of admin-sourced directory fields on a member's card — the facts the community asserts about a member, which the member reads and cannot change. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId",
+    "values",
+    "reason"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "values": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldValue"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "description": "Values to set, keyed by `admin`-sourced field; `null` clears one."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Card — Assert — response payload",
+      "description": "The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "written",
+        "revision"
+      ],
+      "properties": {
+        "entryId": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "written": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+          },
+          "description": "The fields written or cleared."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

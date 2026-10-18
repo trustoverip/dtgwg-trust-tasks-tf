@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/members/add/0.1",
+  "title": "VTC Groups — Members — Add — payload",
+  "description": "A group manager adds a community member to a static group; where the group issues credentials, the group's DID issues the member a membership credential first. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId",
+    "entryId"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "entryId": {
+      "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Members — Add — response payload",
+      "description": "The success response to a vtc/groups/members/add/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/members/add/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member",
+        "credentialId"
+      ],
+      "properties": {
+        "member": {
+          "$ref": "../../../_shared/0.1/group.schema.json#/$defs/GroupMember"
+        },
+        "credentialId": {
+          "anyOf": [
+            {
+              "$ref": "../../../_shared/0.1/group.schema.json#/$defs/GroupCredentialId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The membership credential offered to the member, or null when the group issues none or the addition is pending."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

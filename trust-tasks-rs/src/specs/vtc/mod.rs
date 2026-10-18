@@ -10,6 +10,7 @@ pub mod credentials;
 pub mod directory;
 pub mod endorsement_types;
 pub mod endorsements;
+pub mod groups;
 pub mod install;
 pub mod invitations;
 pub mod join_requests;

@@ -1,0 +1,28 @@
+[
+  {
+    "note": "`replyTo` is REQUIRED — the recipient answers the sender directly.",
+    "payload": {
+      "entryId": "dir_H3n8W2qYc6Vd1MsK"
+    }
+  },
+  {
+    "note": "The message is at most 280 characters.",
+    "payload": {
+      "entryId": "dir_H3n8W2qYc6Vd1MsK",
+      "replyTo": "did:peer:2.x",
+      "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "The sender shares field keys; the community supplies the values.",
+    "payload": {
+      "entryId": "dir_H3n8W2qYc6Vd1MsK",
+      "replyTo": "did:peer:2.x",
+      "share": [
+        {
+          "displayName": "Carol"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/show/0.1",
+  "title": "VTC Groups — Show — payload",
+  "description": "Read one community group the caller may see: its DID, name, kind, policies and, where permitted, its member count and managers. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Show — response payload",
+      "description": "The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group",
+        "myMembership"
+      ],
+      "properties": {
+        "group": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/Group"
+        },
+        "myMembership": {
+          "type": "string",
+          "enum": [
+            "member",
+            "pending",
+            "requested",
+            "optedOut",
+            "none"
+          ]
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

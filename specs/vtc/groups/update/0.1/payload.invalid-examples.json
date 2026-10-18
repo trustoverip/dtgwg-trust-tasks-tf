@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`kind` is fixed for the group's life.",
+    "payload": {
+      "groupId": "grp_W5k2N8xRb3Qz7TpL",
+      "kind": "dynamic"
+    }
+  },
+  {
+    "note": "`groupId` is REQUIRED.",
+    "payload": {
+      "name": "WG"
+    }
+  }
+]

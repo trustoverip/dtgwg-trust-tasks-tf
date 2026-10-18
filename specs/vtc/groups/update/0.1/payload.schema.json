@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/update/0.1",
+  "title": "VTC Groups — Update — payload",
+  "description": "A group manager changes a group's name, description, rule, join policy, visibility, member-list visibility or whether it issues credentials. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "name": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupName"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupDescription"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` clears it."
+    },
+    "rule": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/DynamicRule"
+    },
+    "joinPolicy": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/JoinPolicy"
+    },
+    "visibility": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupAudience"
+    },
+    "showMembers": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupAudience"
+    },
+    "issuesCredentials": {
+      "type": "boolean",
+      "description": "Turning it off stops issuing and renewing members' credentials; those issued lapse at their expiry."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Update — response payload",
+      "description": "The success response to a vtc/groups/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group"
+      ],
+      "properties": {
+        "group": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/Group"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

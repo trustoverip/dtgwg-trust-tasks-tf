@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`decision` is REQUIRED.",
+    "payload": {
+      "requestId": "greq_T7m2K9xVb4Tz8LpR"
+    }
+  },
+  {
+    "note": "Only approve or decline.",
+    "payload": {
+      "requestId": "greq_T7m2K9xVb4Tz8LpR",
+      "decision": "defer"
+    }
+  }
+]

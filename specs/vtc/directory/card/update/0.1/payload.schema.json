@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/card/update/0.1",
+  "title": "VTC Directory — Card — Update — payload",
+  "description": "A member changes their own directory card: values they write themselves, the visibility of each field, their discoverability and who may ask to be introduced to them. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "values": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldValue"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "description": "Values to set, keyed by field; `null` clears one. Fields not named are unchanged. Only `member`-sourced fields."
+    },
+    "visibility": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/Audience"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "description": "Visibilities to set, keyed by field; `null` returns a field to its default. Applies to any non-derived field on the card, whoever wrote its value, and to the derived fields the community lets a member widen (`did`)."
+    },
+    "discoverability": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/Discoverability",
+      "description": "Replaces the member's discoverability whole."
+    },
+    "introductions": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/Introductions"
+    },
+    "groupAudience": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId"
+      },
+      "description": "Replaces the groups that count as the `groups` audience; `null` returns to every group the member is in."
+    },
+    "expectedRevision": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional: apply only if the card is at this revision, else refuse with `superseded`."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Card — Update — response payload",
+      "description": "The success response to a vtc/directory/card/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "card",
+        "missingRequired"
+      ],
+      "properties": {
+        "card": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/DirectoryCard"
+        },
+        "missingRequired": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

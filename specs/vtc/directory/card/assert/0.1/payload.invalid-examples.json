@@ -1,0 +1,29 @@
+[
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR",
+      "values": {
+        "org.example.chapter": "sydney"
+      }
+    }
+  },
+  {
+    "note": "An entry is named by EntryId, never by DID.",
+    "payload": {
+      "entryId": "did:example:carol",
+      "values": {
+        "org.example.chapter": "sydney"
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "An assertion writes at least one value.",
+    "payload": {
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR",
+      "values": {},
+      "reason": "x"
+    }
+  }
+]

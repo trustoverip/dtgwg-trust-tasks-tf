@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/fields/list/0.1",
+  "title": "VTC Directory — Fields — List — payload",
+  "description": "Read a community's directory schema — base and community-defined fields, their types, ceilings and default visibility — as the caller may see it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "includeRetired": {
+      "type": "boolean",
+      "description": "Administrators only: also return retired fields. Ignored for any other caller."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Fields — List — response payload",
+      "description": "The success response to a vtc/directory/fields/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fields",
+        "listingDefaults"
+      ],
+      "properties": {
+        "fields": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "../../../_shared/0.1/field-definition.schema.json#/$defs/FieldDefinition"
+          },
+          "description": "The fields, in `order`."
+        },
+        "listingDefaults": {
+          "$ref": "../../../_shared/0.1/field-definition.schema.json#/$defs/ListingDefaults"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

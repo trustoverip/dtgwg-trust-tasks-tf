@@ -1,0 +1,9 @@
+[
+  {
+    "note": "Members are named by EntryId, never by DID.",
+    "payload": {
+      "groupId": "grp_W5k2N8xRb3Qz7TpL",
+      "entryId": "did:example:carol"
+    }
+  }
+]

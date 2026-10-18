@@ -1,0 +1,13 @@
+[
+  {
+    "note": "Exactly one of `entryId` and `did`.",
+    "payload": {}
+  },
+  {
+    "note": "Exactly one of `entryId` and `did` — not both.",
+    "payload": {
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR",
+      "did": "did:example:carol"
+    }
+  }
+]

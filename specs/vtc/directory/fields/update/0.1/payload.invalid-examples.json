@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`key` is REQUIRED.",
+    "payload": {
+      "ceiling": "members"
+    }
+  },
+  {
+    "note": "`type` is fixed for the field's life and not an update member.",
+    "payload": {
+      "key": "bio",
+      "type": "text"
+    }
+  },
+  {
+    "note": "`source` is fixed for the field's life.",
+    "payload": {
+      "key": "bio",
+      "source": "admin"
+    }
+  }
+]

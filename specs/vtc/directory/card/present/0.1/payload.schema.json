@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/card/present/0.1",
+  "title": "VTC Directory — Card — Present — payload",
+  "description": "A member presents a credential so the community can fill credential-sourced directory fields with the disclosed claims, badged with their issuer; the community keeps the claims, never the presentation. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fields",
+    "presentation"
+  ],
+  "properties": {
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+      },
+      "description": "The `credential`-sourced fields this presentation answers."
+    },
+    "presentation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "A W3C Verifiable Presentation with a Data Integrity proof whose `challenge` is this document's `id` and whose `domain` is the community's DID."
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID)."
+        }
+      ]
+    },
+    "clear": {
+      "type": "boolean",
+      "description": "Optional: also clear any named field the presentation does not answer. Absent: false."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Card — Present — response payload",
+      "description": "The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified",
+        "revision"
+      ],
+      "properties": {
+        "verified": {
+          "type": "object",
+          "maxProperties": 16,
+          "propertyNames": {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey"
+          },
+          "additionalProperties": {
+            "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/VerifiedValue"
+          },
+          "description": "The values now on the card, keyed by field."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

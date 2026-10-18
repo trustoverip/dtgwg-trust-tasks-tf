@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/leave/0.1",
+  "title": "VTC Groups — Leave — payload",
+  "description": "A member leaves a static group, opts out of a dynamic one, or withdraws a pending request to join: renewal of their group credential stops, and what only the group provided is withdrawn. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Leave — response payload",
+      "description": "The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groupId",
+        "state"
+      ],
+      "properties": {
+        "groupId": {
+          "$ref": "../../_shared/0.1/group.schema.json#/$defs/GroupId"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "left",
+            "optedOut",
+            "requestWithdrawn",
+            "pending"
+          ],
+          "description": "`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms."
+        },
+        "credentialValidUntil": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When the member's last group credential lapses; renewal has stopped. Null when they held none."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

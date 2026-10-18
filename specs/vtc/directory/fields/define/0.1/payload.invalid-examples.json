@@ -1,0 +1,46 @@
+[
+  {
+    "note": "`field` is REQUIRED.",
+    "payload": {
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`ceiling` is REQUIRED on a definition — absence must not read as `public`.",
+    "payload": {
+      "field": {
+        "key": "org.example.x",
+        "label": "X",
+        "type": "text",
+        "source": "member",
+        "defaultVisibility": "members"
+      }
+    }
+  },
+  {
+    "note": "`derived` is reserved to base fields.",
+    "payload": {
+      "field": {
+        "key": "org.example.x",
+        "label": "X",
+        "type": "text",
+        "source": "derived",
+        "ceiling": "members",
+        "defaultVisibility": "members"
+      }
+    }
+  },
+  {
+    "note": "`onlyMe` is not an audience.",
+    "payload": {
+      "field": {
+        "key": "org.example.x",
+        "label": "X",
+        "type": "text",
+        "source": "member",
+        "ceiling": "onlyMe",
+        "defaultVisibility": "onlyMe"
+      }
+    }
+  }
+]

@@ -375,6 +375,12 @@ export type ApproverLabel = string;
  */
 export type AttestationMeta = StatementMeta;
 /**
+ * Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.
+ *
+ * `groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.
+ */
+export type Audience = "admins" | "groups" | "connections" | "members" | "public";
+/**
  * The kind of privileged change recorded in the audit log.
  */
 export type AuditAction =
@@ -407,6 +413,8 @@ export type AuthModel =
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
 export type AwsArn = string;
 export type AwsRegion = string;
+export type BindingId = string;
+export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
 /**
  * The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.
  */
@@ -670,6 +678,10 @@ export type ElevatedRight = "git.ns.admin" | "git.repo.create" | "git.repo.own";
  */
 export type EnrolledVia = "install" | "invite" | "selfService" | "offline";
 /**
+ * Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.
+ */
+export type EntryId = string;
+/**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
 export type ExpectedSha256 = string;
@@ -731,6 +743,46 @@ export type FaceReach =
  */
 export type FacetColour = "slate" | "indigo" | "teal" | "moss" | "sand" | "clay" | "rose" | "plum";
 /**
+ * Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type FieldDescription = string;
+/**
+ * Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.
+ */
+export type FieldKey = string;
+/**
+ * What readers see as the field's name. Plain text.
+ */
+export type FieldLabel = string;
+/**
+ * Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.
+ */
+export type FieldSource = "member" | "admin" | "credential" | "derived";
+/**
+ * `active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.
+ */
+export type FieldState = "active" | "disabled" | "retired";
+/**
+ * The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.
+ */
+export type FieldType =
+  | "text"
+  | "longText"
+  | "url"
+  | "email"
+  | "phone"
+  | "enum"
+  | "multiEnum"
+  | "date"
+  | "country"
+  | "image"
+  | "did"
+  | "claim";
+/**
+ * The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.
+ */
+export type FieldValue = string | boolean | string[] | CardBlobRef | VerifiedValue;
+/**
  * A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.
  */
 export type FileData = string;
@@ -746,6 +798,30 @@ export type ForgeId = string;
  * Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
  */
 export type GrantValiditySeconds = number;
+/**
+ * Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.
+ */
+export type GroupAudience = "admins" | "groupMembers" | "members";
+/**
+ * Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.
+ */
+export type GroupCredentialId = string;
+/**
+ * What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.
+ */
+export type GroupDescription = string;
+/**
+ * Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.
+ */
+export type GroupId = string;
+/**
+ * `static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.
+ */
+export type GroupKind = "static" | "dynamic";
+/**
+ * The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.
+ */
+export type GroupName = string;
 /**
  * The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.
  */
@@ -767,9 +843,22 @@ export type Handle = string;
  */
 export type HeadVersion = number;
 /**
+ * Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
+ */
+export type Introductions = "anyone" | "groups" | "connections" | "off";
+/**
  * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
  */
 export type InviteStatus = "issued" | "consumed" | "expired";
+/**
+ * How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.
+ */
+export type JoinPolicy = "closed" | "request" | "open";
+export type JoinRequestId = string;
+/**
+ * An optional note from the member to the group's managers. Plain text.
+ */
+export type JoinRequestMessage = string;
 /**
  * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
  */
@@ -842,6 +931,10 @@ export type ListName = string;
  */
 export type ListOrder = number;
 /**
+ * Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
+ */
+export type Listing = "listed" | "findable" | "hidden";
+/**
  * The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.
  */
 export type MatchNumber = string;
@@ -861,6 +954,10 @@ export type MemberActions = [MemberAction] | [MemberAction, MemberAction] | [Mem
  */
 export type MemberState = "offered" | "admitted" | "removed";
 /**
+ * How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.
+ */
+export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
+/**
  * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
  */
 export type Mode = "scan";
@@ -876,6 +973,14 @@ export type Namespace = string;
  * The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
  */
 export type NamespaceId = string;
+/**
+ * Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.
+ */
+export type NoteId = string;
+/**
+ * The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.
+ */
+export type NoteText = string;
 /**
  * A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.
  */
@@ -4007,6 +4112,31 @@ export interface AdminAccount {
    */
   accountType: AccountType;
 }
+export interface AdminNote {
+  noteId: NoteId;
+  entryId: EntryId;
+  /**
+   * DID of the administrator who wrote the note.
+   */
+  author: string;
+  createdAt: string;
+  /**
+   * The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.
+   */
+  text?: NoteText;
+  /**
+   * Optional date by which the note asks for a follow-up.
+   */
+  followUp?: string;
+  /**
+   * Present on a redaction: the earlier note this one withdraws.
+   */
+  redacts?: NoteId;
+  /**
+   * Present on a note that a later note redacted.
+   */
+  redactedBy?: NoteId;
+}
 /**
  * One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.
  */
@@ -4800,6 +4930,37 @@ export interface CapabilityScopeNone {
   scope: "none";
 }
 /**
+ * A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.
+ */
+export interface CardBlobRef {
+  /**
+   * Lowercase hex SHA-256 of the stored, re-encoded bytes.
+   */
+  sha256: string;
+  /**
+   * Media type of the stored bytes.
+   */
+  mediaType: "image/png" | "image/jpeg" | "image/webp" | "image/avif";
+  /**
+   * Size in bytes of the stored bytes.
+   */
+  size?: number;
+  /**
+   * Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.
+   */
+  url?: string;
+  /**
+   * Projection only: when `url` stops working.
+   */
+  urlExpiresAt?: string;
+}
+/**
+ * A card's stored values, keyed by field. Holds `member`-, `admin`- and `credential`-sourced fields only; derived fields (`role`, `joinedAt`, `did`, `personhood`) are read from the community's own records when a projection is made, never stored here. At most 64 values, and at most 16 KiB serialized excluding the blobs a `CardBlobRef` names.
+ */
+export interface CardValues {
+  [k: string]: FieldValue | undefined;
+}
+/**
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.
  */
 export interface CarriedDocument {}
@@ -4832,6 +4993,25 @@ export interface ChunkedDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * Which claim a `claim` field accepts, from which credentials and issuers.
+ */
+export interface ClaimSelector {
+  /**
+   * A `type` the presented credential MUST carry.
+   */
+  credentialType: string;
+  /**
+   * JSON Pointer (RFC 6901) to the claim within `credentialSubject`.
+   */
+  claimPath: string;
+  /**
+   * Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.
+   *
+   * @maxItems 32
+   */
+  issuers?: string[];
 }
 /**
  * OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
@@ -5932,6 +6112,51 @@ export interface DidcommAuthcryptEnvelope_VaultV0_2 {
   jwe: string;
 }
 /**
+ * A member's own directory record: their values, a visibility for each field, their discoverability and who may ask to be introduced. Returned whole only to its subject. Every other reader receives a `DirectoryEntry`.
+ */
+export interface DirectoryCard {
+  entryId: EntryId;
+  values: CardValues;
+  visibility: FieldVisibility;
+  discoverability: Discoverability;
+  introductions: Introductions;
+  /**
+   * The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once.
+   *
+   * @maxItems 64
+   */
+  groupAudience?: string[];
+  /**
+   * Incremented on every accepted change to the card, by its subject or by an administrator's assertion.
+   */
+  revision: number;
+  /**
+   * When the card last changed.
+   */
+  updatedAt: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection.
+   */
+  ext?: Ext;
+}
+/**
+ * One entry as a particular viewer sees it.
+ */
+export interface DirectoryEntry {
+  entryId: EntryId;
+  fields: EntryFields;
+  /**
+   * Present, and `true`, only when the viewer is one of the two parties to an attributed, in-force verified relationship with this entry's member that the community can see. Absent otherwise — never `false`, which would disclose that the community looked and found none. Relationships known only to the viewer's own agent are badged by that agent, not here.
+   */
+  connected?: boolean;
+  /**
+   * The community groups the viewer and this member both belong to, among those whose membership the viewer may see. Absent when there are none.
+   *
+   * @maxItems 64
+   */
+  sharedGroups?: string[];
+}
+/**
  * Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.
  */
 export interface DirectoryRef {
@@ -5943,6 +6168,20 @@ export interface DirectoryRef {
    * The entry, as that community's directory identifies it.
    */
   entryId: DirectoryEntryId;
+}
+/**
+ * The member's three discoverability decisions, made separately.
+ */
+export interface Discoverability {
+  listing: Listing;
+  /**
+   * What a member's search may match. `byName`: `displayName` or `nickname`. `exactNickname`: only an exact `nickname`. `off`: nothing. A DID is never a search key for a non-administrator, whatever this says.
+   */
+  search: "byName" | "exactNickname" | "off";
+  /**
+   * Whether the member publishes a public card — the fields whose visibility is `public`, signed by the member — through the community's trust registry. A second consent, separate from registry-publication consent (`publishConsent`), which it requires. A community that cannot yet publish external cards refuses `true` with `notAvailable`.
+   */
+  external: boolean;
 }
 export interface DomainEntry {
   /**
@@ -6020,6 +6259,149 @@ export interface DriftItem {
    * What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
    */
   expected?: string;
+}
+/**
+ * A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.
+ */
+export interface DynamicRule {
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  all:
+    | [RuleCondition]
+    | [RuleCondition, RuleCondition]
+    | [RuleCondition, RuleCondition, RuleCondition]
+    | [RuleCondition, RuleCondition, RuleCondition, RuleCondition]
+    | [RuleCondition, RuleCondition, RuleCondition, RuleCondition, RuleCondition]
+    | [RuleCondition, RuleCondition, RuleCondition, RuleCondition, RuleCondition, RuleCondition]
+    | [RuleCondition, RuleCondition, RuleCondition, RuleCondition, RuleCondition, RuleCondition, RuleCondition]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ]
+    | [
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition,
+        RuleCondition
+      ];
 }
 /**
  * One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.
@@ -6123,6 +6505,22 @@ export interface EndorsementType {
    * The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.
    */
   createdByDid?: string;
+}
+/**
+ * The fields of one entry that a particular viewer may see, keyed by field: the intersection of the member's visibility, the community's ceiling and policy, plus any derived fields that intersection admits. A withheld field is ABSENT, never null.
+ */
+export interface EntryFields {
+  [k: string]: FieldValue | undefined;
+}
+export interface EnumOption {
+  /**
+   * The stored value.
+   */
+  value: string;
+  /**
+   * What a reader is shown for it.
+   */
+  label: string;
 }
 /**
  * What a room writes into its own witnessed log, so that a host serving a stale, forked or partial view of it becomes **evident rather than merely possible**.
@@ -6262,6 +6660,108 @@ export interface Field {
   };
 }
 /**
+ * Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.
+ */
+export interface FieldConstraints {
+  maxLength?: number;
+  minLength?: number;
+  /**
+   * ECMA-262 regular expression a text value MUST match.
+   */
+  pattern?: string;
+  /**
+   * The permitted values of an `enum` or `multiEnum` field.
+   *
+   * @minItems 1
+   * @maxItems 128
+   */
+  options?: [EnumOption, ...EnumOption[]];
+  maxItems?: number;
+  minDate?: string;
+  maxDate?: string;
+  claim?: ClaimSelector;
+}
+/**
+ * One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.
+ */
+export interface FieldDefinition {
+  key: FieldKey;
+  label: FieldLabel;
+  description?: FieldDescription;
+  type: FieldType;
+  constraints?: FieldConstraints;
+  source: FieldSource;
+  /**
+   * `true` for a base field, present in every community; `false` for a field this community defined.
+   */
+  base: boolean;
+  /**
+   * Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.
+   */
+  jsContactPath?: string;
+  required: boolean;
+  ceiling: Audience;
+  defaultVisibility: Audience;
+  searchable: boolean;
+  facet: boolean;
+  order: number;
+  state: FieldState;
+  /**
+   * When the field was retired. Present only on a retired field.
+   */
+  retiredAt?: string;
+  /**
+   * When the values of a retired field are purged. Present only on a retired field.
+   */
+  purgeAfter?: string;
+  updatedAt?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.
+   */
+  ext?: Ext;
+}
+/**
+ * What an administrator supplies to define a community field. `key`, `type` and `source` are fixed for the field's life.
+ */
+export interface FieldInput {
+  key: FieldKey;
+  label: FieldLabel;
+  description?: FieldDescription;
+  type: FieldType;
+  constraints?: FieldConstraints;
+  /**
+   * As `FieldSource`, less `derived`, which only base fields carry.
+   */
+  source: "member" | "admin" | "credential";
+  /**
+   * Whether a card must hold a value for its entry to be listed. Never a condition of membership. Absent: false.
+   */
+  required?: boolean;
+  ceiling: Audience;
+  /**
+   * The audience a card gives the field until its member chooses. MUST NOT be wider than `ceiling`.
+   */
+  defaultVisibility: Audience;
+  /**
+   * Whether a member's search may match the field, within what the searcher may see. Absent: false.
+   */
+  searchable?: boolean;
+  /**
+   * Whether the field may be filtered on and counted. Only `enum`, `multiEnum` and `country` fields may be facets. Absent: false.
+   */
+  facet?: boolean;
+  /**
+   * Display order, ascending.
+   */
+  order?: number;
+}
+/**
+ * The audience the member chose for each field. A field with no entry here takes its definition's `defaultVisibility`. The community MUST NOT widen a member's choice: widening a field's ceiling or default changes no visibility already recorded.
+ */
+export interface FieldVisibility {
+  [k: string]: Audience | undefined;
+}
+/**
  * The `file` member of a sealed record body: everything that describes a file, sealed with the record, signed by the record's author, and never seen by the host. Defined here so that clients interoperate; no host task carries it, because the host receives only ciphertext.
  *
  * **Byte encodings.** In every derivation below, `fileId` is its **32 decoded bytes**, never its base64url text; `roomId` is the **UTF-8 bytes** of the room identifier exactly as it appears on the wire; string constants are their ASCII bytes; `u8`, `u32be` and `u64be` are unsigned integers of that width, big-endian. Epochs are unsigned 64-bit on the wire. An implementation that holds epochs in a narrower type **MUST** refuse a value it cannot represent with `malformedRequest` (or, reading a manifest, refuse the file), and **MUST NOT** truncate it.
@@ -6355,6 +6855,122 @@ export interface GitNamespace {
    * `pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
    */
   state: "pending" | "bound";
+}
+/**
+ * A grant set the group confers: each capability is written onto every member's access-control entry as a resource grant whose source is the group, bounded by the member's role ceiling and by the binder's own holdings.
+ */
+export interface GrantsBindingSpec {
+  kind: "grants";
+  /**
+   * @minItems 1
+   * @maxItems 32
+   */
+  grants: [CapabilityRef, ...CapabilityRef[]];
+}
+/**
+ * A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.
+ */
+export interface Group {
+  groupId: GroupId;
+  /**
+   * The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.
+   */
+  groupDid: string;
+  name: GroupName;
+  description?: GroupDescription;
+  kind: GroupKind;
+  /**
+   * Present exactly when `kind` is `dynamic`.
+   */
+  rule?: DynamicRule;
+  /**
+   * Present exactly when `kind` is `static`.
+   */
+  joinPolicy?: JoinPolicy;
+  /**
+   * Who may see that the group exists, and its name and description.
+   */
+  visibility: GroupAudience;
+  /**
+   * Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.
+   */
+  showMembers: GroupAudience;
+  /**
+   * Whether the group's DID issues its members a membership credential. Default true.
+   */
+  issuesCredentials: boolean;
+  /**
+   * `true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.
+   */
+  carriesAuthority: boolean;
+  /**
+   * Active members. Only to callers who may see the member list.
+   */
+  memberCount?: number;
+  /**
+   * Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant, never by this record.
+   *
+   * @maxItems 256
+   */
+  managers?: EntryId[];
+  /**
+   * When the community's authorization credential to the group expires. The community renews it well before.
+   */
+  credentialAuthorityValidUntil?: string;
+  createdAt: string;
+  /**
+   * The creating administrator's directory entry, where they have one.
+   */
+  createdBy?: EntryId;
+  updatedAt?: string;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.
+   */
+  ext?: Ext;
+}
+export interface GroupBinding {
+  bindingId: BindingId;
+  binding: BindingSpec;
+  /**
+   * `pending`: waiting for the consent the community requires. `active`: in force; the community's reconciler keeps members' admissions and grants in line with it. `removing`: being withdrawn; the reconciler is removing what only this binding provided.
+   */
+  state: "pending" | "active" | "removing";
+  createdAt: string;
+  createdBy?: string;
+}
+export interface GroupJoinRequest {
+  requestId: JoinRequestId;
+  groupId: GroupId;
+  entryId: EntryId;
+  message?: JoinRequestMessage;
+  createdAt: string;
+  state: "pending" | "approved" | "declined" | "withdrawn";
+  decidedAt?: string;
+  /**
+   * The manager who decided. Shown to managers only.
+   */
+  decidedBy?: string;
+}
+export interface GroupMember {
+  entryId: EntryId;
+  source: MembershipSource;
+  since: string;
+  /**
+   * `active`: a member. `pending`: an addition to a group carrying authority that is waiting for the consent the community requires for a grant.
+   */
+  state: "active" | "pending";
+  /**
+   * The member's directory fields that the caller may see, projected exactly as vtc/directory/entries/show would project them. Absent when the caller may see none.
+   */
+  fields?: EntryFields;
+  /**
+   * The member's current group membership credential, or null when the group issues none.
+   */
+  credentialId?: GroupCredentialId | null;
+  /**
+   * When the member's current group credential expires. Shown to the member themselves and to managers only.
+   */
+  credentialValidUntil?: string;
 }
 /**
  * The applicant's proof that distinct eligible vetters of the community vetted it, as a join submission carries it under `extensions.hiddenVetting`. Built by vta/pcs/prove, verified by the community.
@@ -6617,6 +7233,12 @@ export interface IssuedCredentialBase {
   expiresAt: string;
 }
 /**
+ * One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.
+ */
+export interface JSContactCard {
+  [k: string]: unknown | undefined;
+}
+/**
  * Whether this community answers vtc/join-requests/manifest to a caller it cannot identify.
  */
 export interface JoinDiscovery {
@@ -6832,6 +7454,12 @@ export interface LimitTarget {
    * The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.
    */
   member?: string;
+}
+/**
+ * The community's listing settings. `defaultListing`: the listing a new card starts with (default `listed`). There is no floor: every member may always choose `hidden`, and a community cannot hold an entry above its member's choice. Raising `defaultListing` affects new cards only.
+ */
+export interface ListingDefaults {
+  defaultListing: Listing;
 }
 export interface LocalSettings {
   kind: "local";
@@ -8347,6 +8975,13 @@ export interface RightRecord_GitNsV0_4 {
   breakGlass?: BreakGlass;
 }
 /**
+ * A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.
+ */
+export interface RoleBindingSpec {
+  kind: "role";
+  role: RoleName;
+}
+/**
  * One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.
  *
  * A ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.
@@ -8527,6 +9162,21 @@ export interface RollbackResult {
   ext?: Ext;
 }
 /**
+ * Links a room the community owns to the group: joining the group offers the member admission to the room with `actions`, valid for `validFor`; leaving removes them unless another source still covers them.
+ */
+export interface RoomBindingSpec {
+  kind: "room";
+  /**
+   * The community-owned room's DID.
+   */
+  roomId: string;
+  actions: MemberActions;
+  /**
+   * How long each admission's authority runs, as an ISO 8601 duration in whole days (`P365D`). The community renews it while the member stays in the group.
+   */
+  validFor: string;
+}
+/**
  * How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.
  */
 export interface RoomLimits {
@@ -8698,6 +9348,26 @@ export interface RotationRecord {
    * Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.
    */
   cacheHorizonAt?: string;
+}
+/**
+ * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.
+ */
+export interface RuleCondition {
+  fact: "role" | "field" | "personhood" | "joinedAt";
+  /**
+   * Present exactly when `fact` is `field`.
+   */
+  field?: FieldKey;
+  /**
+   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.
+   */
+  op: "equals" | "oneOf" | "exists" | "before" | "after";
+  value?: string | boolean;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  values?: [string, ...string[]];
 }
 export interface S3Settings {
   kind: "s3";
@@ -10015,6 +10685,31 @@ export interface VerdictWith {
    * A machine-readable statement of the same request, so a wallet can satisfy it without a human reading `needs`. `requestMore` only.
    */
   presentationDefinition?: {};
+}
+/**
+ * The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.
+ */
+export interface VerifiedValue {
+  /**
+   * The disclosed claim value.
+   */
+  value: string | boolean | number;
+  /**
+   * DID of the credential's issuer, shown as the field's verification badge.
+   */
+  issuer: string;
+  /**
+   * The most specific `type` of the credential the claim came from.
+   */
+  credentialType?: string;
+  /**
+   * When the community verified the presentation.
+   */
+  verifiedAt: string;
+  /**
+   * When the credential expires, where it does. The community withdraws the value once it passes.
+   */
+  validUntil?: string;
 }
 /**
  * An event the vetter will attend and vet at. `endDate` is on or after `startDate` and no more than 31 days after it; JSON Schema cannot compare two members, so the community checks both and refuses a violation with `malformedRequest`.

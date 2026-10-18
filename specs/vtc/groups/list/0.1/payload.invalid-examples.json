@@ -1,0 +1,8 @@
+[
+  {
+    "note": "Page size is capped at 200.",
+    "payload": {
+      "limit": 500
+    }
+  }
+]

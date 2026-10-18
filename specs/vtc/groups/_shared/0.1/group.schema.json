@@ -1,0 +1,490 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/_shared/0.1/group",
+  "title": "Group — shared definitions for the vtc/groups/* spec family",
+  "description": "A Verifiable Trust Community's community groups: named sets of members that administrators (and the group managers they appoint) run. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nEVERY GROUP HAS ITS OWN DID. The community's own VTA mints it from a DID template and holds its keys; the community never does. Where the group issues credentials (`issuesCredentials`, default true), the community issues the group an authorization credential naming it a membership issuer, and the group's DID issues each member a short-lived membership credential, renewed for as long as they stay. A verifier chains member's group credential → group's authorization credential → community.\n\nGROUPS PROVISION; THE ACCESS-CONTROL LIST AUTHORISES. A group never answers an authorization question at the community. Authority a group carries (a `grants` or `role` binding) is written into each member's access-control entry as a resource grant whose source is the group, and removed when they leave. A group's membership credential is evidence for others — rooms, peers, other communities — and is never consulted by the community's own authorization.\n\nMEMBERSHIP IS KEYED BY ENTRY. Members are directory entries (`EntryId`), so membership survives a rotation of the member's DID, and departure from the community removes it.",
+  "$defs": {
+    "GroupId": {
+      "title": "GroupId",
+      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
+      "type": "string",
+      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
+    },
+    "GroupName": {
+      "title": "GroupName",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text."
+    },
+    "GroupDescription": {
+      "title": "GroupDescription",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`."
+    },
+    "GroupAudience": {
+      "title": "GroupAudience",
+      "description": "Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.",
+      "type": "string",
+      "enum": [
+        "admins",
+        "groupMembers",
+        "members"
+      ]
+    },
+    "GroupKind": {
+      "title": "GroupKind",
+      "description": "`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.",
+      "type": "string",
+      "enum": [
+        "static",
+        "dynamic"
+      ]
+    },
+    "JoinPolicy": {
+      "title": "JoinPolicy",
+      "description": "How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.",
+      "type": "string",
+      "enum": [
+        "closed",
+        "request",
+        "open"
+      ]
+    },
+    "RuleCondition": {
+      "title": "RuleCondition",
+      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fact",
+        "op"
+      ],
+      "properties": {
+        "fact": {
+          "type": "string",
+          "enum": [
+            "role",
+            "field",
+            "personhood",
+            "joinedAt"
+          ]
+        },
+        "field": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/FieldKey",
+          "description": "Present exactly when `fact` is `field`."
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "equals",
+            "oneOf",
+            "exists",
+            "before",
+            "after"
+          ],
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`."
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 256
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "DynamicRule": {
+      "title": "DynamicRule",
+      "description": "A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "all"
+      ],
+      "properties": {
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/RuleCondition"
+          }
+        }
+      }
+    },
+    "Group": {
+      "title": "Group",
+      "description": "A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groupId",
+        "groupDid",
+        "name",
+        "kind",
+        "visibility",
+        "showMembers",
+        "issuesCredentials",
+        "carriesAuthority",
+        "createdAt"
+      ],
+      "properties": {
+        "groupId": {
+          "$ref": "#/$defs/GroupId"
+        },
+        "groupDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description."
+        },
+        "name": {
+          "$ref": "#/$defs/GroupName"
+        },
+        "description": {
+          "$ref": "#/$defs/GroupDescription"
+        },
+        "kind": {
+          "$ref": "#/$defs/GroupKind"
+        },
+        "rule": {
+          "$ref": "#/$defs/DynamicRule",
+          "description": "Present exactly when `kind` is `dynamic`."
+        },
+        "joinPolicy": {
+          "$ref": "#/$defs/JoinPolicy",
+          "description": "Present exactly when `kind` is `static`."
+        },
+        "visibility": {
+          "$ref": "#/$defs/GroupAudience",
+          "description": "Who may see that the group exists, and its name and description."
+        },
+        "showMembers": {
+          "$ref": "#/$defs/GroupAudience",
+          "description": "Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`."
+        },
+        "issuesCredentials": {
+          "type": "boolean",
+          "description": "Whether the group's DID issues its members a membership credential. Default true."
+        },
+        "carriesAuthority": {
+          "type": "boolean",
+          "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
+        },
+        "memberCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Active members. Only to callers who may see the member list."
+        },
+        "managers": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+          },
+          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant, never by this record."
+        },
+        "credentialAuthorityValidUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community's authorization credential to the group expires. The community renews it well before."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The creating administrator's directory entry, where they have one."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority."
+        }
+      }
+    },
+    "MembershipSource": {
+      "title": "MembershipSource",
+      "description": "How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.",
+      "type": "string",
+      "enum": [
+        "added",
+        "joined",
+        "requestApproved",
+        "rule"
+      ]
+    },
+    "GroupMember": {
+      "title": "GroupMember",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "source",
+        "since",
+        "state"
+      ],
+      "properties": {
+        "entryId": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "source": {
+          "$ref": "#/$defs/MembershipSource"
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "pending"
+          ],
+          "description": "`active`: a member. `pending`: an addition to a group carrying authority that is waiting for the consent the community requires for a grant."
+        },
+        "fields": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryFields",
+          "description": "The member's directory fields that the caller may see, projected exactly as vtc/directory/entries/show would project them. Absent when the caller may see none."
+        },
+        "credentialId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GroupCredentialId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The member's current group membership credential, or null when the group issues none."
+        },
+        "credentialValidUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the member's current group credential expires. Shown to the member themselves and to managers only."
+        }
+      }
+    },
+    "JoinRequestId": {
+      "title": "JoinRequestId",
+      "type": "string",
+      "pattern": "^greq_[A-Za-z0-9_-]{16,64}$"
+    },
+    "JoinRequestMessage": {
+      "title": "JoinRequestMessage",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "An optional note from the member to the group's managers. Plain text."
+    },
+    "GroupJoinRequest": {
+      "title": "GroupJoinRequest",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "groupId",
+        "entryId",
+        "createdAt",
+        "state"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/JoinRequestId"
+        },
+        "groupId": {
+          "$ref": "#/$defs/GroupId"
+        },
+        "entryId": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "message": {
+          "$ref": "#/$defs/JoinRequestMessage"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "declined",
+            "withdrawn"
+          ]
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decidedBy": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The manager who decided. Shown to managers only."
+        }
+      }
+    },
+    "RoomBindingSpec": {
+      "title": "RoomBindingSpec",
+      "description": "Links a room the community owns to the group: joining the group offers the member admission to the room with `actions`, valid for `validFor`; leaving removes them unless another source still covers them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "roomId",
+        "actions",
+        "validFor"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "room"
+        },
+        "roomId": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 512,
+          "description": "The community-owned room's DID."
+        },
+        "actions": {
+          "$ref": "../../../_shared/0.1/community-room.schema.json#/$defs/MemberActions"
+        },
+        "validFor": {
+          "type": "string",
+          "pattern": "^P[1-9][0-9]{0,4}D$",
+          "description": "How long each admission's authority runs, as an ISO 8601 duration in whole days (`P365D`). The community renews it while the member stays in the group."
+        }
+      }
+    },
+    "GrantsBindingSpec": {
+      "title": "GrantsBindingSpec",
+      "description": "A grant set the group confers: each capability is written onto every member's access-control entry as a resource grant whose source is the group, bounded by the member's role ceiling and by the binder's own holdings.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "grants"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "grants"
+        },
+        "grants": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../acl/_shared/0.2/acl-entry.schema.json#/$defs/CapabilityRef"
+          }
+        }
+      }
+    },
+    "RoleBindingSpec": {
+      "title": "RoleBindingSpec",
+      "description": "A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "role"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "role"
+        },
+        "role": {
+          "$ref": "../../../roles/_shared/0.1/role.schema.json#/$defs/RoleName"
+        }
+      }
+    },
+    "BindingSpec": {
+      "title": "BindingSpec",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/RoomBindingSpec"
+        },
+        {
+          "$ref": "#/$defs/GrantsBindingSpec"
+        },
+        {
+          "$ref": "#/$defs/RoleBindingSpec"
+        }
+      ]
+    },
+    "BindingId": {
+      "title": "BindingId",
+      "type": "string",
+      "pattern": "^gb_[A-Za-z0-9_-]{16,64}$"
+    },
+    "GroupBinding": {
+      "title": "GroupBinding",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bindingId",
+        "binding",
+        "state",
+        "createdAt"
+      ],
+      "properties": {
+        "bindingId": {
+          "$ref": "#/$defs/BindingId"
+        },
+        "binding": {
+          "$ref": "#/$defs/BindingSpec"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "active",
+            "removing"
+          ],
+          "description": "`pending`: waiting for the consent the community requires. `active`: in force; the community's reconciler keeps members' admissions and grants in line with it. `removing`: being withdrawn; the reconciler is removing what only this binding provided."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048
+        }
+      }
+    },
+    "GroupCredentialId": {
+      "title": "GroupCredentialId",
+      "description": "Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    }
+  }
+}
