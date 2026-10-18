@@ -90,3 +90,16 @@ type Requester struct {
 	CreatedAt   string      `json:"createdAt"`
 	SameNetwork SameNetwork `json:"sameNetwork"`
 }
+
+// TaskFamily A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1
+// grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins
+// `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so
+// `vtc/dir` names nothing under `vtc/directory`.
+type TaskFamily = string
+
+// SigningScope The task families a `login` grant lets the starter key sign documents for,
+// as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by
+// the service in step 2, copied unchanged into the grant, and bounded further by the
+// exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond
+// the family's own tasks.
+type SigningScope = []TaskFamily

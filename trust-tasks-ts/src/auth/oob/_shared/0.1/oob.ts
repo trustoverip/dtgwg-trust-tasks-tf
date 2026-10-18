@@ -14,4 +14,4 @@ export interface AuthSharedOutOfBandRequestDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../_shared/components.js".
  */
-export type { MatchNumber, Mode, OobKey, Origin, Purpose, Requester, RequestId, SameNetwork, Service } from "../../../../_shared/components.js";
+export type { MatchNumber, Mode, OobKey, Origin, Purpose, Requester, RequestId, SameNetwork, Service, SigningScope, TaskFamily } from "../../../../_shared/components.js";

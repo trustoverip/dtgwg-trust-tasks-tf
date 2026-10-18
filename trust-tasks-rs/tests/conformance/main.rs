@@ -63,12 +63,14 @@ mod auth {
         }
         mod grant {
             mod v0_1;
+            mod v0_2;
         }
         mod identify {
             mod v0_1;
         }
         mod prove {
             mod v0_1;
+            mod v0_2;
         }
         mod redeem {
             mod v0_1;
@@ -78,6 +80,7 @@ mod auth {
         }
         mod respond {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod passkey {

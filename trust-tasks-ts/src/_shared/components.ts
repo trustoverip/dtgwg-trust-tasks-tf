@@ -1467,6 +1467,21 @@ export type SigningKeyDid = string;
  */
 export type SigningKeyScope = "console";
 /**
+ * The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.
+ *
+ * @minItems 1
+ * @maxItems 8
+ */
+export type SigningScope =
+  | [TaskFamily]
+  | [TaskFamily, TaskFamily]
+  | [TaskFamily, TaskFamily, TaskFamily]
+  | [TaskFamily, TaskFamily, TaskFamily, TaskFamily]
+  | [TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily]
+  | [TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily]
+  | [TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily]
+  | [TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily, TaskFamily];
+/**
  * A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
  */
 export type SiteTarget_VaultV0_1 = WebOrigin_VaultV0_1 | Did_VaultV0_1 | IosApp_VaultV0_1 | AndroidApp_VaultV0_1;
@@ -1533,6 +1548,10 @@ export type SyncEvent_SyncV0_2 =
   | VaultDeletedEvent_SyncV0_2
   | AclChangedEvent_SyncV0_2
   | PolicyChangedEvent_SyncV0_2;
+/**
+ * A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.
+ */
+export type TaskFamily = string;
 /**
  * The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
  */

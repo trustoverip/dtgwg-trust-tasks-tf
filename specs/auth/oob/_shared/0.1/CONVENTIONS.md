@@ -32,8 +32,8 @@ inside `auth/signing-key/enroll`.
 ## 2. Shared schema components
 
 [`oob.schema.json`](oob.schema.json) defines `Purpose`, `Mode`, `RequestId`,
-`OobKey`, `MatchNumber`, `Origin`, `Service`, `SameNetwork` and `Requester`,
-referenced by every task in the family
+`OobKey`, `MatchNumber`, `Origin`, `Service`, `SameNetwork`, `Requester`,
+`TaskFamily` and `SigningScope`, referenced by every task in the family
 ([SPEC §6.6](/SPEC.md#66-shared-schema-components)).
 
 ## 3. Closed lists
@@ -46,7 +46,7 @@ the window lengths. A service refuses any other value with
 
 | Purpose | Status | Step 1 (claim) reveals | Step 2 (prove) reveals | Grant authorizes | `redeem` returns | Windows |
 |---|---|---|---|---|---|---|
-| `login` | defined | service, portal origin, purpose, decision deadline | step 1 plus `sessionKey`, `requester`, `identifiedAs` | `sessionKey` acts as the approving DID at `origin` until `notAfter` | a `Session` for the DID, bound to the starter key | claim ≤ 180 s, decision ≤ 180 s; 120 s each RECOMMENDED |
+| `login` | defined | service, portal origin, purpose, decision deadline | step 1 plus `sessionKey`, `requester`, `identifiedAs` | `sessionKey` acts as the approving DID at `origin` until `notAfter`; from grant 0.2, and only where step 2 offered a `signingScope`, it also signs documents of those task families as that DID for the session | a `Session` for the DID, bound to the starter key | claim ≤ 180 s, decision ≤ 180 s; 120 s each RECOMMENDED |
 | `stepUp` | reserved | — | — | — | — | — |
 | `deviceEnrol` | reserved | — | — | — | — | — |
 
@@ -88,6 +88,16 @@ compare-and-set, so only one caller can make it.
    origin, the purpose and the deadline.
 3. **Authority goes to the starter key, through `redeem` only.** Responses to the
    approver never carry session material.
+3a. **Delegated signing is a scope the member signs, and ends with the session.**
+   From [`auth/oob/prove/0.2`](../../prove/0.2/spec.md),
+   [`auth/oob/grant/0.2`](../../grant/0.2/spec.md) and
+   [`auth/oob/respond/0.2`](../../respond/0.2/spec.md), a service may offer in
+   step 2 the task families the starter key would sign documents for as the
+   member; the grant copies the offer, and the service then accepts the key's
+   documents of those families as the member's for the session `redeem`
+   creates, within the exclusions `auth/oob/grant/0.2` states. Prove, grant and
+   respond are versioned together: a 0.2 grant travels in a 0.2 respond and
+   copies a 0.2 step 2.
 4. **Proof purposes.** The starter and lock keys sign with `authentication`.
    `identify` is signed by the approving DID for `authentication`. `grant` is
    an attestation and is signed for `assertionMethod`. The service's `claim` and
