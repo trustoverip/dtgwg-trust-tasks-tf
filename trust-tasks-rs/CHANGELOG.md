@@ -31,6 +31,43 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.31.16](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.15...trust-tasks-rs-v0.31.16) — 2026-10-18
+
+
+### Added
+
+- **vtc/rooms/memberships**: List — every surface shows a member the same rooms, and finishes an acceptance any other began ([#813](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/813))
+
+A member reaches their community from several surfaces (member portal via
+  the wallet, a terminal client, a phone). Each could see only the offers
+  open now or accepted within the repeat window, so a room taken up in one
+  was missing from the others after it; and an acceptance one surface began
+  could be finished by no other, because every other minted a different
+  KeyPackage and was answered alreadyAccepted.
+
+  - vtc/rooms/memberships/list 0.1 (new): the community's own record of the
+    caller's admissions to rooms it owns — offered, admitted or removed — for
+    as long as it keeps the record, with no credentials. repeatAcceptUntil
+    says while the Welcome is kept. Defines how a surface combines it with
+    rooms/keys/list (custody) so every surface derives the same state, and
+    forbids a surface keeping its own record of acceptance.
+  - rooms/keys/key-package 0.2: returns the outstanding KeyPackage for the
+    same room, member and invitation (alreadyMinted: true, original
+    expiresAt) instead of minting another; invitation and expiresAt
+    required. Mint, accept and Welcome now each answer a repeat with their
+    first answer.
+  - rooms/keys/act 0.5: adds vtc/rooms/memberships/list/0.1 to the table
+    beside the offer types (act 0.4, #810), on their terms, as "the
+    community types"; widens the type pattern to vtc/rooms/memberships/;
+    KeyPackages from key-package 0.1 or 0.2. A new version, not an edit to
+    0.4: the closed table admits a type 0.4 refuses.
+  - vtc/_shared/0.1/community-room: RoomMembership.
+  - vtc/rooms/offers/list 0.2, offers/accept 0.1: informative cross-links.
+
+  Bindings regenerated (Rust, TS, Go, Dart); additive modules only.
+
+
+
 ## [0.31.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.31.14...trust-tasks-rs-v0.31.15) — 2026-10-17
 
 
