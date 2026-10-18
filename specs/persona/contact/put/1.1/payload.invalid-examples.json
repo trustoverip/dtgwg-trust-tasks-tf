@@ -1,0 +1,129 @@
+[
+  {
+    "note": "Both forms at once — a filing names no `contactId`; the agent keys a filing on (contextId, subjectDid, knownByPersona), and a request that also named a contact would let a caller graft one peer's disclosure onto another's record.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "subjectDid": "did:peer:2.Ez6LSexample",
+      "knownByPersona": "did:peer:2.Ez6LSholder",
+      "document": { "claims": [] }
+    }
+  },
+  {
+    "note": "Annotating form carrying a document — an annotation never appends a revision, so a `document` beside `contactId` has no defined meaning.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "document": { "claims": [] },
+      "starred": true
+    }
+  },
+  {
+    "note": "Annotating form that changes nothing — `contactId` alone names a contact and no annotation, which the anyOf over the annotation members refuses.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A"
+    }
+  },
+  {
+    "note": "Neither form — a filing without `document`.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "subjectDid": "did:peer:2.Ez6LSexample",
+      "knownByPersona": "did:peer:2.Ez6LSholder"
+    }
+  },
+  {
+    "note": "A petname given and removed in the same request — dependentSchemas makes `removePetname` exclude `petname`.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "petname": "Sam from the climbing gym",
+      "removePetname": true
+    }
+  },
+  {
+    "note": "`removeLists: false` — only `true` is meaningful, so only `true` is accepted; a false remove flag would be a second way to say \"unchanged\".",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "removeLists": false
+    }
+  },
+  {
+    "note": "Petname over 64 characters.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "petname": "Sam, who I met at the climbing gym on a Thursday and who knows Dana's brother"
+    }
+  },
+  {
+    "note": "Petname with a line break — one line, so a surface that shows it beside a display name cannot be made to render a second, forged line.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "petname": "Sam\nVerified by your bank"
+    }
+  },
+  {
+    "note": "Empty `lists` — a contact on no list has no `lists`; take it off every list with `removeLists`, so there is one way to say \"none\".",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "lists": []
+    }
+  },
+  {
+    "note": "Repeated list identifier — `lists` is a set.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "lists": ["01JA8Z5M2N3P4Q5R6S7T8V9W0X", "01JA8Z5M2N3P4Q5R6S7T8V9W0X"]
+    }
+  },
+  {
+    "note": "`directoryRef` without `entryId` — a link to a community and no entry would mark the contact as known through that community while naming nothing the client can join on.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "directoryRef": { "vtcDid": "did:web:community.example" }
+    }
+  },
+  {
+    "note": "`entryId` outside its pattern — it is opaque, carried exactly as the directory returned it, and never contains a separator a client might split on.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "directoryRef": { "vtcDid": "did:web:community.example", "entryId": "did:web:alice.example" }
+    }
+  },
+  {
+    "note": "`directoryRef` with an unknown member — additionalProperties: false catches `memberDid`; the link names an entry, never the member's DID.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "directoryRef": { "vtcDid": "did:web:community.example", "entryId": "e_7Hq2mZp9Lx4v", "memberDid": "did:web:alice.example" }
+    }
+  },
+  {
+    "note": "Response without `annotationsChanged` — a client could not tell an applied change from a no-op.",
+    "variant": "response",
+    "payload": {
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "rev": 3,
+      "created": false
+    }
+  },
+  {
+    "note": "Response echoing the petname — additionalProperties: false; a response carries identifiers and flags, never annotation text that a log would then keep.",
+    "variant": "response",
+    "payload": {
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "rev": 3,
+      "created": false,
+      "annotationsChanged": true,
+      "petname": "Sam from the climbing gym"
+    }
+  }
+]

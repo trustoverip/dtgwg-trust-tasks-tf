@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/get/1.1",
+  "title": "Persona Contact Get — payload",
+  "description": "Read one contact — the current revision by default, or a named earlier one — with the holder's own annotations on it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "contactId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+    "rev": { "type": "integer", "minimum": 1, "description": "A specific revision. Omit for the current one. Naming a reaped revision is an error rather than a silent fall back to the nearest survivor — a caller comparing against history must know when the history is gone." },
+    "includeHistory": { "type": "boolean", "default": false, "description": "When true, return the revision metadata (numbers and timestamps) without their documents, so a producer can render a timeline cheaply and fetch only the revision the holder opens." },
+    "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Get — response payload",
+      "description": "Success response to persona/contact/get. Type https://trusttasks.org/spec/persona/contact/get/1.1#response. The annotations are the contact's current ones whichever revision was asked for: they belong to the contact, not to a revision.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contactId", "subjectDid", "knownByPersona", "rev", "document", "starred"],
+      "properties": {
+        "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
+        "subjectDid": { "type": "string", "minLength": 1 },
+        "knownByPersona": { "type": "string", "minLength": 1 },
+        "rev": { "type": "integer", "minimum": 1 },
+        "document": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ContactDocument" },
+        "credentialRefs": { "type": "array", "maxItems": 256, "items": { "type": "string", "minLength": 1 } },
+        "starred": {
+          "type": "boolean",
+          "description": "Whether the holder has starred the contact. Always present: an unstarred contact says `false`, so a consumer never has to guess what absence means."
+        },
+        "petname": {
+          "$ref": "../../../_shared/0.1/contact-annotations.schema.json#/$defs/Petname",
+          "description": "The holder's private name for the contact. Absent when they gave none."
+        },
+        "lists": {
+          "$ref": "../../../_shared/0.1/contact-annotations.schema.json#/$defs/ListIds",
+          "description": "The holder's lists the contact is on. Absent when it is on none."
+        },
+        "directoryRef": {
+          "$ref": "../../../_shared/0.1/contact-annotations.schema.json#/$defs/DirectoryRef",
+          "description": "The community directory entry the holder linked the contact to. Absent when there is no link."
+        },
+        "notes": { "type": "string", "minLength": 1, "maxLength": 4096 },
+        "history": {
+          "type": "array", "maxItems": 256,
+          "items": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ContactRevision" },
+          "description": "Present only when `includeHistory` was true. Revision metadata without documents — a timeline is cheap and the documents behind it are not."
+        },
+        "ext": { "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

@@ -634,6 +634,10 @@ export type Did_GitNsV0_3 = string;
  */
 export type DigestMultibase = string;
 /**
+ * A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.
+ */
+export type DirectoryEntryId = string;
+/**
  * The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
  */
 export type DriftType =
@@ -812,6 +816,29 @@ export type LifecycleReason = string;
  * Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.
  */
 export type LimitSource = "policy" | "override" | "default";
+/**
+ * A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.
+ */
+export type ListColour = string;
+/**
+ * Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.
+ */
+export type ListId = string;
+/**
+ * The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say "none".
+ *
+ * @minItems 1
+ * @maxItems 64
+ */
+export type ListIds = [ListId, ...ListId[]];
+/**
+ * The holder's name for one of their lists ("Mentors", "Met at the spring meetup"), on one line: no control characters. Unique within a context, compared exactly.
+ */
+export type ListName = string;
+/**
+ * Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.
+ */
+export type ListOrder = number;
 /**
  * The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.
  */
@@ -1023,6 +1050,10 @@ export type PersonalLabelTags =
       PersonalLabelTag,
       PersonalLabelTag
     ];
+/**
+ * The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.
+ */
+export type Petname = string;
 /**
  * A region or city name as the vetter writes it. Compared case-insensitively and otherwise exactly.
  */
@@ -1527,6 +1558,19 @@ export type Topic_VtcAdminEventsV0_2 =
   | "singleAdminMode"
   | "config"
   | "rooms";
+/**
+ * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
+ */
+export type Topic_VtcAdminEventsV0_3 =
+  | "actions"
+  | "acknowledgements"
+  | "joinRequests"
+  | "members"
+  | "singleAdminMode"
+  | "config"
+  | "rooms"
+  | "directory"
+  | "groups";
 /**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */
@@ -5104,6 +5148,24 @@ export interface ContactDocument {
   }[];
 }
 /**
+ * One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.
+ */
+export interface ContactList {
+  listId: ListId;
+  name: ListName;
+  colour?: ListColour;
+  order: ListOrder;
+  /**
+   * How many of the context's contacts are on the list now.
+   */
+  contactCount: number;
+  createdAt: string;
+  /**
+   * When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it.
+   */
+  updatedAt: string;
+}
+/**
  * One received version of a contact's document. Revisions exist because an address book that silently replaces a payment address is a phishing surface, and one that says what changed and when is a defence.
  */
 export interface ContactRevision {
@@ -5847,6 +5909,19 @@ export interface DidcommAuthcryptEnvelope_VaultV0_2 {
    * Compact DIDComm v2 JWE (base64url-encoded, dot-separated). Unpacks via the framework's standard DIDComm machinery; cleartext is the payload-specific JSON.
    */
   jwe: string;
+}
+/**
+ * Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.
+ */
+export interface DirectoryRef {
+  /**
+   * The DID of the community whose directory holds the entry.
+   */
+  vtcDid: string;
+  /**
+   * The entry, as that community's directory identifies it.
+   */
+  entryId: DirectoryEntryId;
 }
 export interface DomainEntry {
   /**
