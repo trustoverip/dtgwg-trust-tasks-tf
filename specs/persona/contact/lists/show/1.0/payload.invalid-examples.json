@@ -1,0 +1,39 @@
+[
+  {
+    "note": "`listId` is required — show reads one list; enumeration is persona/contact/lists/list.",
+    "payload": { "contextId": "ctx-personal" }
+  },
+  {
+    "note": "Addressing a list by name — `listId` is a ULID, so renaming a list never changes how it is addressed.",
+    "payload": { "contextId": "ctx-personal", "listId": "Mentors" }
+  },
+  {
+    "note": "Response with a list name over 64 characters.",
+    "variant": "response",
+    "payload": {
+      "list": {
+        "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X",
+        "name": "People I met at the spring meetup who said they would review my pull request",
+        "order": 10,
+        "contactCount": 3,
+        "createdAt": "2026-10-18T08:00:00Z",
+        "updatedAt": "2026-10-18T08:00:00Z"
+      }
+    }
+  },
+  {
+    "note": "Response inlining the list's contacts — additionalProperties: false catches `contacts`; members are read with persona/contact/list and `listId`.",
+    "variant": "response",
+    "payload": {
+      "list": {
+        "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X",
+        "name": "Mentors",
+        "order": 10,
+        "contactCount": 1,
+        "createdAt": "2026-10-18T08:00:00Z",
+        "updatedAt": "2026-10-18T08:00:00Z",
+        "contacts": ["01JA8Z3Q4R5S6T7V8W9X0Y1Z2A"]
+      }
+    }
+  }
+]

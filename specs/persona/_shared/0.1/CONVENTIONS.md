@@ -6,7 +6,7 @@ spec, **that spec's own front matter and payload schema are authoritative.**
 
 ## 1. Shared schema components
 
-Persona payloads reference two shared components
+Persona payloads reference three shared components
 ([SPEC.md §6.6](/SPEC.md#66-shared-schema-components)):
 
 [`persona-record.schema.json`](persona-record.schema.json) — `$defs`:
@@ -15,6 +15,12 @@ Persona payloads reference two shared components
 
 [`claim-types.json`](claim-types.json) — the core claim-type registry, with
 [`CLAIM-TYPES.md`](CLAIM-TYPES.md) as its prose.
+
+[`contact-annotations.schema.json`](contact-annotations.schema.json) — `$defs`:
+`Petname`, `ListId`, `ListIds`, `ListName`, `ListColour`, `ListOrder`,
+`DirectoryEntryId`, `DirectoryRef`, `ContactList`. The holder's own marks on
+their contacts (`persona/contact/*` 1.1, `persona/contact/lists/*`), which never
+leave the holder's agent.
 
 ## 2. The boundary, and which side a task sits on
 

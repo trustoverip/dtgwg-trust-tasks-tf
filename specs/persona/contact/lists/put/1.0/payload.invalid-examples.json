@@ -1,0 +1,49 @@
+[
+  {
+    "note": "A create without `name` — a list nobody can tell apart from another is not worth creating.",
+    "payload": { "contextId": "ctx-personal", "colour": "#1f8a70" }
+  },
+  {
+    "note": "An update that changes nothing — `listId` alone names a list and no change.",
+    "payload": { "contextId": "ctx-personal", "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X" }
+  },
+  {
+    "note": "Colour given and removed together — dependentSchemas makes `removeColour` exclude `colour`.",
+    "payload": { "contextId": "ctx-personal", "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X", "colour": "#1f8a70", "removeColour": true }
+  },
+  {
+    "note": "`removeColour` on a create — there is no colour to remove; a create without `colour` has none.",
+    "payload": { "contextId": "ctx-personal", "name": "Mentors", "removeColour": true }
+  },
+  {
+    "note": "Uppercase hex colour — one way to write each colour, lowercase.",
+    "payload": { "contextId": "ctx-personal", "name": "Mentors", "colour": "#1F8A70" }
+  },
+  {
+    "note": "A name with a line break — one line, so a list name cannot render as a forged second line in a picker.",
+    "payload": { "contextId": "ctx-personal", "name": "Mentors\nShared with: everyone" }
+  },
+  {
+    "note": "Negative `order`.",
+    "payload": { "contextId": "ctx-personal", "name": "Mentors", "order": -1 }
+  },
+  {
+    "note": "Setting membership here — additionalProperties: false catches `contactIds`. A contact's lists are set on the contact with persona/contact/put 1.1, so membership has one writer.",
+    "payload": { "contextId": "ctx-personal", "name": "Mentors", "contactIds": ["01JA8Z3Q4R5S6T7V8W9X0Y1Z2A"] }
+  },
+  {
+    "note": "Response without `changed` — a client could not tell an applied rename from a no-op.",
+    "variant": "response",
+    "payload": {
+      "list": {
+        "listId": "01JA8Z5M2N3P4Q5R6S7T8V9W0X",
+        "name": "Mentors",
+        "order": 10,
+        "contactCount": 0,
+        "createdAt": "2026-10-18T08:00:00Z",
+        "updatedAt": "2026-10-18T08:00:00Z"
+      },
+      "created": true
+    }
+  }
+]

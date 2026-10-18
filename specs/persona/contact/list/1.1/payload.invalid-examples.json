@@ -1,0 +1,50 @@
+[
+  {
+    "note": "`contextId` is required — a listing never crosses contexts.",
+    "payload": { "starred": true }
+  },
+  {
+    "note": "`listId` that is not a ULID — list identifiers are agent-assigned; a list name is not a filter.",
+    "payload": { "contextId": "ctx-personal", "listId": "Mentors" }
+  },
+  {
+    "note": "`directoryVtcDid` that is not a DID.",
+    "payload": { "contextId": "ctx-personal", "directoryVtcDid": "climbing.example" }
+  },
+  {
+    "note": "Filtering by petname — additionalProperties: false catches `petname`. A search over the holder's own words is the client's to run over the page it already has.",
+    "payload": { "contextId": "ctx-personal", "petname": "Sam" }
+  },
+  {
+    "note": "Summary without `starred` — always present, so stars sort first without a second read.",
+    "variant": "response",
+    "payload": {
+      "contacts": [
+        {
+          "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+          "subjectDid": "did:peer:2.Ez6LSexample",
+          "knownByPersona": "did:peer:2.Ez6LSholder",
+          "rev": 1,
+          "receivedAt": "2026-10-18T09:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "Summary carrying the private note — additionalProperties: false catches `notes`; a listing returns the annotations a client sorts and badges by, and the note only on persona/contact/get.",
+    "variant": "response",
+    "payload": {
+      "contacts": [
+        {
+          "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+          "subjectDid": "did:peer:2.Ez6LSexample",
+          "knownByPersona": "did:peer:2.Ez6LSholder",
+          "rev": 1,
+          "receivedAt": "2026-10-18T09:00:00Z",
+          "starred": false,
+          "notes": "Lent them my rope."
+        }
+      ]
+    }
+  }
+]

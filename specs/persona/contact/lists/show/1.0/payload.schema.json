@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/lists/show/1.0",
+  "title": "Persona Contact Lists Show — payload",
+  "description": "Read one of the holder's contact lists by its identifier. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId", "listId"],
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "listId": { "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ListId" },
+    "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Lists Show — response payload",
+      "description": "Success response to persona/contact/lists/show. Type https://trusttasks.org/spec/persona/contact/lists/show/1.0#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["list"],
+      "properties": {
+        "list": { "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ContactList" },
+        "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

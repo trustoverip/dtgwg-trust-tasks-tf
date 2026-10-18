@@ -1,0 +1,47 @@
+[
+  {
+    "note": "`contactId` is required — a get reads one contact; enumeration is persona/contact/list.",
+    "payload": { "contextId": "ctx-personal" }
+  },
+  {
+    "note": "Unknown request member — additionalProperties: false catches `includeAnnotations`. Annotations are the holder's and always come back to the holder's own client; there is no switch to ask for them, and none to ask a maintainer to send them anywhere else.",
+    "payload": { "contextId": "ctx-personal", "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A", "includeAnnotations": true }
+  },
+  {
+    "note": "Response without `starred` — an unstarred contact says `false`; absence would leave a consumer guessing.",
+    "variant": "response",
+    "payload": {
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "subjectDid": "did:peer:2.Ez6LSexample",
+      "knownByPersona": "did:peer:2.Ez6LSholder",
+      "rev": 1,
+      "document": { "claims": [] }
+    }
+  },
+  {
+    "note": "Response with an empty `lists` — a contact on no list has no `lists` member.",
+    "variant": "response",
+    "payload": {
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "subjectDid": "did:peer:2.Ez6LSexample",
+      "knownByPersona": "did:peer:2.Ez6LSholder",
+      "rev": 1,
+      "document": { "claims": [] },
+      "starred": false,
+      "lists": []
+    }
+  },
+  {
+    "note": "Response with a list name in `lists` — it carries ListIds; a name is resolved through persona/contact/lists/show, so renaming a list touches no contact.",
+    "variant": "response",
+    "payload": {
+      "contactId": "01JA8Z3Q4R5S6T7V8W9X0Y1Z2A",
+      "subjectDid": "did:peer:2.Ez6LSexample",
+      "knownByPersona": "did:peer:2.Ez6LSholder",
+      "rev": 1,
+      "document": { "claims": [] },
+      "starred": true,
+      "lists": ["Mentors"]
+    }
+  }
+]
