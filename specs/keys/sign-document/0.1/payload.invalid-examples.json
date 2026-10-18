@@ -1,0 +1,138 @@
+[
+  {
+    "note": "Missing `document` — there is nothing to secure, and a custodian that defaulted one would be choosing what the key asserts.",
+    "payload": {
+      "keyId": "community-ed25519"
+    }
+  },
+  {
+    "note": "Missing `keyId` — the custodian signs with a key the producer names; it never picks one for the document's issuer itself.",
+    "payload": {
+      "document": {
+        "issuer": "did:example:community",
+        "type": [
+          "VerifiableCredential"
+        ]
+      }
+    }
+  },
+  {
+    "note": "A `proofPurpose` outside the two this task signs under — `capabilityInvocation` and `capabilityDelegation` exercise a DID's control authority, which a document signature must never confer.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "document": {
+        "issuer": "did:example:community"
+      },
+      "proofPurpose": "capabilityInvocation"
+    }
+  },
+  {
+    "note": "A `cryptosuite` member — the custodian chooses the cryptosuite from the key, as sign-jws chooses `alg`; additionalProperties: false keeps the producer from naming one.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "document": {
+        "issuer": "did:example:community"
+      },
+      "cryptosuite": "eddsa-rdfc-2022"
+    }
+  },
+  {
+    "note": "A `verificationMethod` member — the custodian sets the verification method from the key's place in the signer DID's document; a producer-chosen one could name a key the proof was not made with.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "document": {
+        "issuer": "did:example:community"
+      },
+      "verificationMethod": "did:example:community#key-1"
+    }
+  },
+  {
+    "note": "A `signingInput` member carrying bytes to sign — the generic oracle's shape. The custodian builds the hash data itself; additionalProperties: false is what keeps this task from becoming keys/sign under another name.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "signingInput": "1/MQ4+IQjyIPRLrQ3g5Lgw"
+    }
+  },
+  {
+    "note": "`created` that is not a dateTimeStamp — Data Integrity requires a time with a zone; a date alone could be read as any moment of a day.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "document": {
+        "issuer": "did:example:community"
+      },
+      "created": "2026-10-18"
+    }
+  },
+  {
+    "note": "`document` as a string of JSON text — the custodian canonicalises a JSON object, and never guesses whether a string is a document or bytes.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "document": "{\"issuer\":\"did:example:community\"}"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 producer rule.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "document": {
+        "issuer": "did:example:community"
+      },
+      "ext": {
+        "no-dots": {}
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `proof` — the one member the task exists to return.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "signerDid": "did:example:community",
+      "document": {
+        "issuer": "did:example:community",
+        "proof": {}
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response whose proof names a cryptosuite this version does not define — a custodian never answers with a suite the producer did not get to see in the specification.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "signerDid": "did:example:community",
+      "document": {
+        "issuer": "did:example:community",
+        "proof": {}
+      },
+      "proof": {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "ecdsa-jcs-2019",
+        "created": "2026-10-18T09:00:01Z",
+        "verificationMethod": "did:example:community#key-1",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "z5e9cErCFXraDE8Cs3a46rSRaReyv68UtZz7JmzDUCcn"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response smuggling key material beside the proof — additionalProperties: false on the response is what makes 'never the private key' checkable.",
+    "payload": {
+      "keyId": "community-ed25519",
+      "signerDid": "did:example:community",
+      "document": {
+        "issuer": "did:example:community",
+        "proof": {}
+      },
+      "proof": {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "eddsa-jcs-2022",
+        "created": "2026-10-18T09:00:01Z",
+        "verificationMethod": "did:example:community#key-1",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "z5e9cErCFXraDE8Cs3a46rSRaReyv68UtZz7JmzDUCcn"
+      },
+      "privateKey": "z3u2en7t5LR2WtQH5PfsqMvGfHYH9ezPV7gKDvnBRLbRhkRp"
+    }
+  }
+]

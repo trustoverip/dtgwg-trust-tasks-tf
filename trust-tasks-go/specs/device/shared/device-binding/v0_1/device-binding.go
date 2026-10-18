@@ -119,6 +119,7 @@ const (
 	CapabilitySignSshsig             Capability = "sign-sshsig"
 	CapabilitySignJWS                Capability = "sign-jws"
 	CapabilitySignCsr                Capability = "sign-csr"
+	CapabilitySignDocument           Capability = "sign-document"
 	CapabilityExternalAccountsManage Capability = "external-accounts-manage"
 	CapabilityExternalAuthUse        Capability = "external-auth-use"
 	CapabilityPcsVetter              Capability = "pcs-vetter"
