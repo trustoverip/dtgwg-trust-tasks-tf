@@ -158,7 +158,13 @@ jobs:
           sudo apt-get update || true
           sudo apt-get install -y libdbus-1-dev pkg-config
       - name: cargo doc
-        run: cargo doc --workspace --no-deps --all-features
+        # One job at a time. With the default parallelism, rustc checking
+        # trust-tasks-rs (every generated spec module, all features) runs
+        # beside rustdoc documenting it, and the two together peaked at
+        # 16.1 GB on main and 19.7 GB with one more spec family — past the
+        # 16 GB runner, which then kills the job with exit 143 and no error.
+        # Serialised, the peak is 12.2 GB, at the cost of a slower job.
+        run: cargo doc --workspace --no-deps --all-features -j 1
         env:
           RUSTDOCFLAGS: "-D warnings"
 
