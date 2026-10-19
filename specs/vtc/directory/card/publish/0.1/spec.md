@@ -107,20 +107,36 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** is the member, signing both the card and this document with their membership DID — a key they delegated under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) never publishes. Before the member signs, the producer **MUST** show them what will be published — every value, as the card carries it — that it is published so that anyone can find and read their card, and that anyone means anyone, outside the community too (VTI-REG-004 item 2). It builds the card from the member's card as [`vtc/directory/card/show`](../../show/0.1/spec.md) returns it, mapping each value whose visibility is `public` as `JSContactCard` maps it, with `uid` `urn:vtc-directory:<entryId>`, and signs it with [`keys/sign-document`](../../../../../keys/sign-document/0.1/spec.md) or its own key: a Data Integrity proof (`eddsa-jcs-2022` or `ecdsa-jcs-2019`) by a verification method of the membership DID, `proofPurpose: assertionMethod`. It **SHOULD** send the `revision` it built from as `expectedRevision`.
+A conforming **producer** is the member, signing both the card and this document with their membership DID — a key they delegated under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) never publishes. Before the member signs, the producer **MUST** show them what will be published — every value, as the card carries it — that it is published so that anyone can find and read their card, and that anyone means anyone, outside the community too (VTI-REG-004 item 2). It builds the card from the member's card as [`vtc/directory/card/show`](../../show/0.1/spec.md) returns it, mapping each of their public values as *Mapping the public values* states, with `uid` `urn:vtc-directory:<entryId>`, and signs it with [`keys/sign-document`](../../../../../keys/sign-document/0.1/spec.md) or its own key: a Data Integrity proof (`eddsa-jcs-2022` or `ecdsa-jcs-2019`) by a verification method of the membership DID, `proofPurpose: assertionMethod`. It **SHOULD** send the `revision` it built from as `expectedRevision`.
 
 A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a signer who is not an active member with `notMember`, and a document signed by a delegated key with `permissionDenied`.
 2. Refuse with `notAvailable` when it does not publish external cards, and with `consentRequired` while the member has not consented to registry publication.
 3. Refuse with `superseded` when `expectedRevision` is present and differs from the card's revision.
-4. Compute the member's public values — the values on their card that the public would be shown: their visibility `public`, the field's ceiling `public`, and permitted to a viewer with no standing by the community's `directory` policy — and refuse with `cardMismatch`, naming the fields that differ, unless the card's `uid` names the member's own entry and the card carries exactly those values, mapped as `JSContactCard` maps them, and no other directory value. JSContact members that carry no directory value (`@type`, `version`, `uid`, `kind`, `updated`) are permitted.
+4. Compute the member's public values — the values on their card that the public would be shown: their visibility `public`, the field's ceiling `public`, and permitted to a viewer with no standing by the community's `directory` policy — and refuse with `cardMismatch`, naming the fields that differ, unless the card's `uid` names the member's own entry and the card carries exactly those values, mapped as *Mapping the public values* states, and no other member but those that carry no directory value (`@type`, `version`, `uid`, `kind`, `updated`, `proof`).
 5. Check what `PublishedCard` leaves to it — `@type` `Card`, `version` `1.0`, `uid` present, and a `proof` that is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019` and `proofPurpose` `assertionMethod`, refusing a card that fails any with `cardMismatch` or `signatureInvalid` as the failure concerns the card or its proof — and verify `proof` over the card without it, against the membership DID's `assertionMethod` verification methods, and refuse with `signatureInvalid` where it does not verify.
 6. Publish atomically: store the card exactly as received, set `discoverability.external` true, set the card's `externalCard` to `published` with its `cardDigest` and `publishedAt`, increment the card's revision, and answer `externalCard`. A card already published is replaced.
 7. Add to the member's recognition record in its trust registry ([`registry/record/put`](../../../../../registry/record/put/0.1/spec.md)) the pointer defined under *The registry pointer*, replacing any earlier one. Publication does not wait for the registry: the card is served by the community, and the pointer tells the registry's readers where. The community retries the pointer until it is written or the card is withdrawn.
 8. Never serve, and never point to, a card other than the one the member signed, nor one that differs from their current public values. When those values change for any reason — the member's update, an administrator's assertion, a ceiling narrowed, a field disabled or retired, a value expired, a policy change — it **MUST** at once stop serving the card, remove the pointer, and set `externalCard` to `awaitingSignature`. `discoverability.external` stays on: the member chose publication, and only their signature of the new values resumes it.
-9. Withdraw the card — remove the pointer first, then stop serving it and erase it — when the member sets `discoverability.external` to false ([`vtc/directory/card/update`](../../update/0.1/spec.md)), when they withdraw registry-publication consent (VTI-DIR-047), and before anything else at their departure (VTI-DIR-120).
+9. Withdraw the card — stop serving it and erase it at once, and remove the pointer, retrying until it is removed — when the member sets `discoverability.external` to false ([`vtc/directory/card/update`](../../update/0.1/spec.md)), when they withdraw registry-publication consent (VTI-DIR-047), and before anything else at their departure (VTI-DIR-120).
 10. Audit the publication by reference — the entry, the card's digest and the signed document — never a value.
+
+### Mapping the public values
+
+The card holds each public value at exactly one place, built the same way by every producer, so a community compares a card member for member and two conforming wallets sign the same bytes for the same values. Map identifiers are fixed, not chosen.
+
+| field | JSContact member |
+|---|---|
+| `displayName` | `"name": { "full": <value> }` |
+| `nickname` | `"nicknames": { "k1": { "name": <value> } }` |
+| `avatar` | `"media": { "m1": { "kind": "photo", "uri": "urn:vtc-directory:<entryId>:avatar:<sha256>", "mediaType": <mediaType> } }` |
+| `pronouns` | `"speakToAs": { "pronouns": { "p1": { "pronouns": <value> } } }` |
+| `bio` | `"notes": { "n1": { "note": <value> } }` |
+| `links` | `"links": { "l1": { "uri": <first> }, "l2": { "uri": <second> }, … }`, in the card's order |
+| any other field | a member named by the field's key, holding the value as the card holds it; an image value as its `CardBlobRef` without `url` or `urlExpiresAt` |
+
+`<sha256>` and `<mediaType>` are those of the avatar's `CardBlobRef`. A reader shows the picture by sending `entryId`, `field: avatar` and that `sha256` to [`vtc/directory/images/get`](../../../images/get/0.1/spec.md). A field with no public value has no member: the card never carries an empty one. None of these objects carries a `@type`.
 
 ### Computing `cardDigest`
 
@@ -240,7 +256,7 @@ The community maintainer's identifier scope is public: it is addressed by the pu
 
 ### Retention
 
-The community keeps the signed card only while it is published. Withdrawal — by the member, by consent being withdrawn, by a change to the public values, or by departure — removes the pointer first and erases the card. What a third party copied while it was public cannot be recalled, which is why departure withdraws publication before anything else (VTI-DIR-120).
+The community keeps the signed card only while it is published. Withdrawal — by the member, by consent being withdrawn, by a change to the public values, or by departure — stops serving and erases the card at once, and removes the pointer. A pointer read before its removal lands names a card the community no longer serves, which [`card/public`](../../public/0.1/spec.md) answers `notFound`: a reader learns nothing from it, which is why the card is not kept waiting on the registry. What a third party copied while it was public cannot be recalled, which is why departure withdraws publication before anything else (VTI-DIR-120).
 
 ### Consent/purpose
 
