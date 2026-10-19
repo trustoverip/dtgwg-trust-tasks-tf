@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/owner/group/add/0.3",
+  "title": "Rooms Owner Group Add \u2014 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host",
+    "member",
+    "keyPackage"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room whose group admits a member. The recipient MUST hold its group."
+    },
+    "host": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The room's host, as a DID: where the room's epoch advances. Named by the caller because the recipient holds key custody, not a hosting register."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The DID being admitted. The KeyPackage's leaf credential MUST identify it; one that names anyone else is refused, so an owner never admits a party other than the one they meant."
+    },
+    "keyPackage": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "The newcomer's MLS KeyPackage, base64url without padding, as rooms/keys/key-package returned it."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md \u00a74.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Owner Group Add \u2014 response payload",
+      "description": "Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "member",
+        "epoch",
+        "welcome"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The room."
+        },
+        "member": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "Who was admitted."
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "The room epoch after the admission, as the host recorded it."
+        },
+        "welcome": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host."
+        },
+        "ratchetTree": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

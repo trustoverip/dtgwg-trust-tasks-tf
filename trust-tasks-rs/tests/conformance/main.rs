@@ -1164,6 +1164,7 @@ mod rooms {
             mod add {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod create {
                 mod v0_1;
@@ -1175,6 +1176,7 @@ mod rooms {
             }
             mod renew {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod invite {
