@@ -18,7 +18,8 @@
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",
     "check-dart-packages": "node scripts/check-dart-packages.mjs",
-    "check-bindings": "node scripts/check-bindings-conformance.mjs"
+    "check-bindings": "node scripts/check-bindings-conformance.mjs",
+    "check-enum-append-only": "node scripts/check-enum-append-only.mjs"
   },
   "engines": {
     "node": ">=24"

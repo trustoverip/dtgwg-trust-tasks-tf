@@ -175,6 +175,27 @@ jobs:
   # resolver, a `msrv` job picking a lower toolchain will be
   # appropriate again.
 
+  # A value inserted into an existing enum anywhere but its end shifts the
+  # discriminant of every generated Rust variant after it, which makes the whole
+  # core version group a breaking release (#819 made 0.32.0 breaking this way;
+  # #834 would have made 0.33.0 breaking until #835 appended instead). Caught
+  # here, on the pull request, rather than in the Release PR after the merge.
+  enum-append-only:
+    name: enum values are append-only
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Check every changed enum only grew at its end
+        env:
+          ENUM_BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/check-enum-append-only.mjs
+
   fmt:
     name: cargo fmt
     runs-on: ubuntu-latest
