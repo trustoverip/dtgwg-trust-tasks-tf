@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/_shared/0.1/disclosure-statement",
+  "title": "DirectoryDisclosure — the statement of what a community's directory discloses, and to whom",
+  "description": "The statement a community offering a directory publishes so that anyone — above all an applicant deciding whether to apply — can learn what the directory would disclose about them, and to whom, before they hand over anything (VTI-DIR-130). The community GENERATES it from the configuration in force when it is read, never from text an administrator wrote, so it describes the directory that runs rather than the one someone intended. Read on its own through vtc/directory/disclosure, and carried in vtc/join-requests/manifest from 0.4.\n\nEVERY AUDIENCE HERE IS AN UPPER BOUND. A value reaches a viewer only where the member's own choice, the field's ceiling and the community's directory policy all admit them, and the policy only narrows. So a statement never understates what can be disclosed: the most any value can reach is what it says, and a member or the policy can only make it less. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "DisclosedField": {
+      "title": "DisclosedField",
+      "description": "One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "label",
+        "type",
+        "source",
+        "ceiling",
+        "defaultVisibility",
+        "searchable"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "directory-card.schema.json#/$defs/FieldKey"
+        },
+        "label": {
+          "$ref": "field-definition.schema.json#/$defs/FieldLabel"
+        },
+        "description": {
+          "$ref": "field-definition.schema.json#/$defs/FieldDescription"
+        },
+        "type": {
+          "$ref": "field-definition.schema.json#/$defs/FieldType"
+        },
+        "source": {
+          "$ref": "field-definition.schema.json#/$defs/FieldSource",
+          "description": "Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change."
+        },
+        "ceiling": {
+          "$ref": "directory-card.schema.json#/$defs/Audience",
+          "description": "The widest audience the field may ever reach, whatever the member chooses."
+        },
+        "defaultVisibility": {
+          "$ref": "directory-card.schema.json#/$defs/Audience",
+          "description": "The audience a new card gives the field until its member chooses. Never wider than `ceiling`."
+        },
+        "searchable": {
+          "type": "boolean",
+          "description": "Whether a member's search may match the field, within what the searcher may see."
+        },
+        "facet": {
+          "type": "boolean",
+          "description": "Whether members may filter on the field and see counts by its values. Absent: false."
+        }
+      }
+    },
+    "NewCardDefaults": {
+      "title": "NewCardDefaults",
+      "description": "The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "listing",
+        "search"
+      ],
+      "properties": {
+        "listing": {
+          "$ref": "directory-card.schema.json#/$defs/Listing",
+          "description": "The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`."
+        },
+        "search": {
+          "type": "string",
+          "enum": [
+            "byName",
+            "exactNickname",
+            "off"
+          ],
+          "description": "What a member's search may match, as the card's `discoverability.search`."
+        },
+        "introductions": {
+          "$ref": "directory-card.schema.json#/$defs/Introductions",
+          "description": "From whom a new card accepts introductions. Absent where the community does not deliver introductions."
+        }
+      }
+    },
+    "GroupDisclosure": {
+      "title": "GroupDisclosure",
+      "description": "Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialValidity"
+      ],
+      "properties": {
+        "credentialValidity": {
+          "type": "string",
+          "maxLength": 32,
+          "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$",
+          "description": "How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves."
+        }
+      }
+    },
+    "DirectoryDisclosure": {
+      "title": "DirectoryDisclosure",
+      "description": "The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fields",
+        "newCard",
+        "membershipIdentifiers",
+        "adminNotes",
+        "externalCards",
+        "statementDigest"
+      ],
+      "properties": {
+        "fields": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/DisclosedField"
+          },
+          "description": "Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected."
+        },
+        "newCard": {
+          "$ref": "#/$defs/NewCardDefaults"
+        },
+        "membershipIdentifiers": {
+          "$ref": "directory-card.schema.json#/$defs/Audience",
+          "description": "The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it."
+        },
+        "adminNotes": {
+          "type": "boolean",
+          "description": "Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them."
+        },
+        "groups": {
+          "$ref": "#/$defs/GroupDisclosure"
+        },
+        "externalCards": {
+          "type": "boolean",
+          "description": "Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards."
+        },
+        "statementDigest": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

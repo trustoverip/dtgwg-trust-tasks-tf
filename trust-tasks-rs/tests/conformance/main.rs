@@ -1862,6 +1862,9 @@ mod vtc {
                 mod v0_1;
             }
         }
+        mod disclosure {
+            mod v0_1;
+        }
         mod entries {
             mod list {
                 mod v0_1;
@@ -2031,6 +2034,7 @@ mod vtc {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod query {
             mod v0_1;
