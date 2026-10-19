@@ -107,14 +107,14 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** is the member, signing both the card and this document with their membership DID — a key they delegated under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) never publishes. Before the member signs, the producer **MUST** show them what will be published — every value, as the card carries it — that it is published so that anyone can find and read their card, and that anyone means anyone, outside the community too (VTI-REG-004 item 2). It builds the card from the member's card as [`vtc/directory/card/show`](../../show/0.1/spec.md) returns it, mapping each of their public values as *Mapping the public values* states, with `uid` `urn:vtc-directory:<entryId>`, and signs it with [`keys/sign-document`](../../../../../keys/sign-document/0.1/spec.md) or its own key: a Data Integrity proof (`eddsa-jcs-2022` or `ecdsa-jcs-2019`) by a verification method of the membership DID, `proofPurpose: assertionMethod`. It **SHOULD** send the `revision` it built from as `expectedRevision`.
+A conforming **producer** is the member, signing both the card and this document with their membership DID — a key they delegated under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) never publishes. Before the member signs, the producer **MUST** show them what will be published — every value, as the card carries it — that it is published so that anyone can find and read their card, and that anyone means anyone, outside the community too (VTI-REG-004 item 2). It builds the card from the member's card as [`vtc/directory/card/show`](../../show/0.1/spec.md) returns it, mapping each of their public values as *Mapping the public values* states, with `uid` `urn:vtc-directory:<entryId>` and `issuer` the membership DID, and signs it with [`keys/sign-document`](../../../../../keys/sign-document/0.1/spec.md) or its own key: a Data Integrity proof (`eddsa-jcs-2022` or `ecdsa-jcs-2019`) by a verification method of the membership DID, `proofPurpose: assertionMethod`. It **SHOULD** send the `revision` it built from as `expectedRevision`.
 
 A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a signer who is not an active member with `notMember`, and a document signed by a delegated key with `permissionDenied`.
 2. Refuse with `notAvailable` when it does not publish external cards, and with `consentRequired` while the member has not consented to registry publication.
 3. Refuse with `superseded` when `expectedRevision` is present and differs from the card's revision.
-4. Compute the member's public values — the values on their card that the public would be shown: their visibility `public`, the field's ceiling `public`, and permitted to a viewer with no standing by the community's `directory` policy — and refuse with `cardMismatch`, naming the fields that differ, unless the card's `uid` names the member's own entry and the card carries exactly those values, mapped as *Mapping the public values* states, and no other member but those that carry no directory value (`@type`, `version`, `uid`, `kind`, `updated`, `proof`).
+4. Compute the member's public values — the values on their card that the public would be shown: their visibility `public`, the field's ceiling `public`, and permitted to a viewer with no standing by the community's `directory` policy — and refuse with `cardMismatch`, naming the fields that differ, unless the card's `uid` names the member's own entry, its `issuer` is the member's membership DID, and the card carries exactly those values, mapped as *Mapping the public values* states, and no other member but those that carry no directory value (`@type`, `version`, `uid`, `issuer`, `kind`, `updated`, `proof`).
 5. Check what `PublishedCard` leaves to it — `@type` `Card`, `version` `1.0`, `uid` present, and a `proof` that is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019` and `proofPurpose` `assertionMethod`, refusing a card that fails any with `cardMismatch` or `signatureInvalid` as the failure concerns the card or its proof — and verify `proof` over the card without it, against the membership DID's `assertionMethod` verification methods, and refuse with `signatureInvalid` where it does not verify.
 6. Publish atomically: store the card exactly as received, set `discoverability.external` true, set the card's `externalCard` to `published` with its `cardDigest` and `publishedAt`, increment the card's revision, and answer `externalCard`. A card already published is replaced.
 7. Add to the member's recognition record in its trust registry ([`registry/record/put`](../../../../../registry/record/put/0.1/spec.md)) the pointer defined under *The registry pointer*, replacing any earlier one. Publication does not wait for the registry: the card is served by the community, and the pointer tells the registry's readers where. The community retries the pointer until it is written or the card is withdrawn.
@@ -136,6 +136,8 @@ The card holds each public value at exactly one place, built the same way by eve
 | `links` | `"links": { "l1": { "uri": <first> }, "l2": { "uri": <second> }, … }`, in the card's order |
 | any other field | a member named by the field's key, holding the value as the card holds it; an image value as its `CardBlobRef` without `url` or `urlExpiresAt` |
 
+The card also names its signer: `issuer` is the membership DID, the DID its proof is made by. A custodian that holds the member's key signs a document only as the DID that document names in `issuer` or `controller` ([`keys/sign-document`](../../../../../keys/sign-document/0.1/spec.md)), so a card without it could not be signed by a member whose key their agent holds.
+
 `<sha256>` and `<mediaType>` are those of the avatar's `CardBlobRef`. A reader shows the picture by sending `entryId`, `field: avatar` and that `sha256` to [`vtc/directory/images/get`](../../../images/get/0.1/spec.md). A field with no public value has no member: the card never carries an empty one. None of these objects carries a `@type`.
 
 ### Computing `cardDigest`
@@ -155,7 +157,7 @@ The community adds to the `context` of the member's recognition record (`record_
   "directoryCard": {
     "purpose": "A member's own directory card, published at their request so that anyone may find it.",
     "entryId": "dir_Q2xhcmFRMmxoY21GUk1t",
-    "cardDigest": "zQmRtaiZdzghK4hrtHNZFU11qm134M72fmH7JzwwjnP7Rou",
+    "cardDigest": "zQmcjRKZd1TExLaEuMVv5xe2tTx4a1YkRQ58zwVrnByxYS4",
     "readWith": "https://trusttasks.org/spec/vtc/directory/card/public/0.1"
   }
 }
@@ -192,6 +194,7 @@ Carol has chosen `public` for her display name and bio, and nothing else. Her ca
       "@type": "Card",
       "version": "1.0",
       "uid": "urn:vtc-directory:dir_Q2xhcmFRMmxoY21GUk1t",
+      "issuer": "did:example:carol",
       "name": { "full": "Carol Example" },
       "notes": { "n1": { "note": "Rust, decentralised identity, and long walks." } },
       "proof": {
@@ -235,7 +238,7 @@ The `cardDigest` shown is the real value for the card as printed.
   "payload": {
     "externalCard": {
       "state": "published",
-      "cardDigest": "zQmRtaiZdzghK4hrtHNZFU11qm134M72fmH7JzwwjnP7Rou",
+      "cardDigest": "zQmcjRKZd1TExLaEuMVv5xe2tTx4a1YkRQ58zwVrnByxYS4",
       "publishedAt": "2026-10-19T09:10:02Z"
     }
   }
@@ -250,7 +253,7 @@ The request carries the card the member wants public — values they already cho
 
 ### Correlation
 
-A published card is public by the member's choice, and is a durable correlator the community counts (VTI-DIR-053): anyone holding it can link the member's entry identifier, their recognition record and whatever they chose to show. That is the purpose of publishing, and why it is a separate decision from recognition (VTI-DIR-047), made by the member with their own key, after being shown what it means. The card's `uid` names the entry, not the member's DID; the recognition record it hangs from already names the DID, which registry-publication consent covered.
+A published card is public by the member's choice, and is a durable correlator the community counts (VTI-DIR-053): anyone holding it can link the member's entry identifier, their recognition record and whatever they chose to show. That is the purpose of publishing, and why it is a separate decision from recognition (VTI-DIR-047), made by the member with their own key, after being shown what it means. The card names the member's DID as its `issuer`, as its proof does too; the recognition record it hangs from already names the DID, which registry-publication consent covered, so the card adds no identifier the record does not carry.
 
 The community maintainer's identifier scope is public: it is addressed by the public DID its members, its administrators and its trust registry already know it by, and a pairwise identifier per caller would make the community differ by who asks.
 

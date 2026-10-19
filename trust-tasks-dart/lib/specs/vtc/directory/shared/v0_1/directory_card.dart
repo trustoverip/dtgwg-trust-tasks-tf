@@ -545,10 +545,11 @@ typedef JsContactCard = Map<String, dynamic>;
 /// deliberately so: the proof covers every member of the card, and a typed binding
 /// that kept only the members named here would drop the rest and break the signature.
 /// So this schema constrains none of its members, and a consumer MUST check them
-/// itself: `@type`, `version`, `uid` and `proof` are present; `@type` is `Card`;
-/// `version` is `1.0`; `uid` is `urn:vtc-directory:&lt;EntryId&gt;`; `proof` is a
-/// `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019`,
-/// `proofPurpose` `assertionMethod`, and a `verificationMethod` of the member's
-/// membership DID authorized for `assertionMethod`; and the proof verifies over the
-/// card without it, before any member is relied on.
+/// itself: `@type`, `version`, `uid`, `issuer` and `proof` are present; `@type` is
+/// `Card`; `version` is `1.0`; `uid` is `urn:vtc-directory:&lt;EntryId&gt;`; `issuer` is the
+/// member's membership DID; `proof` is a `DataIntegrityProof` with `cryptosuite`
+/// `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a
+/// `verificationMethod` of the member's membership DID authorized for
+/// `assertionMethod`; and the proof verifies over the card without it, before any
+/// member is relied on.
 typedef PublishedCard = Map<String, dynamic>;
