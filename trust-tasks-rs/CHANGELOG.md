@@ -31,6 +31,29 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.32.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.1...trust-tasks-rs-v0.32.2) — 2026-10-19
+
+
+### Fixed
+
+- **vtc/directory/images/upload**: TooLarge also refuses a picture beyond the decoding bound ([#829](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/829))
+
+images/upload declared `tooLarge` for `data` that decodes to more than 262144 bytes, and item 2 refuses it before decoding. But the payload schema already bounds `data` to exactly 262144 bytes, so a conforming community could never send the code. The schema answers malformedRequest first.
+
+  The bound that matters is the other one. A PNG of a few kilobytes can claim tens of thousands of pixels across, which is a decompression bomb, and nothing in the specification told a community to stop it. Item 2 now requires a community to bound what it decodes, the pixels a picture may claim and the memory its decoding may take, and to refuse a picture beyond either with `tooLarge`. The code's meaning says the same.
+
+  No schema change; the generated Rust carries the new meaning in its documentation.
+
+- **vtc/directory/card/publish**: The card names its signer as issuer, so an agent-held key can sign it ([#830](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/830))
+
+card/publish allowed a card no members but `@type`, `version`, `uid`, `kind`, `updated` and `proof` besides its values. That left a member whose key their agent holds, the usual case, with no way to sign it: keys/sign-document signs a document only as the DID it names in `issuer` or `controller`, and the card could name neither.
+
+  The card now carries `issuer`, the membership DID, as a required member that carries no directory value. Item 4 checks it is the member's DID. The mapping section says why it is there, and a card/public reader checks it names the DID that signed. It adds no identifier: the proof's verificationMethod already names the DID, and the recognition record the card hangs from names it too. The correlation paragraph is corrected to say so.
+
+  The examples gain `issuer`, and their cardDigest is recomputed (zQmcjRKZd1TExLaEuMVv5xe2tTx4a1YkRQ58zwVrnByxYS4). The PublishedCard description in the shared schema lists `issuer` among the members a consumer checks; the bindings are regenerated for that description.
+
+
+
 ## [0.32.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.0...trust-tasks-rs-v0.32.1) — 2026-10-19
 
 

@@ -11,6 +11,37 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.20 — 2026-10-19
+
+
+### Fixed
+
+- **vtc/directory/images/upload**: TooLarge also refuses a picture beyond the decoding bound (#829)
+
+images/upload declared `tooLarge` for `data` that decodes to more than 262144 bytes, and item 2 refuses it before decoding. But the payload schema already bounds `data` to exactly 262144 bytes, so a conforming community could never send the code. The schema answers malformedRequest first.
+
+  The bound that matters is the other one. A PNG of a few kilobytes can claim tens of thousands of pixels across, which is a decompression bomb, and nothing in the specification told a community to stop it. Item 2 now requires a community to bound what it decodes, the pixels a picture may claim and the memory its decoding may take, and to refuse a picture beyond either with `tooLarge`. The code's meaning says the same.
+
+  No schema change; the generated Rust carries the new meaning in its documentation.
+
+- **vtc/directory/card/publish**: The card names its signer as issuer, so an agent-held key can sign it (#830)
+
+card/publish allowed a card no members but `@type`, `version`, `uid`, `kind`, `updated` and `proof` besides its values. That left a member whose key their agent holds, the usual case, with no way to sign it: keys/sign-document signs a document only as the DID it names in `issuer` or `controller`, and the card could name neither.
+
+  The card now carries `issuer`, the membership DID, as a required member that carries no directory value. Item 4 checks it is the member's DID. The mapping section says why it is there, and a card/public reader checks it names the DID that signed. It adds no identifier: the proof's verificationMethod already names the DID, and the recognition record the card hangs from names it too. The correlation paragraph is corrected to say so.
+
+  The examples gain `issuer`, and their cardDigest is recomputed (zQmcjRKZd1TExLaEuMVv5xe2tTx4a1YkRQ58zwVrnByxYS4). The PublishedCard description in the shared schema lists `issuer` among the members a consumer checks; the bindings are regenerated for that description.
+
+- **vtc/directory/card/publish**: Pin the JSContact mapping, and withdraw without waiting on the registry (#827)
+
+card/publish item 4 compares a member's card with their public values "mapped as JSContactCard maps them", but JSContactCard names only where each base field lands, not its shape: not the map identifiers, not how a link list is laid out, and not what the avatar's `uri` is. Two conforming wallets could sign different bytes for the same values, and a community could not tell which was right.
+
+  *Mapping the public values* fixes it: one JSContact member per field, fixed map identifiers (k1, m1, p1, n1, l1…), the avatar as `media.m1` with `uri` `urn:vtc-directory:<entryId>:avatar:<sha256>` (what a reader sends to images/get), and every other field as a member named by its key. Item 4 now compares against that table, and lists `proof` among the members that carry no directory value.
+
+  Item 9 said to remove the registry pointer first, then stop serving the card. That kept a card the member had withdrawn on public view until the registry answered, which can be an hour when it is down. A withdrawal now stops serving and erases the card at once and removes the pointer, retried until it lands. A pointer read in the meantime names a card card/public answers notFound, which tells the reader nothing. card/update item 7 and the retention note follow.
+
+  Prose only: no schema or generated binding changes.
+
 ## 0.26.19 — 2026-10-19
 
 
