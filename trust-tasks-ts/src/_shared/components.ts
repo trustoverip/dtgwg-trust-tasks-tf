@@ -6140,6 +6140,36 @@ export interface DirectoryCard {
   ext?: Ext;
 }
 /**
+ * The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.
+ */
+export interface DirectoryDisclosure {
+  /**
+   * Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.
+   *
+   * @maxItems 128
+   */
+  fields: DisclosedField[];
+  newCard: NewCardDefaults;
+  /**
+   * The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.
+   */
+  membershipIdentifiers: Audience;
+  /**
+   * Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.
+   */
+  adminNotes: boolean;
+  groups?: GroupDisclosure;
+  /**
+   * Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.
+   */
+  externalCards: boolean;
+  /**
+   * Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.
+   */
+  statementDigest: DigestMultibase;
+  ext?: Ext;
+}
+/**
  * One entry as a particular viewer sees it.
  */
 export interface DirectoryEntry {
@@ -6168,6 +6198,35 @@ export interface DirectoryRef {
    * The entry, as that community's directory identifies it.
    */
   entryId: DirectoryEntryId;
+}
+/**
+ * One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.
+ */
+export interface DisclosedField {
+  key: FieldKey;
+  label: FieldLabel;
+  description?: FieldDescription;
+  type: FieldType;
+  /**
+   * Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.
+   */
+  source: FieldSource;
+  /**
+   * The widest audience the field may ever reach, whatever the member chooses.
+   */
+  ceiling: Audience;
+  /**
+   * The audience a new card gives the field until its member chooses. Never wider than `ceiling`.
+   */
+  defaultVisibility: Audience;
+  /**
+   * Whether a member's search may match the field, within what the searcher may see.
+   */
+  searchable: boolean;
+  /**
+   * Whether members may filter on the field and see counts by its values. Absent: false.
+   */
+  facet?: boolean;
 }
 /**
  * The member's three discoverability decisions, made separately.
@@ -6937,6 +6996,15 @@ export interface GroupBinding {
   state: "pending" | "active" | "removing";
   createdAt: string;
   createdBy?: string;
+}
+/**
+ * Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.
+ */
+export interface GroupDisclosure {
+  /**
+   * How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.
+   */
+  credentialValidity: string;
 }
 export interface GroupJoinRequest {
   requestId: JoinRequestId;
@@ -7875,6 +7943,23 @@ export interface MonitorFilter {
    * Only events that carry an `outcome`.
    */
   failuresOnly?: boolean;
+}
+/**
+ * The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.
+ */
+export interface NewCardDefaults {
+  /**
+   * The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.
+   */
+  listing: Listing;
+  /**
+   * What a member's search may match, as the card's `discoverability.search`.
+   */
+  search: "byName" | "exactNickname" | "off";
+  /**
+   * From whom a new card accepts introductions. Absent where the community does not deliver introductions.
+   */
+  introductions?: Introductions;
 }
 /**
  * A community's offer of admission to a room it owns, as the member it is addressed to sees it.
