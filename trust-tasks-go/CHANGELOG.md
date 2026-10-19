@@ -11,6 +11,81 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.21 — 2026-10-19
+
+
+### Added
+
+- **voting**: Community voting — voting/* (the ballot box), vtc/elections/* (the registrar) and vta/pcs/voter/* + vta/pcs/vote (the voter's agent) (#834)
+
+* feat(voting): community voting — voting/* (the ballot box), vtc/elections/* (the registrar) and vta/pcs/voter/* + vta/pcs/vote (the voter's agent)
+
+  Twenty-one draft 0.1 tasks for VTI-VOT-001 – 100 (dtgwg-vti-spec, Community
+  Voting chapter). A member proves only that they may vote, never who they are,
+  and anyone permitted to read the board can recount it.
+
+  - voting/_shared/0.1: CONVENTIONS.md (separation of registrar and ballot box,
+    the exact cryptographic binding — deployment label, ticket class
+    voter/<electionId>, hash-to-G1 election point, framed ballot context, cast,
+    admission, RFC 9162 board hashing — authorization, VTA custody, privacy,
+    shared error local parts, retry safety) and voting.schema.json (Manifest,
+    Question, Ballot, Cast, BoardHead, BoardEntry, MerklePath, ElectionResult,
+    ElectionSummary, VotingParameters, Disclosure …).
+  - voting/*: election/{register,show,close,cancel}, ballot/cast (HTTPS binding
+    always accepted, one-time did:key issuer, signed receipt, idempotent),
+    board/{head,read,inclusion,consistency}, result/show. 0.1 serves open
+    elections only; sealed and tallied-encrypted await the trustee tasks.
+  - vtc/elections/*: create (binding elections park for a second
+    administrator), list, show (disclosure, kept checkpoints, certified result),
+    close, cancel, certify (the VTC verifies the board itself), tickets/issue
+    (blind, one per eligible party, recorded before answering).
+  - vta/pcs/voter/{register,accept,receipt} and vta/pcs/vote: a voter key per
+    election, the blinded ticket request, the signed cast document the client
+    sends itself, receipt keeping and inclusion checking. New capability
+    `pcsVoter` in device/_shared/0.2 Capability.
+
+  Bindings regenerated (Rust, TypeScript, Go, Dart); check-bindings agrees and
+  the Rust conformance suite passes. Reference implementation of the binding:
+  vti-voting in verifiable-trust-infrastructure.
+
+- **vtc/groups**: Appointing group managers — vtc/groups/managers/{add,remove}/0.1; create refuses an unserved dynamic group (#833)
+
+* feat(vtc/groups): appointing group managers — vtc/groups/managers/{add,remove}/0.1; create refuses an unserved dynamic group
+
+  The groups family made a manager an access-control resource grant,
+  `vtc.groups.manage` qualified `group:<groupId>`, "never this record". But no
+  task wrote that grant. The general `acl/grant` caps a grant by the holder's
+  role ceiling, so only an administrator could ever manage a group.
+
+  - vtc/groups/managers/add/0.1: a manager of the group, or a holder of the
+    unqualified capability, appoints an active member. The appointment is a
+    resource grant on the appointee's entry, delegated by the signer, which sits
+    beside the role and never inside its ceiling, so a member with no
+    administrative role may hold it. The signer must cover the grant. It is
+    reviewed like any delegated grant when its granter departs, and withdrawn
+    with the group or the holder's departure. The group's record never decides
+    who manages it. Codes: notFound, entryNotFound, alreadyManager.
+  - vtc/groups/managers/remove/0.1: a manager steps down, or a holder of the
+    unqualified capability removes another manager's appointment. Managers of
+    one group do not remove one another. Codes: notFound, notManager.
+  - vtc/groups/create: `kindNotServed` lets a community that serves only static
+    groups refuse a dynamic one after checking its rule. It never stores a
+    dynamic group it does not compute.
+  - group.schema.json: `managers` points at the new task.
+
+
+
+### Fixed
+
+- **device**: PcsVoter is appended to Capability, not inserted — no existing variant moves (#835)
+- **vtc/directory/card/present**: A Data Integrity presentation binds through its signed nonce and domain (#831)
+
+Producer conformance required a Data Integrity presentation's proof to carry `challenge` equal to the document's `id` and `domain` equal to the community's DID. Neither member is signed by the Data Integrity libraries the implementations use: a proof stating them either fails to verify or carries them unsigned, where they bind nothing. The presentations this ecosystem already produces for a verifier (`vta_sdk::vp::build_di_vp`, the OpenID4VP DI path, the personhood assertion) put `nonce` and `domain` on the presentation itself, which the holder's proof covers.
+
+  The binding is now the presentation's own `nonce` (this document's `id`) and `domain` (the community's DID), signed by the holder proof; a proof that also states `challenge` or `domain` must state the same values. The consumer's item 3 is unchanged: it verifies "the binding above".
+
+  No schema change beyond the presentation's description; the generated libraries carry the new text in their documentation.
+
 ## 0.8.20 — 2026-10-19
 
 
