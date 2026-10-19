@@ -1,0 +1,29 @@
+[
+  {
+    "note": "A result supplied by the requester. The community reads the result from the ballot box and recomputes it from the board; it never certifies a result it was handed.",
+    "payload": {
+      "electionId": "board-2026",
+      "result": { "electionId": "board-2026", "ballotsCounted": 80 }
+    }
+  },
+  {
+    "note": "An audit attestation that is not an object.",
+    "payload": { "electionId": "board-2026", "auditAttestations": ["eyJhbGciOi..."] }
+  },
+  {
+    "variant": "response",
+    "note": "A certification without the head it verified. The head is what a later recount compares against.",
+    "payload": {
+      "electionId": "board-2026",
+      "result": {
+        "electionId": "board-2026",
+        "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+        "ballotsCounted": 80,
+        "questions": [],
+        "head": { "electionId": "board-2026", "treeSize": 84, "rootHash": "zQmPXME1oRtoT627YKaDPDQ3PwA8tdP9rWuAAweLzqSwAWT", "issuedAt": "2026-11-15T00:00:03Z" }
+      },
+      "certifiedAt": "2026-11-16T09:00:19Z",
+      "auditAttestations": []
+    }
+  }
+]

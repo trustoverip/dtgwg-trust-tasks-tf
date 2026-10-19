@@ -14,4 +14,4 @@ export interface PCSEngineSharedDefinitionsForTheVtaPcsTasks {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { ApplicationSummary, Attestation, AttestationMeta, AttestationToken, CommunityParameters, HiddenVettingSubmission, Multibase, SubmittedStatement, TokenDraw, VetterSummary } from "../../../_shared/components.js";
+export type { ApplicationSummary, Attestation, AttestationMeta, AttestationToken, CommunityParameters, HiddenVettingSubmission, Multibase_VtaV0_4 as Multibase, SubmittedStatement, TokenDraw, VetterSummary } from "../../../_shared/components.js";

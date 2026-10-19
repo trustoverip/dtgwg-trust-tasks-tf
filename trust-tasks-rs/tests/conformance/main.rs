@@ -1333,6 +1333,47 @@ mod vetting {
         mod v0_1;
     }
 }
+#[cfg(feature = "voting")]
+mod voting {
+    mod ballot {
+        mod cast {
+            mod v0_1;
+        }
+    }
+    mod board {
+        mod consistency {
+            mod v0_1;
+        }
+        mod head {
+            mod v0_1;
+        }
+        mod inclusion {
+            mod v0_1;
+        }
+        mod read {
+            mod v0_1;
+        }
+    }
+    mod election {
+        mod cancel {
+            mod v0_1;
+        }
+        mod close {
+            mod v0_1;
+        }
+        mod register {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod result {
+        mod show {
+            mod v0_1;
+        }
+    }
+}
 #[cfg(feature = "vrc")]
 mod vrc {
     mod relationships {
@@ -1573,6 +1614,20 @@ mod vta {
         }
         mod vetter {
             mod show {
+                mod v0_1;
+            }
+        }
+        mod vote {
+            mod v0_1;
+        }
+        mod voter {
+            mod accept {
+                mod v0_1;
+            }
+            mod receipt {
+                mod v0_1;
+            }
+            mod register {
                 mod v0_1;
             }
         }
@@ -1925,6 +1980,31 @@ mod vtc {
         }
         mod query {
             mod v0_1;
+        }
+    }
+    mod elections {
+        mod cancel {
+            mod v0_1;
+        }
+        mod certify {
+            mod v0_1;
+        }
+        mod close {
+            mod v0_1;
+        }
+        mod create {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod tickets {
+            mod issue {
+                mod v0_1;
+            }
         }
     }
     mod endorsement_types {

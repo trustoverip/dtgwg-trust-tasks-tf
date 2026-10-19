@@ -62,6 +62,7 @@ all-specs = [
     "task-consent",
     "vault",
     "vetting",
+    "voting",
     "vrc",
     "vta",
     "vtc",
@@ -96,6 +97,7 @@ sync = []
 task-consent = []
 vault = []
 vetting = []
+voting = []
 vrc = []
 vta = []
 vtc = []

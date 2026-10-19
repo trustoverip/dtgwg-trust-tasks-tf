@@ -124,6 +124,7 @@ const (
 	CapabilityExternalAuthUse        Capability = "externalAuthUse"
 	CapabilityPcsVetter              Capability = "pcsVetter"
 	CapabilityPcsApplicant           Capability = "pcsApplicant"
+	CapabilityPcsVoter               Capability = "pcsVoter"
 	CapabilityWitnessRequest         Capability = "witnessRequest"
 )
 

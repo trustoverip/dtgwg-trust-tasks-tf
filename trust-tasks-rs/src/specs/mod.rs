@@ -144,6 +144,9 @@ pub mod vault;
 #[cfg(feature = "vetting")]
 #[cfg(not(test))]
 pub mod vetting;
+#[cfg(feature = "voting")]
+#[cfg(not(test))]
+pub mod voting;
 #[cfg(feature = "vrc")]
 #[cfg(not(test))]
 pub mod vrc;

@@ -1,0 +1,28 @@
+[
+  {
+    "note": "Empty payload omits required members: contextId, community, electionId, receipt.",
+    "payload": {}
+  },
+  {
+    "note": "`checkpoint` without `inclusion`. The engine cannot say whether a cast is in a head without the audit path, so the two come together or not at all.",
+    "payload": {
+      "contextId": "personal/communities",
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "electionId": "board-2026",
+      "receipt": {
+        "id": "urn:uuid:9b2e4c71-5d3a-4f08-a6e1-0c7d8b3f2a95",
+        "type": "https://trusttasks.org/spec/voting/ballot/cast/0.1#response",
+        "issuer": "did:webvh:QmBallotBox:vote.example.net",
+        "payload": {},
+        "proof": {}
+      },
+      "checkpoint": {
+        "id": "urn:uuid:c1a7e2d4-6b38-4f91-8d05-2e9f4a7b1c63",
+        "type": "https://trusttasks.org/spec/voting/board/head/0.1#response",
+        "issuer": "did:webvh:QmBallotBox:vote.example.net",
+        "payload": {},
+        "proof": {}
+      }
+    }
+  }
+]

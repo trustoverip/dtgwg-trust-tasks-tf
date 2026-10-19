@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/voter/accept/0.1",
+  "title": "VTA PCS — Voter Accept — payload",
+  "description": "A voter's client hands its VTA the community's answer to a ticket request; the VTA unblinds it into the voter's ticket for the election and keeps it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "electionId",
+    "parameters",
+    "response"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The context the voter belongs to."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "parameters": {
+      "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/VotingParameters",
+      "description": "The community's published voting parameters. Its `votingKey` MUST be the one the request was registered under."
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "label",
+        "preCredential"
+      ],
+      "description": "The payload of the community's vtc/elections/tickets/issue/0.1 response, without its ext.",
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "label": {
+          "type": "string",
+          "pattern": "^voter/[A-Za-z0-9._-]{1,128}$",
+          "description": "The ticket class label signed under, `voter/<electionId>`."
+        },
+        "preCredential": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state."
+        }
+      }
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Voter Accept — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "ticketHeld"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "ticketHeld": {
+          "const": true,
+          "description": "The engine now holds the voter's ticket for the election. The ticket itself is never returned."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

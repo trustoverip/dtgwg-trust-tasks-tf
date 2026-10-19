@@ -1,0 +1,19 @@
+[
+  {
+    "note": "No electionId.",
+    "payload": { "reason": "Everyone has voted." }
+  },
+  {
+    "note": "A blank reason. A reason, when given, is shown to members and must say something.",
+    "payload": { "electionId": "motion-17", "reason": "   " }
+  },
+  {
+    "note": "A new closing time. Close ends voting now; it never moves `votingCloses`, which the manifest fixed when members took their tickets.",
+    "payload": { "electionId": "motion-17", "votingCloses": "2026-11-12T00:00:00Z" }
+  },
+  {
+    "variant": "response",
+    "note": "A state outside ElectionState.",
+    "payload": { "electionId": "motion-17", "state": "closing" }
+  }
+]

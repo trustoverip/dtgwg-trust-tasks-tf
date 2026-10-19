@@ -3,7 +3,7 @@
  * Source: specs/vta/app-state/list/1.0/payload.schema.json
  */
 
-import type { AppStateRecord, Ext, Key, Namespace, Version_VtaV0_1 as Version } from "../../../../_shared/components.js";
+import type { AppStateRecord, Ext, Key_VtaV0_1 as Key, Namespace, Version_VtaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**

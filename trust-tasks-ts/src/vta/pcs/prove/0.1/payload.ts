@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/prove/0.1/payload.schema.json
  */
 
-import type { AttestationToken, CommunityParameters, Ext, HiddenVettingSubmission, Multibase, PublishedConfig, PublishedEvent, StatementMeta, SubmittedStatement, TickLength, Tier } from "../../../../_shared/components.js";
+import type { AttestationToken, CommunityParameters, Ext, HiddenVettingSubmission, Multibase_VtaV0_4 as Multibase, PublishedConfig, PublishedEvent, StatementMeta, SubmittedStatement, TickLength, Tier } from "../../../../_shared/components.js";
 
 
 /**

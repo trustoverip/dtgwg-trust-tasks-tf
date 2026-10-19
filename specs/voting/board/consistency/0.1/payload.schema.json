@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/board/consistency/0.1",
+  "title": "Voting — Board Consistency — payload",
+  "description": "Asks for an RFC 9162 consistency proof that the board of one size is a prefix of the board of a larger size.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "firstSize",
+    "secondSize"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "firstSize": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The size of the earlier head."
+    },
+    "secondSize": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The size of the later head. At least `firstSize`, at most the current size."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Board Consistency — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "firstSize",
+        "secondSize",
+        "path"
+      ],
+      "properties": {
+        "firstSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "secondSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "path": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/MerklePath",
+          "description": "The RFC 9162 §2.1.4 consistency proof between the trees of `firstSize` and `secondSize` entries. Empty when the two sizes are equal."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

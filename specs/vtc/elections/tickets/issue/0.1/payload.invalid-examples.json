@@ -1,0 +1,72 @@
+[
+  {
+    "note": "No manifestDigest. A ticket is asked for only under the manifest the voter read; without the digest the community cannot tell that the voter read the one the election runs under.",
+    "payload": {
+      "electionId": "board-2026",
+      "request": {
+        "label": "voter/board-2026",
+        "id": "z5jokfsiZx1sk1mJyQnBnR519B9mcQhw9a8LrF9VQdAjExwoLzcdVdZ2aXaH14a3mdF",
+        "request": { "proof": "zSzFTCny3qaXpSHTsTE877ffQfSuF9T5zo53iuZkwx9NbLYSq3GeLZpRda286SBhqwJg" }
+      }
+    }
+  },
+  {
+    "note": "A label outside the voter class. A request for a vetter label here would have the voting key sign into hidden vetting's class space.",
+    "payload": {
+      "electionId": "board-2026",
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "request": {
+        "label": "vetter/2026-11",
+        "id": "z5jokfsiZx1sk1mJyQnBnR519B9mcQhw9a8LrF9VQdAjExwoLzcdVdZ2aXaH14a3mdF",
+        "request": { "proof": "zSzFTCny3qaXpSHTsTE877ffQfSuF9T5zo53iuZkwx9NbLYSq3GeLZpRda286SBhqwJg" }
+      }
+    }
+  },
+  {
+    "note": "A PCS identifier that is not multibase base58btc.",
+    "payload": {
+      "electionId": "board-2026",
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "request": {
+        "label": "voter/board-2026",
+        "id": "0xdeadbeef",
+        "request": { "proof": "zSzFTCny3qaXpSHTsTE877ffQfSuF9T5zo53iuZkwx9NbLYSq3GeLZpRda286SBhqwJg" }
+      }
+    }
+  },
+  {
+    "note": "A blinded request without its proof of well-formedness, which is what lets the community sign a commitment it cannot open.",
+    "payload": {
+      "electionId": "board-2026",
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "request": {
+        "label": "voter/board-2026",
+        "id": "z5jokfsiZx1sk1mJyQnBnR519B9mcQhw9a8LrF9VQdAjExwoLzcdVdZ2aXaH14a3mdF",
+        "request": { "encoding": "z6P4jNSt4qHKYhSBGSWgr6VcQGMsjmfYGUBdYWNtS7xbpGsTuiY1PDfoce4yTApuqUm" }
+      }
+    }
+  },
+  {
+    "note": "A request naming another party to issue to. Nobody asks for a ticket on another's behalf; the ticket goes to the proven signer.",
+    "payload": {
+      "electionId": "board-2026",
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "subject": "did:web:dana.example",
+      "request": {
+        "label": "voter/board-2026",
+        "id": "z5jokfsiZx1sk1mJyQnBnR519B9mcQhw9a8LrF9VQdAjExwoLzcdVdZ2aXaH14a3mdF",
+        "request": { "proof": "zSzFTCny3qaXpSHTsTE877ffQfSuF9T5zo53iuZkwx9NbLYSq3GeLZpRda286SBhqwJg" }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response carrying the unblinded ticket. The community never sees the ticket, so a response that carries one is a community that kept the blinding state.",
+    "payload": {
+      "electionId": "board-2026",
+      "label": "voter/board-2026",
+      "preCredential": "z3Xef1JY2x1s2vY6yKWfLu8Ap2vKuoZGwaQLZ2tjq8QkEZbGeZyaNgtznZ8B7N1yf14",
+      "ticket": "z3Xef1JY2x1s2vY6yKWfLu8Ap2vKuoZGwaQLZ2tjq8QkEZbGeZyaNgtznZ8B7N1yf14"
+    }
+  }
+]

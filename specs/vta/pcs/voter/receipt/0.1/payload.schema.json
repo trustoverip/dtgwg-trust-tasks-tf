@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/voter/receipt/0.1",
+  "title": "VTA PCS — Voter Receipt — payload",
+  "description": "A voter's client hands its VTA the ballot box's receipt for a cast, and optionally a checkpoint and an inclusion proof; the VTA checks the receipt is the voter's, keeps it, and says whether the cast is in the checkpoint.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "electionId",
+    "receipt"
+  ],
+  "dependentRequired": {
+    "checkpoint": [
+      "inclusion"
+    ],
+    "inclusion": [
+      "checkpoint"
+    ]
+  },
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The context the voter belongs to."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "receipt": {
+      "type": "object",
+      "description": "The ballot box's signed voting/ballot/cast/0.1 #response document, whole and exactly as received."
+    },
+    "checkpoint": {
+      "type": "object",
+      "description": "A signed voting/board/head/0.1 #response document, whole and exactly as received — typically the head the community kept at close (vtc/elections/show checkpoints)."
+    },
+    "inclusion": {
+      "$ref": "#/$defs/Inclusion"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Inclusion": {
+      "title": "Inclusion",
+      "description": "The members of a voting/board/inclusion/0.1 response that prove one entry is in a head: RFC 9162 §2.1.3 audit path for `leafIndex` in a tree of `treeSize`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "leafIndex",
+        "treeSize",
+        "entryHash",
+        "path"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "treeSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entryHash": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The RFC 9162 leaf hash of the entry at `leafIndex`, as a multihash."
+        },
+        "path": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/MerklePath"
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Voter Receipt — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "status",
+        "leafIndex"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "kept",
+            "included",
+            "notIncluded"
+          ],
+          "description": "`kept`: the receipt is the voter's and is kept; no checkpoint was given. `included`: the cast is in the checkpoint. `notIncluded`: the checkpoint is a valid head of the election and the evidence does not show the cast in it — the client MUST show this to the voter (VTI-VOT-053)."
+        },
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The board position the receipt assigns to the cast."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

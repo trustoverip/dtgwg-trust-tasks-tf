@@ -30,6 +30,14 @@ The tasks are:
 | Vetter | [`vta/pcs/attest`](../../pcs/attest/0.1/spec.md) | Spends a token and attests for an applicant |
 | Vetter | [`vta/pcs/vetter/show`](../../pcs/vetter/show/0.1/spec.md) | Reads the vetter engine's state back |
 
+The engine has a third role beside vetter and applicant: the **voter** of community voting.
+[`vta/pcs/voter/register`](../../pcs/voter/register/0.1/spec.md),
+[`voter/accept`](../../pcs/voter/accept/0.1/spec.md), [`vta/pcs/vote`](../../pcs/vote/0.1/spec.md)
+and [`voter/receipt`](../../pcs/voter/receipt/0.1/spec.md) run under the same custody as this
+family, with a voter key of their own for each election and their own capability, `pcsVoter`.
+Their rules are in the voting conventions,
+[`voting/_shared/0.1/CONVENTIONS.md`](../../../voting/_shared/0.1/CONVENTIONS.md).
+
 A vetter's withdrawal of one attestation (the tag, and a proof of knowledge of the key behind
 it) is an engine operation too, and will join this family once the community-side task that
 accepts a withdrawal is specified: an engine task whose output no community can receive would

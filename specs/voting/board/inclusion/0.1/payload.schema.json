@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/board/inclusion/0.1",
+  "title": "Voting — Board Inclusion — payload",
+  "description": "Asks for an RFC 9162 inclusion proof that one board entry is in the tree of a given size.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "leafIndex",
+    "treeSize"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "leafIndex": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The index of the entry to prove."
+    },
+    "treeSize": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The size of the tree to prove it in — the size of a head the reader holds. Greater than `leafIndex`, at most the current size."
+    },
+    "receiptToken": {
+      "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/Multibase",
+      "description": "The `receiptToken` of the voting/ballot/cast receipt for the cast at `leafIndex`. Authorizes this read on a private board; ignored on a public one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Board Inclusion — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "leafIndex",
+        "treeSize",
+        "entryHash",
+        "path"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "treeSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entryHash": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The RFC 9162 leaf hash of the entry at `leafIndex`."
+        },
+        "path": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/MerklePath",
+          "description": "The RFC 9162 §2.1.3 inclusion proof of `leafIndex` in the tree of `treeSize` entries."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/ballot/cast/0.1",
+  "title": "Voting — Ballot Cast — payload",
+  "description": "A voter's client sends one cast — a ballot and the PCS attestation that admits it — to the election's ballot box, signed by a did:key made for this cast alone. The ballot box answers with a signed receipt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "cast"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The DID of the community whose election this is."
+    },
+    "electionId": {
+      "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "cast": {
+      "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/Cast"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Ballot Cast — response payload (the receipt)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "outcome",
+        "leafIndex",
+        "entryHash",
+        "head",
+        "receiptToken"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "counted",
+            "replaced",
+            "alreadyCounted"
+          ],
+          "description": "`counted`: the first ballot under this tag, now counted. `replaced`: a later ballot under a tag that already had one; it is counted and the earlier one no longer is. `alreadyCounted`: this cast was admitted before; nothing changed, and the receipt is the first one's."
+        },
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The board index of this cast's CastEntry."
+        },
+        "entryHash": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The RFC 9162 leaf hash of the CastEntry at `leafIndex` (SHA-256, as a multihash)."
+        },
+        "head": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/BoardHead",
+          "description": "A head whose tree includes `leafIndex` — and, for `replaced`, the ReplacementEntry that follows it."
+        },
+        "receiptToken": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/Multibase",
+          "description": "32 random bytes, multibase base58btc. On a private board it authorizes voting/board/inclusion reads of this one leaf."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

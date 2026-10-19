@@ -1,0 +1,86 @@
+[
+  {
+    "note": "No electionId.",
+    "payload": {}
+  },
+  {
+    "note": "An electionId outside the closed alphabet. It is framed into the ticket class label `voter/<electionId>`, so a `/` would let one label name another.",
+    "payload": { "electionId": "board/2026" }
+  },
+  {
+    "variant": "response",
+    "note": "A response without `disclosure`. A member reads the disclosure before requesting a ticket (VTI-VOT-090); an answer that omits it leaves the client nothing to show.",
+    "payload": {
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:community.example",
+        "questions": [
+          { "key": "chair", "type": "choice", "options": [{ "key": "alice" }, { "key": "bob" }], "minSelections": 1, "maxSelections": 1, "optional": false }
+        ],
+        "secrecy": "open",
+        "roll": { "rule": "members" },
+        "registrationOpens": "2026-11-01T00:00:00Z",
+        "votingOpens": "2026-11-08T00:00:00Z",
+        "votingCloses": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": { "visibility": "public", "auditors": [] },
+        "ballotBox": "did:web:ballots.example",
+        "binding": false,
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      },
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "state": "registration",
+      "parameters": { "suite": "ps-ddh-bls12381", "votingKey": "z3Xef1JY2x1s2vY6yKWfLu8Ap2vKuoZGwaQLZ2tjq8QkEZbGeZyaNgtznZ8B7N1yf14" },
+      "checkpoints": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A checkpoint that keeps the head without the ballot box's signed document. A bare head is the community's word; the document is the ballot box's.",
+    "payload": {
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:community.example",
+        "questions": [
+          { "key": "chair", "type": "choice", "options": [{ "key": "alice" }, { "key": "bob" }], "minSelections": 1, "maxSelections": 1, "optional": false }
+        ],
+        "secrecy": "open",
+        "roll": { "rule": "members" },
+        "registrationOpens": "2026-11-01T00:00:00Z",
+        "votingOpens": "2026-11-08T00:00:00Z",
+        "votingCloses": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": { "visibility": "public", "auditors": [] },
+        "ballotBox": "did:web:ballots.example",
+        "binding": false,
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      },
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "state": "voting",
+      "parameters": { "suite": "ps-ddh-bls12381", "votingKey": "z3Xef1JY2x1s2vY6yKWfLu8Ap2vKuoZGwaQLZ2tjq8QkEZbGeZyaNgtznZ8B7N1yf14" },
+      "disclosure": {
+        "ballotBox": "did:web:ballots.example",
+        "ballotBoxOperator": "Ballots Example Ltd",
+        "sameOperator": false,
+        "boardVisibility": "public",
+        "auditors": [],
+        "revote": "replace",
+        "coercionResistance": false
+      },
+      "checkpoints": [
+        {
+          "head": {
+            "electionId": "board-2026",
+            "treeSize": 12,
+            "rootHash": "zQmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n",
+            "issuedAt": "2026-11-09T00:00:00Z"
+          }
+        }
+      ]
+    }
+  }
+]

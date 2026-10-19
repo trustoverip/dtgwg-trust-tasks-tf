@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/cancel/0.1",
+  "title": "VTC Elections — Cancel — payload",
+  "description": "An administrator cancels an election before voting closes: the community stops issuing its tickets and has the ballot box cancel it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "electionId",
+    "reason"
+  ],
+  "properties": {
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "\\S",
+      "description": "Why the election is cancelled, for the community's audit trail and its members. Required: a cancellation discards every ballot cast, and the members who cast them are owed a reason."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — Cancel — response payload",
+      "description": "Success response to vtc/elections/cancel/0.1: the election's state once cancelled.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "state"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "state": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionState",
+          "description": "`cancelled`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

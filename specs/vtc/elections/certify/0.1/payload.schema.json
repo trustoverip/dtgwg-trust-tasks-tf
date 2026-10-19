@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/certify/0.1",
+  "title": "VTC Elections — Certify — payload",
+  "description": "An administrator has the community verify a tallied election's board for itself and certify its result. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "electionId"
+  ],
+  "properties": {
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "auditAttestations": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "description": "A verifiable credential, as its auditor issued it, attesting the auditor's own recount of this election's board (VTI-VOT-073). Kept exactly as received."
+      },
+      "description": "Attestations from auditors the manifest names in `board.auditors`, to be certified with the result."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — Certify — response payload",
+      "description": "Success response to vtc/elections/certify/0.1: the result the community verified and certified.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "result",
+        "head",
+        "certifiedAt",
+        "auditAttestations"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "result": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionResult",
+          "description": "The result the community recomputed from the board, equal to the ballot box's."
+        },
+        "head": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/BoardHead",
+          "description": "The board head the community verified: the head as it stood at close, which the result counts exactly."
+        },
+        "certifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64
+        },
+        "auditAttestations": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "description": "An auditor's attestation the community verified, as received."
+          },
+          "description": "The attestations certified with the result; empty when none was given."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

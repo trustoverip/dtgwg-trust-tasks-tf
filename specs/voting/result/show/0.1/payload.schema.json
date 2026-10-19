@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/result/show/0.1",
+  "title": "Voting — Result Show — payload",
+  "description": "Reads an election's result once tallied, or its running totals while voting is open where the manifest allows them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Result Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result",
+        "provisional",
+        "state"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionResult"
+        },
+        "provisional": {
+          "type": "boolean",
+          "description": "True for running totals of an election still open for voting; false for the result the ballot box tallied after close."
+        },
+        "state": {
+          "$ref": "../../../_shared/0.1/voting.schema.json#/$defs/ElectionState"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

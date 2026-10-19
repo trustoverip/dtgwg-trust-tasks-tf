@@ -1,0 +1,94 @@
+[
+  {
+    "note": "Empty payload omits required members: contextId, community, parameters, manifest, ballot.",
+    "payload": {}
+  },
+  {
+    "note": "An answer carries two members besides `question` (`choice` and `abstain`). An answer is exactly one choice of its question's type, or an abstention, never both.",
+    "payload": {
+      "contextId": "personal/communities",
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "parameters": {
+        "suite": "ps-ddh-bls12381",
+        "votingKey": "z6MkvVotingKey1abcXYZ"
+      },
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:vtc.example.org",
+        "questions": [
+          {
+            "key": "chair",
+            "type": "choice",
+            "options": [{ "key": "ana" }, { "key": "ben" }],
+            "minSelections": 1,
+            "maxSelections": 1,
+            "optional": true
+          }
+        ],
+        "secrecy": "open",
+        "roll": { "rule": "members" },
+        "registrationOpens": "2026-11-01T00:00:00Z",
+        "votingOpens": "2026-11-08T00:00:00Z",
+        "votingCloses": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": { "visibility": "public", "auditors": [] },
+        "ballotBox": "did:webvh:QmBallotBox:vote.example.net",
+        "binding": false,
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      },
+      "ballot": {
+        "electionId": "board-2026",
+        "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+        "answers": [
+          { "question": "chair", "choice": ["ana"], "abstain": true }
+        ]
+      }
+    }
+  },
+  {
+    "note": "The voting parameters name a suite other than `ps-ddh-bls12381`, the only one these tasks define.",
+    "payload": {
+      "contextId": "personal/communities",
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "parameters": {
+        "suite": "bbs-2023",
+        "votingKey": "z6MkvVotingKey1abcXYZ"
+      },
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:vtc.example.org",
+        "questions": [
+          {
+            "key": "chair",
+            "type": "choice",
+            "options": [{ "key": "ana" }, { "key": "ben" }],
+            "minSelections": 1,
+            "maxSelections": 1,
+            "optional": true
+          }
+        ],
+        "secrecy": "open",
+        "roll": { "rule": "members" },
+        "registrationOpens": "2026-11-01T00:00:00Z",
+        "votingOpens": "2026-11-08T00:00:00Z",
+        "votingCloses": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": { "visibility": "public", "auditors": [] },
+        "ballotBox": "did:webvh:QmBallotBox:vote.example.net",
+        "binding": false,
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      },
+      "ballot": {
+        "electionId": "board-2026",
+        "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+        "answers": [
+          { "question": "chair", "choice": ["ana"] }
+        ]
+      }
+    }
+  }
+]

@@ -3,7 +3,7 @@
  * Source: specs/vta/app-state/delete/1.0/payload.schema.json
  */
 
-import type { ExpectedVersion_VtaV0_1 as ExpectedVersion, Ext, Key, Namespace, Version_VtaV0_1 as Version } from "../../../../_shared/components.js";
+import type { ExpectedVersion_VtaV0_1 as ExpectedVersion, Ext, Key_VtaV0_1 as Key, Namespace, Version_VtaV0_1 as Version } from "../../../../_shared/components.js";
 
 
 /**

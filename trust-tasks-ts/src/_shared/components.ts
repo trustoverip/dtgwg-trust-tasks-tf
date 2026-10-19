@@ -420,6 +420,14 @@ export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
  */
 export type BlobRef = DigestMultibase;
 /**
+ * One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.
+ */
+export type BoardEntry = CastEntry | ReplacementEntry | LifecycleEntry | ResultEntry;
+/**
+ * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
+ */
+export type BoardVisibility = "public" | "private";
+/**
  * The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.
  */
 export type BundleDescriptor = StreamDescriptor | ChunkedDescriptor;
@@ -494,6 +502,7 @@ export type Capability_DeviceV0_2 =
   | "externalAuthUse"
   | "pcsVetter"
   | "pcsApplicant"
+  | "pcsVoter"
   | "witnessRequest";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
@@ -669,6 +678,11 @@ export type Duration = string;
  * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";
+/**
+ * An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
+ */
+export type ElectionId = string;
+export type ElectionState = "registered" | "registration" | "voting" | "closed" | "tallied" | "cancelled";
 /**
  * The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.
  */
@@ -864,10 +878,6 @@ export type JoinRequestId = string;
  */
 export type JoinRequestMessage = string;
 /**
- * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
- */
-export type Key = string;
-/**
  * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
  */
 export type KeyOrigin = "derived" | "imported" | "internal";
@@ -895,6 +905,14 @@ export type KeyStatus = "active" | "revoked";
  * Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
  */
 export type KeyType = "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65";
+/**
+ * A question or option key, unique within its manifest or question.
+ */
+export type Key_VotingV0_1 = string;
+/**
+ * Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
+ */
+export type Key_VtaV0_1 = string;
 /**
  * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
  */
@@ -962,13 +980,23 @@ export type MemberState = "offered" | "admitted" | "removed";
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
 /**
+ * An RFC 9162 audit or consistency path: the node hashes, in the order §2.1.3 / §2.1.4 define.
+ *
+ * @maxItems 64
+ */
+export type MerklePath = DigestMultibase[];
+/**
  * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
  */
 export type Mode = "scan";
 /**
+ * A binary value, multibase base58btc over the suite's canonical (compressed) encoding.
+ */
+export type Multibase_VotingV0_1 = string;
+/**
  * A binary value, multibase base58btc over the suite's canonical encoding.
  */
-export type Multibase = string;
+export type Multibase_VtaV0_4 = string;
 /**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
@@ -1301,6 +1329,10 @@ export type Purpose = "login";
  */
 export type PushRegistration = Apns | Fcm | WebPush;
 /**
+ * One question. Tagged union over `type`.
+ */
+export type Question = ChoiceQuestion | RankingQuestion | ScoreQuestion | TextQuestion;
+/**
  * Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.
  */
 export type Queue = "receive" | "send";
@@ -1409,6 +1441,10 @@ export type RetentionPolicy = "chained" | "fromJoin";
  */
 export type RevocationEntry = CredentialRevocation | SubjectRevocation | RoomRevocation;
 /**
+ * What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).
+ */
+export type Revote = "replace" | "refuse";
+/**
  * One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
  */
 export type Right = "git.ns.admin" | "git.repo.create" | "git.repo.own" | "git.repo.maintain" | "git.commit.sign";
@@ -1501,6 +1537,10 @@ export type SealedEnvelope_VaultV0_2 =
  * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
  */
 export type SealedTransferBundle = string;
+/**
+ * `open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.
+ */
+export type SecrecyLevel = "open" | "sealed" | "talliedEncrypted";
 /**
  * Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest.
  */
@@ -4239,6 +4279,19 @@ export interface AgentNameEntry {
   ext?: Ext;
 }
 /**
+ * The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.
+ */
+export interface Answer {
+  question: Key_VotingV0_1;
+  choice?: Key_VotingV0_1[];
+  ranking?: Key_VotingV0_1[];
+  scores?: {
+    [k: string]: number | undefined;
+  };
+  text?: string;
+  abstain?: true;
+}
+/**
  * A record as the maintainer holds it. `value` is absent in three distinct situations and a consumer MUST NOT conflate them: the record is a tombstone (`deleted` is true); the caller asked for a metadata-only view (`list` without `includeValues`); or the value genuinely is the JSON literal `null`, in which case `value` is PRESENT and null. This is why `deleted` is required rather than defaulted — a consumer that has to infer deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
  */
 export interface AppStateRecord {
@@ -4247,7 +4300,7 @@ export interface AppStateRecord {
    */
   contextId: string;
   namespace: Namespace;
-  key: Key;
+  key: Key_VtaV0_1;
   /**
    * The namespace counter value this record's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
    */
@@ -4303,7 +4356,7 @@ export interface ApplicationSummary {
   /**
    * The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.
    */
-  id: Multibase;
+  id: Multibase_VtaV0_4;
   /**
    * The metadata of each attestation held, in the order received. Metadata names no vetter.
    */
@@ -4426,7 +4479,7 @@ export interface Attestation {
   /**
    * The attestation: a tag, a shown class credential and a proof. It names no vetter.
    */
-  attestation: Multibase;
+  attestation: Multibase_VtaV0_4;
   meta: StatementMeta;
   token: AttestationToken;
 }
@@ -4441,11 +4494,11 @@ export interface AttestationToken {
   /**
    * The serial revealed by the spend.
    */
-  serial: Multibase;
+  serial: Multibase_VtaV0_4;
   /**
    * The re-randomised token signature, verifiable under the published token key.
    */
-  shown: Multibase;
+  shown: Multibase_VtaV0_4;
 }
 /**
  * One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.
@@ -4742,6 +4795,18 @@ export interface BackupEnvelope {
   ciphertext: string;
 }
 /**
+ * An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.
+ */
+export interface Ballot {
+  electionId: ElectionId;
+  manifestDigest: DigestMultibase;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  answers: [Answer, ...Answer[]];
+}
+/**
  * The ciphertext manifest of one blob, committed by the uploader before any byte moves. Its digest is the BlobRef. Every chunk is checked against `chunks.chunkDigests` on arrival and the reassembled blob against `digest`, so a host can neither accept nor serve bytes the uploader did not commit to. The manifest also appears, by its BlobRef, inside the sealed FileManifest the author signs; a reader who opens the record therefore knows which ciphertext its author meant, and a host cannot substitute a different blob under the same record.
  *
  * Consistency rules JSON Schema cannot state: `chunks.chunkCount` MUST equal ceil(size / chunks.chunkSize), and `chunks.chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.
@@ -4758,6 +4823,39 @@ export interface BlobManifest {
    * Digest of the whole ciphertext, over its bytes. Checked after reassembly, so a correct set of chunks in the wrong order is still caught.
    */
   digest: DigestMultibase;
+}
+export interface CastEntry {
+  kind: "cast";
+  cast: Cast;
+}
+/**
+ * The cast at `replaces` is no longer counted: a later cast under the same tag is.
+ */
+export interface ReplacementEntry {
+  kind: "replaced";
+  tag: Multibase_VotingV0_1;
+  replaces: number;
+  by: number;
+}
+export interface LifecycleEntry {
+  kind: "opened" | "closed" | "closedEarly" | "cancelled";
+  at: string;
+}
+export interface ResultEntry {
+  kind: "result";
+  result: ElectionResult;
+}
+/**
+ * A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
+ */
+export interface BoardHead {
+  electionId: ElectionId;
+  treeSize: number;
+  /**
+   * The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.
+   */
+  rootHash: DigestMultibase;
+  issuedAt: string;
 }
 /**
  * Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.
@@ -4968,6 +5066,14 @@ export interface CardValues {
  * A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.
  */
 export interface CarriedDocument {}
+/**
+ * A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.
+ */
+export interface Cast {
+  ballot: Ballot;
+  tag: Multibase_VotingV0_1;
+  attestation: Multibase_VotingV0_1;
+}
 /**
  * The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.
  *
@@ -6234,6 +6340,31 @@ export interface DisclosedField {
   facet?: boolean;
 }
 /**
+ * The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand.
+ */
+export interface Disclosure {
+  /**
+   * The ballot box's DID.
+   */
+  ballotBox: string;
+  /**
+   * Who operates the ballot box, as the community names them.
+   */
+  ballotBoxOperator: string;
+  /**
+   * Whether the party operating the community's VTC also operates the ballot box.
+   */
+  sameOperator: boolean;
+  trustees?: Trustees;
+  boardVisibility: BoardVisibility;
+  auditors: string[];
+  revote: Revote;
+  /**
+   * Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.
+   */
+  coercionResistance: false;
+}
+/**
  * The member's three discoverability decisions, made separately.
  */
 export interface Discoverability {
@@ -6513,6 +6644,33 @@ export interface EffectiveLimits {
    * The host-wide largest-file ceiling, which no room or member limit can exceed.
    */
   hostCeilingBytes?: number;
+}
+/**
+ * An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).
+ */
+export interface ElectionResult {
+  electionId: ElectionId;
+  manifestDigest: DigestMultibase;
+  ballotsCounted: number;
+  questions: QuestionResult[];
+  /**
+   * The head of the board as it stood at close: the result counts exactly its entries.
+   */
+  head: BoardHead;
+}
+/**
+ * A ballot box's view of one election.
+ */
+export interface ElectionSummary {
+  electionId: ElectionId;
+  community: string;
+  manifestDigest: DigestMultibase;
+  state: ElectionState;
+  /**
+   * Distinct tags with a counted ballot.
+   */
+  ballotsAdmitted: number;
+  head: BoardHead;
 }
 export interface EncryptionParams {
   /**
@@ -7070,7 +7228,7 @@ export interface HiddenVettingSubmission {
   /**
    * The applicant's PCS identifier for this application.
    */
-  id: Multibase;
+  id: Multibase_VtaV0_4;
   /**
    * The DID the applicant joins as. Bound to `id` by `idBinding`.
    */
@@ -7092,7 +7250,7 @@ export interface HiddenVettingSubmission {
   /**
    * The issuance proof, which carries the attestations.
    */
-  proof: Multibase;
+  proof: Multibase_VtaV0_4;
 }
 /**
  * One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.
@@ -7554,6 +7712,51 @@ export interface LocalSettings {
    * Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.
    */
   root: string;
+}
+/**
+ * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
+ */
+export interface Manifest {
+  electionId: ElectionId;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  title?: string;
+  description?: string;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  questions: [Question, ...Question[]];
+  secrecy: SecrecyLevel;
+  roll: RollRule;
+  registrationOpens: string;
+  votingOpens: string;
+  votingCloses: string;
+  revote: Revote;
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service that holds the board.
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  /**
+   * Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).
+   */
+  binding: boolean;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065).
+   */
+  textReleaseThreshold: number;
 }
 /**
  * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
@@ -8588,6 +8791,93 @@ export interface QueryContext {
   [k: string]: string | undefined;
 }
 /**
+ * Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.
+ */
+export interface ChoiceQuestion {
+  key: Key_VotingV0_1;
+  type: "choice";
+  text?: string;
+  /**
+   * @minItems 2
+   * @maxItems 256
+   */
+  options: [QuestionOption, QuestionOption, ...QuestionOption[]];
+  minSelections: number;
+  maxSelections: number;
+  optional: boolean;
+}
+/**
+ * Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.
+ */
+export interface RankingQuestion {
+  key: Key_VotingV0_1;
+  type: "ranking";
+  text?: string;
+  /**
+   * @minItems 2
+   * @maxItems 64
+   */
+  options: [QuestionOption, QuestionOption, ...QuestionOption[]];
+  partial: boolean;
+  optional: boolean;
+}
+/**
+ * Give each option an integer score within [min, max].
+ */
+export interface ScoreQuestion {
+  key: Key_VotingV0_1;
+  type: "score";
+  text?: string;
+  /**
+   * @minItems 1
+   * @maxItems 256
+   */
+  options: [QuestionOption, ...QuestionOption[]];
+  min: number;
+  max: number;
+  optional: boolean;
+}
+/**
+ * Free text of at most `maxLength` characters.
+ */
+export interface TextQuestion {
+  key: Key_VotingV0_1;
+  type: "text";
+  text?: string;
+  maxLength: number;
+  optional: boolean;
+}
+export interface QuestionOption {
+  key: Key_VotingV0_1;
+  /**
+   * Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).
+   */
+  label?: string;
+}
+/**
+ * One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.
+ */
+export interface QuestionResult {
+  question: Key_VotingV0_1;
+  abstained: number;
+  choice?: {
+    [k: string]: number | undefined;
+  };
+  ranking?: {
+    [k: string]: number[] | undefined;
+  };
+  score?: {
+    [k: string]:
+      | {
+          sum: number;
+          count: number;
+        }
+      | undefined;
+  };
+  text?: string[];
+  withheld?: boolean;
+}
+/**
  * The depth of one queue and its effective limit.
  */
 export interface QueueDepth {
@@ -9238,6 +9528,13 @@ export interface RoleSummary {
    * `update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).
    */
   preRotationCommitments?: number;
+}
+/**
+ * Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.
+ */
+export interface RollRule {
+  rule: "members" | "membersAndListed" | "listed";
+  listed?: string[];
 }
 /**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
@@ -10402,6 +10699,16 @@ export interface TrustRecord {
   record_type: RecordType;
 }
 /**
+ * The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.
+ */
+export interface Trustees {
+  /**
+   * @minItems 2
+   */
+  dids: [string, string, ...string[]];
+  threshold: number;
+}
+/**
  * Trust Spanning Protocol message (https://trustoverip.github.io/tswg-tsp-specification/). Reserved variant; no OpenVTC component reads or emits this today. Listed in the union so implementations can declare intent to use TSP in discovery and so consumers reject `tsp-message` envelopes explicitly (`envelopeUnsupported`) until they're wired up — rather than silently failing in DIDComm parsing.
  */
 export interface TspMessageEnvelope_VaultV0_1 {
@@ -10861,7 +11168,7 @@ export interface VetterSummary {
   /**
    * The vetter's PCS identifier for this community.
    */
-  id: Multibase;
+  id: Multibase_VtaV0_4;
   /**
    * Class labels this vetter holds a credential under, newest first.
    */
@@ -11041,6 +11348,13 @@ export interface VettingRequirements {
   [k: string]: unknown | undefined;
 }
 /**
+ * The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.
+ */
+export interface VotingParameters {
+  suite: "ps-ddh-bls12381";
+  votingKey: Multibase_VotingV0_1;
+}
+/**
  * An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.
  */
 export interface WakeHandle {
@@ -11165,7 +11479,7 @@ export interface WitnessKey {
  * The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.
  */
 export interface WriteResult {
-  key: Key;
+  key: Key_VtaV0_1;
   /**
    * `written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.
    */

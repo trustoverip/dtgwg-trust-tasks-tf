@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/applications/create/0.1/payload.schema.json
  */
 
-import type { ApplicationSummary, CommunityParameters, Ext, Multibase, PublishedConfig, PublishedEvent, StatementMeta, TickLength, Tier } from "../../../../../_shared/components.js";
+import type { ApplicationSummary, CommunityParameters, Ext, Multibase_VtaV0_4 as Multibase, PublishedConfig, PublishedEvent, StatementMeta, TickLength, Tier } from "../../../../../_shared/components.js";
 
 
 /**

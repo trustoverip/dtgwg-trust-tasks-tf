@@ -8,3 +8,5 @@ pub mod root_request;
 pub mod tokens;
 pub mod verify_attestation;
 pub mod vetter;
+pub mod vote;
+pub mod voter;

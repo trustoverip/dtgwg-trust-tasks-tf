@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/tokens/abandon/0.1/payload.schema.json
  */
 
-import type { Ext, Multibase, TokenDraw, VetterSummary } from "../../../../../_shared/components.js";
+import type { Ext, Multibase_VtaV0_4 as Multibase, TokenDraw, VetterSummary } from "../../../../../_shared/components.js";
 
 
 /**

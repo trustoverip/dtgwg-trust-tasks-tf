@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1",
+  "title": "VTC Elections — Tickets — Issue — payload",
+  "description": "An eligible party asks the community to blind-issue its ticket for one election: the community checks eligibility against its own records and signs a commitment it cannot open, so the ticket its voter's agent unblinds is one the community has never seen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "electionId",
+    "manifestDigest",
+    "request"
+  ],
+  "properties": {
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "manifestDigest": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+      "description": "The digest of the manifest the requester read (vtc/elections/show) and its agent bound the request to. A ticket is only ever asked for under the manifest the voter saw."
+    },
+    "request": {
+      "$ref": "#/$defs/TicketRequest"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "TicketRequest": {
+      "title": "TicketRequest",
+      "description": "The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "id",
+        "request"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "pattern": "^voter/[A-Za-z0-9._-]{1,128}$",
+          "maxLength": 134,
+          "description": "The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names."
+        },
+        "id": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/Multibase",
+          "description": "The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023)."
+        },
+        "request": {
+          "$ref": "#/$defs/RootRequest"
+        }
+      }
+    },
+    "RootRequest": {
+      "title": "RootRequest",
+      "description": "The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proof"
+      ],
+      "properties": {
+        "encoding": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+          "maxLength": 4096,
+          "description": "The issuance encoding the suite carries."
+        },
+        "t0": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+          "maxLength": 4096,
+          "description": "The request's tag under the root context."
+        },
+        "proof": {
+          "type": "string",
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+          "maxLength": 8192,
+          "description": "The proof that the commitment is well formed and the requester holds its secret."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — Tickets — Issue — response payload",
+      "description": "Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "label",
+        "preCredential"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "label": {
+          "type": "string",
+          "pattern": "^voter/[A-Za-z0-9._-]{1,128}$",
+          "maxLength": 134,
+          "description": "The label signed under — the one asked for."
+        },
+        "preCredential": {
+          "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/Multibase",
+          "description": "The pre-credential, under the community's voting key. Useless to anyone but the holder of the request's blinding state."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

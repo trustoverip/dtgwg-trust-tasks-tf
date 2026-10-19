@@ -1,0 +1,91 @@
+[
+  {
+    "note": "A cast without `tag`. The tag is what lets a ballot box refuse a duplicate before the pairing check (VTI-VOT-045); a cast that omits it must fail the schema, not reach the attestation check.",
+    "payload": {
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "electionId": "board-2026",
+      "cast": {
+        "ballot": {
+          "electionId": "board-2026",
+          "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+          "answers": [
+            { "question": "board", "choice": ["ana"] }
+          ]
+        },
+        "attestation": "z5HmVq3dKs9wPzRt8YbN4cJxF2gTaE6uQ7kWnB1vMhSp3rLyCo"
+      }
+    }
+  },
+  {
+    "note": "An Answer with two answer members (`choice` and `abstain`). Exactly one member besides `question` is allowed; two would let one ballot be counted two ways.",
+    "payload": {
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "electionId": "board-2026",
+      "cast": {
+        "ballot": {
+          "electionId": "board-2026",
+          "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+          "answers": [
+            { "question": "board", "choice": ["ana"], "abstain": true }
+          ]
+        },
+        "tag": "z2JsW8kNqT5vYbRx4mPcHdFgE7uA3zKwQ9",
+        "attestation": "z5HmVq3dKs9wPzRt8YbN4cJxF2gTaE6uQ7kWnB1vMhSp3rLyCo"
+      }
+    }
+  },
+  {
+    "note": "A voter identifier smuggled into the payload. No member of a cast carries a voter's identity (VTI-VOT-002); additionalProperties: false must reject `voter`.",
+    "payload": {
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "electionId": "board-2026",
+      "voter": "did:webvh:QmMember:vta.example.com:alice",
+      "cast": {
+        "ballot": {
+          "electionId": "board-2026",
+          "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+          "answers": [
+            { "question": "board", "choice": ["ana"] }
+          ]
+        },
+        "tag": "z2JsW8kNqT5vYbRx4mPcHdFgE7uA3zKwQ9",
+        "attestation": "z5HmVq3dKs9wPzRt8YbN4cJxF2gTaE6uQ7kWnB1vMhSp3rLyCo"
+      }
+    }
+  },
+  {
+    "note": "A tag that is not multibase base58btc (hex). The tag is compared byte for byte; a second encoding of the same tag would let one ticket be counted twice.",
+    "payload": {
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "electionId": "board-2026",
+      "cast": {
+        "ballot": {
+          "electionId": "board-2026",
+          "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+          "answers": [
+            { "question": "board", "choice": ["ana"] }
+          ]
+        },
+        "tag": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+        "attestation": "z5HmVq3dKs9wPzRt8YbN4cJxF2gTaE6uQ7kWnB1vMhSp3rLyCo"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A receipt with an outcome outside the enumeration. A voter's client acts on `outcome`; an unknown value must be refused, never read as counted.",
+    "payload": {
+      "electionId": "board-2026",
+      "outcome": "accepted",
+      "leafIndex": 128,
+      "entryHash": "zQmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
+      "head": {
+        "electionId": "board-2026",
+        "treeSize": 129,
+        "rootHash": "zQmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX",
+        "issuedAt": "2026-11-12T19:42:08Z"
+      },
+      "receiptToken": "zFz9q2Xh7bKcR4mT8vNwY3pD6sJgA5eU1kHnQtBxWr"
+    }
+  }
+]

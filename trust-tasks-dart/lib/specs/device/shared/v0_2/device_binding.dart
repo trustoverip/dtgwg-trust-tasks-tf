@@ -101,6 +101,7 @@ extension type const Capability(String value) {
   static const Capability externalAuthUse = Capability('externalAuthUse');
   static const Capability pcsVetter = Capability('pcsVetter');
   static const Capability pcsApplicant = Capability('pcsApplicant');
+  static const Capability pcsVoter = Capability('pcsVoter');
   static const Capability witnessRequest = Capability('witnessRequest');
 
   /// Every value this specification's schema permits.
@@ -128,6 +129,7 @@ extension type const Capability(String value) {
     externalAuthUse,
     pcsVetter,
     pcsApplicant,
+    pcsVoter,
     witnessRequest
   ];
 }

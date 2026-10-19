@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/tokens/accept/0.1/payload.schema.json
  */
 
-import type { CommunityParameters, Ext, Multibase, PublishedConfig, PublishedEvent, TickLength, Tier, TokenDraw, VetterSummary } from "../../../../../_shared/components.js";
+import type { CommunityParameters, Ext, Multibase_VtaV0_4 as Multibase, PublishedConfig, PublishedEvent, TickLength, Tier, TokenDraw, VetterSummary } from "../../../../../_shared/components.js";
 
 
 /**
