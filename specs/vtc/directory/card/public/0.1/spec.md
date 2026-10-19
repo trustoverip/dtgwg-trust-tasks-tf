@@ -65,7 +65,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **reader** (`issuer`):
 
 1. **SHOULD** name the `cardDigest` it was pointed to, and **MUST** check that the digest of the returned `card` ([`card/publish`](../../publish/0.1/spec.md), *Computing `cardDigest`*) equals the returned `cardDigest`.
-2. **MUST** verify `card.proof` over the card without it, by a verification method of the DID that signed it authorized for `assertionMethod`, before relying on any member; and **MUST** check that `uid` names the entry it asked for.
+2. **MUST** verify `card.proof` over the card without it, by a verification method of the DID that signed it authorized for `assertionMethod`, before relying on any member; and **MUST** check that `uid` names the entry it asked for and `issuer` the DID that signed it.
 3. **MUST NOT** treat the card as the community's statement. It is the member's. That they are a member is what the recognition record establishes, under its own rules.
 
 A conforming **community** (`recipient`) **MUST**:
@@ -98,7 +98,7 @@ No proof: the reader has not identified themselves, and need not.
   "issuedAt": "2026-10-19T10:00:00Z",
   "payload": {
     "entryId": "dir_Q2xhcmFRMmxoY21GUk1t",
-    "cardDigest": "zQmRtaiZdzghK4hrtHNZFU11qm134M72fmH7JzwwjnP7Rou"
+    "cardDigest": "zQmcjRKZd1TExLaEuMVv5xe2tTx4a1YkRQ58zwVrnByxYS4"
   }
 }
 ```
@@ -121,6 +121,7 @@ The community maintainer answers with a document of type `https://trusttasks.org
       "@type": "Card",
       "version": "1.0",
       "uid": "urn:vtc-directory:dir_Q2xhcmFRMmxoY21GUk1t",
+      "issuer": "did:example:carol",
       "name": { "full": "Carol Example" },
       "notes": { "n1": { "note": "Rust, decentralised identity, and long walks." } },
       "proof": {
@@ -132,7 +133,7 @@ The community maintainer answers with a document of type `https://trusttasks.org
         "proofValue": "z58DAdFfa9SkqZMVPxAQpic7ndSayn1PzZs6ZjWp1CktyGesjuTSwRdoWhAfGFCF5bppETSTojQCrfFPP2oumHKtz"
       }
     },
-    "cardDigest": "zQmRtaiZdzghK4hrtHNZFU11qm134M72fmH7JzwwjnP7Rou",
+    "cardDigest": "zQmcjRKZd1TExLaEuMVv5xe2tTx4a1YkRQ58zwVrnByxYS4",
     "publishedAt": "2026-10-19T09:10:02Z"
   }
 }

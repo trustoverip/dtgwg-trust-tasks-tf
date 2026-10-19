@@ -288,11 +288,12 @@ type JsContactCard = map[string]json.RawMessage
 // deliberately so: the proof covers every member of the card, and a typed binding that
 // kept only the members named here would drop the rest and break the signature. So this
 // schema constrains none of its members, and a consumer MUST check them itself: `@type`,
-// `version`, `uid` and `proof` are present; `@type` is `Card`; `version` is `1.0`; `uid`
-// is `urn:vtc-directory:<EntryId>`; `proof` is a `DataIntegrityProof` with `cryptosuite`
-// `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a
-// `verificationMethod` of the member's membership DID authorized for `assertionMethod`;
-// and the proof verifies over the card without it, before any member is relied on.
+// `version`, `uid`, `issuer` and `proof` are present; `@type` is `Card`; `version` is
+// `1.0`; `uid` is `urn:vtc-directory:<EntryId>`; `issuer` is the member's membership DID;
+// `proof` is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or
+// `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a `verificationMethod` of the
+// member's membership DID authorized for `assertionMethod`; and the proof verifies over
+// the card without it, before any member is relied on.
 type PublishedCard = map[string]json.RawMessage
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
