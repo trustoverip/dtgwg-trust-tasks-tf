@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/groups/managers/add/0.1",
+  "title": "VTC Groups — Managers — Add — payload",
+  "description": "A group manager, or an administrator who manages every group, appoints a community member a manager of one group: an access-control resource grant of `vtc.groups.manage` qualified to that group. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "groupId",
+    "entryId"
+  ],
+  "properties": {
+    "groupId": {
+      "$ref": "../../../_shared/0.1/group.schema.json#/$defs/GroupId"
+    },
+    "entryId": {
+      "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "The member appointed."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Groups — Managers — Add — response payload",
+      "description": "The success response to a vtc/groups/managers/add/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/managers/add/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groupId",
+        "managers"
+      ],
+      "properties": {
+        "groupId": {
+          "$ref": "../../../_shared/0.1/group.schema.json#/$defs/GroupId"
+        },
+        "managers": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+          },
+          "description": "The group's managers after the appointment. Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list; administrators who manage every group are not listed."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

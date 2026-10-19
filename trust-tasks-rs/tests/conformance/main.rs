@@ -1979,6 +1979,14 @@ mod vtc {
         mod list {
             mod v0_1;
         }
+        mod managers {
+            mod add {
+                mod v0_1;
+            }
+            mod remove {
+                mod v0_1;
+            }
+        }
         mod members {
             mod add {
                 mod v0_1;

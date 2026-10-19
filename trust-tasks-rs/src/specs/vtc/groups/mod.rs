@@ -6,6 +6,7 @@ pub mod delete;
 pub mod join;
 pub mod leave;
 pub mod list;
+pub mod managers;
 pub mod members;
 pub mod requests;
 pub mod show;

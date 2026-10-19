@@ -6986,7 +6986,7 @@ export interface Group {
    */
   memberCount?: number;
   /**
-   * Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant, never by this record.
+   * Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.
    *
    * @maxItems 256
    */

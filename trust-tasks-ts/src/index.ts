@@ -828,6 +828,8 @@ export * as VtcGroupsDelete_v0_1 from "./vtc/groups/delete/0.1/payload.js";
 export * as VtcGroupsJoin_v0_1 from "./vtc/groups/join/0.1/payload.js";
 export * as VtcGroupsLeave_v0_1 from "./vtc/groups/leave/0.1/payload.js";
 export * as VtcGroupsList_v0_1 from "./vtc/groups/list/0.1/payload.js";
+export * as VtcGroupsManagersAdd_v0_1 from "./vtc/groups/managers/add/0.1/payload.js";
+export * as VtcGroupsManagersRemove_v0_1 from "./vtc/groups/managers/remove/0.1/payload.js";
 export * as VtcGroupsMembersAdd_v0_1 from "./vtc/groups/members/add/0.1/payload.js";
 export * as VtcGroupsMembersList_v0_1 from "./vtc/groups/members/list/0.1/payload.js";
 export * as VtcGroupsMembersRemove_v0_1 from "./vtc/groups/members/remove/0.1/payload.js";

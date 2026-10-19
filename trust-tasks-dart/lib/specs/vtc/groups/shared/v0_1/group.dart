@@ -297,7 +297,7 @@ class Group {
 
   /// Entries holding `vtc.groups.manage` qualified to this group, read from the
   /// access-control list. Informational: managers are appointed by an access-control
-  /// grant, never by this record.
+  /// grant (vtc/groups/managers/add), never by this record.
   final List<EntryId>? managers;
 
   /// When the community's authorization credential to the group expires. The community
