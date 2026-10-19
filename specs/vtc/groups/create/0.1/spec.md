@@ -99,7 +99,7 @@ The **VTC Groups — Create** Trust Task creates a community group — a working
 The community, on a valid request:
 
 1. Has its VTA mint the group's DID from the `vtc-group` DID template, in a context the community may act in. The template is `did:webvh` with one signing key and one key-agreement key, **no `service`** and no label or name variable: nothing serves messages sent to a group yet, and when group conversations exist a messaging service is added by a DID update. The DID document therefore carries no name or description. A serverless group DID is served by the community at `/group-dids/<groupId>/did.jsonl`.
-2. Where `issuesCredentials` is true (the default), issues the group an authorization credential — a DTG `AuthorizationCredential` from the community to the group's DID — authorising the group to issue membership credentials, and keeps its expiry as `credentialAuthorityValidUntil`. Its VTA signs it **as the community's DID** through the generic `keys/sign-document/0.1` Trust Task (specified separately).
+2. Where `issuesCredentials` is true (the default), issues the group an authorization credential — a DTG `AuthorityCredential` (VAC) from the community to the group's DID — authorising the group to issue membership credentials, and keeps its expiry as `credentialAuthorityValidUntil`. Its VTA signs it **as the community's DID** through the generic `keys/sign-document/0.1` Trust Task (specified separately).
 3. **Then**, and only then, stores the group.
 
 Every remote step comes before the one local write. A failure in steps 1–2 leaves no group behind; at most a DID the VTA minted and nobody uses, which `keyHolderUnavailable` names. The community never holds the group's keys and never falls back to holding them.
