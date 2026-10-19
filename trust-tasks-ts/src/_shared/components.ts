@@ -502,8 +502,8 @@ export type Capability_DeviceV0_2 =
   | "externalAuthUse"
   | "pcsVetter"
   | "pcsApplicant"
-  | "pcsVoter"
-  | "witnessRequest";
+  | "witnessRequest"
+  | "pcsVoter";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
