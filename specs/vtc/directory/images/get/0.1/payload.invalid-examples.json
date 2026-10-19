@@ -1,0 +1,24 @@
+[
+  {
+    "note": "No entry: images are read off an entry, never by digest alone, so the projection decides.",
+    "payload": {
+      "field": "avatar",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "note": "An entry identifier that is not one.",
+    "payload": {
+      "entryId": "did:example:carol",
+      "field": "avatar"
+    }
+  },
+  {
+    "note": "An uppercase digest.",
+    "payload": {
+      "entryId": "dir_Q2xhcmFRMmxoY21GUk1t",
+      "field": "avatar",
+      "sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/images/upload/0.1",
+  "title": "VTC Directory — Images — Upload — payload",
+  "description": "A member, or a directory administrator, hands the community an image for a directory card — an avatar or an `image` field. The community re-encodes it and answers the reference a card holds. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mediaType",
+    "data"
+  ],
+  "properties": {
+    "mediaType": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/ImageMediaType",
+      "description": "The media type of `data` as sent. The community may store another: it re-encodes."
+    },
+    "data": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 349526,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "The image, base64url without padding (RFC 4648 §5). At most 262144 bytes decoded."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Images — Upload — response payload",
+      "description": "The success response to a vtc/directory/images/upload/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/images/upload/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "expiresAt"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/CardBlobRef",
+          "description": "The stored, re-encoded image, without `url` or `urlExpiresAt`. A card holds this as the field's value."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community erases the image if no card holds it by then."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

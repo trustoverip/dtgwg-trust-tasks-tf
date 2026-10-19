@@ -75,10 +75,12 @@ extension type const CardBlobRefMediaType(String value) {
 
 /// A content-addressed image held in the community's blob store — an avatar or an
 /// `image` field. At most 256 KiB, images only, re-encoded by the community on upload
-/// (metadata stripped, dimensions capped) so its digest does not link the member
-/// across communities. `url` and `urlExpiresAt` appear only in a projection: a
-/// short-lived URL the community checks against the same projection, so a member-only
-/// image is never a public URL.
+/// (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest
+/// does not link the member across communities. A viewer reads the bytes with
+/// vtc/directory/images/get, which answers only where the same projection shows the
+/// value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the
+/// community checks against the same projection, so a member-only image is never a
+/// public URL. A community that does not offer one leaves both out.
 class CardBlobRef {
   const CardBlobRef({
     required this.sha256,
@@ -120,6 +122,26 @@ class CardBlobRef {
         if (url != null) 'url': url!,
         if (urlExpiresAt != null) 'urlExpiresAt': urlExpiresAt!,
       };
+}
+
+/// The media types a directory image may have — those a `CardBlobRef` admits.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ImageMediaType(String value) {
+  static const ImageMediaType imagePng = ImageMediaType('image/png');
+  static const ImageMediaType imageJpeg = ImageMediaType('image/jpeg');
+  static const ImageMediaType imageWebp = ImageMediaType('image/webp');
+  static const ImageMediaType imageAvif = ImageMediaType('image/avif');
+
+  /// Every value this specification's schema permits.
+  static const List<ImageMediaType> values = <ImageMediaType>[
+    imagePng,
+    imageJpeg,
+    imageWebp,
+    imageAvif
+  ];
 }
 
 /// The value of a `credential`-sourced field: a claim the member disclosed from a
@@ -291,6 +313,85 @@ extension type const Introductions(String value) {
   ];
 }
 
+/// A cryptographic digest as a multibase-encoded multihash — the encoding the W3C
+/// Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one
+/// `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash
+/// algorithm in-band, so the value is self-describing and the wire format survives an
+/// algorithm change without a schema revision; multibase does the same for the base
+/// encoding, so a verifier never infers base58 from base64url by context. A bare hex
+/// string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract
+/// and is non-conforming here. This definition constrains the *encoding only*. What
+/// the digest is computed over is stated by each referencing field, because it differs
+/// legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS)
+/// canonicalization, while a digest over an opaque artifact is taken over its bytes. A
+/// field whose input is a JSON document and which does not name a canonicalization is
+/// not reproducible. Restricted to the two multibase headers W3C Controlled
+/// Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u`
+/// (base64url-no-pad). CID permits others but states that "interoperability is not
+/// guaranteed between implementations using such values", and a registry whose purpose
+/// is interoperability should not mint digests a conforming verifier may be unable to
+/// read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I
+/// and l, and an earlier permissive pattern let three published examples carry digests
+/// that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with
+/// `did:key` and `did:webvh`.
+typedef DigestMultibase = String;
+
+/// ExternalCardState is a closed set of string values defined by this specification's
+/// schema.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ExternalCardState(String value) {
+  static const ExternalCardState published = ExternalCardState('published');
+  static const ExternalCardState awaitingSignature =
+      ExternalCardState('awaitingSignature');
+
+  /// Every value this specification's schema permits.
+  static const List<ExternalCardState> values = <ExternalCardState>[
+    published,
+    awaitingSignature
+  ];
+}
+
+/// Where the member's external card stands. Present on a card exactly when
+/// `discoverability.external` is true. `published`: the community is serving the card
+/// the member signed, and its trust registry points to it. `awaitingSignature`: the
+/// member's `public` values have changed since they signed, so the community has
+/// withdrawn the card it was serving and serves none until the member signs the
+/// current values (vtc/directory/card/publish). The community never serves a card the
+/// member did not sign, and never one that differs from their current `public` values.
+class ExternalCard {
+  const ExternalCard({
+    required this.state,
+    this.cardDigest,
+    this.publishedAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ExternalCard.fromJson(Map<String, dynamic> json) => ExternalCard(
+        state: ExternalCardState(json['state'] as String),
+        cardDigest: json['cardDigest'] as String?,
+        publishedAt: json['publishedAt'] as String?,
+      );
+
+  final ExternalCardState state;
+
+  /// Present while `published`: digest of the card served, as vtc/directory/card/publish
+  /// defines it.
+  final DigestMultibase? cardDigest;
+
+  /// Present while `published`: when the card now served was published.
+  final String? publishedAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'state': state.value,
+        if (cardDigest != null) 'cardDigest': cardDigest!,
+        if (publishedAt != null) 'publishedAt': publishedAt!,
+      };
+}
+
 /// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
 /// reverse-DNS namespace; structure under each namespace is opaque to the framework.
 typedef Ext = Map<String, dynamic>;
@@ -306,6 +407,7 @@ class DirectoryCard {
     required this.discoverability,
     required this.introductions,
     this.groupAudience,
+    this.externalCard,
     required this.revision,
     required this.updatedAt,
     this.ext,
@@ -326,6 +428,10 @@ class DirectoryCard {
             : (json['groupAudience'] as List<dynamic>)
                 .map((e) => e as String)
                 .toList(),
+        externalCard: json['externalCard'] == null
+            ? null
+            : ExternalCard.fromJson(
+                json['externalCard'] as Map<String, dynamic>),
         revision: json['revision'] as int,
         updatedAt: json['updatedAt'] as String,
         ext: json['ext'] as Map<String, dynamic>?,
@@ -341,6 +447,7 @@ class DirectoryCard {
   /// Absent: every community group the subject belongs to. A group the subject has left
   /// stops counting at once.
   final List<String>? groupAudience;
+  final ExternalCard? externalCard;
 
   /// Incremented on every accepted change to the card, by its subject or by an
   /// administrator's assertion.
@@ -361,6 +468,7 @@ class DirectoryCard {
         'discoverability': discoverability.toJson(),
         'introductions': introductions.value,
         if (groupAudience != null) 'groupAudience': groupAudience!,
+        if (externalCard != null) 'externalCard': externalCard!.toJson(),
         'revision': revision,
         'updatedAt': updatedAt,
         if (ext != null) 'ext': ext!,
@@ -429,3 +537,18 @@ class DirectoryEntry {
 /// check that `@type` is `Card`, `version` is `1.0` and `uid` is
 /// `urn:vtc-directory:&lt;EntryId&gt;`, which this schema does not constrain.
 typedef JsContactCard = Map<String, dynamic>;
+
+/// A member's external card: a JSContact `Card` (RFC 9553) holding exactly their
+/// values whose visibility is `public`, mapped as `JSContactCard` maps them, with the
+/// member's W3C Data Integrity `proof`. The community serves it as received and never
+/// signs, composes or edits it (VTI-REG-004 item 4). Carried as an open object, and
+/// deliberately so: the proof covers every member of the card, and a typed binding
+/// that kept only the members named here would drop the rest and break the signature.
+/// So this schema constrains none of its members, and a consumer MUST check them
+/// itself: `@type`, `version`, `uid` and `proof` are present; `@type` is `Card`;
+/// `version` is `1.0`; `uid` is `urn:vtc-directory:&lt;EntryId&gt;`; `proof` is a
+/// `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019`,
+/// `proofPurpose` `assertionMethod`, and a `verificationMethod` of the member's
+/// membership DID authorized for `assertionMethod`; and the proof verifies over the
+/// card without it, before any member is relied on.
+typedef PublishedCard = Map<String, dynamic>;

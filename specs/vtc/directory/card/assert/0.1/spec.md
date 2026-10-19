@@ -131,6 +131,8 @@ A conforming **consumer** (the community) **MUST**:
 4. Evaluate its `directoryWrite` policy and refuse with `valueRefused` where it refuses.
 5. Write the values, leave the member's visibility choices untouched, increment the card's `revision`, and audit the assertion by reference.
 6. **MUST NOT** return the member's card or any of their other values: the response says only which fields were written.
+7. Accept a `CardBlobRef` as an image value only for an image a directory administrator uploaded with [`vtc/directory/images/upload`](../../../images/upload/0.1/spec.md), or the one the field already holds, and refuse any other with `valueInvalid`.
+8. Where the assertion changes the member's public values while their card is published, withdraw it and set `externalCard` to `awaitingSignature`, as [`vtc/directory/card/publish`](../../publish/0.1/spec.md) item 8 requires: an administrator's value is never published in a card the member did not sign.
 
 ## Authorization
 

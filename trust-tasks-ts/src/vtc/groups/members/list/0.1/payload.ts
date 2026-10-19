@@ -283,7 +283,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "CardBlobRef": {
       "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.",
+      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -552,7 +552,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "CardBlobRef": {
       "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.",
+      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
       "type": "object",
       "additionalProperties": false,
       "required": [

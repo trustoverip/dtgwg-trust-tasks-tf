@@ -5,6 +5,7 @@ pub mod disclosure;
 pub mod entries;
 pub mod export;
 pub mod fields;
+pub mod images;
 pub mod introduce;
 pub mod introduction;
 pub mod notes;

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/images/get/0.1",
+  "title": "VTC Directory — Images — Get — payload",
+  "description": "Read the bytes of an image on a directory entry, where the caller's projection of that entry shows it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId",
+    "field"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "field": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/FieldKey",
+      "description": "The image field: `avatar` or a community field of type `image`."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The image the caller expects, from the `CardBlobRef` it was shown. Where the field now holds another, the answer is `notFound`, so a reader never shows a picture under a card it did not come from."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Images — Get — response payload",
+      "description": "The success response to a vtc/directory/images/get/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/images/get/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "data"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/CardBlobRef",
+          "description": "The image as stored, without `url` or `urlExpiresAt`."
+        },
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 349526,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "The stored bytes, base64url without padding. Their SHA-256 is `image.sha256`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

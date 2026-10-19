@@ -1857,6 +1857,12 @@ mod vtc {
             mod present {
                 mod v0_1;
             }
+            mod public {
+                mod v0_1;
+            }
+            mod publish {
+                mod v0_1;
+            }
             mod show {
                 mod v0_1;
             }
@@ -1889,6 +1895,14 @@ mod vtc {
                 mod v0_1;
             }
             mod update {
+                mod v0_1;
+            }
+        }
+        mod images {
+            mod get {
+                mod v0_1;
+            }
+            mod upload {
                 mod v0_1;
             }
         }

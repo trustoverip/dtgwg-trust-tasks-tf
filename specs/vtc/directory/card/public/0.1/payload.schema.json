@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/card/public/0.1",
+  "title": "VTC Directory — Card — Public — payload",
+  "description": "Read a member's external card, as they signed it. Anyone may ask; the request carries nothing about the reader. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "cardDigest": {
+      "$ref": "../../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+      "description": "The card the reader expects, from a registry pointer. Where the card served now is another, the answer is `notFound`."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Card — Public — response payload",
+      "description": "The success response to a vtc/directory/card/public/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/public/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "card",
+        "cardDigest",
+        "publishedAt"
+      ],
+      "properties": {
+        "card": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/PublishedCard",
+          "description": "Exactly as the member signed it."
+        },
+        "cardDigest": {
+          "$ref": "../../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

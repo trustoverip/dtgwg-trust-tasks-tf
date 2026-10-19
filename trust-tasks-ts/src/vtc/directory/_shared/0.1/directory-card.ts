@@ -20,4 +20,4 @@ export interface DirectoryCardSharedDefinitionsForTheVtcDirectorySpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../_shared/components.js".
  */
-export type { Audience, CardBlobRef, CardValues, DirectoryCard, DirectoryEntry, Discoverability, EntryFields, EntryId, FieldKey, FieldValue, FieldVisibility, Introductions, JSContactCard, Listing, VerifiedValue } from "../../../../_shared/components.js";
+export type { Audience, CardBlobRef, CardValues, DirectoryCard, DirectoryEntry, Discoverability, EntryFields, EntryId, ExternalCard, FieldKey, FieldValue, FieldVisibility, ImageMediaType, Introductions, JSContactCard, Listing, PublishedCard, VerifiedValue } from "../../../../_shared/components.js";

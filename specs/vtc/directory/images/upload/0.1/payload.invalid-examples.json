@@ -1,0 +1,41 @@
+[
+  {
+    "note": "No media type: the community must know what it is decoding.",
+    "payload": {
+      "data": "iVBORw0KGgo"
+    }
+  },
+  {
+    "note": "Not an image type a card can hold.",
+    "payload": {
+      "mediaType": "image/svg+xml",
+      "data": "PHN2Zz4"
+    }
+  },
+  {
+    "note": "Standard base64 with padding: base64url without padding only.",
+    "payload": {
+      "mediaType": "image/png",
+      "data": "iVBORw0KGgo="
+    }
+  },
+  {
+    "note": "The request names no card or field: an image belongs to nobody until a card holds it.",
+    "payload": {
+      "mediaType": "image/png",
+      "data": "iVBORw0KGgo",
+      "field": "avatar"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An upload answer without its erasure deadline.",
+    "payload": {
+      "image": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "mediaType": "image/webp",
+        "size": 1024
+      }
+    }
+  }
+]

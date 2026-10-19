@@ -1,0 +1,12 @@
+[
+  {
+    "note": "Cards are read by entry, never by DID: an external card is the member's, and their membership DID is not a lookup key for strangers.",
+    "payload": {
+      "did": "did:example:carol"
+    }
+  },
+  {
+    "note": "No entry.",
+    "payload": {}
+  }
+]

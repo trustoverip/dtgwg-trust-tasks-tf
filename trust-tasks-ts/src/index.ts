@@ -792,6 +792,8 @@ export * as DisclosureStatementShared_v0_1 from "./vtc/directory/_shared/0.1/dis
 export * as FieldDefinitionShared_v0_1 from "./vtc/directory/_shared/0.1/field-definition.js";
 export * as VtcDirectoryCardAssert_v0_1 from "./vtc/directory/card/assert/0.1/payload.js";
 export * as VtcDirectoryCardPresent_v0_1 from "./vtc/directory/card/present/0.1/payload.js";
+export * as VtcDirectoryCardPublic_v0_1 from "./vtc/directory/card/public/0.1/payload.js";
+export * as VtcDirectoryCardPublish_v0_1 from "./vtc/directory/card/publish/0.1/payload.js";
 export * as VtcDirectoryCardShow_v0_1 from "./vtc/directory/card/show/0.1/payload.js";
 export * as VtcDirectoryCardUpdate_v0_1 from "./vtc/directory/card/update/0.1/payload.js";
 export * as VtcDirectoryDisclosure_v0_1 from "./vtc/directory/disclosure/0.1/payload.js";
@@ -802,6 +804,8 @@ export * as VtcDirectoryFieldsDefine_v0_1 from "./vtc/directory/fields/define/0.
 export * as VtcDirectoryFieldsList_v0_1 from "./vtc/directory/fields/list/0.1/payload.js";
 export * as VtcDirectoryFieldsRetire_v0_1 from "./vtc/directory/fields/retire/0.1/payload.js";
 export * as VtcDirectoryFieldsUpdate_v0_1 from "./vtc/directory/fields/update/0.1/payload.js";
+export * as VtcDirectoryImagesGet_v0_1 from "./vtc/directory/images/get/0.1/payload.js";
+export * as VtcDirectoryImagesUpload_v0_1 from "./vtc/directory/images/upload/0.1/payload.js";
 export * as VtcDirectoryIntroduce_v0_1 from "./vtc/directory/introduce/0.1/payload.js";
 export * as VtcDirectoryIntroduction_v0_1 from "./vtc/directory/introduction/0.1/payload.js";
 export * as VtcDirectoryNotesAppend_v0_1 from "./vtc/directory/notes/append/0.1/payload.js";

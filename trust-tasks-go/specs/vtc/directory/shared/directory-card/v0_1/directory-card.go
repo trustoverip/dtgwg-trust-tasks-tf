@@ -56,10 +56,12 @@ const (
 
 // CardBlobRef A content-addressed image held in the community's blob store — an avatar or
 // an `image` field. At most 256 KiB, images only, re-encoded by the community on upload
-// (metadata stripped, dimensions capped) so its digest does not link the member across
-// communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL
-// the community checks against the same projection, so a member-only image is never a
-// public URL.
+// (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does
+// not link the member across communities. A viewer reads the bytes with
+// vtc/directory/images/get, which answers only where the same projection shows the value.
+// `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community
+// checks against the same projection, so a member-only image is never a public URL. A
+// community that does not offer one leaves both out.
 type CardBlobRef struct {
 	// Lowercase hex SHA-256 of the stored, re-encoded bytes.
 	Sha256 string `json:"sha256"`
@@ -76,6 +78,18 @@ type CardBlobRef struct {
 	// Projection only: when `url` stops working.
 	URLExpiresAt *string `json:"urlExpiresAt,omitempty"`
 }
+
+// ImageMediaType The media types a directory image may have — those a `CardBlobRef`
+// admits.
+type ImageMediaType string
+
+// Values ImageMediaType may take, per this specification's schema.
+const (
+	ImageMediaTypeImagePng  ImageMediaType = "image/png"
+	ImageMediaTypeImageJpeg ImageMediaType = "image/jpeg"
+	ImageMediaTypeImageWebp ImageMediaType = "image/webp"
+	ImageMediaTypeImageAvif ImageMediaType = "image/avif"
+)
 
 // VerifiedValue The value of a `credential`-sourced field: a claim the member disclosed
 // from a credential they presented, with the issuer that attests it. A verified value
@@ -178,6 +192,33 @@ const (
 	IntroductionsOff         Introductions = "off"
 )
 
+// ExternalCardState ExternalCardState is a closed set of string values.
+type ExternalCardState string
+
+// Values ExternalCardState may take, per this specification's schema.
+const (
+	ExternalCardStatePublished         ExternalCardState = "published"
+	ExternalCardStateAwaitingSignature ExternalCardState = "awaitingSignature"
+)
+
+// ExternalCard Where the member's external card stands. Present on a card exactly when
+// `discoverability.external` is true. `published`: the community is serving the card the
+// member signed, and its trust registry points to it. `awaitingSignature`: the member's
+// `public` values have changed since they signed, so the community has withdrawn the card
+// it was serving and serves none until the member signs the current values
+// (vtc/directory/card/publish). The community never serves a card the member did not
+// sign, and never one that differs from their current `public` values.
+type ExternalCard struct {
+	State ExternalCardState `json:"state"`
+
+	// Present while `published`: digest of the card served, as vtc/directory/card/publish
+	// defines it.
+	CardDigest *DigestMultibase `json:"cardDigest,omitempty"`
+
+	// Present while `published`: when the card now served was published.
+	PublishedAt *string `json:"publishedAt,omitempty"`
+}
+
 // DirectoryCard A member's own directory record: their values, a visibility for each
 // field, their discoverability and who may ask to be introduced. Returned whole only to
 // its subject. Every other reader receives a `DirectoryEntry`.
@@ -191,7 +232,8 @@ type DirectoryCard struct {
 	// The community groups whose members count as the `groups` audience for this card.
 	// Absent: every community group the subject belongs to. A group the subject has left
 	// stops counting at once.
-	GroupAudience *[]string `json:"groupAudience,omitempty"`
+	GroupAudience *[]string     `json:"groupAudience,omitempty"`
+	ExternalCard  *ExternalCard `json:"externalCard,omitempty"`
 
 	// Incremented on every accepted change to the card, by its subject or by an
 	// administrator's assertion.
@@ -239,6 +281,42 @@ type DirectoryEntry struct {
 // not constrain.
 type JsContactCard = map[string]json.RawMessage
 
+// PublishedCard A member's external card: a JSContact `Card` (RFC 9553) holding exactly
+// their values whose visibility is `public`, mapped as `JSContactCard` maps them, with
+// the member's W3C Data Integrity `proof`. The community serves it as received and never
+// signs, composes or edits it (VTI-REG-004 item 4). Carried as an open object, and
+// deliberately so: the proof covers every member of the card, and a typed binding that
+// kept only the members named here would drop the rest and break the signature. So this
+// schema constrains none of its members, and a consumer MUST check them itself: `@type`,
+// `version`, `uid` and `proof` are present; `@type` is `Card`; `version` is `1.0`; `uid`
+// is `urn:vtc-directory:<EntryId>`; `proof` is a `DataIntegrityProof` with `cryptosuite`
+// `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a
+// `verificationMethod` of the member's membership DID authorized for `assertionMethod`;
+// and the proof verifies over the card without it, before any member is relied on.
+type PublishedCard = map[string]json.RawMessage
+
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
 // reverse-DNS namespace; structure under each namespace is opaque to the framework.
 type Ext = map[string]json.RawMessage
+
+// DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
+// the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the
+// one `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash
+// algorithm in-band, so the value is self-describing and the wire format survives an
+// algorithm change without a schema revision; multibase does the same for the base
+// encoding, so a verifier never infers base58 from base64url by context. A bare hex
+// string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and
+// is non-conforming here. This definition constrains the *encoding only*. What the digest
+// is computed over is stated by each referencing field, because it differs legitimately:
+// a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while
+// a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON
+// document and which does not name a canonicalization is not reproducible. Restricted to
+// the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires —
+// `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that
+// "interoperability is not guaranteed between implementations using such values", and a
+// registry whose purpose is interoperability should not mint digests a conforming
+// verifier may be unable to read. The alphabets are enforced rather than assumed:
+// base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published
+// examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for
+// consistency with `did:key` and `did:webvh`.
+type DigestMultibase = string

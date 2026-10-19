@@ -62,6 +62,7 @@ A conforming **consumer** (the community) **MUST**:
 1. Resolve the signer to their membership and refuse with `notMember` when they are not an active member.
 2. Return the signer's card whole, including `admin`- and `credential`-sourced values, and `missingRequired`.
 3. Where the member has no card yet, return one with no values, every visibility at the field's default, the community's `defaultListing`, `search: byName`, `external: false`, `introductions: anyone` and `revision: 0`. A card is created for every member; it is never absent.
+4. Include `externalCard` exactly when `discoverability.external` is true: `published` with the digest of the card now served, or `awaitingSignature` when the member's public values have changed since they signed ([`vtc/directory/card/publish`](../../publish/0.1/spec.md)). A client offers to sign and publish the current values when it reads `awaitingSignature`.
 
 ## Authorization
 

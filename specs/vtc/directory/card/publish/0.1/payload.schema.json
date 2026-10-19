@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/card/publish/0.1",
+  "title": "VTC Directory — Card — Publish — payload",
+  "description": "A member publishes their external card: their `public` values as a JSContact card they signed. The community serves it as signed and points its trust registry to it; it never signs or composes the card itself. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "card"
+  ],
+  "properties": {
+    "card": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/PublishedCard"
+    },
+    "expectedRevision": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The card revision the member signed against. Where the card has changed since, the answer is `superseded` and nothing is published."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Card — Publish — response payload",
+      "description": "The success response to a vtc/directory/card/publish/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/publish/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "externalCard"
+      ],
+      "properties": {
+        "externalCard": {
+          "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/ExternalCard",
+          "description": "`published`, with the digest of the card now served."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

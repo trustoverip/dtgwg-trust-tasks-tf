@@ -129,7 +129,7 @@ errorCodes:
         type: string
         maxLength: 32
 - code: vtc/directory/card/update:notAvailable
-  meaning: '`discoverability.external: true` was sent and the community cannot publish external cards. Nothing was changed.'
+  meaning: '`discoverability.external: true` was sent for a card that is not published. External publication is turned on only by publishing a card the member signed (vtc/directory/card/publish). Nothing was changed.'
   retryable: false
 related:
 - vtc/directory/card/show
@@ -171,9 +171,11 @@ A conforming **consumer** (the community) **MUST**:
 4. Refuse an unknown field with `fieldUnknown`, a retired or disabled one with `fieldRetired`, a value that does not fit with `valueInvalid`, and a visibility wider than the field's ceiling with `aboveCeiling`. It **MUST NOT** clamp a too-wide visibility silently: the member must know what they chose.
 5. Evaluate its `directoryWrite` policy over the resulting card and refuse with `valueRefused` where it refuses. Policy may refuse a change; it **MUST NOT** widen a visibility or a discoverability setting beyond what the member sent, and **MUST NOT** refuse a change that only narrows.
 6. Accept any `listing`, including `hidden`, from any member: a community **MUST NOT** hold a member's entry more discoverable than they chose.
-7. Refuse `discoverability.external: true` with `notAvailable` while it cannot publish external cards, and refuse it while the member has not consented to registry publication. An external card is a second consent, separate from registry-publication consent, which it requires.
+7. Refuse `discoverability.external: true` with `notAvailable` when the card's `external` is false: external publication is turned on only by [`vtc/directory/card/publish`](../../publish/0.1/spec.md), with a card the member signed, and `true` here would publish nothing. Where it is already true, `true` is no change. Accept `external: false` as a narrowing, and withdraw any published card as that specification requires — the registry pointer first. An external card is a second consent, separate from registry-publication consent, which it requires.
 8. Apply the update atomically, increment `revision`, record the document's `id` and `issuedAt` as the change in force, and audit it by reference — the audit row names the card and the fields changed, never their values.
 9. Apply a narrowing in every projection from the moment it executes.
+10. Accept a `CardBlobRef` as an image value only as [`vtc/directory/images/upload`](../../../images/upload/0.1/spec.md) item 5 allows — an image this member uploaded, or the one the field already holds — and refuse any other with `valueInvalid`.
+11. Where the update changes the member's public values while their card is published, withdraw it and set `externalCard` to `awaitingSignature`, as [`card/publish`](../../publish/0.1/spec.md) item 8 requires.
 
 ## Authorization
 

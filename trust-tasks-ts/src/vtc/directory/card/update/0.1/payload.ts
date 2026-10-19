@@ -3,7 +3,7 @@
  * Source: specs/vtc/directory/card/update/0.1/payload.schema.json
  */
 
-import type { Audience, CardBlobRef, CardValues, DirectoryCard, Discoverability, EntryId, Ext, FieldKey, FieldValue, FieldVisibility, GroupId, Introductions, Listing, VerifiedValue } from "../../../../../_shared/components.js";
+import type { Audience, CardBlobRef, CardValues, DigestMultibase, DirectoryCard, Discoverability, EntryId, Ext, ExternalCard, FieldKey, FieldValue, FieldVisibility, GroupId, Introductions, Listing, VerifiedValue } from "../../../../../_shared/components.js";
 
 
 /**
@@ -52,7 +52,7 @@ export interface VTCDirectoryCardUpdateResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Audience, CardBlobRef, CardValues, DirectoryCard, Discoverability, EntryId, Ext, FieldKey, FieldValue, FieldVisibility, GroupId, Introductions, Listing, VerifiedValue };
+export type { Audience, CardBlobRef, CardValues, DigestMultibase, DirectoryCard, Discoverability, EntryId, Ext, ExternalCard, FieldKey, FieldValue, FieldVisibility, GroupId, Introductions, Listing, VerifiedValue };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/directory/card/update/0.1" as const;
@@ -232,6 +232,9 @@ export const PAYLOAD_SCHEMA = {
           },
           "description": "The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once."
         },
+        "externalCard": {
+          "$ref": "#/$defs/ExternalCard"
+        },
         "revision": {
           "type": "integer",
           "minimum": 0,
@@ -247,6 +250,43 @@ export const PAYLOAD_SCHEMA = {
           "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection."
         }
       }
+    },
+    "ExternalCard": {
+      "title": "ExternalCard",
+      "description": "Where the member's external card stands. Present on a card exactly when `discoverability.external` is true. `published`: the community is serving the card the member signed, and its trust registry points to it. `awaitingSignature`: the member's `public` values have changed since they signed, so the community has withdrawn the card it was serving and serves none until the member signs the current values (vtc/directory/card/publish). The community never serves a card the member did not sign, and never one that differs from their current `public` values.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "published",
+            "awaitingSignature"
+          ]
+        },
+        "cardDigest": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "Present while `published`: digest of the card served, as vtc/directory/card/publish defines it."
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present while `published`: when the card now served was published."
+        }
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     },
     "Introductions": {
       "title": "Introductions",
@@ -413,7 +453,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "CardBlobRef": {
       "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.",
+      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -559,6 +599,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           },
           "description": "The community groups whose members count as the `groups` audience for this card. Absent: every community group the subject belongs to. A group the subject has left stops counting at once."
         },
+        "externalCard": {
+          "$ref": "#/$defs/ExternalCard"
+        },
         "revision": {
           "type": "integer",
           "minimum": 0,
@@ -574,6 +617,43 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry directory data that bypasses the projection."
         }
       }
+    },
+    "ExternalCard": {
+      "title": "ExternalCard",
+      "description": "Where the member's external card stands. Present on a card exactly when `discoverability.external` is true. `published`: the community is serving the card the member signed, and its trust registry points to it. `awaitingSignature`: the member's `public` values have changed since they signed, so the community has withdrawn the card it was serving and serves none until the member signs the current values (vtc/directory/card/publish). The community never serves a card the member did not sign, and never one that differs from their current `public` values.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "published",
+            "awaitingSignature"
+          ]
+        },
+        "cardDigest": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "Present while `published`: digest of the card served, as vtc/directory/card/publish defines it."
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present while `published`: when the card now served was published."
+        }
+      }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     },
     "Introductions": {
       "title": "Introductions",
@@ -740,7 +820,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "CardBlobRef": {
       "title": "CardBlobRef",
-      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.",
+      "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
       "type": "object",
       "additionalProperties": false,
       "required": [

@@ -843,6 +843,10 @@ export type Handle = string;
  */
 export type HeadVersion = number;
 /**
+ * The media types a directory image may have — those a `CardBlobRef` admits.
+ */
+export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
+/**
  * Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
  */
 export type Introductions = "anyone" | "groups" | "connections" | "off";
@@ -4930,7 +4934,7 @@ export interface CapabilityScopeNone {
   scope: "none";
 }
 /**
- * A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (metadata stripped, dimensions capped) so its digest does not link the member across communities. `url` and `urlExpiresAt` appear only in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL.
+ * A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.
  */
 export interface CardBlobRef {
   /**
@@ -6126,6 +6130,7 @@ export interface DirectoryCard {
    * @maxItems 64
    */
   groupAudience?: string[];
+  externalCard?: ExternalCard;
   /**
    * Incremented on every accepted change to the card, by its subject or by an administrator's assertion.
    */
@@ -6698,6 +6703,20 @@ export interface ExternalAccount {
   lastProbe?: AccountProbeReport;
   createdAt: string;
   updatedAt: string;
+}
+/**
+ * Where the member's external card stands. Present on a card exactly when `discoverability.external` is true. `published`: the community is serving the card the member signed, and its trust registry points to it. `awaitingSignature`: the member's `public` values have changed since they signed, so the community has withdrawn the card it was serving and serves none until the member signs the current values (vtc/directory/card/publish). The community never serves a card the member did not sign, and never one that differs from their current `public` values.
+ */
+export interface ExternalCard {
+  state: "published" | "awaitingSignature";
+  /**
+   * Present while `published`: digest of the card served, as vtc/directory/card/publish defines it.
+   */
+  cardDigest?: DigestMultibase;
+  /**
+   * Present while `published`: when the card now served was published.
+   */
+  publishedAt?: string;
 }
 /**
  * One displayed value, with where it comes from and how to render it.
@@ -8471,6 +8490,14 @@ export interface PublicKeyCredentialRequestOptions {
   rpId?: string;
   allowCredentials?: PublicKeyCredentialDescriptor[];
   userVerification?: "discouraged" | "preferred" | "required";
+}
+/**
+ * A member's external card: a JSContact `Card` (RFC 9553) holding exactly their values whose visibility is `public`, mapped as `JSContactCard` maps them, with the member's W3C Data Integrity `proof`. The community serves it as received and never signs, composes or edits it (VTI-REG-004 item 4).
+ *
+ * Carried as an open object, and deliberately so: the proof covers every member of the card, and a typed binding that kept only the members named here would drop the rest and break the signature. So this schema constrains none of its members, and a consumer MUST check them itself: `@type`, `version`, `uid` and `proof` are present; `@type` is `Card`; `version` is `1.0`; `uid` is `urn:vtc-directory:<EntryId>`; `proof` is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a `verificationMethod` of the member's membership DID authorized for `assertionMethod`; and the proof verifies over the card without it, before any member is relied on.
+ */
+export interface PublishedCard {
+  [k: string]: unknown | undefined;
 }
 /**
  * The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.
