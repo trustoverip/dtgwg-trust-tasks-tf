@@ -7,21 +7,9 @@ import type { ElectionId, Ext } from "../../../../_shared/components.js";
 
 
 /**
- * Only elections in this state. Absent: every state.
- */
-export type RegistrarState =
-  | "registered"
-  | "registration"
-  | "voting"
-  | "closed"
-  | "tallied"
-  | "cancelled"
-  | "pendingRegistration"
-  | "registrationRefused";
-/**
  * An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).
  */
-export type RegistrarState1 =
+export type RegistrarState =
   | "registered"
   | "registration"
   | "voting"
@@ -69,7 +57,7 @@ export interface ElectionListItem {
    * The manifest's `title`, when it has one.
    */
   title?: string;
-  state: RegistrarState1;
+  state: RegistrarState;
   votingOpens: string;
   votingCloses: string;
   /**
@@ -115,8 +103,7 @@ export const PAYLOAD_SCHEMA = {
   "additionalProperties": false,
   "properties": {
     "state": {
-      "$ref": "#/$defs/RegistrarState",
-      "description": "Only elections in this state. Absent: every state."
+      "$ref": "#/$defs/RegistrarState"
     },
     "cursor": {
       "type": "string",

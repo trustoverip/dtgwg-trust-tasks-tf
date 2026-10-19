@@ -7,8 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "state": {
-      "$ref": "#/$defs/RegistrarState",
-      "description": "Only elections in this state. Absent: every state."
+      "$ref": "#/$defs/RegistrarState"
     },
     "cursor": {
       "type": "string",

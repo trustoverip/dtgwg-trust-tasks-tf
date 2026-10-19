@@ -7,17 +7,9 @@ import type { BoardVisibility, ChoiceQuestion, DigestMultibase, ElectionId, Ext,
 
 
 /**
- * The PCS identifier of this election's voter key. Fresh for the election, so it links nothing across elections.
+ * A suite value, multibase base58btc over its canonical (compressed) encoding.
  */
 export type PcsValue = string;
-/**
- * The issuance encoding the suite carries.
- */
-export type PcsValue1 = string;
-/**
- * The request's tag under the root context.
- */
-export type PcsValue2 = string;
 
 /**
  * A voter's client asks its VTA for the blinded request that obtains the voter's ticket for one election; the VTA derives a voter key for that election alone and keeps the blinding state.
@@ -66,8 +58,8 @@ export interface TicketRequest {
    * The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.
    */
   request: {
-    encoding?: PcsValue1;
-    t0?: PcsValue2;
+    encoding?: PcsValue;
+    t0?: PcsValue;
     /**
      * The proof that the commitment is well formed and the requester holds its secret.
      */
@@ -163,8 +155,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2)."
         },
         "id": {
-          "$ref": "#/$defs/PcsValue",
-          "description": "The PCS identifier of this election's voter key. Fresh for the election, so it links nothing across elections."
+          "$ref": "#/$defs/PcsValue"
         },
         "request": {
           "type": "object",
@@ -175,12 +166,10 @@ export const PAYLOAD_SCHEMA = {
           "description": "The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.",
           "properties": {
             "encoding": {
-              "$ref": "#/$defs/PcsValue",
-              "description": "The issuance encoding the suite carries."
+              "$ref": "#/$defs/PcsValue"
             },
             "t0": {
-              "$ref": "#/$defs/PcsValue",
-              "description": "The request's tag under the root context."
+              "$ref": "#/$defs/PcsValue"
             },
             "proof": {
               "type": "string",
@@ -694,8 +683,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2)."
         },
         "id": {
-          "$ref": "#/$defs/PcsValue",
-          "description": "The PCS identifier of this election's voter key. Fresh for the election, so it links nothing across elections."
+          "$ref": "#/$defs/PcsValue"
         },
         "request": {
           "type": "object",
@@ -706,12 +694,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.",
           "properties": {
             "encoding": {
-              "$ref": "#/$defs/PcsValue",
-              "description": "The issuance encoding the suite carries."
+              "$ref": "#/$defs/PcsValue"
             },
             "t0": {
-              "$ref": "#/$defs/PcsValue",
-              "description": "The request's tag under the root context."
+              "$ref": "#/$defs/PcsValue"
             },
             "proof": {
               "type": "string",

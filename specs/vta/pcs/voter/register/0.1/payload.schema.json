@@ -62,8 +62,7 @@
           "description": "The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2)."
         },
         "id": {
-          "$ref": "#/$defs/PcsValue",
-          "description": "The PCS identifier of this election's voter key. Fresh for the election, so it links nothing across elections."
+          "$ref": "#/$defs/PcsValue"
         },
         "request": {
           "type": "object",
@@ -74,12 +73,10 @@
           "description": "The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.",
           "properties": {
             "encoding": {
-              "$ref": "#/$defs/PcsValue",
-              "description": "The issuance encoding the suite carries."
+              "$ref": "#/$defs/PcsValue"
             },
             "t0": {
-              "$ref": "#/$defs/PcsValue",
-              "description": "The request's tag under the root context."
+              "$ref": "#/$defs/PcsValue"
             },
             "proof": {
               "type": "string",
