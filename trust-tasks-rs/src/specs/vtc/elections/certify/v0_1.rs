@@ -1423,6 +1423,7 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ALREADY_CERTIFIED,
     error_codes::ELECTION_UNKNOWN,
     error_codes::NOT_TALLIED,
     error_codes::BOARD_INCONSISTENT,
@@ -1439,6 +1440,16 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
+    /// `vtc/elections/certify:alreadyCertified`
+    ///
+    /// The election is already certified.
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_CERTIFIED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/elections/certify:alreadyCertified",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
     /// `vtc/elections/certify:electionUnknown`
     ///
     /// No election with this identifier exists for this community, or the caller may not see it (CONVENTIONS §7).

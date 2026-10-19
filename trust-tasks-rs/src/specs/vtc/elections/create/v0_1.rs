@@ -2837,6 +2837,7 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ELECTION_EXISTS,
     error_codes::INVALID_MANIFEST,
     error_codes::UNSUPPORTED_SECRECY,
     error_codes::COMMUNITY_MISMATCH,
@@ -2850,6 +2851,16 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
+    /// `vtc/elections/create:electionExists`
+    ///
+    /// The community already holds an election, or a parked creation, under this electionId.
+    ///
+    /// Declared `retryable: false`.
+    pub const ELECTION_EXISTS: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/elections/create:electionExists",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
     /// `vtc/elections/create:invalidManifest`
     ///
     /// The manifest does not satisfy the rules voting/election/register applies to one: its schedule is out of order or already past, a question or option key repeats, a selection bound is outside its options, a non-open manifest names no trustees or an open one does, or a rule the schema cannot state does not hold. `details.reason` names the rule.

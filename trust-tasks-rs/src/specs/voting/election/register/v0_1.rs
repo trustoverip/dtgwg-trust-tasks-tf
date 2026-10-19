@@ -3396,6 +3396,7 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ALREADY_REGISTERED,
     error_codes::MANIFEST_MISMATCH,
     error_codes::UNSUPPORTED_SECRECY,
     error_codes::INVALID_MANIFEST,
@@ -3407,6 +3408,16 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
+    /// `voting/election/register:alreadyRegistered`
+    ///
+    /// This election is already registered here with another manifest digest or voting key; a registered manifest never changes (VTI-VOT-013).
+    ///
+    /// Declared `retryable: false`.
+    pub const ALREADY_REGISTERED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "voting/election/register:alreadyRegistered",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
     /// `voting/election/register:manifestMismatch`
     ///
     /// `manifestDigest` is not the digest of `manifest`.

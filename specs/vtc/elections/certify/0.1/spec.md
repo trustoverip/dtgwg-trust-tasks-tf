@@ -53,6 +53,9 @@ retention:
     A certified result is a governance record: the community keeps it, the head it verified and the attestations for as
     long as the result stands.
 errorCodes:
+  - code: vtc/elections/certify:alreadyCertified
+    meaning: "The election is already certified."
+    retryable: false
   - code: vtc/elections/certify:electionUnknown
     meaning: "No election with this identifier exists for this community, or the caller may not see it (CONVENTIONS §7)."
     retryable: false
@@ -148,7 +151,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **community** (`recipient`):
 
 1. **MUST** answer `electionUnknown` for an election it does not hold or the caller may not see, as [`vtc/elections/show`](../../show/0.1/spec.md) does, and **MUST** refuse a requester without `vtc.elections.manage` (VTI-VOT-080), read from the signer's live access-control entry at execution time, with `permissionDenied`.
-2. **MUST** refuse with `notTallied` an election the ballot box has not tallied, and with `conflict` one it has already certified.
+2. **MUST** refuse with `notTallied` an election the ballot box has not tallied, and with `vtc/elections/certify:alreadyCertified` one it has already certified.
 3. **MUST** read, itself and from the ballot box the manifest names, the published result ([`voting/result/show`](../../../../voting/result/show/0.1/spec.md)), a signed head of the board as it stood at close ([`voting/board/head`](../../../../voting/board/head/0.1/spec.md)) and every entry under that head ([`voting/board/read`](../../../../voting/board/read/0.1/spec.md)). It **MUST NOT** take any of these from the requester. A read that does not answer is `ballotBoxUnavailable`, and nothing is recorded.
 
 It **MUST** then verify, and refuse on the first failure (VTI-VOT-071):

@@ -3515,6 +3515,7 @@ impl crate::RequestPayload for Payload {
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
+    error_codes::ELECTION_CHANGED,
     error_codes::UNSUPPORTED_SUITE,
     error_codes::PARAMETERS_INVALID,
     error_codes::UNSUPPORTED_SECRECY,
@@ -3527,6 +3528,16 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 /// specification, so it cannot name a code the specification never
 /// declared.
 pub mod error_codes {
+    /// `vta/pcs/voter/register:electionChanged`
+    ///
+    /// The engine holds this election under another manifest digest or voting key.
+    ///
+    /// Declared `retryable: false`.
+    pub const ELECTION_CHANGED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/pcs/voter/register:electionChanged",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
     /// `vta/pcs/voter/register:unsupportedSuite`
     ///
     /// The parameters name a suite the engine does not implement.

@@ -55,6 +55,9 @@ retention:
     The election is a record of the community for as long as its result stands: the manifest is what every ticket, cast
     and certification of the election is bound to, and who created it, on whose consent, is the provenance of a decision.
 errorCodes:
+  - code: vtc/elections/create:electionExists
+    meaning: "The community already holds an election, or a parked creation, under this electionId."
+    retryable: false
   - code: vtc/elections/create:invalidManifest
     meaning: "The manifest does not satisfy the rules voting/election/register applies to one: its schedule is out of order or already past, a question or option key repeats, a selection bound is outside its options, a non-open manifest names no trustees or an open one does, or a rule the schema cannot state does not hold. `details.reason` names the rule."
     retryable: false
@@ -125,7 +128,7 @@ A conforming **community** (`recipient`) checks, in this order:
 3. **The secrecy level is served.** A `secrecy` other than `open` **MUST** be refused with `unsupportedSecrecy` (CONVENTIONS §7).
 4. **The manifest is this community's.** `manifest.community` **MUST** equal the community's own DID, or `communityMismatch`.
 5. **The ballot box is trusted.** `manifest.ballotBox` **MUST** be on the community's list of trusted voting services, or `ballotBoxNotTrusted` (VTI-VOT-082). That list is community configuration that alters trust semantics: a change to it is the community's to govern as it governs any such change, and never rides on this task.
-6. **The identifier is new.** An `electionId` the community already holds an election, or a parked creation, under **MUST** be refused with `conflict`, whatever the manifest. A repeat of the same signed document is answered as [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11 provides, with the answer first given.
+6. **The identifier is new.** An `electionId` the community already holds an election, or a parked creation, under **MUST** be refused with `vtc/elections/create:electionExists`, whatever the manifest. A repeat of the same signed document is answered as [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11 provides, with the answer first given.
 
 Then:
 

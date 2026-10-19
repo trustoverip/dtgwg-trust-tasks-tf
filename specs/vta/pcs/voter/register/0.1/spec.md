@@ -54,6 +54,9 @@ retention:
     The election's record and the blinding state last until the ticket is accepted; the record
     lasts until the election is tallied or cancelled (CONVENTIONS §5.3).
 errorCodes:
+  - code: vta/pcs/voter/register:electionChanged
+    meaning: "The engine holds this election under another manifest digest or voting key."
+    retryable: false
   - code: vta/pcs/voter/register:unsupportedSuite
     meaning: "The parameters name a suite the engine does not implement."
     retryable: false
@@ -102,7 +105,7 @@ A conforming **consumer** (the PCS engine) **MUST**:
 6. Compute `manifestDigest`, the SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization.
 7. Where it already records this election for (`contextId`, `community`, `manifest.electionId`):
    1. refuse with `vta/pcs/voter/register:ticketHeld` if it holds the ticket;
-   2. refuse with `conflict` if the recorded manifest digest or voting key differs from this request's;
+   2. refuse with `vta/pcs/voter/register:electionChanged` if the recorded manifest digest or voting key differs from this request's;
    3. otherwise return the request it kept, unchanged — under the same key and the same blinding state — so that the community's answer to a request already sent can still be unblinded.
 8. Otherwise allocate a fresh derivation path under the context's base for this election alone (VTI-VOT-023, [CONVENTIONS §5.2](../../../../../voting/_shared/0.1/CONVENTIONS.md#5-custody-vta)), derive the voter key from it, and build the blinded root request for the class `voter/<electionId>` under the deployment `<community>#voting-pcs` ([CONVENTIONS §3.1–3.2](../../../../../voting/_shared/0.1/CONVENTIONS.md#3-cryptographic-binding)).
 9. Record the election — the path, `manifestDigest`, `votingKey` and the manifest's `ballotBox` — keep the request and its blinding state under the protection of the context's key records ([VTA conventions §2.3](../../../../../vta/_shared/0.4/CONVENTIONS.md#2-custody)), and return the request: never the key, nor the blinding state.

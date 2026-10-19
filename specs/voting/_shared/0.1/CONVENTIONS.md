@@ -154,15 +154,19 @@ that declares them:
 | `notEligible` | The roll rule does not admit the requester |
 | `alreadyIssued` | The requester already holds a ticket for this election |
 
-Every other refusal uses the framework's standard codes (SPEC §8.3): `permissionDenied`,
-`malformedRequest`, `conflict`.
+Every other refusal uses the framework's standard codes (SPEC §8.3), such as
+`permissionDenied` and `malformedRequest`. A repeat that conflicts with what a node already holds
+has a task-specific code (`voting/election/register:alreadyRegistered`,
+`vtc/elections/create:electionExists`, `vtc/elections/certify:alreadyCertified`,
+`vta/pcs/voter/register:electionChanged`): the framework defines no standard `conflict`.
 
 ## 8. Retry safety
 
 1. `voting/ballot/cast` is **idempotent**: a cast resent unchanged is answered with its first
    receipt and counted once (VTI-VOT-042).
 2. `voting/election/register` is idempotent for the same `(community, electionId,
-   manifestDigest)`; a registration of the same identifier with another digest is `conflict`.
+   manifestDigest)`; a registration of the same identifier with another digest is
+   `voting/election/register:alreadyRegistered`.
 3. `vtc/elections/tickets/issue` answers a repeat of the same signed request with the answer it
    first gave, and refuses any other request from a party that already holds a ticket
    (`alreadyIssued`).

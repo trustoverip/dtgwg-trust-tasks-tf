@@ -54,6 +54,9 @@ retention:
     The manifest and the voting key are what every cast is checked against and what any
     recount starts from, so the ballot box keeps them for as long as it keeps the board.
 errorCodes:
+  - code: voting/election/register:alreadyRegistered
+    meaning: "This election is already registered here with another manifest digest or voting key; a registered manifest never changes (VTI-VOT-013)."
+    retryable: false
   - code: voting/election/register:manifestMismatch
     meaning: "`manifestDigest` is not the digest of `manifest`."
     retryable: false
@@ -105,7 +108,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
    - a `choice` question has `minSelections` > `maxSelections` or `maxSelections` greater than its number of options;
    - a `score` question has `min` ≥ `max`;
    - `trustees` is present on an `open` manifest.
-6. Treat a registration of the same `(community, electionId)` with the same `manifestDigest` and the same `parameters` as a repeat: answer with the election as it now stands and change nothing. Refuse one with another digest or other parameters with `conflict` (VTI-VOT-013).
+6. Treat a registration of the same `(community, electionId)` with the same `manifestDigest` and the same `parameters` as a repeat: answer with the election as it now stands and change nothing. Refuse one with another digest or other parameters with `voting/election/register:alreadyRegistered` (VTI-VOT-013).
 7. Otherwise create the election with an empty board, in state `registered` (or `registration` once `registrationOpens` has passed), and answer with its summary.
 
 Once an election is registered, the ballot box **MUST** run its lifecycle on its own clock:
