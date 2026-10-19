@@ -24,7 +24,7 @@
       "anyOf": [
         {
           "type": "object",
-          "description": "A W3C Verifiable Presentation with a Data Integrity proof whose `challenge` is this document's `id` and whose `domain` is the community's DID."
+          "description": "A W3C Verifiable Presentation whose `nonce` is this document's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof."
         },
         {
           "type": "string",

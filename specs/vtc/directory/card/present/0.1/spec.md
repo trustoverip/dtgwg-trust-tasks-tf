@@ -95,7 +95,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** is the member. It binds the presentation to this document: a Data Integrity presentation's proof carries `challenge` equal to this document's `id` and `domain` equal to the community's DID; an SD-JWT presentation's key-binding JWT carries `nonce` equal to this document's `id` and `aud` equal to the community's DID. It discloses only the claims the named fields read.
+A conforming **producer** is the member. It binds the presentation to this document: a Data Integrity presentation carries `nonce` equal to this document's `id` and `domain` equal to the community's DID as members of the presentation its holder proof signs, and a proof that also states `challenge` or `domain` states the same values; an SD-JWT presentation's key-binding JWT carries `nonce` equal to this document's `id` and `aud` equal to the community's DID. It discloses only the claims the named fields read.
 
 A conforming **consumer** (the community) **MUST**:
 
