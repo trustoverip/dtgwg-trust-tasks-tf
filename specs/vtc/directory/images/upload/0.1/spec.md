@@ -45,7 +45,7 @@ errorCodes:
   meaning: The signer is neither an active member nor a holder of the directory administration capability. Nothing was stored.
   retryable: false
 - code: vtc/directory/images/upload:tooLarge
-  meaning: '`data` decodes to more than 262144 bytes. Nothing was stored.'
+  meaning: '`data` decodes to more than 262144 bytes, or to a picture larger than the community decodes — more pixels, or more memory to decode, than its bound. Nothing was stored.'
   retryable: false
 - code: vtc/directory/images/upload:notAnImage
   meaning: '`data` does not decode as an image of `mediaType`, or as an image the community can re-encode. Nothing was stored.'
@@ -84,7 +84,7 @@ A conforming **producer** is an active member, signing with their membership DID
 A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a signer who is neither an active member nor a directory administrator with `notMember`.
-2. Refuse `data` that decodes to more than 262144 bytes with `tooLarge`, before decoding it as an image.
+2. Refuse `data` that decodes to more than 262144 bytes with `tooLarge`, before decoding it as an image; and bound what it decodes — the pixels a picture may claim and the memory its decoding may take — refusing a picture beyond either with `tooLarge`. A few kilobytes can claim tens of thousands of pixels across, and the byte bound alone does not stop them. The payload schema already bounds `data` to 262144 bytes, so in practice it is the decoding bound that refuses.
 3. Decode `data` as an image of `mediaType`, refusing with `notAnImage` what does not decode, and re-encode it: every metadata block removed, its dimensions capped at a bound of the community's choosing, no larger than 1024 pixels on the longer side, and stored as one of the `ImageMediaType`s. It **MUST NOT** store or serve the bytes it received.
 4. Answer the `CardBlobRef` of the stored bytes — `sha256` of exactly those bytes, their `mediaType` and `size` — and the `expiresAt` by which a card must hold it, no later than 24 hours after the upload.
 5. Record who uploaded the image. [`vtc/directory/card/update`](../../../card/update/0.1/spec.md) **MUST** accept a `CardBlobRef` value only for an image the same member uploaded and that has not been erased, or the one that field already holds; [`vtc/directory/card/assert`](../../../card/assert/0.1/spec.md) only for one a directory administrator uploaded. Anything else is that task's `valueInvalid`. A digest seen on someone else's card is never a way to put their picture on your own.

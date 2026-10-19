@@ -928,7 +928,7 @@ pub mod error_codes {
     };
     /// `vtc/directory/images/upload:tooLarge`
     ///
-    /// `data` decodes to more than 262144 bytes. Nothing was stored.
+    /// `data` decodes to more than 262144 bytes, or to a picture larger than the community decodes — more pixels, or more memory to decode, than its bound. Nothing was stored.
     ///
     /// Declared `retryable: false`.
     pub const TOO_LARGE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
