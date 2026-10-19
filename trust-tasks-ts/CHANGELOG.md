@@ -11,6 +11,62 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.19 — 2026-10-19
+
+
+### Added
+
+- **vtc/directory**: Pictures and external cards — images/upload, images/get, card/publish, card/public (#826)
+
+The two parts of the member directory that had no Trust Task.
+
+- **vtc/directory**: Disclosure — the statement of what a community's directory discloses, and to whom; join manifest 0.4 carries it (#823)
+
+A community offering a member directory must publish a statement of what it discloses and to whom, generated from its configuration, and show it to applicants before they apply (VTI-DIR-130). No task carried one.
+
+  vtc/directory/disclosure/0.1 returns it. The request carries nothing; any reader the community answers vtc/join-requests/manifest for may read it, with or without a proof. The statement (`DirectoryDisclosure`, in directory/_shared/0.1/disclosure-statement.schema.json) lists every active field with its source, ceiling, default visibility and whether it is searchable or a facet; what a new card gets (listing, search, and introductions where the community delivers them); how far a member's membership DID can reach; whether administrators keep notes; whether the community has groups, and how long their membership credentials last; and whether a card can be published beyond the community. Every audience is an upper bound, since policy only narrows. It names itself with a statementDigest (JCS without the digest, SHA-256 multihash), so an applicant can record which statement it was shown. It carries no timestamp, so the digest changes exactly when what it says changes.
+
+  vtc/join-requests/manifest/0.4 adds one optional response member, directoryDisclosure: the same statement, present exactly where the community offers a directory, outside every criterion, so no requirementsDigest moves. Nothing else changes from 0.3.
+
+
+
+### Specifications
+
+- **rooms/owner/group**: Add 0.3 and renew 0.2 settle a pending removal by remove 0.3 item 8 (#824)
+
+rooms/owner/group/remove 0.3 item 8 settles a pending removal "at a later
+  request — of this task or of any other that settles the room's pending
+  advance", and has that other task refuse with its own hostRefused carrying
+  {member, code, listKept}. add and renew are those other tasks, and neither
+  said so: their item 6 knew only the epoch check (read alone, it never
+  redelivers the removal's revocation list), and their hostRefused meant "the
+  host declined the epoch advance; nothing was changed" with no details shape.
+  OpenVTC/verifiable-trust-infrastructure #2191 implements remove 0.3 item 8
+  before add and renew at every version, so that implementation diverged from
+  the add and renew specifications it serves.
+
+  rooms/owner/group/add 0.3 and rooms/owner/group/renew 0.2:
+  - item 6.1 settles a pending removal by remove 0.3 item 8, in full and before
+    the request's own work; item 6.2 is the old epoch check for every other
+    pending advance (and now says an unanswered rooms/info is hostUnreachable);
+  - add earlierRemovalRefused {member, code, listKept}, the same code and
+    details remove 0.3 uses, so all three tasks report it alike;
+  - hostUnreachable gains details.stage (revocation | advance) as remove 0.3;
+    hostRefused gains a bounded details {code, reason} and means only that the
+    host declined this request's own advance.
+  Payload and response schemas unchanged.
+
+  Earlier versions (add 0.1/0.2, renew 0.1) are untouched. The new versions'
+  compatibility notes say what a recipient answers there, which is what remove
+  0.3 item 8 already requires: hostRefused carrying {member, code, listKept}
+  (their hostRefused declares no details shape) and hostUnreachable with no
+  details.
+
+  remove 0.3 item 8 is edited in place, errata-style: its "at another task"
+  clauses now name add 0.3 / renew 0.2's earlierRemovalRefused and stage, and
+  keep hostRefused for versions declaring no such code. No pre-existing
+  version's wire behaviour changes.
+
 ## 0.26.18 — 2026-10-18
 
 
