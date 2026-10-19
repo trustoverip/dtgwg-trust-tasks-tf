@@ -46,6 +46,9 @@ errorCodes:
       reason:
         type: string
         maxLength: 500
+- code: vtc/groups/create:kindNotServed
+  meaning: The community serves only static groups. A dynamic group is not created; nothing was stored.
+  retryable: false
 - code: vtc/groups/create:settingsInvalid
   meaning: '`joinPolicy` on a dynamic group, or `showMembers` wider than `visibility`.'
   retryable: false
@@ -96,7 +99,7 @@ The **VTC Groups — Create** Trust Task creates a community group — a working
 The community, on a valid request:
 
 1. Has its VTA mint the group's DID from the `vtc-group` DID template, in a context the community may act in. The template is `did:webvh` with one signing key and one key-agreement key, **no `service`** and no label or name variable: nothing serves messages sent to a group yet, and when group conversations exist a messaging service is added by a DID update. The DID document therefore carries no name or description. A serverless group DID is served by the community at `/group-dids/<groupId>/did.jsonl`.
-2. Where `issuesCredentials` is true (the default), issues the group an authorization credential — a DTG `AuthorizationCredential` from the community to the group's DID — authorising the group to issue membership credentials, and keeps its expiry as `credentialAuthorityValidUntil`. Its VTA signs it **as the community's DID** through the generic `keys/sign-document/0.1` Trust Task (specified separately).
+2. Where `issuesCredentials` is true (the default), issues the group an authorization credential — a DTG `AuthorityCredential` (VAC) from the community to the group's DID — authorising the group to issue membership credentials, and keeps its expiry as `credentialAuthorityValidUntil`. Its VTA signs it **as the community's DID** through the generic `keys/sign-document/0.1` Trust Task (specified separately).
 3. **Then**, and only then, stores the group.
 
 Every remote step comes before the one local write. A failure in steps 1–2 leaves no group behind; at most a DID the VTA minted and nobody uses, which `keyHolderUnavailable` names. The community never holds the group's keys and never falls back to holding them.
@@ -117,7 +120,7 @@ A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a caller without unqualified `vtc.groups.manage` with `permissionDenied`, and refuse with `policyRefused` where its `groups` policy refuses.
 2. Refuse a rule on a static group, a missing rule on a dynamic group, or a rule that reads anything but verified facts — community role, `admin`- or `credential`-sourced fields, personhood, join date — with `ruleInvalid`. A rule **MUST NOT** read a `member`-sourced field.
-3. Refuse `joinPolicy` on a dynamic group, and `showMembers` wider than `visibility`, with `settingsInvalid`.
+3. Refuse `joinPolicy` on a dynamic group, and `showMembers` wider than `visibility`, with `settingsInvalid`. A community that serves only static groups **MAY** refuse a dynamic one with `kindNotServed` once its rule has been checked; it **MUST NOT** store a dynamic group it does not compute.
 4. Perform the steps above in order, store the group only after they succeed, refuse with `noKeyHolder` when it has no VTA to hold the group's keys, and **MUST NOT** hold any group key itself.
 5. Issue the group's authorization credential with an expiry, and renew it well before it lapses for as long as the group exists.
 6. Create the group with no members and no bindings; a dynamic group's members are computed after it is stored.

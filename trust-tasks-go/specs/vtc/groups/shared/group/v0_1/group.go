@@ -145,8 +145,8 @@ type Group struct {
 	MemberCount *int64 `json:"memberCount,omitempty"`
 
 	// Entries holding `vtc.groups.manage` qualified to this group, read from the
-	// access-control list. Informational: managers are appointed by an access-control grant,
-	// never by this record.
+	// access-control list. Informational: managers are appointed by an access-control grant
+	// (vtc/groups/managers/add), never by this record.
 	Managers *[]EntryID `json:"managers,omitempty"`
 
 	// When the community's authorization credential to the group expires. The community

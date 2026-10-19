@@ -199,7 +199,7 @@
           "items": {
             "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
           },
-          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant, never by this record."
+          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record."
         },
         "credentialAuthorityValidUntil": {
           "type": "string",

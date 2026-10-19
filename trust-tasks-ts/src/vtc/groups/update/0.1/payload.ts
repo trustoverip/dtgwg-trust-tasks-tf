@@ -216,7 +216,7 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/EntryId"
           },
-          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant, never by this record."
+          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record."
         },
         "credentialAuthorityValidUntil": {
           "type": "string",
@@ -486,7 +486,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/EntryId"
           },
-          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant, never by this record."
+          "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record."
         },
         "credentialAuthorityValidUntil": {
           "type": "string",
