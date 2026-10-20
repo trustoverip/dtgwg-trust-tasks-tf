@@ -19,10 +19,18 @@ export interface VotingBallotCastEncryptedPayload {
   ext?: Ext;
 }
 export interface VotingBallotCastEncryptedResponsePayload {
-  leafIndex: number;
+  electionId: ElectionId;
+  /**
+   * As voting/ballot/cast.
+   */
   outcome: "counted" | "replaced" | "alreadyCounted";
-  receiptToken: Multibase;
+  /**
+   * The board index of this cast's `encryptedCast` entry.
+   */
+  leafIndex: number;
+  entryHash: DigestMultibase;
   head: BoardHead;
+  receiptToken: Multibase;
   ext?: Ext;
 }
 
@@ -86,15 +94,16 @@ export const PAYLOAD_SCHEMA = {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "leafIndex",
+        "electionId",
         "outcome",
-        "receiptToken",
-        "head"
+        "leafIndex",
+        "entryHash",
+        "head",
+        "receiptToken"
       ],
       "properties": {
-        "leafIndex": {
-          "type": "integer",
-          "minimum": 0
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
         },
         "outcome": {
           "type": "string",
@@ -102,13 +111,22 @@ export const PAYLOAD_SCHEMA = {
             "counted",
             "replaced",
             "alreadyCounted"
-          ]
+          ],
+          "description": "As voting/ballot/cast."
         },
-        "receiptToken": {
-          "$ref": "#/$defs/Multibase"
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The board index of this cast's `encryptedCast` entry."
+        },
+        "entryHash": {
+          "$ref": "#/$defs/DigestMultibase"
         },
         "head": {
           "$ref": "#/$defs/BoardHead"
+        },
+        "receiptToken": {
+          "$ref": "#/$defs/Multibase"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -124,6 +142,13 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "Multibase": {
+      "title": "Multibase",
+      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
+      "type": "string",
+      "maxLength": 16384,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
     },
     "BoardHead": {
       "title": "BoardHead",
@@ -169,13 +194,6 @@ export const PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "Multibase": {
-      "title": "Multibase",
-      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-      "type": "string",
-      "maxLength": 16384,
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
     },
     "EncryptedCast": {
       "title": "EncryptedCast",
@@ -387,15 +405,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "leafIndex",
+        "electionId",
         "outcome",
-        "receiptToken",
-        "head"
+        "leafIndex",
+        "entryHash",
+        "head",
+        "receiptToken"
       ],
       "properties": {
-        "leafIndex": {
-          "type": "integer",
-          "minimum": 0
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
         },
         "outcome": {
           "type": "string",
@@ -403,13 +422,22 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "counted",
             "replaced",
             "alreadyCounted"
-          ]
+          ],
+          "description": "As voting/ballot/cast."
         },
-        "receiptToken": {
-          "$ref": "#/$defs/Multibase"
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The board index of this cast's `encryptedCast` entry."
+        },
+        "entryHash": {
+          "$ref": "#/$defs/DigestMultibase"
         },
         "head": {
           "$ref": "#/$defs/BoardHead"
+        },
+        "receiptToken": {
+          "$ref": "#/$defs/Multibase"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -425,6 +453,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "Multibase": {
+      "title": "Multibase",
+      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
+      "type": "string",
+      "maxLength": 16384,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
     },
     "BoardHead": {
       "title": "BoardHead",
@@ -470,13 +505,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "examples": [
         "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
       ]
-    },
-    "Multibase": {
-      "title": "Multibase",
-      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-      "type": "string",
-      "maxLength": 16384,
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
     },
     "EncryptedCast": {
       "title": "EncryptedCast",

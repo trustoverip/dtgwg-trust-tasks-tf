@@ -1103,7 +1103,7 @@ pub mod error_codes {
     };
     /// `vta/pcs/voter/receipt:receiptInvalid`
     ///
-    /// The receipt is not a voting/ballot/cast #response for this election signed by the election's ballot box, or it acknowledges an entry that is not a cast this engine built for the voter.
+    /// The receipt is not a voting/ballot/cast or voting/ballot/cast-encrypted #response for this election signed by the election's ballot box, or it acknowledges an entry that is not a cast this engine built for the voter.
     ///
     /// Declared `retryable: false`.
     pub const RECEIPT_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

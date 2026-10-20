@@ -56,13 +56,14 @@ errorCodes:
     meaning: "The engine records no election in this context and community for which it accepted a ticket."
     retryable: false
   - code: vta/pcs/voter/receipt:receiptInvalid
-    meaning: "The receipt is not a voting/ballot/cast #response for this election signed by the election's ballot box, or it acknowledges an entry that is not a cast this engine built for the voter."
+    meaning: "The receipt is not a voting/ballot/cast or voting/ballot/cast-encrypted #response for this election signed by the election's ballot box, or it acknowledges an entry that is not a cast this engine built for the voter."
     retryable: false
   - code: vta/pcs/voter/receipt:evidenceInvalid
     meaning: "The checkpoint is not a head of this election signed by its ballot box, or the inclusion proof is not for the receipt's entry and the checkpoint's tree size, or is malformed. The evidence says nothing either way; the receipt is still kept."
     retryable: false
 related:
   - voting/ballot/cast
+  - voting/ballot/cast-encrypted
   - voting/board/head
   - voting/board/inclusion
   - vtc/elections/show
@@ -95,7 +96,7 @@ A conforming **consumer** (the PCS engine) **MUST**:
 2. Refuse a caller without standing under [Authorization](#authorization) with `permissionDenied`.
 3. Refuse with `vta/pcs/voter/receipt:notFound` if it records no election (`contextId`, `community`, `electionId`) for which it accepted a ticket. The ticket itself need not still be held: this task is most useful after close, and the ticket is discarded at tally.
 4. Refuse with `vta/pcs/voter/receipt:receiptInvalid` unless `receipt`:
-   1. is a `https://trusttasks.org/spec/voting/ballot/cast/0.1#response` document whose `issuer` is the ballot box recorded at voter/register, and whose `proof` verifies, over the document as received, by a verification method of that DID;
+   1. is a `https://trusttasks.org/spec/voting/ballot/cast/0.1#response` or `https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1#response` document whose `issuer` is the ballot box recorded at voter/register, and whose `proof` verifies, over the document as received, by a verification method of that DID;
    2. names this election in its payload's `electionId`;
    3. names an `entryHash` the engine recorded at [`vta/pcs/vote`](../../../../../vta/pcs/vote/0.1/spec.md) for this election. That entry is a cast the engine built with the voter's ticket, so it carries the voter's tag ([CONVENTIONS §3.6](../../../../../voting/_shared/0.1/CONVENTIONS.md#3-cryptographic-binding)), and no receipt for another voter's cast can pass.
 5. Keep the receipt whole with the election's record — beside any earlier receipt, since each revote has its own.
@@ -115,7 +116,7 @@ The authority is **standing over the context** the voter belongs to ([convention
 ## Definitions
 
 - **`contextId`**, **`community`**, **`electionId`** — the election's record in the engine.
-- **`receipt`** — the ballot box's signed `voting/ballot/cast` response.
+- **`receipt`** — the ballot box's signed `voting/ballot/cast` or `voting/ballot/cast-encrypted` response.
 - **`checkpoint`** — a signed `voting/board/head` response: the `document` of a checkpoint `vtc/elections/show` lists, or one the client read from the ballot box itself.
 - **`inclusion`** — the audit path of `voting/board/inclusion` for the receipt's entry in the checkpoint's tree.
 - **`status`** (response) — `kept`, `included` or `notIncluded`.

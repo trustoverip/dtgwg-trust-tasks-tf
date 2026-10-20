@@ -34,15 +34,16 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "leafIndex",
+        "electionId",
         "outcome",
-        "receiptToken",
-        "head"
+        "leafIndex",
+        "entryHash",
+        "head",
+        "receiptToken"
       ],
       "properties": {
-        "leafIndex": {
-          "type": "integer",
-          "minimum": 0
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
         },
         "outcome": {
           "type": "string",
@@ -50,13 +51,22 @@
             "counted",
             "replaced",
             "alreadyCounted"
-          ]
+          ],
+          "description": "As voting/ballot/cast."
         },
-        "receiptToken": {
-          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/Multibase"
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The board index of this cast's `encryptedCast` entry."
+        },
+        "entryHash": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
         },
         "head": {
           "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/BoardHead"
+        },
+        "receiptToken": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/Multibase"
         },
         "ext": {
           "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"

@@ -103,6 +103,7 @@ Nobody's identity: the attestation is the authority (CONVENTIONS §4).
 ## Definitions
 
 - **`cast`** — the encrypted ballot, tag and attestation.
+- **`entryHash`** — the RFC 9162 leaf hash of the `encryptedCast` entry at `leafIndex` — the receipt, as voting/ballot/cast's.
 
 ## Request
 
@@ -150,8 +151,10 @@ The answer is the payload under `$anchor: "response"` in [`payload.schema.json`]
   "issuedAt": "2026-11-02T09:00:01Z",
   "threadId": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1001",
   "payload": {
-    "leafIndex": 7,
+    "electionId": "board-2026",
     "outcome": "counted",
+    "leafIndex": 7,
+    "entryHash": "zQmPXME1oRtoT627YKaDPDQ3PwA8tdP9rWuAAweLzqSwAWT",
     "receiptToken": "z3Hs8WkqL2mNvB7cR9xTyE4uJpQ1aZf6gDoK5iMt8n",
     "head": {
       "electionId": "board-2026",
