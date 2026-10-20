@@ -4158,7 +4158,7 @@ pub mod error_codes {
     };
     /// `vta/pcs/voter/register:unsupportedSecrecy`
     ///
-    /// The manifest's secrecy level is not `open`, the only level version 0.1 serves.
+    /// The manifest's secrecy level is one whose cast task this engine does not serve: `open` is cast with vta/pcs/vote, `sealed` and `talliedEncrypted` with vta/pcs/vote-encrypted.
     ///
     /// Declared `retryable: false`.
     pub const UNSUPPORTED_SECRECY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

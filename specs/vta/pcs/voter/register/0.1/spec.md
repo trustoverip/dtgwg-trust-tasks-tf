@@ -64,7 +64,7 @@ errorCodes:
     meaning: "The voting parameters cannot be decoded."
     retryable: false
   - code: vta/pcs/voter/register:unsupportedSecrecy
-    meaning: "The manifest's secrecy level is not `open`, the only level version 0.1 serves."
+    meaning: "The manifest's secrecy level is one whose cast task this engine does not serve: `open` is cast with vta/pcs/vote, `sealed` and `talliedEncrypted` with vta/pcs/vote-encrypted."
     retryable: false
   - code: vta/pcs/voter/register:ticketHeld
     meaning: "The engine already holds the voter's ticket for this election. One key and one ticket per election; there is nothing to request."
@@ -105,7 +105,7 @@ A conforming **consumer** (the PCS engine) **MUST**:
 2. Refuse a caller without standing under [Authorization](#authorization) with `permissionDenied`.
 3. Refuse a suite it does not implement with `vta/pcs/voter/register:unsupportedSuite`, and a `votingKey` it cannot decode with `vta/pcs/voter/register:parametersInvalid`.
 4. Refuse with `malformedRequest` a manifest whose `community` is not `community`.
-5. Refuse a manifest whose `secrecy` is not `open` with `vta/pcs/voter/register:unsupportedSecrecy`.
+5. Refuse with `vta/pcs/voter/register:unsupportedSecrecy` a manifest whose `secrecy` is a level whose cast task it does not serve: [`vta/pcs/vote`](../../../vote/0.1/spec.md) for `open`, [`vta/pcs/vote-encrypted`](../../../vote-encrypted/0.1/spec.md) for `sealed` and `talliedEncrypted`. A ticket is the same at every level; only the cast differs.
 6. Compute `manifestDigest`, the SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization.
 7. Where it already records this election for (`contextId`, `community`, `manifest.electionId`):
    1. refuse with `vta/pcs/voter/register:ticketHeld` if it holds the ticket;

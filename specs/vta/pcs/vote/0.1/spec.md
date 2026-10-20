@@ -121,6 +121,8 @@ A conforming **consumer** (the PCS engine) **MUST**:
 10. Destroy the one-time private key once the proof is made. It **MUST NOT** be stored, logged or returned.
 11. Record, under the election, the RFC 9162 leaf hash of the board entry `{"kind": "cast", "cast": <cast>}` ([CONVENTIONS §3.8](../../../../voting/_shared/0.1/CONVENTIONS.md#3-cryptographic-binding)), under the protection of the context's key records; and return `castDocument` and `tag`.
 
+A consumer **MUST** refuse with `malformedRequest`, before building anything, a manifest whose `secrecy` is not `open`: its ballots are cast with [`vta/pcs/vote-encrypted`](../../vote-encrypted/0.1/spec.md), and a cleartext cast of one would disclose the ballot the election seals.
+
 A consumer **MUST NOT** send the cast itself, to the ballot box or anyone else ([CONVENTIONS §2](../../../../voting/_shared/0.1/CONVENTIONS.md#2-separation), [§6.3](../../../../voting/_shared/0.1/CONVENTIONS.md#6-privacy)): the VTA is reachable as the voter's, and a cast that left from it would be paired with the voter by whoever watched it leave. It **SHOULD NOT** build a cast in reply to a request whose `threadId` is that of the `vta/pcs/voter/accept` that took the ticket (VTI-VOT-033).
 
 **Revoting.** Calling this task again with another ballot builds another cast under the same ticket, so with the same `tag`, and a new one-time key. Whether a later cast replaces an earlier one or is refused is the manifest's `revote` rule, applied by the ballot box (VTI-VOT-041); the engine does not refuse a revote.
