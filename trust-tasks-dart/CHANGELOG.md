@@ -11,6 +11,20 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.8.23 — 2026-10-20
+
+
+### Fixed
+
+- **auth/oob**: A same-device reader may enter the number it reads from the starter's page (#839)
+
+The prose said the number is the digits the member typed. A reader on the
+  same device that received the link from the member's activation on the
+  verified portal (VTI-LNK-056, VTI-LNK-105) may read the number from that
+  page and enter it (VTI-LNK-106). The service's check is unchanged: identify
+  still carries enteredNumber and prove still compares it. Prose only; no
+  schema or wire change.
+
 ## 0.8.22 — 2026-10-19
 
 
