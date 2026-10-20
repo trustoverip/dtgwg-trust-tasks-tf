@@ -31,10 +31,14 @@ export interface VTAPCSVoterRegisterPayload {
    * The election's manifest, exactly as the community published it. The engine computes its digest itself.
    */
   manifest: Manifest;
+  /**
+   * The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.
+   */
+  member?: string;
   ext?: Ext;
 }
 /**
- * Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.
+ * Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.
  */
 export interface VTAPCSVoterRegisterResponsePayload {
   electionId: ElectionId;
@@ -43,6 +47,7 @@ export interface VTAPCSVoterRegisterResponsePayload {
    */
   manifestDigest: DigestMultibase;
   request: TicketRequest;
+  ticketDocument?: TicketDocument;
   ext?: Ext;
 }
 /**
@@ -65,6 +70,31 @@ export interface TicketRequest {
      */
     proof: string;
   };
+}
+/**
+ * A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.
+ */
+export interface TicketDocument {
+  id: string;
+  type: "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#request";
+  /**
+   * The request's `member`.
+   */
+  issuer: string;
+  /**
+   * The request's `community`.
+   */
+  recipient: string;
+  issuedAt: string;
+  expiresAt?: string;
+  /**
+   * The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them.
+   */
+  payload: {};
+  /**
+   * A Data Integrity proof by an `authentication` key of `issuer`.
+   */
+  proof: {};
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
@@ -125,6 +155,13 @@ export const PAYLOAD_SCHEMA = {
       "$ref": "#/$defs/Manifest",
       "description": "The election's manifest, exactly as the community published it. The engine computes its digest itself."
     },
+    "member": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as."
+    },
     "ext": {
       "$ref": "#/$defs/Ext"
     }
@@ -184,7 +221,7 @@ export const PAYLOAD_SCHEMA = {
     "Response": {
       "$anchor": "response",
       "title": "VTA PCS — Voter Register — response payload",
-      "description": "Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.",
+      "description": "Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -203,8 +240,62 @@ export const PAYLOAD_SCHEMA = {
         "request": {
           "$ref": "#/$defs/TicketRequest"
         },
+        "ticketDocument": {
+          "$ref": "#/$defs/TicketDocument"
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "TicketDocument": {
+      "title": "TicketDocument",
+      "description": "A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload",
+        "proof"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "type": {
+          "const": "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#request"
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `member`."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `community`."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "description": "The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them."
+        },
+        "proof": {
+          "type": "object",
+          "description": "A Data Integrity proof by an `authentication` key of `issuer`."
         }
       }
     },
@@ -712,7 +803,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     "Response": {
       "$anchor": "response",
       "title": "VTA PCS — Voter Register — response payload",
-      "description": "Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.",
+      "description": "Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -731,8 +822,62 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "request": {
           "$ref": "#/$defs/TicketRequest"
         },
+        "ticketDocument": {
+          "$ref": "#/$defs/TicketDocument"
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "TicketDocument": {
+      "title": "TicketDocument",
+      "description": "A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload",
+        "proof"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "type": {
+          "const": "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#request"
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `member`."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `community`."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "description": "The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them."
+        },
+        "proof": {
+          "type": "object",
+          "description": "A Data Integrity proof by an `authentication` key of `issuer`."
         }
       }
     },

@@ -1126,6 +1126,13 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 ///      "description": "The election's manifest, exactly as the community published it. The engine computes its digest itself.",
 ///      "$ref": "#/definitions/Manifest"
 ///    },
+///    "member": {
+///      "description": "The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.",
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 1,
+///      "pattern": "^did:"
+///    },
 ///    "parameters": {
 ///      "description": "The community's published voting parameters, copied verbatim from where the community publishes them.",
 ///      "$ref": "#/definitions/VotingParameters"
@@ -1148,6 +1155,9 @@ pub struct Payload {
     pub ext: ::std::option::Option<Ext>,
     ///The election's manifest, exactly as the community published it. The engine computes its digest itself.
     pub manifest: Manifest,
+    ///The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub member: ::std::option::Option<PayloadMember>,
     ///The community's published voting parameters, copied verbatim from where the community publishes them.
     pub parameters: VotingParameters,
 }
@@ -1291,6 +1301,85 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadContextId {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 1,
+///  "pattern": "^did:"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct PayloadMember(::std::string::String);
+impl ::std::ops::Deref for PayloadMember {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<PayloadMember> for ::std::string::String {
+    fn from(value: PayloadMember) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for PayloadMember {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^did:\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for PayloadMember {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadMember {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for PayloadMember {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for PayloadMember {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1789,14 +1878,14 @@ impl<'de> ::serde::Deserialize<'de> for QuestionText {
             })
     }
 }
-///Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.
+///Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.
 ///
 /// <details><summary>JSON schema</summary>
 ///
 /// ```json
 ///{
 ///  "title": "Response",
-///  "description": "Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.",
+///  "description": "Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.",
 ///  "type": "object",
 ///  "required": [
 ///    "electionId",
@@ -1816,6 +1905,9 @@ impl<'de> ::serde::Deserialize<'de> for QuestionText {
 ///    },
 ///    "request": {
 ///      "$ref": "#/definitions/TicketRequest"
+///    },
+///    "ticketDocument": {
+///      "$ref": "#/definitions/TicketDocument"
 ///    }
 ///  },
 ///  "additionalProperties": false,
@@ -1835,6 +1927,12 @@ pub struct Response {
     #[serde(rename = "manifestDigest")]
     pub manifest_digest: DigestMultibase,
     pub request: TicketRequest,
+    #[serde(
+        rename = "ticketDocument",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub ticket_document: ::std::option::Option<TicketDocument>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -2194,6 +2292,317 @@ impl ::std::convert::TryFrom<::std::string::String> for SecrecyLevel {
         value: ::std::string::String,
     ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
+    }
+}
+///A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "TicketDocument",
+///  "description": "A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.",
+///  "type": "object",
+///  "required": [
+///    "id",
+///    "issuedAt",
+///    "issuer",
+///    "payload",
+///    "proof",
+///    "recipient",
+///    "type"
+///  ],
+///  "properties": {
+///    "expiresAt": {
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "id": {
+///      "type": "string",
+///      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+///    },
+///    "issuedAt": {
+///      "type": "string",
+///      "format": "date-time"
+///    },
+///    "issuer": {
+///      "description": "The request's `member`.",
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 1
+///    },
+///    "payload": {
+///      "description": "The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them.",
+///      "type": "object"
+///    },
+///    "proof": {
+///      "description": "A Data Integrity proof by an `authentication` key of `issuer`.",
+///      "type": "object"
+///    },
+///    "recipient": {
+///      "description": "The request's `community`.",
+///      "type": "string",
+///      "maxLength": 2048,
+///      "minLength": 1
+///    },
+///    "type": {
+///      "const": "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#request"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[non_exhaustive]
+pub struct TicketDocument {
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub id: TicketDocumentId,
+    #[serde(rename = "issuedAt")]
+    pub issued_at: ::chrono::DateTime<::chrono::offset::Utc>,
+    ///The request's `member`.
+    pub issuer: TicketDocumentIssuer,
+    ///The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them.
+    pub payload: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///A Data Integrity proof by an `authentication` key of `issuer`.
+    pub proof: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///The request's `community`.
+    pub recipient: TicketDocumentRecipient,
+    #[serde(rename = "type")]
+    pub type_: ::serde_json::Value,
+}
+impl TicketDocument {
+    pub fn builder() -> builder::TicketDocument {
+        Default::default()
+    }
+}
+///`TicketDocumentId`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct TicketDocumentId(::std::string::String);
+impl ::std::ops::Deref for TicketDocumentId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<TicketDocumentId> for ::std::string::String {
+    fn from(value: TicketDocumentId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for TicketDocumentId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> = ::std::sync::LazyLock::new(
+            || {
+                ::regress::Regex::new(
+                    "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+                )
+                .unwrap()
+            },
+        );
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for TicketDocumentId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for TicketDocumentId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for TicketDocumentId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for TicketDocumentId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The request's `member`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The request's `member`.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct TicketDocumentIssuer(::std::string::String);
+impl ::std::ops::Deref for TicketDocumentIssuer {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<TicketDocumentIssuer> for ::std::string::String {
+    fn from(value: TicketDocumentIssuer) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for TicketDocumentIssuer {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for TicketDocumentIssuer {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for TicketDocumentIssuer {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for TicketDocumentIssuer {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for TicketDocumentIssuer {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The request's `community`.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The request's `community`.",
+///  "type": "string",
+///  "maxLength": 2048,
+///  "minLength": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct TicketDocumentRecipient(::std::string::String);
+impl ::std::ops::Deref for TicketDocumentRecipient {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<TicketDocumentRecipient> for ::std::string::String {
+    fn from(value: TicketDocumentRecipient) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for TicketDocumentRecipient {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 2048usize {
+            return Err("longer than 2048 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for TicketDocumentRecipient {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for TicketDocumentRecipient {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for TicketDocumentRecipient {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for TicketDocumentRecipient {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///The `request` member of a vtc/elections/tickets/issue/0.1 request payload: the blinded root request for the election's ticket class.
@@ -2967,6 +3376,10 @@ pub mod builder {
         context_id: ::std::result::Result<super::PayloadContextId, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         manifest: ::std::result::Result<super::Manifest, ::std::string::String>,
+        member: ::std::result::Result<
+            ::std::option::Option<super::PayloadMember>,
+            ::std::string::String,
+        >,
         parameters: ::std::result::Result<super::VotingParameters, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
@@ -2976,6 +3389,7 @@ pub mod builder {
                 context_id: Err("no value supplied for context_id".to_string()),
                 ext: Ok(Default::default()),
                 manifest: Err("no value supplied for manifest".to_string()),
+                member: Ok(Default::default()),
                 parameters: Err("no value supplied for parameters".to_string()),
             }
         }
@@ -3021,6 +3435,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for manifest: {e}"));
             self
         }
+        pub fn member<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadMember>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.member = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for member: {e}"));
+            self
+        }
         pub fn parameters<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::VotingParameters>,
@@ -3040,6 +3464,7 @@ pub mod builder {
                 context_id: value.context_id?,
                 ext: value.ext?,
                 manifest: value.manifest?,
+                member: value.member?,
                 parameters: value.parameters?,
             })
         }
@@ -3051,6 +3476,7 @@ pub mod builder {
                 context_id: Ok(value.context_id),
                 ext: Ok(value.ext),
                 manifest: Ok(value.manifest),
+                member: Ok(value.member),
                 parameters: Ok(value.parameters),
             }
         }
@@ -3118,6 +3544,10 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         manifest_digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
         request: ::std::result::Result<super::TicketRequest, ::std::string::String>,
+        ticket_document: ::std::result::Result<
+            ::std::option::Option<super::TicketDocument>,
+            ::std::string::String,
+        >,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -3126,6 +3556,7 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 manifest_digest: Err("no value supplied for manifest_digest".to_string()),
                 request: Err("no value supplied for request".to_string()),
+                ticket_document: Ok(Default::default()),
             }
         }
     }
@@ -3170,6 +3601,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for request: {e}"));
             self
         }
+        pub fn ticket_document<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::TicketDocument>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ticket_document = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ticket_document: {e}"));
+            self
+        }
     }
     impl ::std::convert::TryFrom<Response> for super::Response {
         type Error = super::error::ConversionError;
@@ -3179,6 +3620,7 @@ pub mod builder {
                 ext: value.ext?,
                 manifest_digest: value.manifest_digest?,
                 request: value.request?,
+                ticket_document: value.ticket_document?,
             })
         }
     }
@@ -3189,6 +3631,7 @@ pub mod builder {
                 ext: Ok(value.ext),
                 manifest_digest: Ok(value.manifest_digest),
                 request: Ok(value.request),
+                ticket_document: Ok(value.ticket_document),
             }
         }
     }
@@ -3244,6 +3687,160 @@ pub mod builder {
             Self {
                 listed: Ok(value.listed),
                 rule: Ok(value.rule),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct TicketDocument {
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        id: ::std::result::Result<super::TicketDocumentId, ::std::string::String>,
+        issued_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        issuer: ::std::result::Result<super::TicketDocumentIssuer, ::std::string::String>,
+        payload: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        proof: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
+        recipient: ::std::result::Result<super::TicketDocumentRecipient, ::std::string::String>,
+        type_: ::std::result::Result<::serde_json::Value, ::std::string::String>,
+    }
+    impl ::std::default::Default for TicketDocument {
+        fn default() -> Self {
+            Self {
+                expires_at: Ok(Default::default()),
+                id: Err("no value supplied for id".to_string()),
+                issued_at: Err("no value supplied for issued_at".to_string()),
+                issuer: Err("no value supplied for issuer".to_string()),
+                payload: Err("no value supplied for payload".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+                recipient: Err("no value supplied for recipient".to_string()),
+                type_: Err("no value supplied for type_".to_string()),
+            }
+        }
+    }
+    impl TicketDocument {
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TicketDocumentId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for id: {e}"));
+            self
+        }
+        pub fn issued_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issued_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issued_at: {e}"));
+            self
+        }
+        pub fn issuer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TicketDocumentIssuer>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.issuer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for issuer: {e}"));
+            self
+        }
+        pub fn payload<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.payload = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for payload: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+        pub fn recipient<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TicketDocumentRecipient>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recipient = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recipient: {e}"));
+            self
+        }
+        pub fn type_<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::serde_json::Value>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.type_ = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for type_: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<TicketDocument> for super::TicketDocument {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: TicketDocument,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                expires_at: value.expires_at?,
+                id: value.id?,
+                issued_at: value.issued_at?,
+                issuer: value.issuer?,
+                payload: value.payload?,
+                proof: value.proof?,
+                recipient: value.recipient?,
+                type_: value.type_?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::TicketDocument> for TicketDocument {
+        fn from(value: super::TicketDocument) -> Self {
+            Self {
+                expires_at: Ok(value.expires_at),
+                id: Ok(value.id),
+                issued_at: Ok(value.issued_at),
+                issuer: Ok(value.issuer),
+                payload: Ok(value.payload),
+                proof: Ok(value.proof),
+                recipient: Ok(value.recipient),
+                type_: Ok(value.type_),
             }
         }
     }
@@ -3497,7 +4094,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardVisibility\": {\n      \"description\": \"`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).\",\n      \"enum\": [\n        \"public\",\n        \"private\"\n      ],\n      \"title\": \"BoardVisibility\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Manifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).\",\n      \"properties\": {\n        \"allowEarlyClose\": {\n          \"type\": \"boolean\"\n        },\n        \"ballotBox\": {\n          \"description\": \"The DID of the voting service that holds the board.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"binding\": {\n          \"description\": \"Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).\",\n          \"type\": \"boolean\"\n        },\n        \"board\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"auditors\": {\n              \"items\": {\n                \"maxLength\": 2048,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"visibility\": {\n              \"$ref\": \"#/$defs/BoardVisibility\"\n            }\n          },\n          \"required\": [\n            \"visibility\",\n            \"auditors\"\n          ],\n          \"type\": \"object\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 8192,\n          \"type\": \"string\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Question\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"registrationOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resultsBeforeClose\": {\n          \"description\": \"Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).\",\n          \"type\": \"boolean\"\n        },\n        \"revote\": {\n          \"$ref\": \"#/$defs/Revote\"\n        },\n        \"roll\": {\n          \"$ref\": \"#/$defs/RollRule\"\n        },\n        \"secrecy\": {\n          \"$ref\": \"#/$defs/SecrecyLevel\"\n        },\n        \"textReleaseThreshold\": {\n          \"description\": \"Counted ballots required before any text answer is disclosed (VTI-VOT-065).\",\n          \"minimum\": 10,\n          \"type\": \"integer\"\n        },\n        \"title\": {\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"trustees\": {\n          \"$ref\": \"#/$defs/Trustees\"\n        },\n        \"votingCloses\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"votingOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"community\",\n        \"questions\",\n        \"secrecy\",\n        \"roll\",\n        \"registrationOpens\",\n        \"votingOpens\",\n        \"votingCloses\",\n        \"revote\",\n        \"board\",\n        \"ballotBox\",\n        \"binding\",\n        \"allowEarlyClose\",\n        \"resultsBeforeClose\",\n        \"textReleaseThreshold\"\n      ],\n      \"title\": \"Manifest\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PcsValue\": {\n      \"description\": \"A suite value, multibase base58btc over its canonical (compressed) encoding.\",\n      \"maxLength\": 4096,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"PcsValue\",\n      \"type\": \"string\"\n    },\n    \"Question\": {\n      \"description\": \"One question. Tagged union over `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxSelections\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"minSelections\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"choice\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"minSelections\",\n            \"maxSelections\",\n            \"optional\"\n          ],\n          \"title\": \"ChoiceQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 64,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"partial\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"ranking\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"partial\",\n            \"optional\"\n          ],\n          \"title\": \"RankingQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Give each option an integer score within [min, max].\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"max\": {\n              \"type\": \"integer\"\n            },\n            \"min\": {\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"score\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"min\",\n            \"max\",\n            \"optional\"\n          ],\n          \"title\": \"ScoreQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Free text of at most `maxLength` characters.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxLength\": {\n              \"maximum\": 4096,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"text\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"maxLength\",\n            \"optional\"\n          ],\n          \"title\": \"TextQuestion\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Question\"\n    },\n    \"QuestionOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"label\": {\n          \"description\": \"Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"QuestionOption\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization, as the engine computed it.\"\n        },\n        \"request\": {\n          \"$ref\": \"#/$defs/TicketRequest\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"request\"\n      ],\n      \"title\": \"VTA PCS — Voter Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"Revote\": {\n      \"description\": \"What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).\",\n      \"enum\": [\n        \"replace\",\n        \"refuse\"\n      ],\n      \"title\": \"Revote\",\n      \"type\": \"string\"\n    },\n    \"RollRule\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.\",\n      \"properties\": {\n        \"listed\": {\n          \"items\": {\n            \"description\": \"A DID enfranchised by name.\",\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"rule\": {\n          \"enum\": [\n            \"members\",\n            \"membersAndListed\",\n            \"listed\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"rule\"\n      ],\n      \"title\": \"RollRule\",\n      \"type\": \"object\"\n    },\n    \"SecrecyLevel\": {\n      \"description\": \"`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.\",\n      \"enum\": [\n        \"open\",\n        \"sealed\",\n        \"talliedEncrypted\"\n      ],\n      \"title\": \"SecrecyLevel\",\n      \"type\": \"string\"\n    },\n    \"TicketRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The `request` member of a vtc/elections/tickets/issue/0.1 request payload: the blinded root request for the election's ticket class.\",\n      \"properties\": {\n        \"id\": {\n          \"$ref\": \"#/$defs/PcsValue\"\n        },\n        \"label\": {\n          \"description\": \"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2).\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"description\": \"The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.\",\n          \"properties\": {\n            \"encoding\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            },\n            \"proof\": {\n              \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n              \"maxLength\": 8192,\n              \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n              \"type\": \"string\"\n            },\n            \"t0\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            }\n          },\n          \"required\": [\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"id\",\n        \"request\"\n      ],\n      \"title\": \"TicketRequest\",\n      \"type\": \"object\"\n    },\n    \"Trustees\": {\n      \"additionalProperties\": false,\n      \"description\": \"The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.\",\n      \"properties\": {\n        \"dids\": {\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 2,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"threshold\": {\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"dids\",\n        \"threshold\"\n      ],\n      \"title\": \"Trustees\",\n      \"type\": \"object\"\n    },\n    \"VotingParameters\": {\n      \"additionalProperties\": false,\n      \"description\": \"The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.\",\n      \"properties\": {\n        \"suite\": {\n          \"const\": \"ps-ddh-bls12381\",\n          \"type\": \"string\"\n        },\n        \"votingKey\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"votingKey\"\n      ],\n      \"title\": \"VotingParameters\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/voter/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A voter's client asks its VTA for the blinded request that obtains the voter's ticket for one election; the VTA derives a voter key for that election alone and keeps the blinding state.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID: the registrar that issues the ticket. MUST equal the manifest's `community`.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The context the voter belongs to. The election's voter key is derived from a path allocated under this context's base.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"manifest\": {\n      \"$ref\": \"#/$defs/Manifest\",\n      \"description\": \"The election's manifest, exactly as the community published it. The engine computes its digest itself.\"\n    },\n    \"parameters\": {\n      \"$ref\": \"#/$defs/VotingParameters\",\n      \"description\": \"The community's published voting parameters, copied verbatim from where the community publishes them.\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"parameters\",\n    \"manifest\"\n  ],\n  \"title\": \"VTA PCS — Voter Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"BoardVisibility\": {\n      \"description\": \"`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).\",\n      \"enum\": [\n        \"public\",\n        \"private\"\n      ],\n      \"title\": \"BoardVisibility\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Manifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).\",\n      \"properties\": {\n        \"allowEarlyClose\": {\n          \"type\": \"boolean\"\n        },\n        \"ballotBox\": {\n          \"description\": \"The DID of the voting service that holds the board.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"binding\": {\n          \"description\": \"Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).\",\n          \"type\": \"boolean\"\n        },\n        \"board\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"auditors\": {\n              \"items\": {\n                \"maxLength\": 2048,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"visibility\": {\n              \"$ref\": \"#/$defs/BoardVisibility\"\n            }\n          },\n          \"required\": [\n            \"visibility\",\n            \"auditors\"\n          ],\n          \"type\": \"object\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 8192,\n          \"type\": \"string\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Question\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"registrationOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resultsBeforeClose\": {\n          \"description\": \"Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).\",\n          \"type\": \"boolean\"\n        },\n        \"revote\": {\n          \"$ref\": \"#/$defs/Revote\"\n        },\n        \"roll\": {\n          \"$ref\": \"#/$defs/RollRule\"\n        },\n        \"secrecy\": {\n          \"$ref\": \"#/$defs/SecrecyLevel\"\n        },\n        \"textReleaseThreshold\": {\n          \"description\": \"Counted ballots required before any text answer is disclosed (VTI-VOT-065).\",\n          \"minimum\": 10,\n          \"type\": \"integer\"\n        },\n        \"title\": {\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"trustees\": {\n          \"$ref\": \"#/$defs/Trustees\"\n        },\n        \"votingCloses\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"votingOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"community\",\n        \"questions\",\n        \"secrecy\",\n        \"roll\",\n        \"registrationOpens\",\n        \"votingOpens\",\n        \"votingCloses\",\n        \"revote\",\n        \"board\",\n        \"ballotBox\",\n        \"binding\",\n        \"allowEarlyClose\",\n        \"resultsBeforeClose\",\n        \"textReleaseThreshold\"\n      ],\n      \"title\": \"Manifest\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PcsValue\": {\n      \"description\": \"A suite value, multibase base58btc over its canonical (compressed) encoding.\",\n      \"maxLength\": 4096,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"PcsValue\",\n      \"type\": \"string\"\n    },\n    \"Question\": {\n      \"description\": \"One question. Tagged union over `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxSelections\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"minSelections\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"choice\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"minSelections\",\n            \"maxSelections\",\n            \"optional\"\n          ],\n          \"title\": \"ChoiceQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 64,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"partial\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"ranking\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"partial\",\n            \"optional\"\n          ],\n          \"title\": \"RankingQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Give each option an integer score within [min, max].\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"max\": {\n              \"type\": \"integer\"\n            },\n            \"min\": {\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"score\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"min\",\n            \"max\",\n            \"optional\"\n          ],\n          \"title\": \"ScoreQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Free text of at most `maxLength` characters.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxLength\": {\n              \"maximum\": 4096,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"text\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"maxLength\",\n            \"optional\"\n          ],\n          \"title\": \"TextQuestion\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Question\"\n    },\n    \"QuestionOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"label\": {\n          \"description\": \"Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"QuestionOption\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization, as the engine computed it.\"\n        },\n        \"request\": {\n          \"$ref\": \"#/$defs/TicketRequest\"\n        },\n        \"ticketDocument\": {\n          \"$ref\": \"#/$defs/TicketDocument\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"request\"\n      ],\n      \"title\": \"VTA PCS — Voter Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"Revote\": {\n      \"description\": \"What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).\",\n      \"enum\": [\n        \"replace\",\n        \"refuse\"\n      ],\n      \"title\": \"Revote\",\n      \"type\": \"string\"\n    },\n    \"RollRule\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.\",\n      \"properties\": {\n        \"listed\": {\n          \"items\": {\n            \"description\": \"A DID enfranchised by name.\",\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"rule\": {\n          \"enum\": [\n            \"members\",\n            \"membersAndListed\",\n            \"listed\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"rule\"\n      ],\n      \"title\": \"RollRule\",\n      \"type\": \"object\"\n    },\n    \"SecrecyLevel\": {\n      \"description\": \"`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.\",\n      \"enum\": [\n        \"open\",\n        \"sealed\",\n        \"talliedEncrypted\"\n      ],\n      \"title\": \"SecrecyLevel\",\n      \"type\": \"string\"\n    },\n    \"TicketDocument\": {\n      \"description\": \"A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The request's `member`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them.\",\n          \"type\": \"object\"\n        },\n        \"proof\": {\n          \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The request's `community`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#request\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\",\n        \"proof\"\n      ],\n      \"title\": \"TicketDocument\",\n      \"type\": \"object\"\n    },\n    \"TicketRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The `request` member of a vtc/elections/tickets/issue/0.1 request payload: the blinded root request for the election's ticket class.\",\n      \"properties\": {\n        \"id\": {\n          \"$ref\": \"#/$defs/PcsValue\"\n        },\n        \"label\": {\n          \"description\": \"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2).\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"description\": \"The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.\",\n          \"properties\": {\n            \"encoding\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            },\n            \"proof\": {\n              \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n              \"maxLength\": 8192,\n              \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n              \"type\": \"string\"\n            },\n            \"t0\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            }\n          },\n          \"required\": [\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"id\",\n        \"request\"\n      ],\n      \"title\": \"TicketRequest\",\n      \"type\": \"object\"\n    },\n    \"Trustees\": {\n      \"additionalProperties\": false,\n      \"description\": \"The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.\",\n      \"properties\": {\n        \"dids\": {\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 2,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"threshold\": {\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"dids\",\n        \"threshold\"\n      ],\n      \"title\": \"Trustees\",\n      \"type\": \"object\"\n    },\n    \"VotingParameters\": {\n      \"additionalProperties\": false,\n      \"description\": \"The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.\",\n      \"properties\": {\n        \"suite\": {\n          \"const\": \"ps-ddh-bls12381\",\n          \"type\": \"string\"\n        },\n        \"votingKey\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"votingKey\"\n      ],\n      \"title\": \"VotingParameters\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/voter/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A voter's client asks its VTA for the blinded request that obtains the voter's ticket for one election; the VTA derives a voter key for that election alone and keeps the blinding state.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID: the registrar that issues the ticket. MUST equal the manifest's `community`.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The context the voter belongs to. The election's voter key is derived from a path allocated under this context's base.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"manifest\": {\n      \"$ref\": \"#/$defs/Manifest\",\n      \"description\": \"The election's manifest, exactly as the community published it. The engine computes its digest itself.\"\n    },\n    \"member\": {\n      \"description\": \"The DID the election's roll admits the voter as — their membership DID at the community. When given, the engine also returns `ticketDocument`: the request to the community, signed as this DID. It MUST be a DID the engine holds an authentication key of that the caller may act as.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"parameters\": {\n      \"$ref\": \"#/$defs/VotingParameters\",\n      \"description\": \"The community's published voting parameters, copied verbatim from where the community publishes them.\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"parameters\",\n    \"manifest\"\n  ],\n  \"title\": \"VTA PCS — Voter Register — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
@@ -3506,7 +4103,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardVisibility\": {\n      \"description\": \"`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).\",\n      \"enum\": [\n        \"public\",\n        \"private\"\n      ],\n      \"title\": \"BoardVisibility\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Manifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).\",\n      \"properties\": {\n        \"allowEarlyClose\": {\n          \"type\": \"boolean\"\n        },\n        \"ballotBox\": {\n          \"description\": \"The DID of the voting service that holds the board.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"binding\": {\n          \"description\": \"Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).\",\n          \"type\": \"boolean\"\n        },\n        \"board\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"auditors\": {\n              \"items\": {\n                \"maxLength\": 2048,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"visibility\": {\n              \"$ref\": \"#/$defs/BoardVisibility\"\n            }\n          },\n          \"required\": [\n            \"visibility\",\n            \"auditors\"\n          ],\n          \"type\": \"object\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 8192,\n          \"type\": \"string\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Question\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"registrationOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resultsBeforeClose\": {\n          \"description\": \"Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).\",\n          \"type\": \"boolean\"\n        },\n        \"revote\": {\n          \"$ref\": \"#/$defs/Revote\"\n        },\n        \"roll\": {\n          \"$ref\": \"#/$defs/RollRule\"\n        },\n        \"secrecy\": {\n          \"$ref\": \"#/$defs/SecrecyLevel\"\n        },\n        \"textReleaseThreshold\": {\n          \"description\": \"Counted ballots required before any text answer is disclosed (VTI-VOT-065).\",\n          \"minimum\": 10,\n          \"type\": \"integer\"\n        },\n        \"title\": {\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"trustees\": {\n          \"$ref\": \"#/$defs/Trustees\"\n        },\n        \"votingCloses\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"votingOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"community\",\n        \"questions\",\n        \"secrecy\",\n        \"roll\",\n        \"registrationOpens\",\n        \"votingOpens\",\n        \"votingCloses\",\n        \"revote\",\n        \"board\",\n        \"ballotBox\",\n        \"binding\",\n        \"allowEarlyClose\",\n        \"resultsBeforeClose\",\n        \"textReleaseThreshold\"\n      ],\n      \"title\": \"Manifest\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PcsValue\": {\n      \"description\": \"A suite value, multibase base58btc over its canonical (compressed) encoding.\",\n      \"maxLength\": 4096,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"PcsValue\",\n      \"type\": \"string\"\n    },\n    \"Question\": {\n      \"description\": \"One question. Tagged union over `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxSelections\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"minSelections\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"choice\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"minSelections\",\n            \"maxSelections\",\n            \"optional\"\n          ],\n          \"title\": \"ChoiceQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 64,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"partial\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"ranking\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"partial\",\n            \"optional\"\n          ],\n          \"title\": \"RankingQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Give each option an integer score within [min, max].\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"max\": {\n              \"type\": \"integer\"\n            },\n            \"min\": {\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"score\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"min\",\n            \"max\",\n            \"optional\"\n          ],\n          \"title\": \"ScoreQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Free text of at most `maxLength` characters.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxLength\": {\n              \"maximum\": 4096,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"text\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"maxLength\",\n            \"optional\"\n          ],\n          \"title\": \"TextQuestion\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Question\"\n    },\n    \"QuestionOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"label\": {\n          \"description\": \"Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"QuestionOption\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext: what the client sends the community.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization, as the engine computed it.\"\n        },\n        \"request\": {\n          \"$ref\": \"#/$defs/TicketRequest\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"request\"\n      ],\n      \"title\": \"VTA PCS — Voter Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"Revote\": {\n      \"description\": \"What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).\",\n      \"enum\": [\n        \"replace\",\n        \"refuse\"\n      ],\n      \"title\": \"Revote\",\n      \"type\": \"string\"\n    },\n    \"RollRule\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.\",\n      \"properties\": {\n        \"listed\": {\n          \"items\": {\n            \"description\": \"A DID enfranchised by name.\",\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"rule\": {\n          \"enum\": [\n            \"members\",\n            \"membersAndListed\",\n            \"listed\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"rule\"\n      ],\n      \"title\": \"RollRule\",\n      \"type\": \"object\"\n    },\n    \"SecrecyLevel\": {\n      \"description\": \"`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.\",\n      \"enum\": [\n        \"open\",\n        \"sealed\",\n        \"talliedEncrypted\"\n      ],\n      \"title\": \"SecrecyLevel\",\n      \"type\": \"string\"\n    },\n    \"TicketRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The `request` member of a vtc/elections/tickets/issue/0.1 request payload: the blinded root request for the election's ticket class.\",\n      \"properties\": {\n        \"id\": {\n          \"$ref\": \"#/$defs/PcsValue\"\n        },\n        \"label\": {\n          \"description\": \"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2).\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"description\": \"The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.\",\n          \"properties\": {\n            \"encoding\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            },\n            \"proof\": {\n              \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n              \"maxLength\": 8192,\n              \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n              \"type\": \"string\"\n            },\n            \"t0\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            }\n          },\n          \"required\": [\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"id\",\n        \"request\"\n      ],\n      \"title\": \"TicketRequest\",\n      \"type\": \"object\"\n    },\n    \"Trustees\": {\n      \"additionalProperties\": false,\n      \"description\": \"The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.\",\n      \"properties\": {\n        \"dids\": {\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 2,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"threshold\": {\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"dids\",\n        \"threshold\"\n      ],\n      \"title\": \"Trustees\",\n      \"type\": \"object\"\n    },\n    \"VotingParameters\": {\n      \"additionalProperties\": false,\n      \"description\": \"The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.\",\n      \"properties\": {\n        \"suite\": {\n          \"const\": \"ps-ddh-bls12381\",\n          \"type\": \"string\"\n        },\n        \"votingKey\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"votingKey\"\n      ],\n      \"title\": \"VotingParameters\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"BoardVisibility\": {\n      \"description\": \"`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).\",\n      \"enum\": [\n        \"public\",\n        \"private\"\n      ],\n      \"title\": \"BoardVisibility\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Manifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).\",\n      \"properties\": {\n        \"allowEarlyClose\": {\n          \"type\": \"boolean\"\n        },\n        \"ballotBox\": {\n          \"description\": \"The DID of the voting service that holds the board.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"binding\": {\n          \"description\": \"Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).\",\n          \"type\": \"boolean\"\n        },\n        \"board\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"auditors\": {\n              \"items\": {\n                \"maxLength\": 2048,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"visibility\": {\n              \"$ref\": \"#/$defs/BoardVisibility\"\n            }\n          },\n          \"required\": [\n            \"visibility\",\n            \"auditors\"\n          ],\n          \"type\": \"object\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 8192,\n          \"type\": \"string\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Question\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"registrationOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resultsBeforeClose\": {\n          \"description\": \"Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).\",\n          \"type\": \"boolean\"\n        },\n        \"revote\": {\n          \"$ref\": \"#/$defs/Revote\"\n        },\n        \"roll\": {\n          \"$ref\": \"#/$defs/RollRule\"\n        },\n        \"secrecy\": {\n          \"$ref\": \"#/$defs/SecrecyLevel\"\n        },\n        \"textReleaseThreshold\": {\n          \"description\": \"Counted ballots required before any text answer is disclosed (VTI-VOT-065).\",\n          \"minimum\": 10,\n          \"type\": \"integer\"\n        },\n        \"title\": {\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"trustees\": {\n          \"$ref\": \"#/$defs/Trustees\"\n        },\n        \"votingCloses\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"votingOpens\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"community\",\n        \"questions\",\n        \"secrecy\",\n        \"roll\",\n        \"registrationOpens\",\n        \"votingOpens\",\n        \"votingCloses\",\n        \"revote\",\n        \"board\",\n        \"ballotBox\",\n        \"binding\",\n        \"allowEarlyClose\",\n        \"resultsBeforeClose\",\n        \"textReleaseThreshold\"\n      ],\n      \"title\": \"Manifest\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PcsValue\": {\n      \"description\": \"A suite value, multibase base58btc over its canonical (compressed) encoding.\",\n      \"maxLength\": 4096,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"PcsValue\",\n      \"type\": \"string\"\n    },\n    \"Question\": {\n      \"description\": \"One question. Tagged union over `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxSelections\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"minSelections\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"choice\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"minSelections\",\n            \"maxSelections\",\n            \"optional\"\n          ],\n          \"title\": \"ChoiceQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 64,\n              \"minItems\": 2,\n              \"type\": \"array\"\n            },\n            \"partial\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"ranking\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"partial\",\n            \"optional\"\n          ],\n          \"title\": \"RankingQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Give each option an integer score within [min, max].\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"max\": {\n              \"type\": \"integer\"\n            },\n            \"min\": {\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"options\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/QuestionOption\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"score\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"options\",\n            \"min\",\n            \"max\",\n            \"optional\"\n          ],\n          \"title\": \"ScoreQuestion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Free text of at most `maxLength` characters.\",\n          \"properties\": {\n            \"key\": {\n              \"$ref\": \"#/$defs/Key\"\n            },\n            \"maxLength\": {\n              \"maximum\": 4096,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"optional\": {\n              \"type\": \"boolean\"\n            },\n            \"text\": {\n              \"maxLength\": 2048,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"text\"\n            }\n          },\n          \"required\": [\n            \"key\",\n            \"type\",\n            \"maxLength\",\n            \"optional\"\n          ],\n          \"title\": \"TextQuestion\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Question\"\n    },\n    \"QuestionOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"label\": {\n          \"description\": \"Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014).\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"QuestionOption\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The SHA-256 multihash of the manifest's RFC 8785 (JCS) canonicalization, as the engine computed it.\"\n        },\n        \"request\": {\n          \"$ref\": \"#/$defs/TicketRequest\"\n        },\n        \"ticketDocument\": {\n          \"$ref\": \"#/$defs/TicketDocument\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"request\"\n      ],\n      \"title\": \"VTA PCS — Voter Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"Revote\": {\n      \"description\": \"What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).\",\n      \"enum\": [\n        \"replace\",\n        \"refuse\"\n      ],\n      \"title\": \"Revote\",\n      \"type\": \"string\"\n    },\n    \"RollRule\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.\",\n      \"properties\": {\n        \"listed\": {\n          \"items\": {\n            \"description\": \"A DID enfranchised by name.\",\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"rule\": {\n          \"enum\": [\n            \"members\",\n            \"membersAndListed\",\n            \"listed\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"rule\"\n      ],\n      \"title\": \"RollRule\",\n      \"type\": \"object\"\n    },\n    \"SecrecyLevel\": {\n      \"description\": \"`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.\",\n      \"enum\": [\n        \"open\",\n        \"sealed\",\n        \"talliedEncrypted\"\n      ],\n      \"title\": \"SecrecyLevel\",\n      \"type\": \"string\"\n    },\n    \"TicketDocument\": {\n      \"description\": \"A complete, signed vtc/elections/tickets/issue/0.1 request document, ready to send to the community unchanged. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The request's `member`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The vtc/elections/tickets/issue/0.1 request payload: `electionId`, `manifestDigest` and `request`, exactly as this response carries them.\",\n          \"type\": \"object\"\n        },\n        \"proof\": {\n          \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The request's `community`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#request\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\",\n        \"proof\"\n      ],\n      \"title\": \"TicketDocument\",\n      \"type\": \"object\"\n    },\n    \"TicketRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The `request` member of a vtc/elections/tickets/issue/0.1 request payload: the blinded root request for the election's ticket class.\",\n      \"properties\": {\n        \"id\": {\n          \"$ref\": \"#/$defs/PcsValue\"\n        },\n        \"label\": {\n          \"description\": \"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2).\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"description\": \"The blinded root request, as the suite serialises it — the same shape as a vtc/vetting/vetters/pcs-root/0.1 request.\",\n          \"properties\": {\n            \"encoding\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            },\n            \"proof\": {\n              \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n              \"maxLength\": 8192,\n              \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n              \"type\": \"string\"\n            },\n            \"t0\": {\n              \"$ref\": \"#/$defs/PcsValue\"\n            }\n          },\n          \"required\": [\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"id\",\n        \"request\"\n      ],\n      \"title\": \"TicketRequest\",\n      \"type\": \"object\"\n    },\n    \"Trustees\": {\n      \"additionalProperties\": false,\n      \"description\": \"The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.\",\n      \"properties\": {\n        \"dids\": {\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 2,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"threshold\": {\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"dids\",\n        \"threshold\"\n      ],\n      \"title\": \"Trustees\",\n      \"type\": \"object\"\n    },\n    \"VotingParameters\": {\n      \"additionalProperties\": false,\n      \"description\": \"The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.\",\n      \"properties\": {\n        \"suite\": {\n          \"const\": \"ps-ddh-bls12381\",\n          \"type\": \"string\"\n        },\n        \"votingKey\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"votingKey\"\n      ],\n      \"title\": \"VotingParameters\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -3520,6 +4117,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::PARAMETERS_INVALID,
     error_codes::UNSUPPORTED_SECRECY,
     error_codes::TICKET_HELD,
+    error_codes::MEMBER_NOT_HELD,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -3575,6 +4173,16 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const TICKET_HELD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vta/pcs/voter/register:ticketHeld",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
+    /// `vta/pcs/voter/register:memberNotHeld`
+    ///
+    /// `member` names a DID the engine holds no `authentication` key of, or one the caller may not act as.
+    ///
+    /// Declared `retryable: false`.
+    pub const MEMBER_NOT_HELD: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vta/pcs/voter/register:memberNotHeld",
         retryable: false,
         details_schema: ::core::option::Option::None,
     };
