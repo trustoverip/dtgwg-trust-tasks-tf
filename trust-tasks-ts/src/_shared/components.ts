@@ -434,7 +434,8 @@ export type BoardEntry =
   | JustificationEntry
   | ElectionKeyEntry
   | PartialDecryptionsEntry
-  | UnsealedEntry;
+  | UnsealedEntry
+  | SpoiledEntry;
 /**
  * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
  */
@@ -4938,6 +4939,13 @@ export interface UnsealedEntry {
   kind: "unsealed";
   leafIndex: number;
   ballot: Ballot;
+}
+/**
+ * A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).
+ */
+export interface SpoiledEntry {
+  kind: "spoiled";
+  leafIndex: number;
 }
 /**
  * A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.

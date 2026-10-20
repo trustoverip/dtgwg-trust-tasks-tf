@@ -813,6 +813,25 @@
               "$ref": "#/$defs/Ballot"
             }
           }
+        },
+        {
+          "title": "SpoiledEntry",
+          "description": "A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex"
+          ],
+          "properties": {
+            "kind": {
+              "const": "spoiled"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         }
       ]
     },

@@ -273,4 +273,10 @@ tallied-encrypted election the homomorphic total of each option over the counted
 (`voting/trustees/decrypt`). With `t` verified partials of distinct trustees, `M = b − Σ λ_j·d_j`
 with Lagrange coefficients at 0. A sealed cast's `M` is `R`, which opens its ballot; an option's
 total `m` is the discrete log of `M`, at most the number of counted casts. The ballot box appends
-an `unsealed` entry per opened ballot, then the result as for an open election.
+an `unsealed` entry per opened ballot, then the result as for an open election. A sealed cast
+that does not open, or opens to bytes that are not a ballot valid for the manifest (§3.4), is not
+counted: the ballot box appends a `spoiled` entry naming its leaf, and anyone holding the
+partials can check that it does not open. In a tallied-encrypted result, a question's
+`abstained` is the number of counted casts less the sum of its options' totals when its
+`maxSelections` is 1; otherwise the totals do not say how many casts selected nothing, and
+`abstained` is 0 — a consumer **MUST NOT** read it as a count of abstentions there.

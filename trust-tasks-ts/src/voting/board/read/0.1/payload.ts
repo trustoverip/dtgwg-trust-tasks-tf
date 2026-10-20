@@ -3,7 +3,7 @@
  * Source: specs/voting/board/read/0.1/payload.schema.json
  */
 
-import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry } from "../../../../_shared/components.js";
+import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry } from "../../../../_shared/components.js";
 
 
 /**
@@ -51,7 +51,7 @@ export interface VotingBoardReadResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key, LifecycleEntry, Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry };
+export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key, LifecycleEntry, Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/voting/board/read/0.1" as const;
@@ -427,6 +427,25 @@ export const PAYLOAD_SCHEMA = {
             },
             "ballot": {
               "$ref": "#/$defs/Ballot"
+            }
+          }
+        },
+        {
+          "title": "SpoiledEntry",
+          "description": "A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex"
+          ],
+          "properties": {
+            "kind": {
+              "const": "spoiled"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
             }
           }
         }
@@ -1390,6 +1409,25 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "ballot": {
               "$ref": "#/$defs/Ballot"
+            }
+          }
+        },
+        {
+          "title": "SpoiledEntry",
+          "description": "A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex"
+          ],
+          "properties": {
+            "kind": {
+              "const": "spoiled"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
             }
           }
         }
