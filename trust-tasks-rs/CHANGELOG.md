@@ -31,6 +31,17 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.32.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.3...trust-tasks-rs-v0.32.4) — 2026-10-19
+
+
+### Fixed
+
+- **device**: Register pcs-voter in device/_shared 0.1 too — appended, as the 0.2 pcsVoter is ([#836](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/836))
+
+device/list/0.1 and device/register/0.1 reference device/_shared/0.1, whose Capability enum (kebab-case) is the one a VTA publishing device/list 0.1 checks a capability against. #834 registered the voter capability in 0.2 only, so a VTA listed pcs-voter under ext as unregistered. Appended at the end: cargo semver-checks against 0.32.3 reports no semver update required.
+
+
+
 ## [0.32.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.2...trust-tasks-rs-v0.32.3) — 2026-10-19
 
 
