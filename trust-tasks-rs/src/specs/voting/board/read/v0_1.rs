@@ -316,6 +316,172 @@ impl Ballot {
 ///        }
 ///      },
 ///      "additionalProperties": false
+///    },
+///    {
+///      "title": "EncryptedCastEntry",
+///      "type": "object",
+///      "required": [
+///        "cast",
+///        "kind"
+///      ],
+///      "properties": {
+///        "cast": {
+///          "$ref": "#/definitions/EncryptedCast"
+///        },
+///        "kind": {
+///          "const": "encryptedCast"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "TransportKeyEntry",
+///      "type": "object",
+///      "required": [
+///        "kind",
+///        "transportKey"
+///      ],
+///      "properties": {
+///        "kind": {
+///          "const": "transportKey"
+///        },
+///        "transportKey": {
+///          "$ref": "#/definitions/TransportKey"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "DealingEntry",
+///      "type": "object",
+///      "required": [
+///        "dealing",
+///        "kind"
+///      ],
+///      "properties": {
+///        "dealing": {
+///          "$ref": "#/definitions/Dealing"
+///        },
+///        "kind": {
+///          "const": "dealing"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "ConfirmationEntry",
+///      "type": "object",
+///      "required": [
+///        "complaints",
+///        "kind",
+///        "trustee"
+///      ],
+///      "properties": {
+///        "complaints": {
+///          "type": "array",
+///          "items": {
+///            "$ref": "#/definitions/TrusteeIndex"
+///          },
+///          "maxItems": 64
+///        },
+///        "kind": {
+///          "const": "confirmation"
+///        },
+///        "trustee": {
+///          "$ref": "#/definitions/TrusteeIndex"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "JustificationEntry",
+///      "type": "object",
+///      "required": [
+///        "dealer",
+///        "kind",
+///        "recipient",
+///        "share"
+///      ],
+///      "properties": {
+///        "dealer": {
+///          "$ref": "#/definitions/TrusteeIndex"
+///        },
+///        "kind": {
+///          "const": "justification"
+///        },
+///        "recipient": {
+///          "$ref": "#/definitions/TrusteeIndex"
+///        },
+///        "share": {
+///          "$ref": "#/definitions/GroupScalar"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "ElectionKeyEntry",
+///      "type": "object",
+///      "required": [
+///        "electionKey",
+///        "kind"
+///      ],
+///      "properties": {
+///        "electionKey": {
+///          "$ref": "#/definitions/ElectionKey"
+///        },
+///        "kind": {
+///          "const": "electionKey"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "PartialDecryptionsEntry",
+///      "type": "object",
+///      "required": [
+///        "kind",
+///        "partials",
+///        "trustee"
+///      ],
+///      "properties": {
+///        "kind": {
+///          "const": "partials"
+///        },
+///        "partials": {
+///          "type": "array",
+///          "items": {
+///            "$ref": "#/definitions/PartialDecryption"
+///          },
+///          "maxItems": 100000,
+///          "minItems": 1
+///        },
+///        "trustee": {
+///          "$ref": "#/definitions/TrusteeIndex"
+///        }
+///      },
+///      "additionalProperties": false
+///    },
+///    {
+///      "title": "UnsealedEntry",
+///      "type": "object",
+///      "required": [
+///        "ballot",
+///        "kind",
+///        "leafIndex"
+///      ],
+///      "properties": {
+///        "ballot": {
+///          "$ref": "#/definitions/Ballot"
+///        },
+///        "kind": {
+///          "const": "unsealed"
+///        },
+///        "leafIndex": {
+///          "type": "integer",
+///          "minimum": 0.0
+///        }
+///      },
+///      "additionalProperties": false
 ///    }
 ///  ]
 ///}
@@ -342,6 +508,46 @@ pub enum BoardEntry {
     ResultEntry {
         kind: ::serde_json::Value,
         result: ElectionResult,
+    },
+    EncryptedCastEntry {
+        cast: EncryptedCast,
+        kind: ::serde_json::Value,
+    },
+    TransportKeyEntry {
+        kind: ::serde_json::Value,
+        #[serde(rename = "transportKey")]
+        transport_key: TransportKey,
+    },
+    DealingEntry {
+        dealing: Dealing,
+        kind: ::serde_json::Value,
+    },
+    ConfirmationEntry {
+        complaints: ::std::vec::Vec<TrusteeIndex>,
+        kind: ::serde_json::Value,
+        trustee: TrusteeIndex,
+    },
+    JustificationEntry {
+        dealer: TrusteeIndex,
+        kind: ::serde_json::Value,
+        recipient: TrusteeIndex,
+        share: GroupScalar,
+    },
+    ElectionKeyEntry {
+        #[serde(rename = "electionKey")]
+        election_key: ElectionKey,
+        kind: ::serde_json::Value,
+    },
+    PartialDecryptionsEntry {
+        kind: ::serde_json::Value,
+        partials: ::std::vec::Vec<PartialDecryption>,
+        trustee: TrusteeIndex,
+    },
+    UnsealedEntry {
+        ballot: Ballot,
+        kind: ::serde_json::Value,
+        #[serde(rename = "leafIndex")]
+        leaf_index: u64,
     },
 }
 ///A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
@@ -441,6 +647,124 @@ impl Cast {
         Default::default()
     }
 }
+///A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "Dealing",
+///  "description": "A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).",
+///  "type": "object",
+///  "required": [
+///    "commitments",
+///    "dealer",
+///    "pok",
+///    "shares"
+///  ],
+///  "properties": {
+///    "commitments": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/GroupElement"
+///      },
+///      "maxItems": 64,
+///      "minItems": 2
+///    },
+///    "dealer": {
+///      "$ref": "#/definitions/TrusteeIndex"
+///    },
+///    "pok": {
+///      "$ref": "#/definitions/SigmaProof"
+///    },
+///    "shares": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/SealedShare"
+///      },
+///      "maxItems": 64,
+///      "minItems": 2
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct Dealing {
+    pub commitments: ::std::vec::Vec<GroupElement>,
+    pub dealer: TrusteeIndex,
+    pub pok: SigmaProof,
+    pub shares: ::std::vec::Vec<SealedShare>,
+}
+impl Dealing {
+    pub fn builder() -> builder::Dealing {
+        Default::default()
+    }
+}
+///What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DecryptionTarget",
+///  "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
+///  "type": "object",
+///  "oneOf": [
+///    {
+///      "required": [
+///        "leafIndex"
+///      ]
+///    },
+///    {
+///      "required": [
+///        "option",
+///        "question"
+///      ]
+///    }
+///  ],
+///  "required": [
+///    "ciphertext"
+///  ],
+///  "properties": {
+///    "ciphertext": {
+///      "$ref": "#/definitions/ElGamalCiphertext"
+///    },
+///    "leafIndex": {
+///      "description": "A sealed cast's board leaf.",
+///      "type": "integer",
+///      "minimum": 0.0
+///    },
+///    "option": {
+///      "$ref": "#/definitions/Key"
+///    },
+///    "question": {
+///      "$ref": "#/definitions/Key"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(untagged, deny_unknown_fields)]
+#[non_exhaustive]
+pub enum DecryptionTarget {
+    Variant0 {
+        ciphertext: ElGamalCiphertext,
+        ///A sealed cast's board leaf.
+        #[serde(rename = "leafIndex")]
+        leaf_index: u64,
+    },
+    Variant1 {
+        ciphertext: ElGamalCiphertext,
+        option: Key,
+        question: Key,
+    },
+}
 /**
 A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
 
@@ -531,6 +855,79 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
             })
     }
 }
+///A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "DisjunctiveProof",
+///  "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
+///  "type": "array",
+///  "items": {
+///    "$ref": "#/definitions/SigmaProof"
+///  },
+///  "maxItems": 65,
+///  "minItems": 1
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct DisjunctiveProof(pub ::std::vec::Vec<SigmaProof>);
+impl ::std::ops::Deref for DisjunctiveProof {
+    type Target = ::std::vec::Vec<SigmaProof>;
+    fn deref(&self) -> &::std::vec::Vec<SigmaProof> {
+        &self.0
+    }
+}
+impl ::std::convert::From<DisjunctiveProof> for ::std::vec::Vec<SigmaProof> {
+    fn from(value: DisjunctiveProof) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::vec::Vec<SigmaProof>> for DisjunctiveProof {
+    fn from(value: ::std::vec::Vec<SigmaProof>) -> Self {
+        Self(value)
+    }
+}
+///`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "ElGamalCiphertext",
+///  "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
+///  "type": "object",
+///  "required": [
+///    "a",
+///    "b"
+///  ],
+///  "properties": {
+///    "a": {
+///      "$ref": "#/definitions/GroupElement"
+///    },
+///    "b": {
+///      "$ref": "#/definitions/GroupElement"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ElGamalCiphertext {
+    pub a: GroupElement,
+    pub b: GroupElement,
+}
+impl ElGamalCiphertext {
+    pub fn builder() -> builder::ElGamalCiphertext {
+        Default::default()
+    }
+}
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
 /// <details><summary>JSON schema</summary>
@@ -605,6 +1002,108 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
             })
     }
 }
+///The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "ElectionKey",
+///  "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+///  "type": "object",
+///  "required": [
+///    "key",
+///    "qualified",
+///    "verification"
+///  ],
+///  "properties": {
+///    "key": {
+///      "$ref": "#/definitions/GroupElement"
+///    },
+///    "qualified": {
+///      "description": "The dealers whose dealings the key is formed from.",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/TrusteeIndex"
+///      },
+///      "maxItems": 64,
+///      "minItems": 1
+///    },
+///    "verification": {
+///      "type": "array",
+///      "items": {
+///        "type": "object",
+///        "required": [
+///          "key",
+///          "trustee"
+///        ],
+///        "properties": {
+///          "key": {
+///            "$ref": "#/definitions/GroupElement"
+///          },
+///          "trustee": {
+///            "$ref": "#/definitions/TrusteeIndex"
+///          }
+///        },
+///        "additionalProperties": false
+///      },
+///      "maxItems": 64,
+///      "minItems": 2
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ElectionKey {
+    pub key: GroupElement,
+    ///The dealers whose dealings the key is formed from.
+    pub qualified: ::std::vec::Vec<TrusteeIndex>,
+    pub verification: ::std::vec::Vec<ElectionKeyVerificationItem>,
+}
+impl ElectionKey {
+    pub fn builder() -> builder::ElectionKey {
+        Default::default()
+    }
+}
+///`ElectionKeyVerificationItem`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "key",
+///    "trustee"
+///  ],
+///  "properties": {
+///    "key": {
+///      "$ref": "#/definitions/GroupElement"
+///    },
+///    "trustee": {
+///      "$ref": "#/definitions/TrusteeIndex"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct ElectionKeyVerificationItem {
+    pub key: GroupElement,
+    pub trustee: TrusteeIndex,
+}
+impl ElectionKeyVerificationItem {
+    pub fn builder() -> builder::ElectionKeyVerificationItem {
+        Default::default()
+    }
+}
 ///An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).
 ///
 /// <details><summary>JSON schema</summary>
@@ -663,6 +1162,197 @@ pub struct ElectionResult {
 }
 impl ElectionResult {
     pub fn builder() -> builder::ElectionResult {
+        Default::default()
+    }
+}
+///A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "EncryptedBallot",
+///  "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
+///  "type": "object",
+///  "required": [
+///    "electionId",
+///    "manifestDigest",
+///    "questions"
+///  ],
+///  "properties": {
+///    "electionId": {
+///      "$ref": "#/definitions/ElectionId"
+///    },
+///    "manifestDigest": {
+///      "$ref": "#/definitions/DigestMultibase"
+///    },
+///    "questions": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/EncryptedQuestion"
+///      },
+///      "maxItems": 64,
+///      "minItems": 1
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct EncryptedBallot {
+    #[serde(rename = "electionId")]
+    pub election_id: ElectionId,
+    #[serde(rename = "manifestDigest")]
+    pub manifest_digest: DigestMultibase,
+    pub questions: ::std::vec::Vec<EncryptedQuestion>,
+}
+impl EncryptedBallot {
+    pub fn builder() -> builder::EncryptedBallot {
+        Default::default()
+    }
+}
+///A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "EncryptedCast",
+///  "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
+///  "type": "object",
+///  "oneOf": [
+///    {
+///      "required": [
+///        "sealed"
+///      ]
+///    },
+///    {
+///      "required": [
+///        "encrypted"
+///      ]
+///    }
+///  ],
+///  "required": [
+///    "attestation",
+///    "tag"
+///  ],
+///  "properties": {
+///    "attestation": {
+///      "$ref": "#/definitions/Multibase"
+///    },
+///    "encrypted": {
+///      "$ref": "#/definitions/EncryptedBallot"
+///    },
+///    "sealed": {
+///      "$ref": "#/definitions/SealedPayload"
+///    },
+///    "tag": {
+///      "$ref": "#/definitions/Multibase"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(untagged, deny_unknown_fields)]
+#[non_exhaustive]
+pub enum EncryptedCast {
+    Variant0 {
+        attestation: Multibase,
+        sealed: SealedPayload,
+        tag: Multibase,
+    },
+    Variant1 {
+        attestation: Multibase,
+        encrypted: EncryptedBallot,
+        tag: Multibase,
+    },
+}
+///`EncryptedOption`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "EncryptedOption",
+///  "type": "object",
+///  "required": [
+///    "ciphertext",
+///    "proof"
+///  ],
+///  "properties": {
+///    "ciphertext": {
+///      "$ref": "#/definitions/ElGamalCiphertext"
+///    },
+///    "proof": {
+///      "$ref": "#/definitions/DisjunctiveProof"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct EncryptedOption {
+    pub ciphertext: ElGamalCiphertext,
+    pub proof: DisjunctiveProof,
+}
+impl EncryptedOption {
+    pub fn builder() -> builder::EncryptedOption {
+        Default::default()
+    }
+}
+///One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "EncryptedQuestion",
+///  "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
+///  "type": "object",
+///  "required": [
+///    "options",
+///    "question",
+///    "sumProof"
+///  ],
+///  "properties": {
+///    "options": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/EncryptedOption"
+///      },
+///      "maxItems": 64,
+///      "minItems": 1
+///    },
+///    "question": {
+///      "$ref": "#/definitions/Key"
+///    },
+///    "sumProof": {
+///      "$ref": "#/definitions/DisjunctiveProof"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct EncryptedQuestion {
+    pub options: ::std::vec::Vec<EncryptedOption>,
+    pub question: Key,
+    #[serde(rename = "sumProof")]
+    pub sum_proof: DisjunctiveProof,
+}
+impl EncryptedQuestion {
+    pub fn builder() -> builder::EncryptedQuestion {
         Default::default()
     }
 }
@@ -763,6 +1453,170 @@ impl ::std::convert::TryFrom<::std::string::String> for ExtKey {
     }
 }
 impl<'de> ::serde::Deserialize<'de> for ExtKey {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "GroupElement",
+///  "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+///  "type": "string",
+///  "maxLength": 64,
+///  "minLength": 2,
+///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GroupElement(::std::string::String);
+impl ::std::ops::Deref for GroupElement {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GroupElement> for ::std::string::String {
+    fn from(value: GroupElement) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GroupElement {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
+        if value.chars().count() < 2usize {
+            return Err("shorter than 2 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^z[1-9A-HJ-NP-Za-km-z]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^z[1-9A-HJ-NP-Za-km-z]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GroupElement {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GroupElement {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GroupElement {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GroupElement {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "GroupScalar",
+///  "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
+///  "type": "string",
+///  "maxLength": 64,
+///  "minLength": 2,
+///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GroupScalar(::std::string::String);
+impl ::std::ops::Deref for GroupScalar {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GroupScalar> for ::std::string::String {
+    fn from(value: GroupScalar) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GroupScalar {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 64usize {
+            return Err("longer than 64 characters".into());
+        }
+        if value.chars().count() < 2usize {
+            return Err("shorter than 2 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^z[1-9A-HJ-NP-Za-km-z]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^z[1-9A-HJ-NP-Za-km-z]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GroupScalar {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GroupScalar {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GroupScalar {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GroupScalar {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1004,6 +1858,48 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+///Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "PartialDecryption",
+///  "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
+///  "type": "object",
+///  "required": [
+///    "d",
+///    "proof",
+///    "target"
+///  ],
+///  "properties": {
+///    "d": {
+///      "$ref": "#/definitions/GroupElement"
+///    },
+///    "proof": {
+///      "$ref": "#/definitions/SigmaProof"
+///    },
+///    "target": {
+///      "$ref": "#/definitions/DecryptionTarget"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct PartialDecryption {
+    pub d: GroupElement,
+    pub proof: SigmaProof,
+    pub target: DecryptionTarget,
+}
+impl PartialDecryption {
+    pub fn builder() -> builder::PartialDecryption {
+        Default::default()
     }
 }
 ///Reads a range of an election board's entries, against the current head or against an earlier tree size.
@@ -1483,6 +2379,297 @@ impl ResponseEntriesItem {
         Default::default()
     }
 }
+///Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "SealedPayload",
+///  "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
+///  "type": "object",
+///  "required": [
+///    "body",
+///    "kem"
+///  ],
+///  "properties": {
+///    "body": {
+///      "type": "string",
+///      "maxLength": 131072,
+///      "minLength": 2,
+///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+///    },
+///    "kem": {
+///      "$ref": "#/definitions/ElGamalCiphertext"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct SealedPayload {
+    pub body: SealedPayloadBody,
+    pub kem: ElGamalCiphertext,
+}
+impl SealedPayload {
+    pub fn builder() -> builder::SealedPayload {
+        Default::default()
+    }
+}
+///`SealedPayloadBody`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 131072,
+///  "minLength": 2,
+///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct SealedPayloadBody(::std::string::String);
+impl ::std::ops::Deref for SealedPayloadBody {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<SealedPayloadBody> for ::std::string::String {
+    fn from(value: SealedPayloadBody) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for SealedPayloadBody {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 131072usize {
+            return Err("longer than 131072 characters".into());
+        }
+        if value.chars().count() < 2usize {
+            return Err("shorter than 2 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^z[1-9A-HJ-NP-Za-km-z]+$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^z[1-9A-HJ-NP-Za-km-z]+$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for SealedPayloadBody {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for SealedPayloadBody {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for SealedPayloadBody {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for SealedPayloadBody {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`SealedShare`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "SealedShare",
+///  "type": "object",
+///  "required": [
+///    "recipient",
+///    "share"
+///  ],
+///  "properties": {
+///    "recipient": {
+///      "$ref": "#/definitions/TrusteeIndex"
+///    },
+///    "share": {
+///      "$ref": "#/definitions/SealedPayload"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct SealedShare {
+    pub recipient: TrusteeIndex,
+    pub share: SealedPayload,
+}
+impl SealedShare {
+    pub fn builder() -> builder::SealedShare {
+        Default::default()
+    }
+}
+///A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "SigmaProof",
+///  "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
+///  "type": "object",
+///  "required": [
+///    "c",
+///    "z"
+///  ],
+///  "properties": {
+///    "c": {
+///      "$ref": "#/definitions/GroupScalar"
+///    },
+///    "z": {
+///      "$ref": "#/definitions/GroupScalar"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct SigmaProof {
+    pub c: GroupScalar,
+    pub z: GroupScalar,
+}
+impl SigmaProof {
+    pub fn builder() -> builder::SigmaProof {
+        Default::default()
+    }
+}
+///The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "TransportKey",
+///  "description": "The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).",
+///  "type": "object",
+///  "required": [
+///    "key",
+///    "pok",
+///    "trustee"
+///  ],
+///  "properties": {
+///    "key": {
+///      "$ref": "#/definitions/GroupElement"
+///    },
+///    "pok": {
+///      "$ref": "#/definitions/SigmaProof"
+///    },
+///    "trustee": {
+///      "$ref": "#/definitions/TrusteeIndex"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct TransportKey {
+    pub key: GroupElement,
+    pub pok: SigmaProof,
+    pub trustee: TrusteeIndex,
+}
+impl TransportKey {
+    pub fn builder() -> builder::TransportKey {
+        Default::default()
+    }
+}
+///A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "title": "TrusteeIndex",
+///  "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+///  "type": "integer",
+///  "maximum": 64.0,
+///  "minimum": 1.0
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(transparent)]
+pub struct TrusteeIndex(pub ::std::num::NonZeroU64);
+impl ::std::ops::Deref for TrusteeIndex {
+    type Target = ::std::num::NonZeroU64;
+    fn deref(&self) -> &::std::num::NonZeroU64 {
+        &self.0
+    }
+}
+impl ::std::convert::From<TrusteeIndex> for ::std::num::NonZeroU64 {
+    fn from(value: TrusteeIndex) -> Self {
+        value.0
+    }
+}
+impl ::std::convert::From<::std::num::NonZeroU64> for TrusteeIndex {
+    fn from(value: ::std::num::NonZeroU64) -> Self {
+        Self(value)
+    }
+}
+impl ::std::str::FromStr for TrusteeIndex {
+    type Err = <::std::num::NonZeroU64 as ::std::str::FromStr>::Err;
+    fn from_str(value: &str) -> ::std::result::Result<Self, Self::Err> {
+        Ok(Self(value.parse()?))
+    }
+}
+impl ::std::convert::TryFrom<&str> for TrusteeIndex {
+    type Error = <::std::num::NonZeroU64 as ::std::str::FromStr>::Err;
+    fn try_from(value: &str) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for TrusteeIndex {
+    type Error = <::std::num::NonZeroU64 as ::std::str::FromStr>::Err;
+    fn try_from(value: String) -> ::std::result::Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for TrusteeIndex {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
@@ -1818,6 +3005,267 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    pub struct Dealing {
+        commitments:
+            ::std::result::Result<::std::vec::Vec<super::GroupElement>, ::std::string::String>,
+        dealer: ::std::result::Result<super::TrusteeIndex, ::std::string::String>,
+        pok: ::std::result::Result<super::SigmaProof, ::std::string::String>,
+        shares: ::std::result::Result<::std::vec::Vec<super::SealedShare>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Dealing {
+        fn default() -> Self {
+            Self {
+                commitments: Err("no value supplied for commitments".to_string()),
+                dealer: Err("no value supplied for dealer".to_string()),
+                pok: Err("no value supplied for pok".to_string()),
+                shares: Err("no value supplied for shares".to_string()),
+            }
+        }
+    }
+    impl Dealing {
+        pub fn commitments<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::GroupElement>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.commitments = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for commitments: {e}"));
+            self
+        }
+        pub fn dealer<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TrusteeIndex>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.dealer = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for dealer: {e}"));
+            self
+        }
+        pub fn pok<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SigmaProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pok = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pok: {e}"));
+            self
+        }
+        pub fn shares<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::SealedShare>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.shares = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for shares: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Dealing> for super::Dealing {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Dealing) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                commitments: value.commitments?,
+                dealer: value.dealer?,
+                pok: value.pok?,
+                shares: value.shares?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Dealing> for Dealing {
+        fn from(value: super::Dealing) -> Self {
+            Self {
+                commitments: Ok(value.commitments),
+                dealer: Ok(value.dealer),
+                pok: Ok(value.pok),
+                shares: Ok(value.shares),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ElGamalCiphertext {
+        a: ::std::result::Result<super::GroupElement, ::std::string::String>,
+        b: ::std::result::Result<super::GroupElement, ::std::string::String>,
+    }
+    impl ::std::default::Default for ElGamalCiphertext {
+        fn default() -> Self {
+            Self {
+                a: Err("no value supplied for a".to_string()),
+                b: Err("no value supplied for b".to_string()),
+            }
+        }
+    }
+    impl ElGamalCiphertext {
+        pub fn a<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupElement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.a = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for a: {e}"));
+            self
+        }
+        pub fn b<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupElement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.b = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for b: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ElGamalCiphertext> for super::ElGamalCiphertext {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ElGamalCiphertext,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                a: value.a?,
+                b: value.b?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ElGamalCiphertext> for ElGamalCiphertext {
+        fn from(value: super::ElGamalCiphertext) -> Self {
+            Self {
+                a: Ok(value.a),
+                b: Ok(value.b),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ElectionKey {
+        key: ::std::result::Result<super::GroupElement, ::std::string::String>,
+        qualified:
+            ::std::result::Result<::std::vec::Vec<super::TrusteeIndex>, ::std::string::String>,
+        verification: ::std::result::Result<
+            ::std::vec::Vec<super::ElectionKeyVerificationItem>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for ElectionKey {
+        fn default() -> Self {
+            Self {
+                key: Err("no value supplied for key".to_string()),
+                qualified: Err("no value supplied for qualified".to_string()),
+                verification: Err("no value supplied for verification".to_string()),
+            }
+        }
+    }
+    impl ElectionKey {
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupElement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn qualified<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::TrusteeIndex>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.qualified = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for qualified: {e}"));
+            self
+        }
+        pub fn verification<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::ElectionKeyVerificationItem>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verification: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ElectionKey> for super::ElectionKey {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ElectionKey,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                key: value.key?,
+                qualified: value.qualified?,
+                verification: value.verification?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ElectionKey> for ElectionKey {
+        fn from(value: super::ElectionKey) -> Self {
+            Self {
+                key: Ok(value.key),
+                qualified: Ok(value.qualified),
+                verification: Ok(value.verification),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct ElectionKeyVerificationItem {
+        key: ::std::result::Result<super::GroupElement, ::std::string::String>,
+        trustee: ::std::result::Result<super::TrusteeIndex, ::std::string::String>,
+    }
+    impl ::std::default::Default for ElectionKeyVerificationItem {
+        fn default() -> Self {
+            Self {
+                key: Err("no value supplied for key".to_string()),
+                trustee: Err("no value supplied for trustee".to_string()),
+            }
+        }
+    }
+    impl ElectionKeyVerificationItem {
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupElement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn trustee<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TrusteeIndex>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.trustee = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for trustee: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<ElectionKeyVerificationItem> for super::ElectionKeyVerificationItem {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: ElectionKeyVerificationItem,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                key: value.key?,
+                trustee: value.trustee?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::ElectionKeyVerificationItem> for ElectionKeyVerificationItem {
+        fn from(value: super::ElectionKeyVerificationItem) -> Self {
+            Self {
+                key: Ok(value.key),
+                trustee: Ok(value.trustee),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     pub struct ElectionResult {
         ballots_counted: ::std::result::Result<u64, ::std::string::String>,
         election_id: ::std::result::Result<super::ElectionId, ::std::string::String>,
@@ -1911,6 +3359,266 @@ pub mod builder {
                 head: Ok(value.head),
                 manifest_digest: Ok(value.manifest_digest),
                 questions: Ok(value.questions),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct EncryptedBallot {
+        election_id: ::std::result::Result<super::ElectionId, ::std::string::String>,
+        manifest_digest: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
+        questions:
+            ::std::result::Result<::std::vec::Vec<super::EncryptedQuestion>, ::std::string::String>,
+    }
+    impl ::std::default::Default for EncryptedBallot {
+        fn default() -> Self {
+            Self {
+                election_id: Err("no value supplied for election_id".to_string()),
+                manifest_digest: Err("no value supplied for manifest_digest".to_string()),
+                questions: Err("no value supplied for questions".to_string()),
+            }
+        }
+    }
+    impl EncryptedBallot {
+        pub fn election_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ElectionId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.election_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for election_id: {e}"));
+            self
+        }
+        pub fn manifest_digest<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.manifest_digest = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for manifest_digest: {e}"));
+            self
+        }
+        pub fn questions<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::EncryptedQuestion>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.questions = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for questions: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EncryptedBallot> for super::EncryptedBallot {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EncryptedBallot,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                election_id: value.election_id?,
+                manifest_digest: value.manifest_digest?,
+                questions: value.questions?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EncryptedBallot> for EncryptedBallot {
+        fn from(value: super::EncryptedBallot) -> Self {
+            Self {
+                election_id: Ok(value.election_id),
+                manifest_digest: Ok(value.manifest_digest),
+                questions: Ok(value.questions),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct EncryptedOption {
+        ciphertext: ::std::result::Result<super::ElGamalCiphertext, ::std::string::String>,
+        proof: ::std::result::Result<super::DisjunctiveProof, ::std::string::String>,
+    }
+    impl ::std::default::Default for EncryptedOption {
+        fn default() -> Self {
+            Self {
+                ciphertext: Err("no value supplied for ciphertext".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+            }
+        }
+    }
+    impl EncryptedOption {
+        pub fn ciphertext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ElGamalCiphertext>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ciphertext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ciphertext: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DisjunctiveProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EncryptedOption> for super::EncryptedOption {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EncryptedOption,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                ciphertext: value.ciphertext?,
+                proof: value.proof?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EncryptedOption> for EncryptedOption {
+        fn from(value: super::EncryptedOption) -> Self {
+            Self {
+                ciphertext: Ok(value.ciphertext),
+                proof: Ok(value.proof),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct EncryptedQuestion {
+        options:
+            ::std::result::Result<::std::vec::Vec<super::EncryptedOption>, ::std::string::String>,
+        question: ::std::result::Result<super::Key, ::std::string::String>,
+        sum_proof: ::std::result::Result<super::DisjunctiveProof, ::std::string::String>,
+    }
+    impl ::std::default::Default for EncryptedQuestion {
+        fn default() -> Self {
+            Self {
+                options: Err("no value supplied for options".to_string()),
+                question: Err("no value supplied for question".to_string()),
+                sum_proof: Err("no value supplied for sum_proof".to_string()),
+            }
+        }
+    }
+    impl EncryptedQuestion {
+        pub fn options<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::EncryptedOption>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.options = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for options: {e}"));
+            self
+        }
+        pub fn question<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::Key>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.question = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for question: {e}"));
+            self
+        }
+        pub fn sum_proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DisjunctiveProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.sum_proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for sum_proof: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<EncryptedQuestion> for super::EncryptedQuestion {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: EncryptedQuestion,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                options: value.options?,
+                question: value.question?,
+                sum_proof: value.sum_proof?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::EncryptedQuestion> for EncryptedQuestion {
+        fn from(value: super::EncryptedQuestion) -> Self {
+            Self {
+                options: Ok(value.options),
+                question: Ok(value.question),
+                sum_proof: Ok(value.sum_proof),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct PartialDecryption {
+        d: ::std::result::Result<super::GroupElement, ::std::string::String>,
+        proof: ::std::result::Result<super::SigmaProof, ::std::string::String>,
+        target: ::std::result::Result<super::DecryptionTarget, ::std::string::String>,
+    }
+    impl ::std::default::Default for PartialDecryption {
+        fn default() -> Self {
+            Self {
+                d: Err("no value supplied for d".to_string()),
+                proof: Err("no value supplied for proof".to_string()),
+                target: Err("no value supplied for target".to_string()),
+            }
+        }
+    }
+    impl PartialDecryption {
+        pub fn d<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupElement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.d = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for d: {e}"));
+            self
+        }
+        pub fn proof<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SigmaProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.proof = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for proof: {e}"));
+            self
+        }
+        pub fn target<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DecryptionTarget>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.target = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for target: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<PartialDecryption> for super::PartialDecryption {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: PartialDecryption,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                d: value.d?,
+                proof: value.proof?,
+                target: value.target?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::PartialDecryption> for PartialDecryption {
+        fn from(value: super::PartialDecryption) -> Self {
+            Self {
+                d: Ok(value.d),
+                proof: Ok(value.proof),
+                target: Ok(value.target),
             }
         }
     }
@@ -2356,18 +4064,248 @@ pub mod builder {
             }
         }
     }
+    #[derive(Clone, Debug)]
+    pub struct SealedPayload {
+        body: ::std::result::Result<super::SealedPayloadBody, ::std::string::String>,
+        kem: ::std::result::Result<super::ElGamalCiphertext, ::std::string::String>,
+    }
+    impl ::std::default::Default for SealedPayload {
+        fn default() -> Self {
+            Self {
+                body: Err("no value supplied for body".to_string()),
+                kem: Err("no value supplied for kem".to_string()),
+            }
+        }
+    }
+    impl SealedPayload {
+        pub fn body<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SealedPayloadBody>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.body = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for body: {e}"));
+            self
+        }
+        pub fn kem<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ElGamalCiphertext>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kem = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kem: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<SealedPayload> for super::SealedPayload {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: SealedPayload,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                body: value.body?,
+                kem: value.kem?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::SealedPayload> for SealedPayload {
+        fn from(value: super::SealedPayload) -> Self {
+            Self {
+                body: Ok(value.body),
+                kem: Ok(value.kem),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct SealedShare {
+        recipient: ::std::result::Result<super::TrusteeIndex, ::std::string::String>,
+        share: ::std::result::Result<super::SealedPayload, ::std::string::String>,
+    }
+    impl ::std::default::Default for SealedShare {
+        fn default() -> Self {
+            Self {
+                recipient: Err("no value supplied for recipient".to_string()),
+                share: Err("no value supplied for share".to_string()),
+            }
+        }
+    }
+    impl SealedShare {
+        pub fn recipient<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TrusteeIndex>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.recipient = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for recipient: {e}"));
+            self
+        }
+        pub fn share<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SealedPayload>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.share = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for share: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<SealedShare> for super::SealedShare {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: SealedShare,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                recipient: value.recipient?,
+                share: value.share?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::SealedShare> for SealedShare {
+        fn from(value: super::SealedShare) -> Self {
+            Self {
+                recipient: Ok(value.recipient),
+                share: Ok(value.share),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct SigmaProof {
+        c: ::std::result::Result<super::GroupScalar, ::std::string::String>,
+        z: ::std::result::Result<super::GroupScalar, ::std::string::String>,
+    }
+    impl ::std::default::Default for SigmaProof {
+        fn default() -> Self {
+            Self {
+                c: Err("no value supplied for c".to_string()),
+                z: Err("no value supplied for z".to_string()),
+            }
+        }
+    }
+    impl SigmaProof {
+        pub fn c<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupScalar>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.c = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for c: {e}"));
+            self
+        }
+        pub fn z<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupScalar>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.z = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for z: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<SigmaProof> for super::SigmaProof {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: SigmaProof,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                c: value.c?,
+                z: value.z?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::SigmaProof> for SigmaProof {
+        fn from(value: super::SigmaProof) -> Self {
+            Self {
+                c: Ok(value.c),
+                z: Ok(value.z),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct TransportKey {
+        key: ::std::result::Result<super::GroupElement, ::std::string::String>,
+        pok: ::std::result::Result<super::SigmaProof, ::std::string::String>,
+        trustee: ::std::result::Result<super::TrusteeIndex, ::std::string::String>,
+    }
+    impl ::std::default::Default for TransportKey {
+        fn default() -> Self {
+            Self {
+                key: Err("no value supplied for key".to_string()),
+                pok: Err("no value supplied for pok".to_string()),
+                trustee: Err("no value supplied for trustee".to_string()),
+            }
+        }
+    }
+    impl TransportKey {
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::GroupElement>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn pok<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::SigmaProof>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pok = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pok: {e}"));
+            self
+        }
+        pub fn trustee<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::TrusteeIndex>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.trustee = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for trustee: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<TransportKey> for super::TransportKey {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: TransportKey,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                key: value.key?,
+                pok: value.pok?,
+                trustee: value.trustee?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::TransportKey> for TransportKey {
+        fn from(value: super::TransportKey) -> Self {
+            Self {
+                key: Ok(value.key),
+                pok: Ok(value.pok),
+                trustee: Ok(value.trustee),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/voting/board/read/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Answer\": {\n      \"additionalProperties\": false,\n      \"description\": \"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\n      \"maxProperties\": 2,\n      \"minProperties\": 2,\n      \"properties\": {\n        \"abstain\": {\n          \"const\": true\n        },\n        \"choice\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scores\": {\n          \"additionalProperties\": {\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"question\"\n      ],\n      \"title\": \"Answer\",\n      \"type\": \"object\"\n    },\n    \"Ballot\": {\n      \"additionalProperties\": false,\n      \"description\": \"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\n      \"properties\": {\n        \"answers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Answer\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"answers\"\n      ],\n      \"title\": \"Ballot\",\n      \"type\": \"object\"\n    },\n    \"BoardEntry\": {\n      \"description\": \"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/Cast\"\n            },\n            \"kind\": {\n              \"const\": \"cast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"CastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\n          \"properties\": {\n            \"by\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"kind\": {\n              \"const\": \"replaced\"\n            },\n            \"replaces\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"tag\": {\n              \"$ref\": \"#/$defs/Multibase\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"tag\",\n            \"replaces\",\n            \"by\"\n          ],\n          \"title\": \"ReplacementEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"at\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"opened\",\n                \"closed\",\n                \"closedEarly\",\n                \"cancelled\"\n              ]\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"at\"\n          ],\n          \"title\": \"LifecycleEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"result\"\n            },\n            \"result\": {\n              \"$ref\": \"#/$defs/ElectionResult\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"result\"\n          ],\n          \"title\": \"ResultEntry\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"BoardEntry\"\n    },\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"Cast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"ballot\": {\n          \"$ref\": \"#/$defs/Ballot\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"ballot\",\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"Cast\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Consecutive entries from `from`, in board order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"entry\": {\n                \"$ref\": \"#/$defs/BoardEntry\"\n              },\n              \"index\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"index\",\n              \"entry\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"next\": {\n          \"description\": \"The `from` of the next page. Absent when the page reaches `treeSize`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"treeSize\": {\n          \"description\": \"The tree size the page was read against. No entry at or beyond it is returned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"treeSize\",\n        \"entries\"\n      ],\n      \"title\": \"Voting — Board Read — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/voting/board/read/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Reads a range of an election board's entries, against the current head or against an earlier tree size.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"from\": {\n      \"description\": \"The index of the first entry to return.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"limit\": {\n      \"description\": \"The most entries to return.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"treeSize\": {\n      \"description\": \"Read against the board as it stood at this size — the size of a head the reader holds. At most the current size. Absent: the current size.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"electionId\",\n    \"from\",\n    \"limit\"\n  ],\n  \"title\": \"Voting — Board Read — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Answer\": {\n      \"additionalProperties\": false,\n      \"description\": \"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\n      \"maxProperties\": 2,\n      \"minProperties\": 2,\n      \"properties\": {\n        \"abstain\": {\n          \"const\": true\n        },\n        \"choice\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scores\": {\n          \"additionalProperties\": {\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"question\"\n      ],\n      \"title\": \"Answer\",\n      \"type\": \"object\"\n    },\n    \"Ballot\": {\n      \"additionalProperties\": false,\n      \"description\": \"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\n      \"properties\": {\n        \"answers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Answer\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"answers\"\n      ],\n      \"title\": \"Ballot\",\n      \"type\": \"object\"\n    },\n    \"BoardEntry\": {\n      \"description\": \"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/Cast\"\n            },\n            \"kind\": {\n              \"const\": \"cast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"CastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\n          \"properties\": {\n            \"by\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"kind\": {\n              \"const\": \"replaced\"\n            },\n            \"replaces\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"tag\": {\n              \"$ref\": \"#/$defs/Multibase\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"tag\",\n            \"replaces\",\n            \"by\"\n          ],\n          \"title\": \"ReplacementEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"at\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"opened\",\n                \"closed\",\n                \"closedEarly\",\n                \"cancelled\"\n              ]\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"at\"\n          ],\n          \"title\": \"LifecycleEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"result\"\n            },\n            \"result\": {\n              \"$ref\": \"#/$defs/ElectionResult\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"result\"\n          ],\n          \"title\": \"ResultEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/EncryptedCast\"\n            },\n            \"kind\": {\n              \"const\": \"encryptedCast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"EncryptedCastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"transportKey\"\n            },\n            \"transportKey\": {\n              \"$ref\": \"#/$defs/TransportKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"transportKey\"\n          ],\n          \"title\": \"TransportKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"dealing\": {\n              \"$ref\": \"#/$defs/Dealing\"\n            },\n            \"kind\": {\n              \"const\": \"dealing\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealing\"\n          ],\n          \"title\": \"DealingEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"complaints\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\"\n            },\n            \"kind\": {\n              \"const\": \"confirmation\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"complaints\"\n          ],\n          \"title\": \"ConfirmationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"dealer\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"kind\": {\n              \"const\": \"justification\"\n            },\n            \"recipient\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"share\": {\n              \"$ref\": \"#/$defs/GroupScalar\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealer\",\n            \"recipient\",\n            \"share\"\n          ],\n          \"title\": \"JustificationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"electionKey\": {\n              \"$ref\": \"#/$defs/ElectionKey\"\n            },\n            \"kind\": {\n              \"const\": \"electionKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"electionKey\"\n          ],\n          \"title\": \"ElectionKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"partials\"\n            },\n            \"partials\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/PartialDecryption\"\n              },\n              \"maxItems\": 100000,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"partials\"\n          ],\n          \"title\": \"PartialDecryptionsEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ballot\": {\n              \"$ref\": \"#/$defs/Ballot\"\n            },\n            \"kind\": {\n              \"const\": \"unsealed\"\n            },\n            \"leafIndex\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"leafIndex\",\n            \"ballot\"\n          ],\n          \"title\": \"UnsealedEntry\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"BoardEntry\"\n    },\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"Cast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"ballot\": {\n          \"$ref\": \"#/$defs/Ballot\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"ballot\",\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"Cast\",\n      \"type\": \"object\"\n    },\n    \"Dealing\": {\n      \"additionalProperties\": false,\n      \"description\": \"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"commitments\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/GroupElement\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"dealer\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"shares\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SealedShare\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"dealer\",\n        \"commitments\",\n        \"pok\",\n        \"shares\"\n      ],\n      \"title\": \"Dealing\",\n      \"type\": \"object\"\n    },\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DisjunctiveProof\": {\n      \"description\": \"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/SigmaProof\"\n      },\n      \"maxItems\": 65,\n      \"minItems\": 1,\n      \"title\": \"DisjunctiveProof\",\n      \"type\": \"array\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"qualified\": {\n          \"description\": \"The dealers whose dealings the key is formed from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TrusteeIndex\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"verification\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"key\": {\n                \"$ref\": \"#/$defs/GroupElement\"\n              },\n              \"trustee\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              }\n            },\n            \"required\": [\n              \"trustee\",\n              \"key\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"qualified\",\n        \"verification\"\n      ],\n      \"title\": \"ElectionKey\",\n      \"type\": \"object\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"EncryptedBallot\": {\n      \"additionalProperties\": false,\n      \"description\": \"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedQuestion\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"questions\"\n      ],\n      \"title\": \"EncryptedBallot\",\n      \"type\": \"object\"\n    },\n    \"EncryptedCast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"sealed\"\n          ]\n        },\n        {\n          \"required\": [\n            \"encrypted\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"encrypted\": {\n          \"$ref\": \"#/$defs/EncryptedBallot\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"EncryptedCast\",\n      \"type\": \"object\"\n    },\n    \"EncryptedOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"proof\"\n      ],\n      \"title\": \"EncryptedOption\",\n      \"type\": \"object\"\n    },\n    \"EncryptedQuestion\": {\n      \"additionalProperties\": false,\n      \"description\": \"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\n      \"properties\": {\n        \"options\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedOption\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"sumProof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"options\",\n        \"sumProof\"\n      ],\n      \"title\": \"EncryptedQuestion\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PartialDecryption\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\n      \"properties\": {\n        \"d\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/DecryptionTarget\"\n        }\n      },\n      \"required\": [\n        \"target\",\n        \"d\",\n        \"proof\"\n      ],\n      \"title\": \"PartialDecryption\",\n      \"type\": \"object\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Consecutive entries from `from`, in board order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"entry\": {\n                \"$ref\": \"#/$defs/BoardEntry\"\n              },\n              \"index\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"index\",\n              \"entry\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"next\": {\n          \"description\": \"The `from` of the next page. Absent when the page reaches `treeSize`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"treeSize\": {\n          \"description\": \"The tree size the page was read against. No entry at or beyond it is returned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"treeSize\",\n        \"entries\"\n      ],\n      \"title\": \"Voting — Board Read — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedPayload\": {\n      \"additionalProperties\": false,\n      \"description\": \"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\n      \"properties\": {\n        \"body\": {\n          \"maxLength\": 131072,\n          \"minLength\": 2,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"kem\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        }\n      },\n      \"required\": [\n        \"kem\",\n        \"body\"\n      ],\n      \"title\": \"SealedPayload\",\n      \"type\": \"object\"\n    },\n    \"SealedShare\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"recipient\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"share\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        }\n      },\n      \"required\": [\n        \"recipient\",\n        \"share\"\n      ],\n      \"title\": \"SealedShare\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    },\n    \"TransportKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"trustee\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        }\n      },\n      \"required\": [\n        \"trustee\",\n        \"key\",\n        \"pok\"\n      ],\n      \"title\": \"TransportKey\",\n      \"type\": \"object\"\n    },\n    \"TrusteeIndex\": {\n      \"description\": \"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\n      \"maximum\": 64,\n      \"minimum\": 1,\n      \"title\": \"TrusteeIndex\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/voting/board/read/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Reads a range of an election board's entries, against the current head or against an earlier tree size.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"from\": {\n      \"description\": \"The index of the first entry to return.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"limit\": {\n      \"description\": \"The most entries to return.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"treeSize\": {\n      \"description\": \"Read against the board as it stood at this size — the size of a head the reader holds. At most the current size. Absent: the current size.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"electionId\",\n    \"from\",\n    \"limit\"\n  ],\n  \"title\": \"Voting — Board Read — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/voting/board/read/0.1#response";
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Answer\": {\n      \"additionalProperties\": false,\n      \"description\": \"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\n      \"maxProperties\": 2,\n      \"minProperties\": 2,\n      \"properties\": {\n        \"abstain\": {\n          \"const\": true\n        },\n        \"choice\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scores\": {\n          \"additionalProperties\": {\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"question\"\n      ],\n      \"title\": \"Answer\",\n      \"type\": \"object\"\n    },\n    \"Ballot\": {\n      \"additionalProperties\": false,\n      \"description\": \"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\n      \"properties\": {\n        \"answers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Answer\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"answers\"\n      ],\n      \"title\": \"Ballot\",\n      \"type\": \"object\"\n    },\n    \"BoardEntry\": {\n      \"description\": \"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/Cast\"\n            },\n            \"kind\": {\n              \"const\": \"cast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"CastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\n          \"properties\": {\n            \"by\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"kind\": {\n              \"const\": \"replaced\"\n            },\n            \"replaces\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"tag\": {\n              \"$ref\": \"#/$defs/Multibase\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"tag\",\n            \"replaces\",\n            \"by\"\n          ],\n          \"title\": \"ReplacementEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"at\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"opened\",\n                \"closed\",\n                \"closedEarly\",\n                \"cancelled\"\n              ]\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"at\"\n          ],\n          \"title\": \"LifecycleEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"result\"\n            },\n            \"result\": {\n              \"$ref\": \"#/$defs/ElectionResult\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"result\"\n          ],\n          \"title\": \"ResultEntry\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"BoardEntry\"\n    },\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"Cast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"ballot\": {\n          \"$ref\": \"#/$defs/Ballot\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"ballot\",\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"Cast\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Consecutive entries from `from`, in board order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"entry\": {\n                \"$ref\": \"#/$defs/BoardEntry\"\n              },\n              \"index\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"index\",\n              \"entry\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"next\": {\n          \"description\": \"The `from` of the next page. Absent when the page reaches `treeSize`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"treeSize\": {\n          \"description\": \"The tree size the page was read against. No entry at or beyond it is returned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"treeSize\",\n        \"entries\"\n      ],\n      \"title\": \"Voting — Board Read — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\n  \"$defs\": {\n    \"Answer\": {\n      \"additionalProperties\": false,\n      \"description\": \"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\n      \"maxProperties\": 2,\n      \"minProperties\": 2,\n      \"properties\": {\n        \"abstain\": {\n          \"const\": true\n        },\n        \"choice\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scores\": {\n          \"additionalProperties\": {\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"question\"\n      ],\n      \"title\": \"Answer\",\n      \"type\": \"object\"\n    },\n    \"Ballot\": {\n      \"additionalProperties\": false,\n      \"description\": \"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\n      \"properties\": {\n        \"answers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Answer\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"answers\"\n      ],\n      \"title\": \"Ballot\",\n      \"type\": \"object\"\n    },\n    \"BoardEntry\": {\n      \"description\": \"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/Cast\"\n            },\n            \"kind\": {\n              \"const\": \"cast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"CastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\n          \"properties\": {\n            \"by\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"kind\": {\n              \"const\": \"replaced\"\n            },\n            \"replaces\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"tag\": {\n              \"$ref\": \"#/$defs/Multibase\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"tag\",\n            \"replaces\",\n            \"by\"\n          ],\n          \"title\": \"ReplacementEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"at\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"opened\",\n                \"closed\",\n                \"closedEarly\",\n                \"cancelled\"\n              ]\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"at\"\n          ],\n          \"title\": \"LifecycleEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"result\"\n            },\n            \"result\": {\n              \"$ref\": \"#/$defs/ElectionResult\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"result\"\n          ],\n          \"title\": \"ResultEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/EncryptedCast\"\n            },\n            \"kind\": {\n              \"const\": \"encryptedCast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"EncryptedCastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"transportKey\"\n            },\n            \"transportKey\": {\n              \"$ref\": \"#/$defs/TransportKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"transportKey\"\n          ],\n          \"title\": \"TransportKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"dealing\": {\n              \"$ref\": \"#/$defs/Dealing\"\n            },\n            \"kind\": {\n              \"const\": \"dealing\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealing\"\n          ],\n          \"title\": \"DealingEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"complaints\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\"\n            },\n            \"kind\": {\n              \"const\": \"confirmation\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"complaints\"\n          ],\n          \"title\": \"ConfirmationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"dealer\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"kind\": {\n              \"const\": \"justification\"\n            },\n            \"recipient\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"share\": {\n              \"$ref\": \"#/$defs/GroupScalar\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealer\",\n            \"recipient\",\n            \"share\"\n          ],\n          \"title\": \"JustificationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"electionKey\": {\n              \"$ref\": \"#/$defs/ElectionKey\"\n            },\n            \"kind\": {\n              \"const\": \"electionKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"electionKey\"\n          ],\n          \"title\": \"ElectionKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"partials\"\n            },\n            \"partials\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/PartialDecryption\"\n              },\n              \"maxItems\": 100000,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"partials\"\n          ],\n          \"title\": \"PartialDecryptionsEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ballot\": {\n              \"$ref\": \"#/$defs/Ballot\"\n            },\n            \"kind\": {\n              \"const\": \"unsealed\"\n            },\n            \"leafIndex\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"leafIndex\",\n            \"ballot\"\n          ],\n          \"title\": \"UnsealedEntry\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"BoardEntry\"\n    },\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"Cast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"ballot\": {\n          \"$ref\": \"#/$defs/Ballot\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"ballot\",\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"Cast\",\n      \"type\": \"object\"\n    },\n    \"Dealing\": {\n      \"additionalProperties\": false,\n      \"description\": \"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"commitments\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/GroupElement\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"dealer\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"shares\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SealedShare\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"dealer\",\n        \"commitments\",\n        \"pok\",\n        \"shares\"\n      ],\n      \"title\": \"Dealing\",\n      \"type\": \"object\"\n    },\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DisjunctiveProof\": {\n      \"description\": \"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/SigmaProof\"\n      },\n      \"maxItems\": 65,\n      \"minItems\": 1,\n      \"title\": \"DisjunctiveProof\",\n      \"type\": \"array\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"qualified\": {\n          \"description\": \"The dealers whose dealings the key is formed from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TrusteeIndex\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"verification\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"key\": {\n                \"$ref\": \"#/$defs/GroupElement\"\n              },\n              \"trustee\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              }\n            },\n            \"required\": [\n              \"trustee\",\n              \"key\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"qualified\",\n        \"verification\"\n      ],\n      \"title\": \"ElectionKey\",\n      \"type\": \"object\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"EncryptedBallot\": {\n      \"additionalProperties\": false,\n      \"description\": \"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedQuestion\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"questions\"\n      ],\n      \"title\": \"EncryptedBallot\",\n      \"type\": \"object\"\n    },\n    \"EncryptedCast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"sealed\"\n          ]\n        },\n        {\n          \"required\": [\n            \"encrypted\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"encrypted\": {\n          \"$ref\": \"#/$defs/EncryptedBallot\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"EncryptedCast\",\n      \"type\": \"object\"\n    },\n    \"EncryptedOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"proof\"\n      ],\n      \"title\": \"EncryptedOption\",\n      \"type\": \"object\"\n    },\n    \"EncryptedQuestion\": {\n      \"additionalProperties\": false,\n      \"description\": \"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\n      \"properties\": {\n        \"options\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedOption\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"sumProof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"options\",\n        \"sumProof\"\n      ],\n      \"title\": \"EncryptedQuestion\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PartialDecryption\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\n      \"properties\": {\n        \"d\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/DecryptionTarget\"\n        }\n      },\n      \"required\": [\n        \"target\",\n        \"d\",\n        \"proof\"\n      ],\n      \"title\": \"PartialDecryption\",\n      \"type\": \"object\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Consecutive entries from `from`, in board order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"entry\": {\n                \"$ref\": \"#/$defs/BoardEntry\"\n              },\n              \"index\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"index\",\n              \"entry\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"next\": {\n          \"description\": \"The `from` of the next page. Absent when the page reaches `treeSize`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"treeSize\": {\n          \"description\": \"The tree size the page was read against. No entry at or beyond it is returned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"treeSize\",\n        \"entries\"\n      ],\n      \"title\": \"Voting — Board Read — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedPayload\": {\n      \"additionalProperties\": false,\n      \"description\": \"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\n      \"properties\": {\n        \"body\": {\n          \"maxLength\": 131072,\n          \"minLength\": 2,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"kem\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        }\n      },\n      \"required\": [\n        \"kem\",\n        \"body\"\n      ],\n      \"title\": \"SealedPayload\",\n      \"type\": \"object\"\n    },\n    \"SealedShare\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"recipient\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"share\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        }\n      },\n      \"required\": [\n        \"recipient\",\n        \"share\"\n      ],\n      \"title\": \"SealedShare\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    },\n    \"TransportKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"trustee\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        }\n      },\n      \"required\": [\n        \"trustee\",\n        \"key\",\n        \"pok\"\n      ],\n      \"title\": \"TransportKey\",\n      \"type\": \"object\"\n    },\n    \"TrusteeIndex\": {\n      \"description\": \"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\n      \"maximum\": 64,\n      \"minimum\": 1,\n      \"title\": \"TrusteeIndex\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
     );
 }
 impl crate::RequestPayload for Payload {

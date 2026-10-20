@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1",
+  "title": "Voting — Ballot — Cast Encrypted — payload",
+  "description": "A voter casts a sealed or tallied-encrypted ballot, admitted by its PCS attestation and, when tallied-encrypted, by its proofs of validity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "cast"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "cast": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/EncryptedCast"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Ballot — Cast Encrypted — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "leafIndex",
+        "outcome",
+        "receiptToken",
+        "head"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "counted",
+            "replaced",
+            "alreadyCounted"
+          ]
+        },
+        "receiptToken": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/Multibase"
+        },
+        "head": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/BoardHead"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

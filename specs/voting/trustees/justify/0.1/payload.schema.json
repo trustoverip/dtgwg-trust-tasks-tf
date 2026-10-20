@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/trustees/justify/0.1",
+  "title": "Voting — Trustees — Justify — payload",
+  "description": "A dealer answers a complaint by publishing the share it dealt to the complaining trustee, for anyone to check.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "dealer",
+    "recipient",
+    "share"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "dealer": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+    },
+    "recipient": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+    },
+    "share": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/GroupScalar"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Trustees — Justify — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "election",
+        "phase"
+      ],
+      "properties": {
+        "election": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionSummary"
+        },
+        "phase": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteePhase"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

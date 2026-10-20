@@ -16,10 +16,9 @@ typedef Key = String;
 /// `open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted
 /// to a jointly generated election key and decrypted after voting closes.
 /// `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted
-/// (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot
-/// box refuses to register any other level with
-/// `voting/election/register:unsupportedSecrecy` until the trustee tasks are
-/// specified.
+/// (VTI-VOT-060). The encrypted levels are cast with
+/// `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate
+/// with `voting/trustees/*` (CONVENTIONS §9).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -622,6 +621,435 @@ class ElectionResult {
       };
 }
 
+/// A Ristretto group element: its 32-byte compression, multibase base58btc. Never the
+/// identity (CONVENTIONS §9.1).
+typedef GroupElement = String;
+
+/// `(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
+class ElGamalCiphertext {
+  const ElGamalCiphertext({
+    required this.a,
+    required this.b,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ElGamalCiphertext.fromJson(Map<String, dynamic> json) =>
+      ElGamalCiphertext(
+        a: json['a'] as String,
+        b: json['b'] as String,
+      );
+
+  final GroupElement a;
+  final GroupElement b;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'a': a,
+        'b': b,
+      };
+}
+
+/// Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes
+/// under ChaCha20-Poly1305 with a key derived from it, multibase base58btc
+/// (CONVENTIONS §9.4).
+class SealedPayload {
+  const SealedPayload({
+    required this.kem,
+    required this.body,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory SealedPayload.fromJson(Map<String, dynamic> json) => SealedPayload(
+        kem: ElGamalCiphertext.fromJson(json['kem'] as Map<String, dynamic>),
+        body: json['body'] as String,
+      );
+
+  final ElGamalCiphertext kem;
+  final String body;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kem': kem.toJson(),
+        'body': body,
+      };
+}
+
+/// A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase
+/// base58btc (CONVENTIONS §9.1).
+typedef GroupScalar = String;
+
+/// A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or
+/// Chaum–Pedersen; CONVENTIONS §9.3).
+class SigmaProof {
+  const SigmaProof({
+    required this.c,
+    required this.z,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory SigmaProof.fromJson(Map<String, dynamic> json) => SigmaProof(
+        c: json['c'] as String,
+        z: json['z'] as String,
+      );
+
+  final GroupScalar c;
+  final GroupScalar z;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'c': c,
+        'z': z,
+      };
+}
+
+/// A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c,
+/// z)` per value, in the list's order (CONVENTIONS §9.3).
+typedef DisjunctiveProof = List<SigmaProof>;
+
+/// EncryptedOption
+class EncryptedOption {
+  const EncryptedOption({
+    required this.ciphertext,
+    required this.proof,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EncryptedOption.fromJson(Map<String, dynamic> json) =>
+      EncryptedOption(
+        ciphertext: ElGamalCiphertext.fromJson(
+            json['ciphertext'] as Map<String, dynamic>),
+        proof: (json['proof'] as List<dynamic>)
+            .map((e) => SigmaProof.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+  final ElGamalCiphertext ciphertext;
+  final DisjunctiveProof proof;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'ciphertext': ciphertext.toJson(),
+        'proof': proof.map((e) => e.toJson()).toList(),
+      };
+}
+
+/// One choice question of a tallied-encrypted ballot: per option, in the manifest's
+/// order, an encryption of 0 or 1 with its proof; and a proof that the selections sum
+/// to a count the question admits (CONVENTIONS §9.5).
+class EncryptedQuestion {
+  const EncryptedQuestion({
+    required this.question,
+    required this.options,
+    required this.sumProof,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EncryptedQuestion.fromJson(Map<String, dynamic> json) =>
+      EncryptedQuestion(
+        question: json['question'] as String,
+        options: (json['options'] as List<dynamic>)
+            .map((e) => EncryptedOption.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        sumProof: (json['sumProof'] as List<dynamic>)
+            .map((e) => SigmaProof.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+  final Key question;
+  final List<EncryptedOption> options;
+  final DisjunctiveProof sumProof;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'question': question,
+        'options': options.map((e) => e.toJson()).toList(),
+        'sumProof': sumProof.map((e) => e.toJson()).toList(),
+      };
+}
+
+/// A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the
+/// manifest's order. Never decrypted (VTI-VOT-064).
+class EncryptedBallot {
+  const EncryptedBallot({
+    required this.electionId,
+    required this.manifestDigest,
+    required this.questions,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EncryptedBallot.fromJson(Map<String, dynamic> json) =>
+      EncryptedBallot(
+        electionId: json['electionId'] as String,
+        manifestDigest: json['manifestDigest'] as String,
+        questions: (json['questions'] as List<dynamic>)
+            .map((e) => EncryptedQuestion.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+  final ElectionId electionId;
+  final DigestMultibase manifestDigest;
+  final List<EncryptedQuestion> questions;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'electionId': electionId,
+        'manifestDigest': manifestDigest,
+        'questions': questions.map((e) => e.toJson()).toList(),
+      };
+}
+
+/// A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the
+/// Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the
+/// attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).
+class EncryptedCast {
+  const EncryptedCast({
+    this.sealed,
+    this.encrypted,
+    required this.tag,
+    required this.attestation,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory EncryptedCast.fromJson(Map<String, dynamic> json) => EncryptedCast(
+        sealed: json['sealed'] == null
+            ? null
+            : SealedPayload.fromJson(json['sealed'] as Map<String, dynamic>),
+        encrypted: json['encrypted'] == null
+            ? null
+            : EncryptedBallot.fromJson(
+                json['encrypted'] as Map<String, dynamic>),
+        tag: json['tag'] as String,
+        attestation: json['attestation'] as String,
+      );
+
+  final SealedPayload? sealed;
+  final EncryptedBallot? encrypted;
+  final Multibase tag;
+  final Multibase attestation;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (sealed != null) 'sealed': sealed!.toJson(),
+        if (encrypted != null) 'encrypted': encrypted!.toJson(),
+        'tag': tag,
+        'attestation': attestation,
+      };
+}
+
+/// A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.
+typedef TrusteeIndex = int;
+
+/// The group element a trustee's shares are sealed to, with a Schnorr proof of
+/// knowledge of its discrete log (CONVENTIONS §9.6).
+class TransportKey {
+  const TransportKey({
+    required this.trustee,
+    required this.key,
+    required this.pok,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory TransportKey.fromJson(Map<String, dynamic> json) => TransportKey(
+        trustee: json['trustee'] as int,
+        key: json['key'] as String,
+        pok: SigmaProof.fromJson(json['pok'] as Map<String, dynamic>),
+      );
+
+  final TrusteeIndex trustee;
+  final GroupElement key;
+  final SigmaProof pok;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'trustee': trustee,
+        'key': key,
+        'pok': pok.toJson(),
+      };
+}
+
+/// SealedShare
+class SealedShare {
+  const SealedShare({
+    required this.recipient,
+    required this.share,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory SealedShare.fromJson(Map<String, dynamic> json) => SealedShare(
+        recipient: json['recipient'] as int,
+        share: SealedPayload.fromJson(json['share'] as Map<String, dynamic>),
+      );
+
+  final TrusteeIndex recipient;
+  final SealedPayload share;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'recipient': recipient,
+        'share': share.toJson(),
+      };
+}
+
+/// A trustee's contribution to the election key: Feldman commitments to its
+/// polynomial, a proof of knowledge of the constant term, and one share per trustee
+/// sealed to that trustee's transport key (CONVENTIONS §9.6).
+class Dealing {
+  const Dealing({
+    required this.dealer,
+    required this.commitments,
+    required this.pok,
+    required this.shares,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Dealing.fromJson(Map<String, dynamic> json) => Dealing(
+        dealer: json['dealer'] as int,
+        commitments: (json['commitments'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+        pok: SigmaProof.fromJson(json['pok'] as Map<String, dynamic>),
+        shares: (json['shares'] as List<dynamic>)
+            .map((e) => SealedShare.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+  final TrusteeIndex dealer;
+  final List<GroupElement> commitments;
+  final SigmaProof pok;
+  final List<SealedShare> shares;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'dealer': dealer,
+        'commitments': commitments,
+        'pok': pok.toJson(),
+        'shares': shares.map((e) => e.toJson()).toList(),
+      };
+}
+
+/// ElectionKeyVerificationItem, generated from its schema.
+class ElectionKeyVerificationItem {
+  const ElectionKeyVerificationItem({
+    required this.trustee,
+    required this.key,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ElectionKeyVerificationItem.fromJson(Map<String, dynamic> json) =>
+      ElectionKeyVerificationItem(
+        trustee: json['trustee'] as int,
+        key: json['key'] as String,
+      );
+
+  final TrusteeIndex trustee;
+  final GroupElement key;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'trustee': trustee,
+        'key': key,
+      };
+}
+
+/// The election key and each trustee's public verification key, computed from the
+/// qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.
+class ElectionKey {
+  const ElectionKey({
+    required this.key,
+    required this.qualified,
+    required this.verification,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ElectionKey.fromJson(Map<String, dynamic> json) => ElectionKey(
+        key: json['key'] as String,
+        qualified:
+            (json['qualified'] as List<dynamic>).map((e) => e as int).toList(),
+        verification: (json['verification'] as List<dynamic>)
+            .map((e) =>
+                ElectionKeyVerificationItem.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+  final GroupElement key;
+
+  /// The dealers whose dealings the key is formed from.
+  final List<TrusteeIndex> qualified;
+  final List<ElectionKeyVerificationItem> verification;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'key': key,
+        'qualified': qualified,
+        'verification': verification.map((e) => e.toJson()).toList(),
+      };
+}
+
+/// What a partial decryption decrypts: the sealed cast at a board leaf, or the total
+/// of one option of one question.
+class DecryptionTarget {
+  const DecryptionTarget({
+    this.leafIndex,
+    this.question,
+    this.option,
+    required this.ciphertext,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory DecryptionTarget.fromJson(Map<String, dynamic> json) =>
+      DecryptionTarget(
+        leafIndex: json['leafIndex'] as int?,
+        question: json['question'] as String?,
+        option: json['option'] as String?,
+        ciphertext: ElGamalCiphertext.fromJson(
+            json['ciphertext'] as Map<String, dynamic>),
+      );
+
+  /// A sealed cast's board leaf.
+  final int? leafIndex;
+  final Key? question;
+  final Key? option;
+  final ElGamalCiphertext ciphertext;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (leafIndex != null) 'leafIndex': leafIndex!,
+        if (question != null) 'question': question!,
+        if (option != null) 'option': option!,
+        'ciphertext': ciphertext.toJson(),
+      };
+}
+
+/// Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen
+/// proof against its verification key (CONVENTIONS §9.7).
+class PartialDecryption {
+  const PartialDecryption({
+    required this.target,
+    required this.d,
+    required this.proof,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory PartialDecryption.fromJson(Map<String, dynamic> json) =>
+      PartialDecryption(
+        target:
+            DecryptionTarget.fromJson(json['target'] as Map<String, dynamic>),
+        d: json['d'] as String,
+        proof: SigmaProof.fromJson(json['proof'] as Map<String, dynamic>),
+      );
+
+  final DecryptionTarget target;
+  final GroupElement d;
+  final SigmaProof proof;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'target': target.toJson(),
+        'd': d,
+        'proof': proof.toJson(),
+      };
+}
+
 /// One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS
 /// canonicalization of this object. Entries carry no time of arrival: the order is the
 /// board's, and a timestamp would hand anyone who reads the board the timing the
@@ -754,4 +1182,34 @@ class Disclosure {
         'revote': revote.value,
         'coercionResistance': coercionResistance,
       };
+}
+
+/// `enrolling`: transport keys are being published. `dealing`: dealings are.
+/// `confirming`: each trustee confirms or complains. `keyed`: the election key is
+/// formed. `decrypting`: voting has closed and partial decryptions are being
+/// published. `done`: every target is decrypted. `failed`: the key could not be formed
+/// in time.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const TrusteePhase(String value) {
+  static const TrusteePhase enrolling = TrusteePhase('enrolling');
+  static const TrusteePhase dealing = TrusteePhase('dealing');
+  static const TrusteePhase confirming = TrusteePhase('confirming');
+  static const TrusteePhase keyed = TrusteePhase('keyed');
+  static const TrusteePhase decrypting = TrusteePhase('decrypting');
+  static const TrusteePhase done = TrusteePhase('done');
+  static const TrusteePhase failed = TrusteePhase('failed');
+
+  /// Every value this specification's schema permits.
+  static const List<TrusteePhase> values = <TrusteePhase>[
+    enrolling,
+    dealing,
+    confirming,
+    keyed,
+    decrypting,
+    done,
+    failed
+  ];
 }

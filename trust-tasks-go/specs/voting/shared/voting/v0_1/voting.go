@@ -20,9 +20,8 @@ type Key = string
 // SecrecyLevel `open`: ballots are recorded on the board as cast. `sealed`: ballots are
 // encrypted to a jointly generated election key and decrypted after voting closes.
 // `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted
-// (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box
-// refuses to register any other level with `voting/election/register:unsupportedSecrecy`
-// until the trustee tasks are specified.
+// (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`,
+// under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).
 type SecrecyLevel string
 
 // Values SecrecyLevel may take, per this specification's schema.
@@ -270,6 +269,152 @@ type Disclosure struct {
 	// member against being made to vote a certain way.
 	CoercionResistance json.RawMessage `json:"coercionResistance"`
 }
+
+// GroupElement A Ristretto group element: its 32-byte compression, multibase base58btc.
+// Never the identity (CONVENTIONS §9.1).
+type GroupElement = string
+
+// GroupScalar A scalar mod the Ristretto group order: 32 canonical little-endian bytes,
+// multibase base58btc (CONVENTIONS §9.1).
+type GroupScalar = string
+
+// ElGamalCiphertext `(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS
+// §9.2).
+type ElGamalCiphertext struct {
+	A GroupElement `json:"a"`
+	B GroupElement `json:"b"`
+}
+
+// SigmaProof A non-interactive sigma proof as its challenge and response `(c, z)`
+// (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).
+type SigmaProof struct {
+	C GroupScalar `json:"c"`
+	Z GroupScalar `json:"z"`
+}
+
+// DisjunctiveProof A disjunctive proof that a ciphertext encrypts one value of a public
+// list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).
+type DisjunctiveProof = []SigmaProof
+
+// SealedPayload Bytes sealed to a key: a random group element encrypted as `kem`, and the
+// bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc
+// (CONVENTIONS §9.4).
+type SealedPayload struct {
+	Kem  ElGamalCiphertext `json:"kem"`
+	Body string            `json:"body"`
+}
+
+// EncryptedOption EncryptedOption
+type EncryptedOption struct {
+	Ciphertext ElGamalCiphertext `json:"ciphertext"`
+	Proof      DisjunctiveProof  `json:"proof"`
+}
+
+// EncryptedQuestion One choice question of a tallied-encrypted ballot: per option, in the
+// manifest's order, an encryption of 0 or 1 with its proof; and a proof that the
+// selections sum to a count the question admits (CONVENTIONS §9.5).
+type EncryptedQuestion struct {
+	Question Key               `json:"question"`
+	Options  []EncryptedOption `json:"options"`
+	SumProof DisjunctiveProof  `json:"sumProof"`
+}
+
+// EncryptedBallot A tallied-encrypted ballot: one EncryptedQuestion per manifest
+// question, in the manifest's order. Never decrypted (VTI-VOT-064).
+type EncryptedBallot struct {
+	ElectionID     ElectionID          `json:"electionId"`
+	ManifestDigest DigestMultibase     `json:"manifestDigest"`
+	Questions      []EncryptedQuestion `json:"questions"`
+}
+
+// EncryptedCast A cast of a sealed or tallied-encrypted election: exactly one of `sealed`
+// (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and
+// the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).
+type EncryptedCast struct {
+	Sealed      *SealedPayload   `json:"sealed,omitempty"`
+	Encrypted   *EncryptedBallot `json:"encrypted,omitempty"`
+	Tag         Multibase        `json:"tag"`
+	Attestation Multibase        `json:"attestation"`
+}
+
+// TrusteeIndex A trustee's index: its position in the manifest's `trustees.dids`,
+// counting from 1.
+type TrusteeIndex = int64
+
+// TransportKey The group element a trustee's shares are sealed to, with a Schnorr proof
+// of knowledge of its discrete log (CONVENTIONS §9.6).
+type TransportKey struct {
+	Trustee TrusteeIndex `json:"trustee"`
+	Key     GroupElement `json:"key"`
+	Pok     SigmaProof   `json:"pok"`
+}
+
+// SealedShare SealedShare
+type SealedShare struct {
+	Recipient TrusteeIndex  `json:"recipient"`
+	Share     SealedPayload `json:"share"`
+}
+
+// Dealing A trustee's contribution to the election key: Feldman commitments to its
+// polynomial, a proof of knowledge of the constant term, and one share per trustee sealed
+// to that trustee's transport key (CONVENTIONS §9.6).
+type Dealing struct {
+	Dealer      TrusteeIndex   `json:"dealer"`
+	Commitments []GroupElement `json:"commitments"`
+	Pok         SigmaProof     `json:"pok"`
+	Shares      []SealedShare  `json:"shares"`
+}
+
+// ElectionKeyVerificationItem ElectionKeyVerificationItem is a generated payload type.
+type ElectionKeyVerificationItem struct {
+	Trustee TrusteeIndex `json:"trustee"`
+	Key     GroupElement `json:"key"`
+}
+
+// ElectionKey The election key and each trustee's public verification key, computed from
+// the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.
+type ElectionKey struct {
+	Key GroupElement `json:"key"`
+
+	// The dealers whose dealings the key is formed from.
+	Qualified    []TrusteeIndex                `json:"qualified"`
+	Verification []ElectionKeyVerificationItem `json:"verification"`
+}
+
+// DecryptionTarget What a partial decryption decrypts: the sealed cast at a board leaf,
+// or the total of one option of one question.
+type DecryptionTarget struct {
+	// A sealed cast's board leaf.
+	LeafIndex  *int64            `json:"leafIndex,omitempty"`
+	Question   *Key              `json:"question,omitempty"`
+	Option     *Key              `json:"option,omitempty"`
+	Ciphertext ElGamalCiphertext `json:"ciphertext"`
+}
+
+// PartialDecryption Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a
+// Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).
+type PartialDecryption struct {
+	Target DecryptionTarget `json:"target"`
+	D      GroupElement     `json:"d"`
+	Proof  SigmaProof       `json:"proof"`
+}
+
+// TrusteePhase `enrolling`: transport keys are being published. `dealing`: dealings are.
+// `confirming`: each trustee confirms or complains. `keyed`: the election key is formed.
+// `decrypting`: voting has closed and partial decryptions are being published. `done`:
+// every target is decrypted. `failed`: the key could not be formed in time.
+type TrusteePhase string
+
+// Values TrusteePhase may take, per this specification's schema.
+const (
+	TrusteePhaseEnrolling  TrusteePhase = "enrolling"
+	TrusteePhaseDealing    TrusteePhase = "dealing"
+	TrusteePhaseConfirming TrusteePhase = "confirming"
+	TrusteePhaseKeyed      TrusteePhase = "keyed"
+	TrusteePhaseDecrypting TrusteePhase = "decrypting"
+	TrusteePhaseDone       TrusteePhase = "done"
+	TrusteePhaseFailed     TrusteePhase = "failed"
+)
 
 // DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
 // the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the

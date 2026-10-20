@@ -4,3 +4,4 @@ pub mod ballot;
 pub mod board;
 pub mod election;
 pub mod result;
+pub mod trustees;

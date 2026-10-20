@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/trustees/deal/0.1",
+  "title": "Voting — Trustees — Deal — payload",
+  "description": "A trustee publishes its contribution to the election key: commitments to its polynomial and every trustee's share sealed to that trustee.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "dealing"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "dealing": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/Dealing"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Trustees — Deal — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "election",
+        "phase"
+      ],
+      "properties": {
+        "election": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionSummary"
+        },
+        "phase": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteePhase"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

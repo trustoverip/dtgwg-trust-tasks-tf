@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/trustees/enrol/0.1",
+  "title": "Voting — Trustees — Enrol — payload",
+  "description": "A trustee of a sealed or tallied-encrypted election publishes the key its shares of the election key are sealed to.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "transportKey"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "transportKey": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TransportKey"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Trustees — Enrol — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "election",
+        "phase"
+      ],
+      "properties": {
+        "election": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionSummary"
+        },
+        "phase": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteePhase"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

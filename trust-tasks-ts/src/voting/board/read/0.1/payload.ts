@@ -3,7 +3,7 @@
  * Source: specs/voting/board/read/0.1/payload.schema.json
  */
 
-import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, DigestMultibase, ElectionId, ElectionResult, Ext, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, QuestionResult, ReplacementEntry, ResultEntry } from "../../../../_shared/components.js";
+import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry } from "../../../../_shared/components.js";
 
 
 /**
@@ -51,7 +51,7 @@ export interface VotingBoardReadResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, DigestMultibase, ElectionId, ElectionResult, Ext, Key, LifecycleEntry, Multibase, QuestionResult, ReplacementEntry, ResultEntry };
+export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key, LifecycleEntry, Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/voting/board/read/0.1" as const;
@@ -263,8 +263,654 @@ export const PAYLOAD_SCHEMA = {
               "$ref": "#/$defs/ElectionResult"
             }
           }
+        },
+        {
+          "title": "EncryptedCastEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "cast"
+          ],
+          "properties": {
+            "kind": {
+              "const": "encryptedCast"
+            },
+            "cast": {
+              "$ref": "#/$defs/EncryptedCast"
+            }
+          }
+        },
+        {
+          "title": "TransportKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "transportKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "transportKey"
+            },
+            "transportKey": {
+              "$ref": "#/$defs/TransportKey"
+            }
+          }
+        },
+        {
+          "title": "DealingEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealing"
+          ],
+          "properties": {
+            "kind": {
+              "const": "dealing"
+            },
+            "dealing": {
+              "$ref": "#/$defs/Dealing"
+            }
+          }
+        },
+        {
+          "title": "ConfirmationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "complaints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "confirmation"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "complaints": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/TrusteeIndex"
+              }
+            }
+          }
+        },
+        {
+          "title": "JustificationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealer",
+            "recipient",
+            "share"
+          ],
+          "properties": {
+            "kind": {
+              "const": "justification"
+            },
+            "dealer": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "recipient": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "share": {
+              "$ref": "#/$defs/GroupScalar"
+            }
+          }
+        },
+        {
+          "title": "ElectionKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "electionKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "electionKey"
+            },
+            "electionKey": {
+              "$ref": "#/$defs/ElectionKey"
+            }
+          }
+        },
+        {
+          "title": "PartialDecryptionsEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "partials"
+          ],
+          "properties": {
+            "kind": {
+              "const": "partials"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "partials": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100000,
+              "items": {
+                "$ref": "#/$defs/PartialDecryption"
+              }
+            }
+          }
+        },
+        {
+          "title": "UnsealedEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex",
+            "ballot"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unsealed"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ballot": {
+              "$ref": "#/$defs/Ballot"
+            }
+          }
         }
       ]
+    },
+    "Ballot": {
+      "title": "Ballot",
+      "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "answers"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "#/$defs/DigestMultibase"
+        },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Answer"
+          }
+        }
+      }
+    },
+    "Answer": {
+      "title": "Answer",
+      "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question"
+      ],
+      "minProperties": 2,
+      "maxProperties": 2,
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "choice": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "uniqueItems": true
+        },
+        "ranking": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "uniqueItems": true
+        },
+        "scores": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Key"
+          },
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "abstain": {
+          "const": true
+        }
+      }
+    },
+    "Key": {
+      "title": "Key",
+      "description": "A question or option key, unique within its manifest or question.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "ElectionId": {
+      "title": "ElectionId",
+      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "PartialDecryption": {
+      "title": "PartialDecryption",
+      "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "d",
+        "proof"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/DecryptionTarget"
+        },
+        "d": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "proof": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "SigmaProof": {
+      "title": "SigmaProof",
+      "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "c",
+        "z"
+      ],
+      "properties": {
+        "c": {
+          "$ref": "#/$defs/GroupScalar"
+        },
+        "z": {
+          "$ref": "#/$defs/GroupScalar"
+        }
+      }
+    },
+    "GroupScalar": {
+      "title": "GroupScalar",
+      "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "GroupElement": {
+      "title": "GroupElement",
+      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "DecryptionTarget": {
+      "title": "DecryptionTarget",
+      "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "A sealed cast's board leaf."
+        },
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "option": {
+          "$ref": "#/$defs/Key"
+        },
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "leafIndex"
+          ]
+        },
+        {
+          "required": [
+            "question",
+            "option"
+          ]
+        }
+      ]
+    },
+    "ElGamalCiphertext": {
+      "title": "ElGamalCiphertext",
+      "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "b": {
+          "$ref": "#/$defs/GroupElement"
+        }
+      }
+    },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "ElectionKey": {
+      "title": "ElectionKey",
+      "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "qualified",
+        "verification"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "qualified": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/TrusteeIndex"
+          },
+          "description": "The dealers whose dealings the key is formed from."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustee",
+              "key"
+            ],
+            "properties": {
+              "trustee": {
+                "$ref": "#/$defs/TrusteeIndex"
+              },
+              "key": {
+                "$ref": "#/$defs/GroupElement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Dealing": {
+      "title": "Dealing",
+      "description": "A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dealer",
+        "commitments",
+        "pok",
+        "shares"
+      ],
+      "properties": {
+        "dealer": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "commitments": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/GroupElement"
+          }
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        },
+        "shares": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/SealedShare"
+          }
+        }
+      }
+    },
+    "SealedShare": {
+      "title": "SealedShare",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recipient",
+        "share"
+      ],
+      "properties": {
+        "recipient": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "share": {
+          "$ref": "#/$defs/SealedPayload"
+        }
+      }
+    },
+    "SealedPayload": {
+      "title": "SealedPayload",
+      "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kem",
+        "body"
+      ],
+      "properties": {
+        "kem": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 131072,
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    },
+    "TransportKey": {
+      "title": "TransportKey",
+      "description": "The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trustee",
+        "key",
+        "pok"
+      ],
+      "properties": {
+        "trustee": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "EncryptedCast": {
+      "title": "EncryptedCast",
+      "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "attestation"
+      ],
+      "properties": {
+        "sealed": {
+          "$ref": "#/$defs/SealedPayload"
+        },
+        "encrypted": {
+          "$ref": "#/$defs/EncryptedBallot"
+        },
+        "tag": {
+          "$ref": "#/$defs/Multibase"
+        },
+        "attestation": {
+          "$ref": "#/$defs/Multibase"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "sealed"
+          ]
+        },
+        {
+          "required": [
+            "encrypted"
+          ]
+        }
+      ]
+    },
+    "Multibase": {
+      "title": "Multibase",
+      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
+      "type": "string",
+      "maxLength": 16384,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "EncryptedBallot": {
+      "title": "EncryptedBallot",
+      "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "questions"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "#/$defs/DigestMultibase"
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedQuestion"
+          }
+        }
+      }
+    },
+    "EncryptedQuestion": {
+      "title": "EncryptedQuestion",
+      "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "options",
+        "sumProof"
+      ],
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedOption"
+          }
+        },
+        "sumProof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
+    },
+    "DisjunctiveProof": {
+      "title": "DisjunctiveProof",
+      "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 65,
+      "items": {
+        "$ref": "#/$defs/SigmaProof"
+      }
+    },
+    "EncryptedOption": {
+      "title": "EncryptedOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext",
+        "proof"
+      ],
+      "properties": {
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "proof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
     },
     "ElectionResult": {
       "title": "ElectionResult",
@@ -329,22 +975,6 @@ export const PAYLOAD_SCHEMA = {
           "format": "date-time"
         }
       }
-    },
-    "ElectionId": {
-      "title": "ElectionId",
-      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,128}$"
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     },
     "QuestionResult": {
       "title": "QuestionResult",
@@ -421,19 +1051,6 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Key": {
-      "title": "Key",
-      "description": "A question or option key, unique within its manifest or question.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,64}$"
-    },
-    "Multibase": {
-      "title": "Multibase",
-      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-      "type": "string",
-      "maxLength": 16384,
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-    },
     "Cast": {
       "title": "Cast",
       "description": "A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.",
@@ -453,79 +1070,6 @@ export const PAYLOAD_SCHEMA = {
         },
         "attestation": {
           "$ref": "#/$defs/Multibase"
-        }
-      }
-    },
-    "Ballot": {
-      "title": "Ballot",
-      "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "manifestDigest",
-        "answers"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "answers": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 128,
-          "items": {
-            "$ref": "#/$defs/Answer"
-          }
-        }
-      }
-    },
-    "Answer": {
-      "title": "Answer",
-      "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "question"
-      ],
-      "minProperties": 2,
-      "maxProperties": 2,
-      "properties": {
-        "question": {
-          "$ref": "#/$defs/Key"
-        },
-        "choice": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Key"
-          },
-          "uniqueItems": true
-        },
-        "ranking": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Key"
-          },
-          "uniqueItems": true
-        },
-        "scores": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Key"
-          },
-          "additionalProperties": {
-            "type": "integer"
-          }
-        },
-        "text": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "abstain": {
-          "const": true
         }
       }
     }
@@ -682,8 +1226,654 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "$ref": "#/$defs/ElectionResult"
             }
           }
+        },
+        {
+          "title": "EncryptedCastEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "cast"
+          ],
+          "properties": {
+            "kind": {
+              "const": "encryptedCast"
+            },
+            "cast": {
+              "$ref": "#/$defs/EncryptedCast"
+            }
+          }
+        },
+        {
+          "title": "TransportKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "transportKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "transportKey"
+            },
+            "transportKey": {
+              "$ref": "#/$defs/TransportKey"
+            }
+          }
+        },
+        {
+          "title": "DealingEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealing"
+          ],
+          "properties": {
+            "kind": {
+              "const": "dealing"
+            },
+            "dealing": {
+              "$ref": "#/$defs/Dealing"
+            }
+          }
+        },
+        {
+          "title": "ConfirmationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "complaints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "confirmation"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "complaints": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/TrusteeIndex"
+              }
+            }
+          }
+        },
+        {
+          "title": "JustificationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealer",
+            "recipient",
+            "share"
+          ],
+          "properties": {
+            "kind": {
+              "const": "justification"
+            },
+            "dealer": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "recipient": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "share": {
+              "$ref": "#/$defs/GroupScalar"
+            }
+          }
+        },
+        {
+          "title": "ElectionKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "electionKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "electionKey"
+            },
+            "electionKey": {
+              "$ref": "#/$defs/ElectionKey"
+            }
+          }
+        },
+        {
+          "title": "PartialDecryptionsEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "partials"
+          ],
+          "properties": {
+            "kind": {
+              "const": "partials"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "partials": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100000,
+              "items": {
+                "$ref": "#/$defs/PartialDecryption"
+              }
+            }
+          }
+        },
+        {
+          "title": "UnsealedEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex",
+            "ballot"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unsealed"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ballot": {
+              "$ref": "#/$defs/Ballot"
+            }
+          }
         }
       ]
+    },
+    "Ballot": {
+      "title": "Ballot",
+      "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "answers"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "#/$defs/DigestMultibase"
+        },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Answer"
+          }
+        }
+      }
+    },
+    "Answer": {
+      "title": "Answer",
+      "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question"
+      ],
+      "minProperties": 2,
+      "maxProperties": 2,
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "choice": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "uniqueItems": true
+        },
+        "ranking": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "uniqueItems": true
+        },
+        "scores": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Key"
+          },
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "abstain": {
+          "const": true
+        }
+      }
+    },
+    "Key": {
+      "title": "Key",
+      "description": "A question or option key, unique within its manifest or question.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "ElectionId": {
+      "title": "ElectionId",
+      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
+    },
+    "PartialDecryption": {
+      "title": "PartialDecryption",
+      "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "d",
+        "proof"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/DecryptionTarget"
+        },
+        "d": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "proof": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "SigmaProof": {
+      "title": "SigmaProof",
+      "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "c",
+        "z"
+      ],
+      "properties": {
+        "c": {
+          "$ref": "#/$defs/GroupScalar"
+        },
+        "z": {
+          "$ref": "#/$defs/GroupScalar"
+        }
+      }
+    },
+    "GroupScalar": {
+      "title": "GroupScalar",
+      "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "GroupElement": {
+      "title": "GroupElement",
+      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "DecryptionTarget": {
+      "title": "DecryptionTarget",
+      "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "A sealed cast's board leaf."
+        },
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "option": {
+          "$ref": "#/$defs/Key"
+        },
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "leafIndex"
+          ]
+        },
+        {
+          "required": [
+            "question",
+            "option"
+          ]
+        }
+      ]
+    },
+    "ElGamalCiphertext": {
+      "title": "ElGamalCiphertext",
+      "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "b": {
+          "$ref": "#/$defs/GroupElement"
+        }
+      }
+    },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "ElectionKey": {
+      "title": "ElectionKey",
+      "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "qualified",
+        "verification"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "qualified": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/TrusteeIndex"
+          },
+          "description": "The dealers whose dealings the key is formed from."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustee",
+              "key"
+            ],
+            "properties": {
+              "trustee": {
+                "$ref": "#/$defs/TrusteeIndex"
+              },
+              "key": {
+                "$ref": "#/$defs/GroupElement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Dealing": {
+      "title": "Dealing",
+      "description": "A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dealer",
+        "commitments",
+        "pok",
+        "shares"
+      ],
+      "properties": {
+        "dealer": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "commitments": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/GroupElement"
+          }
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        },
+        "shares": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/SealedShare"
+          }
+        }
+      }
+    },
+    "SealedShare": {
+      "title": "SealedShare",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recipient",
+        "share"
+      ],
+      "properties": {
+        "recipient": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "share": {
+          "$ref": "#/$defs/SealedPayload"
+        }
+      }
+    },
+    "SealedPayload": {
+      "title": "SealedPayload",
+      "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kem",
+        "body"
+      ],
+      "properties": {
+        "kem": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 131072,
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    },
+    "TransportKey": {
+      "title": "TransportKey",
+      "description": "The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trustee",
+        "key",
+        "pok"
+      ],
+      "properties": {
+        "trustee": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "EncryptedCast": {
+      "title": "EncryptedCast",
+      "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "attestation"
+      ],
+      "properties": {
+        "sealed": {
+          "$ref": "#/$defs/SealedPayload"
+        },
+        "encrypted": {
+          "$ref": "#/$defs/EncryptedBallot"
+        },
+        "tag": {
+          "$ref": "#/$defs/Multibase"
+        },
+        "attestation": {
+          "$ref": "#/$defs/Multibase"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "sealed"
+          ]
+        },
+        {
+          "required": [
+            "encrypted"
+          ]
+        }
+      ]
+    },
+    "Multibase": {
+      "title": "Multibase",
+      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
+      "type": "string",
+      "maxLength": 16384,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "EncryptedBallot": {
+      "title": "EncryptedBallot",
+      "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "questions"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "#/$defs/DigestMultibase"
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedQuestion"
+          }
+        }
+      }
+    },
+    "EncryptedQuestion": {
+      "title": "EncryptedQuestion",
+      "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "options",
+        "sumProof"
+      ],
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedOption"
+          }
+        },
+        "sumProof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
+    },
+    "DisjunctiveProof": {
+      "title": "DisjunctiveProof",
+      "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 65,
+      "items": {
+        "$ref": "#/$defs/SigmaProof"
+      }
+    },
+    "EncryptedOption": {
+      "title": "EncryptedOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext",
+        "proof"
+      ],
+      "properties": {
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "proof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
     },
     "ElectionResult": {
       "title": "ElectionResult",
@@ -748,22 +1938,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "format": "date-time"
         }
       }
-    },
-    "ElectionId": {
-      "title": "ElectionId",
-      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,128}$"
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     },
     "QuestionResult": {
       "title": "QuestionResult",
@@ -840,19 +2014,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "Key": {
-      "title": "Key",
-      "description": "A question or option key, unique within its manifest or question.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,64}$"
-    },
-    "Multibase": {
-      "title": "Multibase",
-      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-      "type": "string",
-      "maxLength": 16384,
-      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-    },
     "Cast": {
       "title": "Cast",
       "description": "A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.",
@@ -872,79 +2033,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "attestation": {
           "$ref": "#/$defs/Multibase"
-        }
-      }
-    },
-    "Ballot": {
-      "title": "Ballot",
-      "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "electionId",
-        "manifestDigest",
-        "answers"
-      ],
-      "properties": {
-        "electionId": {
-          "$ref": "#/$defs/ElectionId"
-        },
-        "manifestDigest": {
-          "$ref": "#/$defs/DigestMultibase"
-        },
-        "answers": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 128,
-          "items": {
-            "$ref": "#/$defs/Answer"
-          }
-        }
-      }
-    },
-    "Answer": {
-      "title": "Answer",
-      "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "question"
-      ],
-      "minProperties": 2,
-      "maxProperties": 2,
-      "properties": {
-        "question": {
-          "$ref": "#/$defs/Key"
-        },
-        "choice": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Key"
-          },
-          "uniqueItems": true
-        },
-        "ranking": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Key"
-          },
-          "uniqueItems": true
-        },
-        "scores": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Key"
-          },
-          "additionalProperties": {
-            "type": "integer"
-          }
-        },
-        "text": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "abstain": {
-          "const": true
         }
       }
     }

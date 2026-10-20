@@ -126,6 +126,7 @@ const (
 	CapabilityPcsApplicant           Capability = "pcsApplicant"
 	CapabilityWitnessRequest         Capability = "witnessRequest"
 	CapabilityPcsVoter               Capability = "pcsVoter"
+	CapabilityPcsTrustee             Capability = "pcsTrustee"
 )
 
 // DeviceAttestation Producer-supplied attestation at registration time, verifiable by the

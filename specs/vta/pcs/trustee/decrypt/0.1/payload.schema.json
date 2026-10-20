@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/trustee/decrypt/0.1",
+  "title": "VTA PCS — Trustee Decrypt — payload",
+  "description": "The trustee's VTA makes its partial decryption of each target, with proofs, and returns the voting/trustees/decrypt request signed as the trustee.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "electionId",
+    "trustee",
+    "targets",
+    "closedAt"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The VTA context the trustee's keys live in."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "trustee": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`."
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100000,
+      "items": {
+        "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/DecryptionTarget"
+      },
+      "description": "The targets voting/trustees/status lists."
+    },
+    "closedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When voting closed, from the election's summary. The VTA refuses before then."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Trustee Decrypt — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "title": "DecryptDocument",
+          "description": "The voting/trustees/decrypt request, signed as the trustee.",
+          "type": "object",
+          "required": [
+            "id",
+            "type",
+            "issuer",
+            "recipient",
+            "issuedAt",
+            "payload",
+            "proof"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "type": {
+              "const": "https://trusttasks.org/spec/voting/trustees/decrypt/0.1"
+            },
+            "issuer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The signer."
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The ballot box."
+            },
+            "issuedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "payload": {
+              "type": "object",
+              "description": "That task's request payload."
+            },
+            "proof": {
+              "type": "object",
+              "description": "A Data Integrity proof by an `authentication` key of `issuer`."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

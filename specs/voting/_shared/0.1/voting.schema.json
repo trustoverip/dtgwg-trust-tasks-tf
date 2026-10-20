@@ -25,7 +25,7 @@
     },
     "SecrecyLevel": {
       "title": "SecrecyLevel",
-      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.",
+      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).",
       "type": "string",
       "enum": [
         "open",
@@ -647,6 +647,172 @@
               "$ref": "#/$defs/ElectionResult"
             }
           }
+        },
+        {
+          "title": "EncryptedCastEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "cast"
+          ],
+          "properties": {
+            "kind": {
+              "const": "encryptedCast"
+            },
+            "cast": {
+              "$ref": "#/$defs/EncryptedCast"
+            }
+          }
+        },
+        {
+          "title": "TransportKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "transportKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "transportKey"
+            },
+            "transportKey": {
+              "$ref": "#/$defs/TransportKey"
+            }
+          }
+        },
+        {
+          "title": "DealingEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealing"
+          ],
+          "properties": {
+            "kind": {
+              "const": "dealing"
+            },
+            "dealing": {
+              "$ref": "#/$defs/Dealing"
+            }
+          }
+        },
+        {
+          "title": "ConfirmationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "complaints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "confirmation"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "complaints": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/TrusteeIndex"
+              }
+            }
+          }
+        },
+        {
+          "title": "JustificationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealer",
+            "recipient",
+            "share"
+          ],
+          "properties": {
+            "kind": {
+              "const": "justification"
+            },
+            "dealer": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "recipient": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "share": {
+              "$ref": "#/$defs/GroupScalar"
+            }
+          }
+        },
+        {
+          "title": "ElectionKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "electionKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "electionKey"
+            },
+            "electionKey": {
+              "$ref": "#/$defs/ElectionKey"
+            }
+          }
+        },
+        {
+          "title": "PartialDecryptionsEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "partials"
+          ],
+          "properties": {
+            "kind": {
+              "const": "partials"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "partials": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100000,
+              "items": {
+                "$ref": "#/$defs/PartialDecryption"
+              }
+            }
+          }
+        },
+        {
+          "title": "UnsealedEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex",
+            "ballot"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unsealed"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ballot": {
+              "$ref": "#/$defs/Ballot"
+            }
+          }
         }
       ]
     },
@@ -864,6 +1030,398 @@
           "description": "Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way."
         }
       }
+    },
+    "GroupElement": {
+      "title": "GroupElement",
+      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "GroupScalar": {
+      "title": "GroupScalar",
+      "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "ElGamalCiphertext": {
+      "title": "ElGamalCiphertext",
+      "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "b": {
+          "$ref": "#/$defs/GroupElement"
+        }
+      }
+    },
+    "SigmaProof": {
+      "title": "SigmaProof",
+      "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "c",
+        "z"
+      ],
+      "properties": {
+        "c": {
+          "$ref": "#/$defs/GroupScalar"
+        },
+        "z": {
+          "$ref": "#/$defs/GroupScalar"
+        }
+      }
+    },
+    "DisjunctiveProof": {
+      "title": "DisjunctiveProof",
+      "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 65,
+      "items": {
+        "$ref": "#/$defs/SigmaProof"
+      }
+    },
+    "SealedPayload": {
+      "title": "SealedPayload",
+      "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kem",
+        "body"
+      ],
+      "properties": {
+        "kem": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 131072,
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    },
+    "EncryptedOption": {
+      "title": "EncryptedOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext",
+        "proof"
+      ],
+      "properties": {
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "proof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
+    },
+    "EncryptedQuestion": {
+      "title": "EncryptedQuestion",
+      "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "options",
+        "sumProof"
+      ],
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedOption"
+          }
+        },
+        "sumProof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
+    },
+    "EncryptedBallot": {
+      "title": "EncryptedBallot",
+      "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "questions"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedQuestion"
+          }
+        }
+      }
+    },
+    "EncryptedCast": {
+      "title": "EncryptedCast",
+      "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "attestation"
+      ],
+      "properties": {
+        "sealed": {
+          "$ref": "#/$defs/SealedPayload"
+        },
+        "encrypted": {
+          "$ref": "#/$defs/EncryptedBallot"
+        },
+        "tag": {
+          "$ref": "#/$defs/Multibase"
+        },
+        "attestation": {
+          "$ref": "#/$defs/Multibase"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "sealed"
+          ]
+        },
+        {
+          "required": [
+            "encrypted"
+          ]
+        }
+      ]
+    },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "TransportKey": {
+      "title": "TransportKey",
+      "description": "The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trustee",
+        "key",
+        "pok"
+      ],
+      "properties": {
+        "trustee": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "SealedShare": {
+      "title": "SealedShare",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recipient",
+        "share"
+      ],
+      "properties": {
+        "recipient": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "share": {
+          "$ref": "#/$defs/SealedPayload"
+        }
+      }
+    },
+    "Dealing": {
+      "title": "Dealing",
+      "description": "A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dealer",
+        "commitments",
+        "pok",
+        "shares"
+      ],
+      "properties": {
+        "dealer": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "commitments": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/GroupElement"
+          }
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        },
+        "shares": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/SealedShare"
+          }
+        }
+      }
+    },
+    "ElectionKey": {
+      "title": "ElectionKey",
+      "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "qualified",
+        "verification"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "qualified": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/TrusteeIndex"
+          },
+          "description": "The dealers whose dealings the key is formed from."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustee",
+              "key"
+            ],
+            "properties": {
+              "trustee": {
+                "$ref": "#/$defs/TrusteeIndex"
+              },
+              "key": {
+                "$ref": "#/$defs/GroupElement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "DecryptionTarget": {
+      "title": "DecryptionTarget",
+      "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "A sealed cast's board leaf."
+        },
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "option": {
+          "$ref": "#/$defs/Key"
+        },
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "leafIndex"
+          ]
+        },
+        {
+          "required": [
+            "question",
+            "option"
+          ]
+        }
+      ]
+    },
+    "PartialDecryption": {
+      "title": "PartialDecryption",
+      "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "d",
+        "proof"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/DecryptionTarget"
+        },
+        "d": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "proof": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "TrusteePhase": {
+      "title": "TrusteePhase",
+      "description": "`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.",
+      "type": "string",
+      "enum": [
+        "enrolling",
+        "dealing",
+        "confirming",
+        "keyed",
+        "decrypting",
+        "done",
+        "failed"
+      ]
     }
   }
 }

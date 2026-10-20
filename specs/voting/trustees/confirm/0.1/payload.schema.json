@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/trustees/confirm/0.1",
+  "title": "Voting — Trustees — Confirm — payload",
+  "description": "A trustee confirms the shares it was dealt, or complains of the dealers whose shares failed their check.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "trustee",
+    "complaints"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "trustee": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+    },
+    "complaints": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+      },
+      "description": "The dealers whose share to this trustee failed its check. Empty when every share checked."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Trustees — Confirm — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "election",
+        "phase"
+      ],
+      "properties": {
+        "election": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionSummary"
+        },
+        "phase": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteePhase"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

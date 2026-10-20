@@ -103,6 +103,7 @@ extension type const Capability(String value) {
   static const Capability pcsApplicant = Capability('pcsApplicant');
   static const Capability witnessRequest = Capability('witnessRequest');
   static const Capability pcsVoter = Capability('pcsVoter');
+  static const Capability pcsTrustee = Capability('pcsTrustee');
 
   /// Every value this specification's schema permits.
   static const List<Capability> values = <Capability>[
@@ -130,7 +131,8 @@ extension type const Capability(String value) {
     pcsVetter,
     pcsApplicant,
     witnessRequest,
-    pcsVoter
+    pcsVoter,
+    pcsTrustee
   ];
 }
 

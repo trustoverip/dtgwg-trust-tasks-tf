@@ -1340,6 +1340,9 @@ mod voting {
         mod cast {
             mod v0_1;
         }
+        mod cast_encrypted {
+            mod v0_1;
+        }
     }
     mod board {
         mod consistency {
@@ -1371,6 +1374,26 @@ mod voting {
     }
     mod result {
         mod show {
+            mod v0_1;
+        }
+    }
+    mod trustees {
+        mod confirm {
+            mod v0_1;
+        }
+        mod deal {
+            mod v0_1;
+        }
+        mod decrypt {
+            mod v0_1;
+        }
+        mod enrol {
+            mod v0_1;
+        }
+        mod justify {
+            mod v0_1;
+        }
+        mod status {
             mod v0_1;
         }
     }
@@ -1610,6 +1633,23 @@ mod vta {
                 mod v0_1;
             }
         }
+        mod trustee {
+            mod deal {
+                mod v0_1;
+            }
+            mod decrypt {
+                mod v0_1;
+            }
+            mod enrol {
+                mod v0_1;
+            }
+            mod justify {
+                mod v0_1;
+            }
+            mod keys {
+                mod v0_1;
+            }
+        }
         mod verify_attestation {
             mod v0_1;
         }
@@ -1619,6 +1659,9 @@ mod vta {
             }
         }
         mod vote {
+            mod v0_1;
+        }
+        mod vote_encrypted {
             mod v0_1;
         }
         mod voter {

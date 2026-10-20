@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/trustees/status/0.1",
+  "title": "Voting — Trustees — Status — payload",
+  "description": "Where an election's trustee ceremony stands: transport keys, dealings, complaints, the election key, and what remains to decrypt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Trustees — Status — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "threshold",
+        "transportKeys",
+        "dealings",
+        "complaints",
+        "confirmed",
+        "targets",
+        "decrypted"
+      ],
+      "properties": {
+        "phase": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteePhase"
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 64
+        },
+        "transportKeys": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TransportKey"
+          }
+        },
+        "dealings": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/Dealing"
+          }
+        },
+        "complaints": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "dealer",
+              "recipient",
+              "justified"
+            ],
+            "properties": {
+              "dealer": {
+                "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+              },
+              "recipient": {
+                "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+              },
+              "justified": {
+                "type": "boolean"
+              },
+              "share": {
+                "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/GroupScalar"
+              }
+            }
+          }
+        },
+        "confirmed": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+          }
+        },
+        "electionKey": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionKey"
+        },
+        "targets": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": {
+            "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/DecryptionTarget"
+          },
+          "description": "What remains to be decrypted, once voting has closed."
+        },
+        "decrypted": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeIndex"
+          },
+          "description": "The trustees whose partials have been accepted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

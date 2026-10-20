@@ -518,7 +518,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "SecrecyLevel": {
       "title": "SecrecyLevel",
-      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.",
+      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).",
       "type": "string",
       "enum": [
         "open",
@@ -1100,7 +1100,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "SecrecyLevel": {
       "title": "SecrecyLevel",
-      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.",
+      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).",
       "type": "string",
       "enum": [
         "open",

@@ -422,7 +422,19 @@ export type BlobRef = DigestMultibase;
 /**
  * One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.
  */
-export type BoardEntry = CastEntry | ReplacementEntry | LifecycleEntry | ResultEntry;
+export type BoardEntry =
+  | CastEntry
+  | ReplacementEntry
+  | LifecycleEntry
+  | ResultEntry
+  | EncryptedCastEntry
+  | TransportKeyEntry
+  | DealingEntry
+  | ConfirmationEntry
+  | JustificationEntry
+  | ElectionKeyEntry
+  | PartialDecryptionsEntry
+  | UnsealedEntry;
 /**
  * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
  */
@@ -475,7 +487,8 @@ export type Capability_DeviceV0_1 =
   | "pcs-vetter"
   | "pcs-applicant"
   | "witness-request"
-  | "pcs-voter";
+  | "pcs-voter"
+  | "pcs-trustee";
 /**
  * Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
  */
@@ -504,7 +517,8 @@ export type Capability_DeviceV0_2 =
   | "pcsVetter"
   | "pcsApplicant"
   | "witnessRequest"
-  | "pcsVoter";
+  | "pcsVoter"
+  | "pcsTrustee";
 /**
  * Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
  */
@@ -599,6 +613,12 @@ export type DataCommitment = DigestMultibase;
  */
 export type Decision = "approve" | "deny";
 /**
+ * What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.
+ */
+export type DecryptionTarget = {
+  [k: string]: unknown | undefined;
+};
+/**
  * `queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.
  */
 export type DeliveryState = "queued" | "delivered";
@@ -658,6 +678,13 @@ export type DigestMultibase = string;
  */
 export type DirectoryEntryId = string;
 /**
+ * A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).
+ *
+ * @minItems 1
+ * @maxItems 65
+ */
+export type DisjunctiveProof = [SigmaProof, ...SigmaProof[]];
+/**
  * The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
  */
 export type DriftType =
@@ -688,6 +715,12 @@ export type ElectionState = "registered" | "registration" | "voting" | "closed" 
  * The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.
  */
 export type ElevatedRight = "git.ns.admin" | "git.repo.create" | "git.repo.own";
+/**
+ * A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).
+ */
+export type EncryptedCast = {
+  [k: string]: unknown | undefined;
+};
 /**
  * The anchor the binding rested on, recorded so an incident review can see how each factor came to exist. `install`: claimed with the community's install token (vtc/install/claim/finish/0.3). `invite`: redeemed from an administrator's invite (auth/step-up/approver/redeem/finish/0.1). `selfService`: added by the subject behind a factor they already held (auth/step-up/approver/enroll/0.1). `offline`: redeemed from an invite minted by the operator with host access while the service was stopped — an `invite`-shaped redemption whose issuer was the host rather than an administrator.
  */
@@ -826,6 +859,10 @@ export type GroupCredentialId = string;
  */
 export type GroupDescription = string;
 /**
+ * A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).
+ */
+export type GroupElement = string;
+/**
  * Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.
  */
 export type GroupId = string;
@@ -837,6 +874,10 @@ export type GroupKind = "static" | "dynamic";
  * The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.
  */
 export type GroupName = string;
+/**
+ * A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).
+ */
+export type GroupScalar = string;
 /**
  * The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.
  */
@@ -1539,7 +1580,7 @@ export type SealedEnvelope_VaultV0_2 =
  */
 export type SealedTransferBundle = string;
 /**
- * `open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). Version 0.1 of the voting tasks carries open ballots only; a ballot box refuses to register any other level with `voting/election/register:unsupportedSecrecy` until the trustee tasks are specified.
+ * `open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).
  */
 export type SecrecyLevel = "open" | "sealed" | "talliedEncrypted";
 /**
@@ -1770,6 +1811,14 @@ export type TransferId = string;
  * How a blob's bytes move. `proxied`: through the host, as chunk documents (rooms/blobs/upload/chunk, rooms/blobs/chunk). `direct`: straight between the member and the storage the room is assigned to, over time-limited URLs the host issues for one object and one method each; the host authorizes every object and verifies every upload, and never carries a byte. Which mode applies is the host's answer, from what the producer accepts, what the room's storage can do, and the room's tier.
  */
 export type TransferMode = "direct" | "proxied";
+/**
+ * A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.
+ */
+export type TrusteeIndex = number;
+/**
+ * `enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.
+ */
+export type TrusteePhase = "enrolling" | "dealing" | "confirming" | "keyed" | "decrypting" | "done" | "failed";
 /**
  * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
  */
@@ -4846,6 +4895,50 @@ export interface ResultEntry {
   kind: "result";
   result: ElectionResult;
 }
+export interface EncryptedCastEntry {
+  kind: "encryptedCast";
+  cast: EncryptedCast;
+}
+export interface TransportKeyEntry {
+  kind: "transportKey";
+  transportKey: TransportKey;
+}
+export interface DealingEntry {
+  kind: "dealing";
+  dealing: Dealing;
+}
+export interface ConfirmationEntry {
+  kind: "confirmation";
+  trustee: TrusteeIndex;
+  /**
+   * @maxItems 64
+   */
+  complaints: TrusteeIndex[];
+}
+export interface JustificationEntry {
+  kind: "justification";
+  dealer: TrusteeIndex;
+  recipient: TrusteeIndex;
+  share: GroupScalar;
+}
+export interface ElectionKeyEntry {
+  kind: "electionKey";
+  electionKey: ElectionKey;
+}
+export interface PartialDecryptionsEntry {
+  kind: "partials";
+  trustee: TrusteeIndex;
+  /**
+   * @minItems 1
+   * @maxItems 100000
+   */
+  partials: [PartialDecryption, ...PartialDecryption[]];
+}
+export interface UnsealedEntry {
+  kind: "unsealed";
+  leafIndex: number;
+  ballot: Ballot;
+}
 /**
  * A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
  */
@@ -5694,6 +5787,23 @@ export interface DataIntegrityProof {
  */
 export interface DcqlQuery {
   [k: string]: unknown | undefined;
+}
+/**
+ * A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).
+ */
+export interface Dealing {
+  dealer: TrusteeIndex;
+  /**
+   * @minItems 2
+   * @maxItems 64
+   */
+  commitments: [GroupElement, GroupElement, ...GroupElement[]];
+  pok: SigmaProof;
+  /**
+   * @minItems 2
+   * @maxItems 64
+   */
+  shares: [SealedShare, SealedShare, ...SealedShare[]];
 }
 /**
  * One presentation request awaiting the holder's decision, as the approver sees it.
@@ -6647,6 +6757,44 @@ export interface EffectiveLimits {
   hostCeilingBytes?: number;
 }
 /**
+ * `(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
+ */
+export interface ElGamalCiphertext {
+  a: GroupElement;
+  b: GroupElement;
+}
+/**
+ * The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.
+ */
+export interface ElectionKey {
+  key: GroupElement;
+  /**
+   * The dealers whose dealings the key is formed from.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  qualified: [TrusteeIndex, ...TrusteeIndex[]];
+  /**
+   * @minItems 2
+   * @maxItems 64
+   */
+  verification: [
+    {
+      trustee: TrusteeIndex;
+      key: GroupElement;
+    },
+    {
+      trustee: TrusteeIndex;
+      key: GroupElement;
+    },
+    ...{
+      trustee: TrusteeIndex;
+      key: GroupElement;
+    }[]
+  ];
+}
+/**
  * An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).
  */
 export interface ElectionResult {
@@ -6672,6 +6820,34 @@ export interface ElectionSummary {
    */
   ballotsAdmitted: number;
   head: BoardHead;
+}
+/**
+ * A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).
+ */
+export interface EncryptedBallot {
+  electionId: ElectionId;
+  manifestDigest: DigestMultibase;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  questions: [EncryptedQuestion, ...EncryptedQuestion[]];
+}
+export interface EncryptedOption {
+  ciphertext: ElGamalCiphertext;
+  proof: DisjunctiveProof;
+}
+/**
+ * One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).
+ */
+export interface EncryptedQuestion {
+  question: Key_VotingV0_1;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  options: [EncryptedOption, ...EncryptedOption[]];
+  sumProof: DisjunctiveProof;
 }
 export interface EncryptionParams {
   /**
@@ -8276,6 +8452,14 @@ export interface PartPlan {
    * @maxItems 1024
    */
   partDigests: [DigestMultibase, ...DigestMultibase[]];
+}
+/**
+ * Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).
+ */
+export interface PartialDecryption {
+  target: DecryptionTarget;
+  d: GroupElement;
+  proof: SigmaProof;
 }
 export interface PasskeyVerificationMethod {
   /**
@@ -9906,6 +10090,13 @@ export interface Context_VtaV0_1 {
   contextId: string;
 }
 /**
+ * Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).
+ */
+export interface SealedPayload {
+  kem: ElGamalCiphertext;
+  body: string;
+}
+/**
  * A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.
  */
 export interface SealedRecord {
@@ -9929,6 +10120,10 @@ export interface SealedRecord {
    * A reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.
    */
   version?: number;
+}
+export interface SealedShare {
+  recipient: TrusteeIndex;
+  share: SealedPayload;
 }
 /**
  * Who the service says it is.
@@ -10190,6 +10385,13 @@ export interface Session_AuthV0_3 {
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
   ext?: Ext;
+}
+/**
+ * A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).
+ */
+export interface SigmaProof {
+  c: GroupScalar;
+  z: GroupScalar;
 }
 /**
  * One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.
@@ -10710,6 +10912,14 @@ export interface TransferTarget {
    * When the storage stops honouring the URL. A request begun after it is refused by the storage.
    */
   expiresAt: string;
+}
+/**
+ * The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).
+ */
+export interface TransportKey {
+  trustee: TrusteeIndex;
+  key: GroupElement;
+  pok: SigmaProof;
 }
 export interface TransportObservation {
   /**
