@@ -31,6 +31,47 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.32.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.5...trust-tasks-rs-v0.32.6) — 2026-10-20
+
+
+### Added
+
+- **vtc/rooms/offers**: List 0.3 — renewals of the admissions a member holds; rooms/keys/act 0.6 completes it; groups bindings refuse an unserved kind ([#843](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/843))
+
+A group's room binding says the community renews each admission it made "while
+  the member stays in the group". Nothing defined how an already-admitted member
+  receives renewed credentials. `offers/list` carries only an offer's three
+  credentials, and `memberships/list` carries none by design. So an admission
+  could only be carried past its `validUntil` by an administrator removing and
+  re-admitting the member.
+
+  - vtc/rooms/offers/list/0.3: the response gains `renewals`. For an admission the
+    caller holds, it lists the room's fresh membership and authority credentials,
+    granting the same actions until a later `validUntil`. `renews` names the
+    expiry of the ones they replace. There is no invitation: a renewal is never a
+    second way in.
+    The community issues a renewal through the room's key holder before
+    recording it, and lists only the latest one per admission. A renewal stays
+    listed on the first page until what it renews expires, the member is removed,
+    or a later renewal supersedes it. The community records the renewed
+    `validUntil` as the admission's own.
+    A surface stores a renewal in place of the credentials it renews, never
+    beside them, and treats storing it twice as success. It never accepts a
+    renewal.
+  - vtc/_shared/0.1/community-room: `Renewal` and `RenewalCredentials`, additive.
+  - rooms/keys/act/0.6: the table adds vtc/rooms/offers/list/0.3, in the offer
+    types' row and on their terms. 0.5's table is closed, so a 0.5 key holder
+    refuses 0.3 with `typeNotActable`.
+  - vtc/groups/bindings/add/0.1: item 6 renews a room binding's admissions
+    through offers/list 0.3. New code `kindNotServed` (item 7): a community that
+    serves room bindings only may refuse a grants or role binding after item 1,
+    and never records a binding it does not provision.
+  - vtc/rooms/memberships/list/0.1: a row for an admitted room with a renewal
+    listed, which the surface stores before anything else it offers.
+  - RoomBindingSpec's description points at the renewal path.
+
+
+
 ## [0.32.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.4...trust-tasks-rs-v0.32.5) — 2026-10-20
 
 
