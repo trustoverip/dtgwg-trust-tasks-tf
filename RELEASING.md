@@ -35,6 +35,19 @@ Types: `feat` `fix` `docs` `test` `ci` `build` `perf` `refactor` `chore`
 `security` `spec` `site` `revert`. (`site` is a change to the registry website
 under `website/`; it reaches no published package.)
 
+**`!` is for a package's API, not for wire behaviour.** All eight core crates
+release as one group, so one `!` makes every one of them a breaking release.
+Write it only when a library's public API breaks — a removed or renamed type,
+member or function, a changed signature. A change to what a task means on the
+wire (a new refusal, a tightened rule) that leaves the generated types as they
+were is versioned by the specification — a new task version where consumers
+must tell the two apart — and its title carries no `!`.
+
+**Enum values are append-only.** A generated Rust enum has implicit
+discriminants, so a value inserted mid-list renumbers every value after it — a
+breaking change to the crates even though the wire only grew. Add a value at
+the end. CI checks this (`npm run check-enum-append-only`).
+
 **`spec` is ours, not the standard's**, and release-plz does not know it — an
 unrecognised type is scored as a **patch**. That is right for an in-place schema
 edit and wrong for a **new spec family**, which is additive API surface in both
