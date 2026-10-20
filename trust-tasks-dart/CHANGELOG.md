@@ -11,6 +11,60 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.8.26 — 2026-10-20
+
+
+### Added
+
+- **rooms**: Rooms/keys/read repairs before refusing — catches up on commits and fetches links, then cannotOpen with a reason (#848)
+
+A key holder misses an epoch key in two ordinary ways — behind by a commit after any
+  membership change, or joined late and holding nothing older — and the member's surface
+  reaches only their agent, so the agent is the one party that can repair either.
+
+  The recipient now SHOULD, before answering cannotOpen, fetch the commits the host relays
+  (rooms/epoch/commits) and apply them in order, or fetch the epoch links as backfill does,
+  from the same host, as the same principal, under the same read grant; at most once per
+  request, serialised per member, never for a removed principal. cannotOpen carries
+  details.reason (notDelivered / beyondChain / removed) in rooms/keys/open 0.2's words.
+  sideEffects becomes mutating: the room is unchanged, the recipient's key state is not.
+
+- **voting**: Sealed and tallied-encrypted elections — trustees, encrypted casts, VTA trustee role (#845)
+
+* feat(voting): sealed and tallied-encrypted elections — voting/trustees/*, voting/ballot/cast-encrypted, vta/pcs/trustee/* and vta/pcs/vote-encrypted
+
+  The encrypted secrecy levels (VTI-VOT-060 – 064). CONVENTIONS §9 fixes the
+  cryptography: Ristretto255, exponential ElGamal under a threshold key, and
+  Fiat–Shamir Schnorr, Chaum–Pedersen and disjunctive proofs with their domains.
+
+  The trustees generate the election key on the board (Pedersen DKG with
+  Belenios-style complaints): enrol a transport key, deal (Feldman commitments
+  plus every share sealed to its recipient), confirm or complain, and a dealer
+  complained of justifies by revealing the share. The key forms from the
+  qualified dealers. After close, each trustee publishes partial decryptions of
+  every sealed cast's KEM, or of every option's homomorphic total, with
+  Chaum–Pedersen proofs; voting/trustees/status tells everyone what is left.
+
+  voting/ballot/cast-encrypted admits a cast whose attestation binds the sealed
+  payload or the encrypted ballot, the latter with 0/1 proofs per option and a
+  proof that each question's count is admissible.
+
+  vta/pcs/trustee/{enrol,deal,keys,justify,decrypt} make the trustee's VTA the
+  custodian of its transport key and key share, signing only the task's own
+  document as the trustee; vta/pcs/vote-encrypted is vta/pcs/vote for the
+  encrypted levels. The new capability pcsTrustee / pcs-trustee is appended to
+  both device/_shared Capability enums.
+
+
+
+### Fixed
+
+- **vtc/elections**: Create serves the encrypted levels a community certifies (#847)
+
+* fix(vtc/elections): create serves the encrypted levels a community certifies, and holds them to their trustee rules
+
+  Item 3: unsupportedSecrecy names a level the community does not serve; a community serving sealed or talliedEncrypted refuses a manifest that breaks the trustee rules with invalidManifest.
+
 ## 0.8.25 — 2026-10-20
 
 
