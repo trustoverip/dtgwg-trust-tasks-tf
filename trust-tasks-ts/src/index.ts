@@ -462,6 +462,7 @@ export * as RoomsKeysAct_v0_2 from "./rooms/keys/act/0.2/payload.js";
 export * as RoomsKeysAct_v0_3 from "./rooms/keys/act/0.3/payload.js";
 export * as RoomsKeysAct_v0_4 from "./rooms/keys/act/0.4/payload.js";
 export * as RoomsKeysAct_v0_5 from "./rooms/keys/act/0.5/payload.js";
+export * as RoomsKeysAct_v0_6 from "./rooms/keys/act/0.6/payload.js";
 export * as RoomsKeysBackfill_v0_1 from "./rooms/keys/backfill/0.1/payload.js";
 export * as RoomsKeysBrowse_v0_1 from "./rooms/keys/browse/0.1/payload.js";
 export * as RoomsKeysChain_v0_1 from "./rooms/keys/chain/0.1/payload.js";
@@ -964,6 +965,7 @@ export * as VtcRoomsMembershipsList_v0_1 from "./vtc/rooms/memberships/list/0.1/
 export * as VtcRoomsOffersAccept_v0_1 from "./vtc/rooms/offers/accept/0.1/payload.js";
 export * as VtcRoomsOffersList_v0_1 from "./vtc/rooms/offers/list/0.1/payload.js";
 export * as VtcRoomsOffersList_v0_2 from "./vtc/rooms/offers/list/0.2/payload.js";
+export * as VtcRoomsOffersList_v0_3 from "./vtc/rooms/offers/list/0.3/payload.js";
 export * as VtcRoomsStorageAssign_v0_1 from "./vtc/rooms/storage/assign/0.1/payload.js";
 export * as VtcRoomsStorageMigrate_v0_1 from "./vtc/rooms/storage/migrate/0.1/payload.js";
 export * as VtcRoomsUsage_v0_1 from "./vtc/rooms/usage/0.1/payload.js";

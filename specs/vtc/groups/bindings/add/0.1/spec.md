@@ -84,6 +84,9 @@ errorCodes:
 - code: vtc/groups/bindings/add:tooManyBindings
   meaning: The group already has 64 bindings.
   retryable: false
+- code: vtc/groups/bindings/add:kindNotServed
+  meaning: The community serves room bindings only. A grants or role binding is not recorded; nothing was stored.
+  retryable: false
 related:
 - vtc/groups/bindings/list
 - vtc/groups/bindings/remove
@@ -120,7 +123,9 @@ A conforming **consumer** (the community) **MUST**:
 3. For a grants or role binding, refuse a dynamic group, or a static group whose `joinPolicy` is not `closed`, with `groupNotEligible`; refuse an unknown capability with `unknownCapability` and an unknown role with `unknownRole`; and refuse with `exceedsBinderAuthority` any capability the binding administrators do not themselves hold at a qualifier at least as wide (VTI-ACL-071).
 4. Record the binding, then let its reconciler — the one owner of the retries — offer admissions or provision grants to each member, idempotently, with capped backoff. A room admission is recorded only after the community's VTA has answered. Each grant is bounded by the member's role ceiling and by the binding administrators' holdings.
 5. Keep a group with a grants or role binding `static` and `closed` for as long as the binding exists.
-6. **MUST NOT** read a group record, or any group credential, to answer whether an entry may do something. Every authorization decision reads the access-control entry, where the provisioned grants carry the group as their source.
+6. Renew each admission a room binding made, for as long as the member stays in the group, before it lapses: fresh membership and authority credentials with the binding's `actions`, valid `validFor` from issue, which the member collects as a renewal from [`vtc/rooms/offers/list`](../../../../rooms/offers/list/0.3/spec.md) at `0.3` or later.
+7. A community that serves room bindings only **MAY** refuse a grants or role binding with `kindNotServed` once item 1 has passed. It **MUST NOT** record a binding it does not provision.
+8. **MUST NOT** read a group record, or any group credential, to answer whether an entry may do something. Every authorization decision reads the access-control entry, where the provisioned grants carry the group as their source.
 
 **Bindings that confer authority are held, not executed at once.** A community **SHOULD** hold a grants or role binding, and a room binding whose `actions` include `curate`, for the consent it requires of an authority-conferring grant, answering with `trust-task-next-step` naming the held action, and record the binding `pending` until it executes. A room binding of `read` and `write` only **MAY** execute at once. Whether consent applies, and whose, is the community's policy, which this specification does not declare.
 

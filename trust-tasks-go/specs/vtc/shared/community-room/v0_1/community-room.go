@@ -226,6 +226,45 @@ type OfferV2 struct {
 	Credentials OfferCredentials `json:"credentials"`
 }
 
+// RenewalCredentials The two credentials a renewal replaces, serialized as
+// rooms/owner/{issue-membership,issue-authority} return them: a membership and an
+// authority granting the same actions until the renewal's `validUntil`. No invitation:
+// the member is already admitted, and a renewal never opens a second way in. The member's
+// surface stores each with the member's key holder **in place of** the one it renews,
+// never beside it.
+type RenewalCredentials struct {
+	// The renewed Verifiable Membership Credential.
+	Membership string `json:"membership"`
+
+	// The renewed Verifiable Authority Credential granting `actions` until `validUntil`.
+	Authority string `json:"authority"`
+}
+
+// Renewal What vtc/rooms/offers/list/0.3 returns in `renewals`: a renewal of an admission
+// the member already holds, as the member it is addressed to sees it. `label` and
+// `description` are the room's as they stand when it is read.
+type Renewal struct {
+	RoomID string `json:"roomId"`
+
+	// The room's host: this community.
+	Host  string    `json:"host"`
+	Label RoomLabel `json:"label"`
+
+	// Absent when the room has none.
+	Description *RoomDescription `json:"description,omitempty"`
+	Visibility  Visibility       `json:"visibility"`
+	Actions     MemberActions    `json:"actions"`
+
+	// When the renewed authority expires.
+	ValidUntil string `json:"validUntil"`
+
+	// When the authority it replaces expires: the renewal is listed until then, or until a
+	// later renewal or the member's removal supersedes it.
+	Renews      string             `json:"renews"`
+	IssuedAt    string             `json:"issuedAt"`
+	Credentials RenewalCredentials `json:"credentials"`
+}
+
 // RoomMembership What vtc/rooms/memberships/list/0.1 returns: one room the community
 // owns, and where the caller's admission to it stands in the community's own record.
 // Unlike `OfferV2` it carries no credentials — those are collected with

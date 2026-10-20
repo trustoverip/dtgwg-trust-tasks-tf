@@ -2364,6 +2364,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/keys/act/0.5#response" => <crate::specs::rooms::keys::act::v0_5::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.6" => <crate::specs::rooms::keys::act::v0_6::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.6#response" => <crate::specs::rooms::keys::act::v0_6::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/backfill/0.1" => <crate::specs::rooms::keys::backfill::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -4878,6 +4884,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/offers/list/0.2#response" => <crate::specs::vtc::rooms::offers::list::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/offers/list/0.3" => <crate::specs::vtc::rooms::offers::list::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/offers/list/0.3#response" => <crate::specs::vtc::rooms::offers::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/storage/assign/0.1" => <crate::specs::vtc::rooms::storage::assign::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -7598,6 +7610,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.6" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::act::v0_6::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/backfill/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::backfill::v0_1::Payload,
         >()),
@@ -10097,6 +10114,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/offers/list/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::rooms::offers::list::v0_3::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/storage/assign/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::rooms::storage::assign::v0_1::Payload,
@@ -12510,6 +12532,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.6" => {
+            Some(crate::specs::rooms::keys::act::v0_6::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/backfill/0.1" => {
             Some(crate::specs::rooms::keys::backfill::v0_1::ERROR_CODES)
         }
@@ -14651,6 +14678,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/offers/list/0.3" => {
+            Some(crate::specs::vtc::rooms::offers::list::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/storage/assign/0.1" => {
             Some(crate::specs::vtc::rooms::storage::assign::v0_1::ERROR_CODES)
         }
@@ -15056,6 +15088,12 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.5#response" => <crate::specs::rooms::keys::act::v0_5::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.6" => <crate::specs::rooms::keys::act::v0_6::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/act/0.6#response" => <crate::specs::rooms::keys::act::v0_6::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/community/theme/update/0.1" => <crate::specs::vtc::community::theme::update::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,

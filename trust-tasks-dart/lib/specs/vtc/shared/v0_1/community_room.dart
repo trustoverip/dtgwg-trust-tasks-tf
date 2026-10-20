@@ -607,6 +607,107 @@ class OfferV2 {
       };
 }
 
+/// The two credentials a renewal replaces, serialized as
+/// rooms/owner/{issue-membership,issue-authority} return them: a membership and an
+/// authority granting the same actions until the renewal's `validUntil`. No
+/// invitation: the member is already admitted, and a renewal never opens a second way
+/// in. The member's surface stores each with the member's key holder **in place of**
+/// the one it renews, never beside it.
+class RenewalCredentials {
+  const RenewalCredentials({
+    required this.membership,
+    required this.authority,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RenewalCredentials.fromJson(Map<String, dynamic> json) =>
+      RenewalCredentials(
+        membership: json['membership'] as String,
+        authority: json['authority'] as String,
+      );
+
+  /// The renewed Verifiable Membership Credential.
+  final String membership;
+
+  /// The renewed Verifiable Authority Credential granting `actions` until `validUntil`.
+  final String authority;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'membership': membership,
+        'authority': authority,
+      };
+}
+
+/// What vtc/rooms/offers/list/0.3 returns in `renewals`: a renewal of an admission the
+/// member already holds, as the member it is addressed to sees it. `label` and
+/// `description` are the room's as they stand when it is read.
+class Renewal {
+  const Renewal({
+    required this.roomId,
+    required this.host,
+    required this.label,
+    this.description,
+    required this.visibility,
+    required this.actions,
+    required this.validUntil,
+    required this.renews,
+    required this.issuedAt,
+    required this.credentials,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory Renewal.fromJson(Map<String, dynamic> json) => Renewal(
+        roomId: json['roomId'] as String,
+        host: json['host'] as String,
+        label: json['label'] as String,
+        description: json['description'] as String?,
+        visibility: Visibility(json['visibility'] as String),
+        actions: (json['actions'] as List<dynamic>)
+            .map((e) => MemberAction(e as String))
+            .toList(),
+        validUntil: json['validUntil'] as String,
+        renews: json['renews'] as String,
+        issuedAt: json['issuedAt'] as String,
+        credentials: RenewalCredentials.fromJson(
+            json['credentials'] as Map<String, dynamic>),
+      );
+
+  final String roomId;
+
+  /// The room's host: this community.
+  final String host;
+  final RoomLabel label;
+
+  /// Absent when the room has none.
+  final RoomDescription? description;
+  final Visibility visibility;
+  final MemberActions actions;
+
+  /// When the renewed authority expires.
+  final String validUntil;
+
+  /// When the authority it replaces expires: the renewal is listed until then, or until
+  /// a later renewal or the member's removal supersedes it.
+  final String renews;
+  final String issuedAt;
+  final RenewalCredentials credentials;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'roomId': roomId,
+        'host': host,
+        'label': label,
+        if (description != null) 'description': description!,
+        'visibility': visibility.value,
+        'actions': actions.map((e) => e.value).toList(),
+        'validUntil': validUntil,
+        'renews': renews,
+        'issuedAt': issuedAt,
+        'credentials': credentials.toJson(),
+      };
+}
+
 /// What vtc/rooms/memberships/list/0.1 returns: one room the community owns, and where
 /// the caller's admission to it stands in the community's own record. Unlike `OfferV2`
 /// it carries no credentials — those are collected with vtc/rooms/offers/list while an

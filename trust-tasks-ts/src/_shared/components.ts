@@ -9099,6 +9099,46 @@ export interface RejectedKey {
   reason: string;
 }
 /**
+ * What vtc/rooms/offers/list/0.3 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.
+ */
+export interface Renewal {
+  roomId: string;
+  /**
+   * The room's host: this community.
+   */
+  host: string;
+  label: RoomLabel;
+  /**
+   * Absent when the room has none.
+   */
+  description?: RoomDescription;
+  visibility: Visibility;
+  actions: MemberActions;
+  /**
+   * When the renewed authority expires.
+   */
+  validUntil: string;
+  /**
+   * When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.
+   */
+  renews: string;
+  issuedAt: string;
+  credentials: RenewalCredentials;
+}
+/**
+ * The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.
+ */
+export interface RenewalCredentials {
+  /**
+   * The renewed Verifiable Membership Credential.
+   */
+  membership: string;
+  /**
+   * The renewed Verifiable Authority Credential granting `actions` until `validUntil`.
+   */
+  authority: string;
+}
+/**
  * One repository as the VTC records it.
  */
 export interface RepoSummary_GitNsV0_1 {
@@ -9572,7 +9612,7 @@ export interface RollbackResult {
   ext?: Ext;
 }
 /**
- * Links a room the community owns to the group: joining the group offers the member admission to the room with `actions`, valid for `validFor`; leaving removes them unless another source still covers them.
+ * Links a room the community owns to the group: joining the group offers the member admission to the room with `actions`, valid for `validFor`, renewed while they stay in the group (collected with vtc/rooms/offers/list at 0.3 or later); leaving removes them unless another source still covers them.
  */
 export interface RoomBindingSpec {
   kind: "room";

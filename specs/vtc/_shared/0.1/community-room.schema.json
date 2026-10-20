@@ -370,6 +370,90 @@
         }
       }
     },
+    "RenewalCredentials": {
+      "title": "RenewalCredentials",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership",
+        "authority"
+      ],
+      "description": "The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.",
+      "properties": {
+        "membership": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "The renewed Verifiable Membership Credential."
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536,
+          "description": "The renewed Verifiable Authority Credential granting `actions` until `validUntil`."
+        }
+      }
+    },
+    "Renewal": {
+      "title": "Renewal",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "host",
+        "label",
+        "visibility",
+        "actions",
+        "validUntil",
+        "renews",
+        "issuedAt",
+        "credentials"
+      ],
+      "description": "What vtc/rooms/offers/list/0.3 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "host": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The room's host: this community."
+        },
+        "label": {
+          "$ref": "#/$defs/RoomLabel"
+        },
+        "description": {
+          "$ref": "#/$defs/RoomDescription",
+          "description": "Absent when the room has none."
+        },
+        "visibility": {
+          "$ref": "../../../rooms/_shared/0.1/room.schema.json#/$defs/Visibility"
+        },
+        "actions": {
+          "$ref": "#/$defs/MemberActions"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the renewed authority expires."
+        },
+        "renews": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "credentials": {
+          "$ref": "#/$defs/RenewalCredentials"
+        }
+      }
+    },
     "RoomMembership": {
       "title": "RoomMembership",
       "type": "object",

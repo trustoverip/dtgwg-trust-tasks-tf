@@ -681,8 +681,9 @@ extension type const MemberAction(String value) {
 typedef MemberActions = List<MemberAction>;
 
 /// Links a room the community owns to the group: joining the group offers the member
-/// admission to the room with `actions`, valid for `validFor`; leaving removes them
-/// unless another source still covers them.
+/// admission to the room with `actions`, valid for `validFor`, renewed while they stay
+/// in the group (collected with vtc/rooms/offers/list at 0.3 or later); leaving
+/// removes them unless another source still covers them.
 class RoomBindingSpec {
   const RoomBindingSpec({
     required this.kind,

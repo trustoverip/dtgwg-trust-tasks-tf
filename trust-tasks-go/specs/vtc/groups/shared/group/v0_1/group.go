@@ -241,8 +241,9 @@ type GroupJoinRequest struct {
 }
 
 // RoomBindingSpec Links a room the community owns to the group: joining the group offers
-// the member admission to the room with `actions`, valid for `validFor`; leaving removes
-// them unless another source still covers them.
+// the member admission to the room with `actions`, valid for `validFor`, renewed while
+// they stay in the group (collected with vtc/rooms/offers/list at 0.3 or later); leaving
+// removes them unless another source still covers them.
 type RoomBindingSpec struct {
 	Kind string `json:"kind"`
 

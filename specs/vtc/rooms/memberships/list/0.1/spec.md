@@ -105,6 +105,7 @@ Neither is the surface's, and every surface reads both, so every surface reaches
 |---|---|---|---|---|
 | `offered` | any | — | an offer | to accept it: collect the credentials with [`vtc/rooms/offers/list`](../../../offers/list/0.2/spec.md), store them with the key holder, then accept |
 | `admitted` | `open` | — (an `open` room has no group) | a room the member is in | to open it |
+| `admitted` | any, with a renewal listed for it by [`vtc/rooms/offers/list`](../../../offers/list/0.3/spec.md) at `0.3` or later | — | a room the member is in | to keep it: store the renewal's credentials with the key holder in place of the ones it renews, before anything else the rows below offer |
 | `admitted` | sealed | yes | a room the member is in | to open it |
 | `admitted` | sealed | no, and `repeatAcceptUntil` present | a room whose acceptance is not finished | to finish it: Surface item 3, then a repeated accept, then the Welcome |
 | `admitted` | sealed | no, and `repeatAcceptUntil` absent | a room the member was admitted to and cannot open from this key holder | nothing it can do itself: an administrator re-admits |
