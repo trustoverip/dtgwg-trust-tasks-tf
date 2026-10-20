@@ -689,6 +689,7 @@ export * as VtaPcsVerifyAttestation_v0_1 from "./vta/pcs/verify-attestation/0.1/
 export * as VtaPcsVetterShow_v0_1 from "./vta/pcs/vetter/show/0.1/payload.js";
 export * as VtaPcsVote_v0_1 from "./vta/pcs/vote/0.1/payload.js";
 export * as VtaPcsVoterAccept_v0_1 from "./vta/pcs/voter/accept/0.1/payload.js";
+export * as VtaPcsVoterRead_v0_1 from "./vta/pcs/voter/read/0.1/payload.js";
 export * as VtaPcsVoterReceipt_v0_1 from "./vta/pcs/voter/receipt/0.1/payload.js";
 export * as VtaPcsVoterRegister_v0_1 from "./vta/pcs/voter/register/0.1/payload.js";
 export * as VtaRestoreStatus_v0_1 from "./vta/restore/status/0.1/payload.js";

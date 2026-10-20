@@ -34,6 +34,7 @@ The tasks are:
 | VTC | [`vtc/elections/cancel`](../../../vtc/elections/cancel/0.1/spec.md) | Cancels an election |
 | VTC | [`vtc/elections/certify`](../../../vtc/elections/certify/0.1/spec.md) | Verifies the board and certifies the result |
 | VTC | [`vtc/elections/tickets/issue`](../../../vtc/elections/tickets/issue/0.1/spec.md) | Blind-issues one eligible party's ticket |
+| VTA | [`vta/pcs/voter/read`](../../../vta/pcs/voter/read/0.1/spec.md) | Signs `vtc/elections/list` or `show` as the voter's membership DID |
 | VTA | [`vta/pcs/voter/register`](../../../vta/pcs/voter/register/0.1/spec.md) | Derives the election's voter key and builds the blinded ticket request |
 | VTA | [`vta/pcs/voter/accept`](../../../vta/pcs/voter/accept/0.1/spec.md) | Unblinds the VTC's answer into the ticket |
 | VTA | [`vta/pcs/vote`](../../../vta/pcs/vote/0.1/spec.md) | Validates a ballot against the manifest and builds the signed cast |
