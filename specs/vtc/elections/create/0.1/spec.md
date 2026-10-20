@@ -70,7 +70,7 @@ errorCodes:
           type: string
           maxLength: 500
   - code: vtc/elections/create:unsupportedSecrecy
-    meaning: "`manifest.secrecy` is not `open`. Version 0.1 of the voting tasks carries open elections only (CONVENTIONS §7)."
+    meaning: "`manifest.secrecy` is a level the community does not serve: an encrypted level needs a community that implements CONVENTIONS §9 (trustees, encrypted casts and their certification)."
     retryable: false
   - code: vtc/elections/create:communityMismatch
     meaning: "`manifest.community` is not this community's DID. A community creates only its own elections."
@@ -125,7 +125,7 @@ A conforming **community** (`recipient`) checks, in this order:
 
 1. **The requester holds `vtc.elections.manage`** (VTI-VOT-080), read from the signer's live access-control entry — or, for a delegated signing key, the entry of the identity it acts for — at execution time. Else `permissionDenied`.
 2. **The manifest is valid** as [`voting/election/register`](../../../../voting/election/register/0.1/spec.md) would judge it, and **MUST** be refused with `invalidManifest` otherwise — including a `votingCloses` already past, and a `registrationOpens` after `votingOpens` or a `votingOpens` not before `votingCloses`. The community **MUST NOT** register a manifest the ballot box would refuse for its shape.
-3. **The secrecy level is served.** A `secrecy` other than `open` **MUST** be refused with `unsupportedSecrecy` (CONVENTIONS §7).
+3. **The secrecy level is served.** A `secrecy` the community does not serve **MUST** be refused with `unsupportedSecrecy`. A community serves `sealed` and `talliedEncrypted` only if it certifies them as CONVENTIONS §9 provides, and **MUST** then hold such a manifest to its trustee rules — trustees named, `2 ≤ threshold ≤` their number, neither the community nor the ballot box among them, no running totals, and only choice questions when tallied-encrypted — refusing one that breaks them with `invalidManifest`.
 4. **The manifest is this community's.** `manifest.community` **MUST** equal the community's own DID, or `communityMismatch`.
 5. **The ballot box is trusted.** `manifest.ballotBox` **MUST** be on the community's list of trusted voting services, or `ballotBoxNotTrusted` (VTI-VOT-082). That list is community configuration that alters trust semantics: a change to it is the community's to govern as it governs any such change, and never rides on this task.
 6. **The identifier is new.** An `electionId` the community already holds an election, or a parked creation, under **MUST** be refused with `vtc/elections/create:electionExists`, whatever the manifest. A repeat of the same signed document is answered as [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11 provides, with the answer first given.

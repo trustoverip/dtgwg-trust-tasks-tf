@@ -2876,7 +2876,7 @@ pub mod error_codes {
     };
     /// `vtc/elections/create:unsupportedSecrecy`
     ///
-    /// `manifest.secrecy` is not `open`. Version 0.1 of the voting tasks carries open elections only (CONVENTIONS §7).
+    /// `manifest.secrecy` is a level the community does not serve: an encrypted level needs a community that implements CONVENTIONS §9 (trustees, encrypted casts and their certification).
     ///
     /// Declared `retryable: false`.
     pub const UNSUPPORTED_SECRECY: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
