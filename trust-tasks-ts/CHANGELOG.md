@@ -11,6 +11,19 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.24 — 2026-10-20
+
+
+### Added
+
+- **vta/pcs/voter**: The engine signs the voter's requests to the community as the member — register's ticketDocument, and voter/read (#841)
+
+* spec(vta/pcs/voter/register): the engine signs the ticket request as the member (optional `member`, `ticketDocument`)
+
+  A voter's membership DID usually lives in their VTA, so a client could not sign vtc/elections/tickets/issue as the member without a general signing oracle. The request may now name `member`; the engine then also returns `ticketDocument`, the tickets/issue request already signed as that DID for `authentication`, with exactly this response's payload, to send unchanged. The engine signs only that document type with only that payload — `member` confers no other signature — under pcsVoter and standing to act as the member, as vta/pcs/vote signs the cast.
+
+  On a repeat the engine returns the document it kept for that member, unchanged, so the community answers a resend with its first answer rather than as a second request. New code `memberNotHeld`, checked before anything is allocated. Additive: both members optional; trust-tasks-rs semver-checks report no update required.
+
 ## 0.26.23 — 2026-10-20
 
 
