@@ -68,7 +68,7 @@ related:
 
 ## Abstract
 
-After the claim, the member picks an identity and types the number shown on the starter's screen. The wallet has the member's VTA sign an [`auth/oob/identify`](../../identify/0.1/spec.md) and sends it inside this task, signed by the lock key. If the member is a member and the number matches, the service answers with **step 2**: the step 1 members unchanged, plus the starter key (`sessionKey`), where the request came from (`requester`) and which DID was identified (`identifiedAs`). The wallet shows this before the member approves or declines.
+After the claim, the member picks an identity and the number shown on the starter's screen is entered — typed by the member, or read from that page by a same-device reader ([`auth/oob/identify`](../../identify/0.1/spec.md) item 1). The wallet has the member's VTA sign an [`auth/oob/identify`](../../identify/0.1/spec.md) and sends it inside this task, signed by the lock key. If the member is a member and the number matches, the service answers with **step 2**: the step 1 members unchanged, plus the starter key (`sessionKey`), where the request came from (`requester`) and which DID was identified (`identifiedAs`). The wallet shows this before the member approves or declines.
 
 ## Status of this Document
 

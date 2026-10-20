@@ -2,7 +2,7 @@
 slug: auth/oob/identify
 version: "0.1"
 title: "Auth — OOB Identify"
-summary: "A member's DID states that it holds the lock on one out-of-band request and has typed the number shown on the starter's screen; signed by the member's VTA for authentication and carried only inside auth/oob/prove."
+summary: "A member's DID states that it holds the lock on one out-of-band request and has entered the number shown on the starter's screen; signed by the member's VTA for authentication and carried only inside auth/oob/prove."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: authentication
@@ -19,7 +19,7 @@ parties:
 proofRequirement:
   requirement: REQUIRED
   rationale: >-
-    The proof is the whole of what this document contributes: it is the member DID's signature, for `authentication`, over the request, the lock and the typed number. Without it the service has no membership proof and no number proof.
+    The proof is the whole of what this document contributes: it is the member DID's signature, for `authentication`, over the request, the lock and the entered number. Without it the service has no membership proof and no number proof.
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: >-
@@ -62,7 +62,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the wallet with the member's VTA):
 
-1. **MUST** set `issuer` to the DID the member chose, `recipient` to the service DID, `requestId` to the request, `approverKey` to its lock key, and `enteredNumber` to the digits the member typed.
+1. **MUST** set `issuer` to the DID the member chose, `recipient` to the service DID, `requestId` to the request, `approverKey` to its lock key, and `enteredNumber` to the digits shown on the starter's screen, as the member typed them or, for a reader on the same device that received the link from the member's activation on the verified portal ([VTI-LNK-056, VTI-LNK-105](https://github.com/trustoverip/dtgwg-vti-spec/blob/main/spec/07a-links.md)), as the reader read them from that page (VTI-LNK-106).
 2. **MUST** sign with a key the issuer's DID document lists under `authentication`, with `proofPurpose: authentication`.
 3. A signing VTA **MUST** validate the document against this schema with the exact type URI before signing, and **MUST** refuse unless `issuer` is the principal of the vault entry used and `recipient` is the DID that entry targets.
 4. **MUST NOT** send the document on its own.
@@ -76,13 +76,13 @@ A conforming **consumer** (the service, executing `auth/oob/prove`):
 
 ## Authorization
 
-Membership of the community is what this document lets the service check, and only after the issuer string is found in the service's own member list. The proof establishes control of the DID; the membership check establishes standing; the typed number establishes that the holder can see the starter's screen. None of them is authority to sign anyone in — that requires a user-verified [`auth/oob/grant`](../../grant/0.1/spec.md).
+Membership of the community is what this document lets the service check, and only after the issuer string is found in the service's own member list. The proof establishes control of the DID; the membership check establishes standing; the entered number establishes that the holder can see the starter's screen. None of them is authority to sign anyone in — that requires a user-verified [`auth/oob/grant`](../../grant/0.1/spec.md).
 
 ## Definitions
 
 - **`requestId`** — the request this proof is for.
 - **`approverKey`** — the lock key `K_a` from the claim.
-- **`enteredNumber`** — the two digits the member typed.
+- **`enteredNumber`** — the two digits shown on the starter's screen, as the member typed them or, for a reader on the same device that received the link from the member's activation on the verified portal ([VTI-LNK-056, VTI-LNK-105](https://github.com/trustoverip/dtgwg-vti-spec/blob/main/spec/07a-links.md)), as the reader read them from that page (VTI-LNK-106).
 
 ## Request
 
@@ -129,4 +129,6 @@ The service audits each identify, including failed and peeking proofs, with the 
 
 ### Consent/purpose
 
-The document proves membership and sight of the screen for one request. A service **MUST NOT** treat it as consent to anything else; consent to the sign-in is the grant.
+The document proves membership and sight of the screen for one request.
+
+A reader on the same device that reads the digits from the starter's page, rather than having the member type them, proves the same thing: the page is the one the member activated the link on, held to the verified portal origin at that activation. The threats the number answers — a starter's real code relayed from an attacker's browser, and a code sent out of band by email or chat — are already refused on that path by the page-origin check (VTI-LNK-105) before anything is sent. The number is still carried and checked; the member is spared retyping it, never the check. A service **MUST NOT** treat it as consent to anything else; consent to the sign-in is the grant.

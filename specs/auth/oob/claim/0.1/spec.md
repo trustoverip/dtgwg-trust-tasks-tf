@@ -70,7 +70,7 @@ related:
 
 A member's wallet reads a `sign-in` trigger link ([`TRIGGER-LINK.md`](../../_shared/0.1/TRIGGER-LINK.md)), checks the community against its own records, and once the member chooses to continue, generates a throwaway Ed25519 key `K_a` and sends this claim. The first claim wins: the request is locked to `K_a`, the starter's page shows that it was claimed, and every later step by the approver must be signed by `K_a`.
 
-The service answers with **step 1** of the disclosure ladder ([`CONVENTIONS.md`](../../_shared/0.1/CONVENTIONS.md) §5): the community, the portal origin, the purpose and the decision deadline. Nothing about the starter is revealed until the approver has proved membership and typed the number shown on the starter's screen (`auth/oob/prove`).
+The service answers with **step 1** of the disclosure ladder ([`CONVENTIONS.md`](../../_shared/0.1/CONVENTIONS.md) §5): the community, the portal origin, the purpose and the decision deadline. Nothing about the starter is revealed until the approver has proved membership and entered the number shown on the starter's screen (`auth/oob/prove`).
 
 ## Status of this Document
 

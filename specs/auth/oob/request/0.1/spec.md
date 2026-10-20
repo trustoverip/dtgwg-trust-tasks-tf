@@ -95,7 +95,7 @@ A conforming **service**:
 
 ## Authorization
 
-This task is open to any caller: opening a request needs no standing at the service. That is safe because a pending request is inert. It confers nothing until a member claims it, proves membership, types the number from the starter's screen and approves with user verification, and even then the authority goes only to the key that signed this document, through `auth/oob/redeem`. The proof here establishes which key is the starter key; it does not authorize anything ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
+This task is open to any caller: opening a request needs no standing at the service. That is safe because a pending request is inert. It confers nothing until a member claims it, proves membership, enters the number from the starter's screen and approves with user verification, and even then the authority goes only to the key that signed this document, through `auth/oob/redeem`. The proof here establishes which key is the starter key; it does not authorize anything ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
 ## Definitions
 
@@ -187,4 +187,4 @@ The request record lives for the life of the request (`exchange`). An audit reco
 
 ### Consent/purpose
 
-The connection details are collected to show the approver, at step 2, where the request came from, and to compute the same-network signal. They serve no other purpose and are not shown to anyone before a member has proved membership and typed the number.
+The connection details are collected to show the approver, at step 2, where the request came from, and to compute the same-network signal. They serve no other purpose and are not shown to anyone before a member has proved membership and entered the number.
