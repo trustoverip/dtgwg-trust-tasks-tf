@@ -1801,7 +1801,7 @@ pub mod error_codes {
     };
     /// `rooms/keys/read:cannotOpen`
     ///
-    /// The record was fetched and its epoch key is not held. `details.epoch` names the epoch; `rooms/keys/backfill` is the repair.
+    /// The record was fetched and its epoch key is not held, after the recipient tried the repair its reason admits. `details.epoch` names the record's epoch and `details.reason` says why, with the words and members `rooms/keys/open` 0.2 gives `unknownEpoch`: `notDelivered` (`heldEpoch`) — the host relays no commit that reaches it yet; `beyondChain` (`earliestEpoch`) — the host holds no epoch link that reaches back to it; `removed` (`removedAtEpoch`) — the principal was removed from the room's group, and nothing will open it.
     ///
     /// Declared `retryable: false`.
     pub const CANNOT_OPEN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

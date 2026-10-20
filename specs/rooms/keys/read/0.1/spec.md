@@ -31,9 +31,9 @@ issuedAtRequirement:
   rationale: >-
     The response carries a verdict about a host's honesty, and a verdict that cannot be placed in time cannot be compared with a later one — which is the whole mechanism. An undated read is also one a duplicate-suppression window cannot absorb.
 sideEffects:
-  level: none
+  level: mutating
   rationale: >-
-    Returns one record. The recipient makes an outbound request and MAY record what the host asserted, but the room is unchanged and nothing here is a write.
+    Returns one record, and the room is unchanged. The recipient's own key state may not be: before refusing a record it cannot open, it applies the commits and retains the epoch links the host relays (see *Opening, and when it cannot*), exactly as `rooms/keys/commit` and `rooms/keys/backfill` would. It MAY also record what the host asserted.
 exposure:
   discloses: secret
   ingests: none
@@ -55,7 +55,7 @@ errorCodes:
     meaning: "The host answered and declined. Its own code and reason are carried in `details` — commonly that it does not serve this room, or that no record has this key."
     retryable: false
   - code: rooms/keys/read:cannotOpen
-    meaning: "The record was fetched and its epoch key is not held. `details.epoch` names the epoch; `rooms/keys/backfill` is the repair."
+    meaning: "The record was fetched and its epoch key is not held, after the recipient tried the repair its reason admits. `details.epoch` names the record's epoch and `details.reason` says why, with the words and members `rooms/keys/open` 0.2 gives `unknownEpoch`: `notDelivered` (`heldEpoch`) — the host relays no commit that reaches it yet; `beyondChain` (`earliestEpoch`) — the host holds no epoch link that reaches back to it; `removed` (`removedAtEpoch`) — the principal was removed from the room's group, and nothing will open it."
     retryable: false
 related:
   - rooms/keys/browse
@@ -119,7 +119,17 @@ The consequence belongs on the **write** path: continuing to hand material to a 
 
 ### Opening, and when it cannot
 
-The recipient opens the record with the epoch key for the epoch it was sealed under, which it derives by walking the chain it holds. Where that epoch is below its reach, the answer is `cannotOpen` with the epoch named, and [`rooms/keys/backfill`](../../backfill/0.1/spec.md) is the repair — a distinct outcome from a host refusing, and a member told only "could not read" cannot tell the two apart.
+The recipient opens the record with the epoch key for the epoch it was sealed under, which it derives by walking the chain it holds. A key holder misses that key in two ordinary ways, and both are the normal state of a room with more than two members rather than faults: every membership change leaves every other member a commit behind until they apply it, and every member who joins starts at the epoch they joined and holds nothing older.
+
+**The recipient repairs before it refuses.** It is the only party that can: the member's surface reaches their agent and nothing else, and a member shown a record that will not open has no move of their own. So, before answering `cannotOpen`:
+
+1. **The record's epoch is later than any it holds**, and its principal was not removed from the group at or before it: the recipient **SHOULD** fetch, from the same host and as the same principal under the same `read` grant, the commits the host relays above the epoch it holds ([`rooms/epoch/commits`](../../../epoch/commits/0.1/spec.md)), apply them in order under the rules of [`rooms/keys/commit`](../../commit/0.1/spec.md), and open the record again.
+2. **The record's epoch is earlier than its chain reaches**: the recipient **SHOULD** fetch the room's epoch links from the same host, as [`rooms/keys/backfill`](../../backfill/0.1/spec.md) does, retain them, and open the record again.
+3. **Its principal was removed** at or before the record's epoch: the recipient **MUST NOT** fetch anything. No commit and no link will open the record.
+
+A recipient **MUST** attempt each repair at most once per request, and **MUST** open the record only with the key for the epoch it was sealed under, never another epoch's. Repairs for one member of one room **SHOULD** be serialised, so that a surface opening several records at once fetches each commit once rather than once per record. A repair is the same act as reading — the same host, the same principal, the same `read` grant — so it discloses nothing a read did not, and it changes no state but the recipient's own.
+
+Where the record still does not open, the answer is `cannotOpen` with the epoch named and `details.reason` saying which case it is. That is a distinct outcome from a host refusing, and a member told only "could not read" cannot tell the two apart: `notDelivered` means the room's owner has not yet handed the host the commit, `beyondChain` that the history before the member joined was never relayed or was deliberately severed, and `removed` that it never will open. A consumer **MUST** act on `details.reason`, never on the message.
 
 A `retracted` record has no body. That is an answer, not a failure: the tombstone, its version and its verdict are returned, and a consumer **MUST NOT** report it as an error.
 
