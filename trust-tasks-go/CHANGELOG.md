@@ -11,6 +11,44 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.8.27 — 2026-10-21
+
+
+### Added
+
+- **vtc/config**: Did-hosting/list 0.1 — the hosting servers the community's VTA can publish its identities through (#849)
+
+A community's administrator chooses where the identities it mints (its groups'
+  and its own rooms') are published. The community either serves each `did:webvh`
+  log itself, or has its VTA publish it on a hosting server registered there.
+  Without a list of those servers the choice is typed blind.
+
+  - vtc/config/did-hosting/list/0.1: for holders of `vtc.config.admin`. The
+    community asks its own VTA (`vta/webvh/servers/list`), as itself, over the
+    link it keeps to it. It answers with each server's `id`, `did` and `label`,
+    and nothing else of the VTA's record. A server whose id the configuration
+    could not name is left out.
+  - Codes: noKeyHolder (no VTA link), keyHolderUnavailable (no answer,
+    retryable), keyHolderRefused (the VTA's own code and message in `details`).
+
+
+
+### Fixed
+
+- **voting**: Encrypted elections on a private board — trustees read their ceremony, voters get the key from vtc/elections/show (#852)
+
+On a private board the ballot box answered voting/trustees/status only to the community and
+  its auditors, so no trustee could take its next step (transport keys, dealings and targets are
+  read from status) and no voter could obtain the election key: a sealed or tallied-encrypted
+  election on a private board could not run.
+
+  - CONVENTIONS §4 gains the rows the trustee tasks were missing; voting/trustees/status
+    answers every trustee the manifest names on any board. Nothing the ceremony publishes is
+    secret (§9.6, "Who reads the ceremony").
+  - vtc/elections/show carries electionKey (optional, appended) once formed, read from the
+    ballot box and refused unless the qualified dealings in the same answer form it. A voter
+    gets it from the community it already asks for its ticket.
+
 ## 0.8.26 — 2026-10-20
 
 
