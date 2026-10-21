@@ -11,7 +11,7 @@ keywords:
   - trustee
   - threshold
 parties:
-  - role: Anyone who may read the board
+  - role: Anyone who may read the board, or a trustee
     requirement: REQUIRED
     member: issuer
     identifierScope: pairwise
@@ -23,7 +23,7 @@ proofRequirement:
   request: OPTIONAL
   response: REQUIRED
   rationale: >-
-    A read of what the board already holds. On a private board the signer must be one the board admits.
+    A read of what the board already holds. On a private board the signer must be one the board admits, or a trustee the manifest names.
 issuedAtRequirement:
   requirement: REQUIRED
   rationale: >-
@@ -44,7 +44,7 @@ retention:
     The ballot box keeps nothing about the read.
 errorCodes:
   - code: voting/trustees/status:electionUnknown
-    meaning: "No election with this identifier exists for this community, or the caller may not read its board."
+    meaning: "No election with this identifier exists for this community, or the caller may neither read its board nor is one of its trustees."
     retryable: false
 related:
   - voting/trustees/enrol
@@ -68,17 +68,17 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (a trustee, a community or an auditor) **MUST**:
 
-1. Sign the request on a private board, as a party the board admits.
+1. Sign the request on a private board, as a party the board admits or as a trustee.
 
 A conforming **consumer** (the ballot box) **MUST**, in this order:
 
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements).
-2. Answer `voting/trustees/status:electionUnknown` for an election not registered for `community`, or whose board the caller may not read (CONVENTIONS §4).
+2. Answer `voting/trustees/status:electionUnknown` for an election not registered for `community`, or whose board the caller may not read unless the proven signer is one of the manifest's `trustees.dids` (CONVENTIONS §4, §9.6): a trustee reads its ceremony on any board.
 3. Answer from the board as it stands, every member as recorded there.
 
 ## Authorization
 
-Whoever may read the election's board (CONVENTIONS §4).
+Whoever may read the election's board, and — on any board — every trustee the manifest names (CONVENTIONS §4). A trustee's standing is the manifest's, never the board's: it reads the ceremony it takes part in, and nothing else the board holds.
 
 ## Definitions
 

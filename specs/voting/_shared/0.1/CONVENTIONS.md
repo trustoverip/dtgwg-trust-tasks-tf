@@ -122,11 +122,14 @@ The reference implementation is the `vti-voting` crate of verifiable-trust-infra
 |---|---|
 | `voting/election/register`, `close`, `cancel` | The proven signer is the manifest's `community` |
 | `voting/election/show`, `voting/result/show`, `voting/board/*` | Public board: anyone. Private board: the community, a DID in the manifest's `board.auditors` and, for `voting/board/inclusion` of one entry, the holder of that entry's `receiptToken` |
-| `voting/ballot/cast` | Nobody's identity: the cast's attestation is the authority (§3.7) |
+| `voting/ballot/cast`, `voting/ballot/cast-encrypted` | Nobody's identity: the cast's attestation is the authority (§3.7) |
+| `voting/trustees/enrol`, `deal`, `confirm`, `justify`, `decrypt` | The proven signer is the manifest's trustee at the payload's trustee index (VTI-VOT-062) |
+| `voting/trustees/status` | As the board reads, and — whatever the board's visibility — every trustee the manifest names: a trustee cannot take its next step without it (§9.6) |
 | `vtc/elections/create`, `close`, `cancel`, `certify` | `vtc.elections.manage` (VTI-VOT-080); `create` of a `binding` manifest takes another administrator's consent (VTI-VOT-081) |
 | `vtc/elections/list`, `show` | A member, for an election whose roll admits them; `vtc.elections.manage` for every election |
 | `vtc/elections/tickets/issue` | The proven signer is eligible under the roll rule and holds no ticket for the election (VTI-VOT-021, VTI-VOT-022) |
-| `vta/pcs/voter/*`, `vta/pcs/vote` | Standing over the context; as a capability, **`pcsVoter`** (`device/_shared/0.2` `Capability`). Not `sign`; a VTA **MUST NOT** require `sign` |
+| `vta/pcs/voter/*`, `vta/pcs/vote`, `vta/pcs/vote-encrypted` | Standing over the context; as a capability, **`pcsVoter`** (`device/_shared/0.2` `Capability`). Not `sign`; a VTA **MUST NOT** require `sign` |
+| `vta/pcs/trustee/*` | Standing over the context and over the trustee persona; as a capability, **`pcsTrustee`**. Not `sign` |
 
 Verifying the `issuer`, the transport identity or the `proof` establishes who asked, never that
 they may ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)).
@@ -264,6 +267,15 @@ place of the ballot); a sealed cast's binds the `SealedPayload`'s.
 
 Trustee `j`'s key share is `x_j = Σ_{i∈Q} s_ij`; a trustee whose share from a qualified dealer was
 revealed by a justification uses the revealed value.
+
+**Who reads the ceremony.** Nothing the ceremony publishes is secret — transport keys,
+commitments, shares sealed to their recipients, complaints, the election key, decryption targets
+— and its participants need it whatever the board's visibility: a ballot box **MUST** answer
+`voting/trustees/status` to every trustee the manifest names, on a private board as on a public
+one (§4). Voters need only the election key, and a voter on a private board cannot read the
+board: the community **MUST** carry the formed key in
+[`vtc/elections/show`](../../../vtc/elections/show/0.1/spec.md), read from the ballot box, so
+every voter its roll admits obtains it from the community it already asks for its ticket.
 
 ### 9.7 Decrypting
 

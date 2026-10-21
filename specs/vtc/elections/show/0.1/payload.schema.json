@@ -126,6 +126,10 @@
           "minimum": 0,
           "description": "How many tickets the community has issued for the election. Present only to a caller holding vtc.elections.manage."
         },
+        "electionKey": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionKey",
+          "description": "The key a sealed or tallied-encrypted election's ballots are encrypted under, once its trustees have formed it (CONVENTIONS §9.6)."
+        },
         "certified": {
           "$ref": "#/$defs/Certification",
           "description": "Present once the community has certified the result."

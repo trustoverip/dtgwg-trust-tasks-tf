@@ -86,7 +86,8 @@ A conforming **community** (`recipient`):
 3. **MUST** always carry `disclosure` and `parameters` (VTI-VOT-090, VTI-VOT-020), generated from the manifest and the community's configuration — never written by hand — so that a member has read both before any ticket is requested. `disclosure.sameOperator` **MUST** be true whenever the party operating the community's VTC also operates the ballot box.
 4. **MUST** carry `ticketsIssued` to a caller holding `vtc.elections.manage`, and **MUST NOT** carry it to any other caller.
 5. **MUST** carry each checkpoint's `document` exactly as the ballot box sent it, proof included, and **MUST NOT** carry a checkpoint whose document did not verify against the ballot box's DID when it was read. A community **SHOULD** keep a checkpoint when voting opens, at intervals while voting is open, and when voting closes; certification checks the board against every one ([`vtc/elections/certify`](../../certify/0.1/spec.md), VTI-VOT-071).
-6. **MUST** carry `certified` once, and only once, [`vtc/elections/certify`](../../certify/0.1/spec.md) has recorded a certification. A result the ballot box published but the community has not certified is read from the ballot box ([`voting/result/show`](../../../../voting/result/show/0.1/spec.md)), never here.
+6. **MUST** carry `electionKey` once the trustees of a sealed or tallied-encrypted election have formed it, and not before, read from the ballot box's [`voting/trustees/status`](../../../../voting/trustees/status/0.1/spec.md) — which answers the community on any board — and **MUST NOT** carry a key that is not the one the qualified dealings in that same answer form (CONVENTIONS §9.6 item 5). A community **SHOULD** read it as soon as voting opens. It is how a voter on a private board, who cannot read the board, encrypts a ballot (CONVENTIONS §9.6).
+7. **MUST** carry `certified` once, and only once, [`vtc/elections/certify`](../../certify/0.1/spec.md) has recorded a certification. A result the ballot box published but the community has not certified is read from the ballot box ([`voting/result/show`](../../../../voting/result/show/0.1/spec.md)), never here.
 
 A conforming **producer** — a member's client about to request a ticket — **SHOULD** show the member `disclosure` before requesting one, and **MUST** request the ticket under the `manifestDigest` read here.
 
@@ -103,6 +104,7 @@ The authority is **the caller's standing toward this election**: being a party i
 - **`disclosure`** (response) — the community's [`Disclosure`](../../../../voting/_shared/0.1/voting.schema.json) for this election.
 - **`checkpoints`** (response) — each a `Checkpoint`: a [`BoardHead`](../../../../voting/_shared/0.1/voting.schema.json) and the ballot box's signed [`voting/board/head`](../../../../voting/board/head/0.1/spec.md) response document that carried it, kept whole.
 - **`ticketsIssued`** (response) — tickets issued for the election; administrators only.
+- **`electionKey`** (response) — the [`ElectionKey`](../../../../voting/_shared/0.1/voting.schema.json) a sealed or tallied-encrypted election's ballots are encrypted under, once formed.
 - **`certified`** (response) — a `Certification`: the certified [`ElectionResult`](../../../../voting/_shared/0.1/voting.schema.json), when it was certified, and the auditors' attestations it was certified with.
 
 ## Request

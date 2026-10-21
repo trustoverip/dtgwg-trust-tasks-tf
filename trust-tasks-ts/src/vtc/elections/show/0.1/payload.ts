@@ -3,7 +3,7 @@
  * Source: specs/vtc/elections/show/0.1/payload.schema.json
  */
 
-import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionResult, Ext, Key_VotingV0_1 as Key, Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, Trustees, VotingParameters } from "../../../../_shared/components.js";
+import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
 
 
 /**
@@ -54,6 +54,10 @@ export interface VTCElectionsShowResponsePayload {
    * How many tickets the community has issued for the election. Present only to a caller holding vtc.elections.manage.
    */
   ticketsIssued?: number;
+  /**
+   * The key a sealed or tallied-encrypted election's ballots are encrypted under, once its trustees have formed it (CONVENTIONS §9.6).
+   */
+  electionKey?: ElectionKey;
   certified?: Certification;
   ext?: Ext;
 }
@@ -80,7 +84,7 @@ export interface Certification {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionResult, Ext, Key, Manifest, Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, Trustees, VotingParameters };
+export type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key, Manifest, Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, TrusteeIndex, Trustees, VotingParameters };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/elections/show/0.1" as const;
@@ -231,6 +235,10 @@ export const PAYLOAD_SCHEMA = {
           "minimum": 0,
           "description": "How many tickets the community has issued for the election. Present only to a caller holding vtc.elections.manage."
         },
+        "electionKey": {
+          "$ref": "#/$defs/ElectionKey",
+          "description": "The key a sealed or tallied-encrypted election's ballots are encrypted under, once its trustees have formed it (CONVENTIONS §9.6)."
+        },
         "certified": {
           "$ref": "#/$defs/Certification",
           "description": "Present once the community has certified the result."
@@ -249,6 +257,67 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "ElectionKey": {
+      "title": "ElectionKey",
+      "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "qualified",
+        "verification"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "qualified": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/TrusteeIndex"
+          },
+          "description": "The dealers whose dealings the key is formed from."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustee",
+              "key"
+            ],
+            "properties": {
+              "trustee": {
+                "$ref": "#/$defs/TrusteeIndex"
+              },
+              "key": {
+                "$ref": "#/$defs/GroupElement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "GroupElement": {
+      "title": "GroupElement",
+      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
     },
     "Disclosure": {
       "title": "Disclosure",
@@ -993,6 +1062,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minimum": 0,
           "description": "How many tickets the community has issued for the election. Present only to a caller holding vtc.elections.manage."
         },
+        "electionKey": {
+          "$ref": "#/$defs/ElectionKey",
+          "description": "The key a sealed or tallied-encrypted election's ballots are encrypted under, once its trustees have formed it (CONVENTIONS §9.6)."
+        },
         "certified": {
           "$ref": "#/$defs/Certification",
           "description": "Present once the community has certified the result."
@@ -1011,6 +1084,67 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "ElectionKey": {
+      "title": "ElectionKey",
+      "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "qualified",
+        "verification"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "qualified": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/TrusteeIndex"
+          },
+          "description": "The dealers whose dealings the key is formed from."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustee",
+              "key"
+            ],
+            "properties": {
+              "trustee": {
+                "$ref": "#/$defs/TrusteeIndex"
+              },
+              "key": {
+                "$ref": "#/$defs/GroupElement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "GroupElement": {
+      "title": "GroupElement",
+      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
     },
     "Disclosure": {
       "title": "Disclosure",

@@ -2241,7 +2241,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[error_codes::ELECTION_UNK
 pub mod error_codes {
     /// `voting/trustees/status:electionUnknown`
     ///
-    /// No election with this identifier exists for this community, or the caller may not read its board.
+    /// No election with this identifier exists for this community, or the caller may neither read its board nor is one of its trustees.
     ///
     /// Declared `retryable: false`.
     pub const ELECTION_UNKNOWN: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
