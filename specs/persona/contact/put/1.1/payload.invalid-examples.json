@@ -125,5 +125,23 @@
       "annotationsChanged": true,
       "petname": "Sam from the climbing gym"
     }
+  },
+  {
+    "note": "Linking with a DID as well — a request naming `subjectDid` and a document is a filing, and one naming neither is a link; one that named a DID beside a bare directory link would leave the agent to guess which contact it means.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "subjectDid": "did:peer:2.Ez6LSexample",
+      "knownByPersona": "did:peer:2.Ez6LSpersona",
+      "directoryRef": { "vtcDid": "did:web:climbing.example", "entryId": "e_Q2wE9rT4yU1i" },
+      "starred": true
+    }
+  },
+  {
+    "note": "Linking without the persona — a contact belongs to a relationship, so the agent cannot find or make the contact for an entry without the persona that knows it.",
+    "payload": {
+      "contextId": "ctx-personal",
+      "directoryRef": { "vtcDid": "did:web:climbing.example", "entryId": "e_Q2wE9rT4yU1i" },
+      "starred": true
+    }
   }
 ]

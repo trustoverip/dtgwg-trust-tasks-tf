@@ -17,6 +17,15 @@ fn request_example_1() {
 }
 #[test]
 fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:4f0c1f6e-2d7b-4f4a-9a59-0b6f3f0c1a03\",\n  \"type\": \"https://trusttasks.org/spec/persona/contact/put/1.1\",\n  \"issuer\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"recipient\": \"did:web:agent.alice.example\",\n  \"issuedAt\": \"2026-10-18T09:10:00Z\",\n  \"payload\": {\n    \"contextId\": \"ctx-personal\",\n    \"knownByPersona\": \"did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y\",\n    \"directoryRef\": { \"vtcDid\": \"did:web:climbing.example\", \"entryId\": \"e_Q2wE9rT4yU1i\" },\n    \"starred\": true,\n    \"petname\": \"the route-setter\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
+fn request_example_3() {
     const JSON: &str = "{\n  \"id\": \"urn:uuid:4f0c1f6e-2d7b-4f4a-9a59-0b6f3f0c1a02\",\n  \"type\": \"https://trusttasks.org/spec/persona/contact/put/1.1\",\n  \"issuer\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n  \"recipient\": \"did:web:agent.alice.example\",\n  \"issuedAt\": \"2026-10-18T09:05:00Z\",\n  \"payload\": {\n    \"contextId\": \"ctx-personal\",\n    \"contactId\": \"01JA8Z3Q4R5S6T7V8W9X0Y1Z2A\",\n    \"petname\": \"Sam (belay partner)\",\n    \"lists\": [\"01JA8Z5M2N3P4Q5R6S7T8V9W0X\"]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
@@ -94,6 +103,14 @@ fn rejects_invalid_examples() {
         (
             "`directoryRef` with an unknown member — additionalProperties: false catches `memberDid`; the link names an entry, never the member's DID.",
             "{\n  \"contactId\": \"01JA8Z3Q4R5S6T7V8W9X0Y1Z2A\",\n  \"contextId\": \"ctx-personal\",\n  \"directoryRef\": {\n    \"entryId\": \"e_7Hq2mZp9Lx4v\",\n    \"memberDid\": \"did:web:alice.example\",\n    \"vtcDid\": \"did:web:community.example\"\n  }\n}",
+        ),
+        (
+            "Linking with a DID as well — a request naming `subjectDid` and a document is a filing, and one naming neither is a link; one that named a DID beside a bare directory link would leave the agent to guess which contact it means.",
+            "{\n  \"contextId\": \"ctx-personal\",\n  \"directoryRef\": {\n    \"entryId\": \"e_Q2wE9rT4yU1i\",\n    \"vtcDid\": \"did:web:climbing.example\"\n  },\n  \"knownByPersona\": \"did:peer:2.Ez6LSpersona\",\n  \"starred\": true,\n  \"subjectDid\": \"did:peer:2.Ez6LSexample\"\n}",
+        ),
+        (
+            "Linking without the persona — a contact belongs to a relationship, so the agent cannot find or make the contact for an entry without the persona that knows it.",
+            "{\n  \"contextId\": \"ctx-personal\",\n  \"directoryRef\": {\n    \"entryId\": \"e_Q2wE9rT4yU1i\",\n    \"vtcDid\": \"did:web:climbing.example\"\n  },\n  \"starred\": true\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

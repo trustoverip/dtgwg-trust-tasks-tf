@@ -39,10 +39,10 @@
           "type": "array", "maxItems": 500,
           "items": {
             "type": "object", "additionalProperties": false,
-            "required": ["contactId", "subjectDid", "knownByPersona", "rev", "receivedAt", "starred"],
+            "required": ["contactId", "knownByPersona", "rev", "receivedAt", "starred"],
             "properties": {
               "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
-              "subjectDid": { "type": "string", "minLength": 1 },
+              "subjectDid": { "type": "string", "minLength": 1, "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form)." },
               "knownByPersona": { "type": "string", "minLength": 1 },
               "rev": { "type": "integer", "minimum": 1 },
               "displayName": { "type": "string", "maxLength": 256, "description": "A rendering hint drawn from the contact's own disclosed display-name claim, so a list is legible. Absent when they disclosed none; a producer MUST NOT substitute the DID — or the petname — silently as though it were the contact's own name." },

@@ -7,7 +7,7 @@ import type { ClaimType, ContactDocument, DirectoryEntryId, DirectoryRef, Ext, L
 
 
 /**
- * File what a peer disclosed, or change the holder's own annotations on a contact, or both. Two forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. In either form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.
+ * File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.
  */
 export type PersonaContactPutPayload = {
   contextId: string;
@@ -20,7 +20,7 @@ export type PersonaContactPutPayload = {
    */
   subjectDid?: string;
   /**
-   * Filing form only. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.
+   * Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.
    */
   knownByPersona?: string;
   document?: ContactDocument;
@@ -125,7 +125,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/persona/contact/put/1.1",
   "title": "Persona Contact Put — payload",
-  "description": "File what a peer disclosed, or change the holder's own annotations on a contact, or both. Two forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. In either form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.",
+  "description": "File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -219,6 +219,36 @@ export const PAYLOAD_SCHEMA = {
           ]
         }
       ]
+    },
+    {
+      "required": [
+        "directoryRef",
+        "knownByPersona"
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "contactId"
+            ]
+          },
+          {
+            "required": [
+              "subjectDid"
+            ]
+          },
+          {
+            "required": [
+              "document"
+            ]
+          },
+          {
+            "required": [
+              "credentialRefs"
+            ]
+          }
+        ]
+      }
     }
   ],
   "dependentSchemas": {
@@ -270,7 +300,7 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 2048,
-      "description": "Filing form only. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book."
+      "description": "Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book."
     },
     "document": {
       "$ref": "#/$defs/ContactDocument"

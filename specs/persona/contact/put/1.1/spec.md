@@ -102,6 +102,15 @@ names an existing `contactId` and no document — changes them without re-filing
 anything. A filing may carry annotations too, so a contact made from an
 introduction can be filed, starred and linked in one request.
 
+A third form — **linking** — keeps annotations on a member of a community's
+directory whose DID the holder has not been shown. A directory shows members'
+DIDs to other members only where each member chooses to, so most entries a holder
+reads carry no DID to file a contact under. Linking names the entry
+(`directoryRef`) and the persona that knows it, and the agent finds the contact it
+keeps for that entry and persona, or makes one: no `subjectDid`, no disclosed
+document, and no revision appended. A later filing that names the member's DID is
+a contact of its own; the agent does not merge the two (Conformance item 4).
+
 `notes` keeps its 1.0 meaning, and now follows the annotation rules: absent is
 unchanged, and `removeNotes` removes it.
 
@@ -115,7 +124,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 A conforming **producer** **MUST** emit a *Trust Task document* whose `type` is
 `https://trusttasks.org/spec/persona/contact/put/1.1`, populate `contextId` and
-exactly one of the two forms the schema defines, and include a `proof` per
+exactly one of the three forms the schema defines, and include a `proof` per
 [SPEC.md §4.7](/SPEC.md#47-proof). It **MUST NOT** put a credential, a key, a
 password or any other secret in a petname, in `notes` or in `ext`.
 
@@ -124,7 +133,7 @@ A conforming **maintainer** (the holder's agent) **MUST**:
 1. Confine the caller to its own context, and answer `notFound` for a `contactId` it holds in any other context exactly as for one it never assigned.
 2. On a filing, append a revision rather than replacing one, and assign `rev` itself — a recipient counts what it received, which is the only sequence it can vouch for. The publisher's `cardVersion` is advisory and **MUST NOT** be used to order revisions.
 3. On a filing, compute `changedClaims` against the immediately previous revision.
-4. Key a filing on `(contextId, subjectDid, knownByPersona)` and **MUST NOT** merge contacts that differ only in `knownByPersona` — nor contacts that share a `directoryRef`.
+4. Key a filing on `(contextId, subjectDid, knownByPersona)`, and a linking request on `(contextId, directoryRef, knownByPersona)`, making the contact on the first request for that key with `rev` 1, an empty document and no `subjectDid`, and appending no revision on any later one. It **MUST NOT** merge contacts that differ only in `knownByPersona` — nor contacts that share a `directoryRef`, nor a linked contact with a filed one.
 5. **MUST NOT** treat a claimed `credentialBacked` provenance as verified.
 6. Apply every annotation change the request names together with the filing, if any, or not at all: each annotation given replaces the stored one, each `removeX` removes one, each annotation absent is unchanged, and `lists` replaces the whole set. It **MUST** refuse with `listUnknown`, changing nothing, a `lists` naming a list this context does not hold.
 7. **MUST NOT** append a revision, or move `rev`, for an annotating request; and **MUST NOT** record annotations in any revision.
@@ -161,6 +170,7 @@ policy, which this specification does not declare.
 - **Annotations** — `starred`, `petname`, `lists`, `directoryRef` and `notes`: what the holder keeps *about* a contact, as distinct from what the contact disclosed.
 - **Filing form** — `subjectDid`, `knownByPersona` and `document`, without `contactId`. Appends a revision.
 - **Annotating form** — `contactId` and at least one annotation change, without `subjectDid`, `knownByPersona`, `document` or `credentialRefs`. Appends nothing.
+- **Linking form** — `directoryRef` and `knownByPersona`, without `contactId`, `subjectDid`, `document` or `credentialRefs`. Finds or makes the contact for that directory entry and persona; appends nothing.
 
 ## Request
 
@@ -187,6 +197,27 @@ against the top-level schema in [`payload.schema.json`](payload.schema.json).
     },
     "starred": true,
     "directoryRef": { "vtcDid": "did:web:climbing.example", "entryId": "e_7Hq2mZp9Lx4v" }
+  }
+}
+```
+
+### Star a directory member whose DID you have not been shown
+
+The agent makes the contact for this entry and persona, or finds the one it keeps.
+
+```json
+{
+  "id": "urn:uuid:4f0c1f6e-2d7b-4f4a-9a59-0b6f3f0c1a03",
+  "type": "https://trusttasks.org/spec/persona/contact/put/1.1",
+  "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+  "recipient": "did:web:agent.alice.example",
+  "issuedAt": "2026-10-18T09:10:00Z",
+  "payload": {
+    "contextId": "ctx-personal",
+    "knownByPersona": "did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y",
+    "directoryRef": { "vtcDid": "did:web:climbing.example", "entryId": "e_Q2wE9rT4yU1i" },
+    "starred": true,
+    "petname": "the route-setter"
   }
 }
 ```

@@ -20,10 +20,10 @@
       "description": "Success response to persona/contact/get. Type https://trusttasks.org/spec/persona/contact/get/1.1#response. The annotations are the contact's current ones whichever revision was asked for: they belong to the contact, not to a revision.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["contactId", "subjectDid", "knownByPersona", "rev", "document", "starred"],
+      "required": ["contactId", "knownByPersona", "rev", "document", "starred"],
       "properties": {
         "contactId": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid" },
-        "subjectDid": { "type": "string", "minLength": 1 },
+        "subjectDid": { "type": "string", "minLength": 1, "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form)." },
         "knownByPersona": { "type": "string", "minLength": 1 },
         "rev": { "type": "integer", "minimum": 1 },
         "document": { "$ref": "../../../_shared/0.1/persona-record.schema.json#/$defs/ContactDocument" },
