@@ -3,7 +3,8 @@ slug: vta/pcs/trustee/justify
 version: "0.1"
 title: "VTA PCS — Trustee Justify"
 summary: "The dealer's VTA reveals the share it dealt to a trustee that complained, and returns the voting/trustees/justify request signed as the dealer."
-status: draft
+status: retired
+supersededBy: vta/pcs/trustee/justify/0.2
 targetFrameworkVersion: "0.6.0"
 category: identity
 keywords:
@@ -60,7 +61,7 @@ The **VTA PCS — Trustee Justify** Trust Task answers a complaint (CONVENTIONS 
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/pcs/trustee/justify/0.2`](../0.2/spec.md), which acts only on the signed evidence the ballot box cannot forge (CONVENTIONS §9.6 – 9.7) where this version took values the ballot box reported. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 

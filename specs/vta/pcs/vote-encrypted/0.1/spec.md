@@ -3,7 +3,8 @@ slug: vta/pcs/vote-encrypted
 version: "0.1"
 title: "VTA PCS — Vote Encrypted"
 summary: "The voter's VTA checks a ballot against the manifest, encrypts it to the election key as the election's level requires, and returns the cast signed by a key made for it alone."
-status: draft
+status: retired
+supersededBy: vta/pcs/vote-encrypted/0.2
 targetFrameworkVersion: "0.6.0"
 category: identity
 keywords:
@@ -71,7 +72,7 @@ The **VTA PCS — Vote Encrypted** Trust Task is [`vta/pcs/vote`](../../vote/0.1
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vta/pcs/vote-encrypted/0.2`](../0.2/spec.md), which acts only on the signed evidence the ballot box cannot forge (CONVENTIONS §9.6 – 9.7) where this version took values the ballot box reported. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 ## Conformance
 

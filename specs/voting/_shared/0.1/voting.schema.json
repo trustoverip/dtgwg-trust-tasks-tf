@@ -854,6 +854,24 @@
               "$ref": "#/$defs/SignedRequest"
             }
           }
+        },
+        {
+          "title": "DecryptionAuthorizedEntry",
+          "description": "The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "request"
+          ],
+          "properties": {
+            "kind": {
+              "const": "decryptionAuthorized"
+            },
+            "request": {
+              "$ref": "#/$defs/SignedRequest"
+            }
+          }
         }
       ]
     },
@@ -1469,6 +1487,16 @@
       "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
       "type": "object",
       "minProperties": 1
+    },
+    "TrusteeCeremony": {
+      "title": "TrusteeCeremony",
+      "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4224,
+      "items": {
+        "$ref": "#/$defs/SignedRequest"
+      }
     }
   }
 }

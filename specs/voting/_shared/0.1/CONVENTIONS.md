@@ -29,6 +29,7 @@ The tasks are:
 | Ballot box | [`voting/trustees/justify`](../../trustees/justify/0.1/spec.md) | A dealer answers a complaint by revealing the share |
 | Ballot box | [`voting/trustees/decrypt`](../../trustees/decrypt/0.1/spec.md) | A trustee publishes its partial decryptions |
 | Ballot box | [`voting/trustees/status`](../../trustees/status/0.1/spec.md) | Where the trustees' ceremony stands, and what is left to do |
+| Ballot box | [`voting/trustees/authorize`](../../trustees/authorize/0.1/spec.md) | The community authorizes the decryption of the targets it computed from the closed board |
 | Ballot box | [`voting/board/head`](../../board/head/0.1/spec.md) | The board's current signed head |
 | Ballot box | [`voting/board/read`](../../board/read/0.1/spec.md) | A range of board entries |
 | Ballot box | [`voting/board/inclusion`](../../board/inclusion/0.1/spec.md) | Proof that one entry is in a head |
@@ -46,12 +47,12 @@ The tasks are:
 | VTA | [`vta/pcs/voter/accept`](../../../vta/pcs/voter/accept/0.1/spec.md) | Unblinds the VTC's answer into the ticket |
 | VTA | [`vta/pcs/vote`](../../../vta/pcs/vote/0.1/spec.md) | Validates a ballot against the manifest and builds the signed cast |
 | VTA | [`vta/pcs/voter/receipt`](../../../vta/pcs/voter/receipt/0.1/spec.md) | Keeps a cast's receipt and checks its inclusion |
-| VTA | [`vta/pcs/vote-encrypted`](../../../vta/pcs/vote-encrypted/0.1/spec.md) | Builds a sealed or tallied-encrypted cast |
+| VTA | [`vta/pcs/vote-encrypted`](../../../vta/pcs/vote-encrypted/0.2/spec.md) | Builds a sealed or tallied-encrypted cast |
 | VTA | [`vta/pcs/trustee/enrol`](../../../vta/pcs/trustee/enrol/0.1/spec.md) | A trustee's transport key, and the enrolment signed as the trustee |
-| VTA | [`vta/pcs/trustee/deal`](../../../vta/pcs/trustee/deal/0.1/spec.md) | The trustee's dealing, signed as the trustee |
-| VTA | [`vta/pcs/trustee/keys`](../../../vta/pcs/trustee/keys/0.1/spec.md) | Opens and checks the trustee's shares and keeps its key share |
-| VTA | [`vta/pcs/trustee/justify`](../../../vta/pcs/trustee/justify/0.1/spec.md) | Answers a complaint against this trustee |
-| VTA | [`vta/pcs/trustee/decrypt`](../../../vta/pcs/trustee/decrypt/0.1/spec.md) | The trustee's partial decryptions, signed as the trustee |
+| VTA | [`vta/pcs/trustee/deal`](../../../vta/pcs/trustee/deal/0.2/spec.md) | The trustee's dealing, signed as the trustee |
+| VTA | [`vta/pcs/trustee/keys`](../../../vta/pcs/trustee/keys/0.2/spec.md) | Opens and checks the trustee's shares and keeps its key share |
+| VTA | [`vta/pcs/trustee/justify`](../../../vta/pcs/trustee/justify/0.2/spec.md) | Answers a complaint against this trustee |
+| VTA | [`vta/pcs/trustee/decrypt`](../../../vta/pcs/trustee/decrypt/0.2/spec.md) | The trustee's partial decryptions, signed as the trustee |
 | VTA | [`vta/pcs/trustee/read`](../../../vta/pcs/trustee/read/0.1/spec.md) | Signs `voting/trustees/status` or `voting/election/show` as the trustee |
 
 Each of those specifications references this file rather than restating it, and conformance is
@@ -114,6 +115,21 @@ hidden-vetting deployment.
    id_E, attestation, app)` holds, with `app` rebuilt from the ballot **as received**.
 8. **Board hashing.** A leaf hash is RFC 9162's `HASH(0x00 ‖ JCS(entry))`; interior nodes,
    heads and proofs are RFC 9162 §2.1 with SHA-256.
+9. **Board order.** A board is the election's lifecycle in order, and whoever re-verifies one —
+   the community certifying, an auditor — **MUST** refuse a board that breaks any of these:
+   1. an `opened` entry precedes every cast, and its `at` is not before `votingOpens`;
+   2. no cast follows the `closed`, `closedEarly` or `cancelled` entry; `closedEarly` appears
+      only where the manifest allows an early close, and a `closed` entry's `at` is not before
+      `votingCloses`;
+   3. on a sealed or tallied-encrypted board, the `electionKey` entry precedes `opened`, and
+      every `trusteeStep` precedes the `electionKey` entry;
+   4. on those boards a `decryptionAuthorized` entry follows the closing entry and precedes every
+      `partials` entry (§9.7);
+   5. there is exactly one `result` entry, it is the last, it follows the closing entry, and its
+      result's `head` is the board as it stood just before it — the tree of every entry before
+      the `result` entry;
+   6. a `replaced` entry names a later cast whose ballot (or encrypted form) differs from the one
+      it replaces.
 
 The reference implementation is the `vti-voting` crate of verifiable-trust-infrastructure.
 
@@ -127,6 +143,7 @@ The reference implementation is the `vti-voting` crate of verifiable-trust-infra
 | `voting/ballot/cast`, `voting/ballot/cast-encrypted` | Nobody's identity: the cast's attestation is the authority (§3.7) |
 | `voting/trustees/enrol`, `deal`, `confirm`, `justify`, `decrypt` | The proven signer is the manifest's trustee at the payload's trustee index (VTI-VOT-062) |
 | `voting/trustees/status` | As the board reads, and — whatever the board's visibility — every trustee the manifest names: a trustee cannot take its next step without it (§9.6) |
+| `voting/trustees/authorize` | The community the payload names, by proof (§9.7) |
 | `vtc/elections/create`, `close`, `cancel`, `certify` | `vtc.elections.manage` (VTI-VOT-080); `create` of a `binding` manifest takes another administrator's consent (VTI-VOT-081) |
 | `vtc/elections/list`, `show` | A member, for an election whose roll admits them; `vtc.elections.manage` for every election |
 | `vtc/elections/tickets/issue` | The proven signer is eligible under the roll rule and holds no ticket for the election (VTI-VOT-021, VTI-VOT-022) |
@@ -225,9 +242,11 @@ Every proof is non-interactive by Fiat–Shamir: the challenge is SHA-512 over
 Domains: `vti/vote/trustee/pok/v1` (dealer's constant term; `ctx` extended with the dealer
 index, 4 bytes big-endian), `vti/vote/trustee/transport/v1` (transport key; `ctx` extended with
 the trustee index), `vti/vote/trustee/partial/v1` (partial decryption),
-`vti/vote/encrypted/option/v1` (an option; `ctx` extended with `frame(question)` and the option's
-index, 8 bytes big-endian), `vti/vote/encrypted/question/v1` (a question's sum; `ctx` extended
-with `frame(question)`).
+`vti/vote/encrypted/option/v1` (an option; `ctx` extended with `frame(tag)`, `frame(question)` and
+the option's index, 8 bytes big-endian), `vti/vote/encrypted/question/v1` (a question's sum;
+`ctx` extended with `frame(tag)` and `frame(question)`). `tag` is the cast's tag as its multibase
+text (§3.6): a ballot's proofs hold only under the tag it is cast under, so a ballot copied into
+another cast does not verify.
 
 ### 9.4 Sealed payloads
 
@@ -235,7 +254,8 @@ To seal bytes to a key `K` under `aadCtx`: choose a random element `R` and `r`; 
 r·K)`; the key is `SHA-256(frame("vti/vote/sealed/key/v1") ‖ encoding(R))`; `body` is
 ChaCha20-Poly1305 with that key, a nonce of twelve zero bytes (the key is used once), and
 additional data `frame(aadCtx) ‖ encoding(kem.a) ‖ encoding(kem.b)`. A sealed ballot is the
-Ballot's JCS bytes sealed to the election key with `aadCtx = ctx`. A sealed share is the share's
+Ballot's JCS bytes sealed to the election key with `aadCtx = ctx ‖ frame(tag)`, `tag` the cast's
+tag as its multibase text: a sealed form copied into another cast does not open, and is spoiled. A sealed share is the share's
 32 bytes sealed to the recipient's transport key with `aadCtx = ctx ‖ "share" ‖ dealer ‖
 recipient` (indices 4 bytes big-endian).
 
@@ -263,9 +283,12 @@ place of the ballot); a sealed cast's binds the `SealedPayload`'s.
 5. **Form.** When every trustee has confirmed and every complaint is justified or void, or else
    at `votingOpens`, the **qualified** dealers are those with no unjustified complaint. The
    election key is `Y = Σ_{i∈Q} C_i0`, and trustee `j`'s verification key is `Y_j = Σ_{i∈Q}
-   Σ_k j^k·C_ik`. The ballot box appends an `electionKey` entry. If fewer than one dealer
-   qualifies, or the key is not formed by `votingOpens`, the ceremony has **failed**: no cast is
-   admitted and the community cancels the election.
+   Σ_k j^k·C_ik`. The ballot box appends an `electionKey` entry. If fewer than `t` dealers
+   qualify, or fewer than `t` trustees have confirmed, or the key is not formed by `votingOpens`,
+   the ceremony has **failed**: no cast is admitted and the community cancels the election. With
+   at most `t − 1` corrupt trustees, `t` qualified dealers include an honest one, so no coalition
+   that cannot decrypt can know `Y`: a corrupt trustee complaining of every other dealer at the
+   last moment fails the ceremony rather than leaving its own dealing the key.
 
 Trustee `j`'s key share is `x_j = Σ_{i∈Q} s_ij`; a trustee whose share from a qualified dealer was
 revealed by a justification uses the revealed value.
@@ -295,6 +318,16 @@ carries a Chaum–Pedersen proof under the trustee's verification key, which onl
 share satisfies (§9.7). `voting/trustees/status` reports what the board holds without the
 trustees' proofs: it tells a trustee its next step, and is never evidence of who took one.
 
+**A trustee acts on the steps, never on reported values.** A trustee's VTA deals to the
+transport keys, opens the dealings, answers the complaints and keeps the key share that the
+signed steps establish — status's `steps`, passed on unchanged, each verified by the VTA itself
+as above ([`vta/pcs/trustee/*/0.2`](../../../vta/pcs/trustee/deal/0.2/spec.md)). Taking those
+from status's bare values instead would let a ballot box substitute transport keys (and open the
+shares sealed to them), invent complaints (and collect the shares revealed in answer), or
+replace a trustee's dealings (and its key share). A voter's VTA likewise encrypts only under the
+key it forms itself from the steps ([`vta/pcs/vote-encrypted/0.2`](../../../vta/pcs/vote-encrypted/0.2/spec.md)),
+never under one it is handed.
+
 **Who reads the ceremony.** Nothing the ceremony publishes is secret — transport keys,
 commitments, shares sealed to their recipients, complaints, the election key, decryption targets
 — and its participants need it whatever the board's visibility: a ballot box **MUST** answer
@@ -308,8 +341,20 @@ admits obtains it from the community it already asks for its ticket.
 
 ### 9.7 Decrypting
 
-After voting closes (VTI-VOT-063), the targets are each counted sealed cast's `kem`, or for a
-tallied-encrypted election the homomorphic total of each option over the counted casts. Trustee
+After voting closes (VTI-VOT-063), the targets are each counted sealed cast's `kem`, in leaf
+order, or for a tallied-encrypted election the homomorphic total of each option over the counted
+casts, in the manifest's order of questions and options.
+
+**The community authorizes what is decrypted.** Once the board holds its closing entry, the
+community reads it, checks it as certification does up to that entry (the ceremony, every cast
+re-admitted, §3.9), computes the targets itself, and sends
+[`voting/trustees/authorize`](../../trustees/authorize/0.1/spec.md) with their count and the
+digest of their JCS, under the head it read. The ballot box accepts it only if its own targets
+match, and appends a `decryptionAuthorized` entry carrying it. A trustee's VTA decrypts only the
+targets an authorization the community signed pins, once per election. Without it a ballot box
+could list one voter's option ciphertexts as a "total", or a cast before the close, and collect
+`t` honest trustees' partials of it; with it, that takes the community and the ballot box
+together — the separation every other guarantee rests on (§2). Trustee
 `j` publishes `d = x_j·a` for each target with a Chaum–Pedersen proof (`Y_j`, `a`, `d`)
 (`voting/trustees/decrypt`). With `t` verified partials of distinct trustees, `M = b − Σ λ_j·d_j`
 with Lagrange coefficients at 0. A sealed cast's `M` is `R`, which opens its ballot; an option's

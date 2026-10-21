@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/trustees/authorize/0.1",
+  "title": "Voting — Trustees — Authorize — payload",
+  "description": "After voting closes, the community authorizes the decryption of exactly the targets it computed from the board: a digest of them, and the head they were computed under.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "manifestDigest",
+    "head",
+    "closedAt",
+    "targetCount",
+    "targetsDigest"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "manifestDigest": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+    },
+    "head": {
+      "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/BoardHead",
+      "description": "The head the targets were computed under: the board through its `closed` or `closedEarly` entry."
+    },
+    "closedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The `at` of the board's `closed` or `closedEarly` entry."
+    },
+    "targetCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "targetsDigest": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+      "description": "SHA-256 over the JCS of the array of DecryptionTarget the community computed, in the order of CONVENTIONS §9.7, as a multihash."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Trustees — Authorize — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "election",
+        "phase"
+      ],
+      "properties": {
+        "election": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionSummary"
+        },
+        "phase": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteePhase"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

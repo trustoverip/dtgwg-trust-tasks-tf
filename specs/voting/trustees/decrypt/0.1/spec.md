@@ -76,14 +76,14 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the trustee, through its client) **MUST**:
 
-1. Sign the request as the trustee's DID, with the partials its VTA made ([`vta/pcs/trustee/decrypt`](../../../../vta/pcs/trustee/decrypt/0.1/spec.md)) for the targets [`voting/trustees/status`](../../status/0.1/spec.md) lists.
+1. Sign the request as the trustee's DID, with the partials its VTA made ([`vta/pcs/trustee/decrypt`](../../../../vta/pcs/trustee/decrypt/0.2/spec.md)) for the targets [`voting/trustees/status`](../../status/0.1/spec.md) lists.
 
 A conforming **consumer** (the ballot box) **MUST**, in this order:
 
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements).
 2. Refuse with `permissionDenied` unless the proven signer is the manifest's `trustees.dids` entry at the payload's trustee index (VTI-VOT-062).
 3. Refuse with `voting/trustees/decrypt:electionUnknown` for an election not registered for `community`.
-4. Refuse with `voting/trustees/decrypt:notDecrypting` unless voting has closed and the election is not yet tallied.
+4. Refuse with `voting/trustees/decrypt:notDecrypting` unless voting has closed, the community's authorization is on the board (CONVENTIONS §9.7), and the election is not yet tallied.
 5. Refuse with `voting/trustees/decrypt:partialInvalid` unless every partial's target is one of the election's targets, with its ciphertext as the ballot box computes it, and its Chaum–Pedersen proof verifies against the trustee's verification key.
 6. Append a `partials` entry. When every target has `t` verified partials of distinct trustees, open each sealed ballot (appending an `unsealed` entry per ballot) or read each total, then tally and append the result.
 
